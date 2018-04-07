@@ -101,7 +101,7 @@ The 12 bit immediate is sign-extended to XLEN bits and added to the count. If th
 
 ### Encoding
 
-input{bextclz.tex}
+\input{bextclz.tex}
 
 `clz` is encoded as a standard I-type opcode, with a single source register and a 12-bit signed immediate. There is no `clzi`, because it only has one argument, so it would be redundant.
 
@@ -189,7 +189,7 @@ This operation counts the total number of set bits in the register.
 ### Encoding
 
 
-input{bextpcnt.tex}
+\input{bextpcnt.tex}
 
 `pcnt` is encoded as a standard I-type opcode, with one source register and an immediate. There is no `pcnti`, because it only has one argument, so it would be redundant.
 
@@ -258,7 +258,7 @@ The above pattern should be intuitive to understand in order to extend this defi
 ### Encoding
 
 
-input{bextgrev.tex}
+\input{bextgrev.tex}
 
 `grevi` is encoded as a standard I-type opcode with one source register and one immediate.
 
@@ -396,7 +396,7 @@ These instructions are exactly the same as the equivalent logical shift operatio
 
 ### Encoding:
 
-input{bextsxo.tex}
+\input{bextsxo.tex}
 
 `s(l/r)o(i)` is encoded similarly to the logical shifts in the base spec. However, the spec of the entire family of instructions is changed so that the high bit of the instruction indicates the value to be inserted during a shift. This means that a `sloi` instruction can be encoded similarly to an `slli` instruction, but with a 1 in the highest bit of the encoded instruction. This encoding is backwards compatible with the definition for the shifts in the base spec, but allows for simple addition of a ones-insert.
 
@@ -492,7 +492,7 @@ These instructions are similar to shift-logical operations from the base spec, e
 	
 ### Encoding:
 
-input{bextrox.tex}
+\input{bextrox.tex}
 
 `ror(i),rol(i)` is implemented very similarly to the other shift instructions. One possible way to encode it is to re-use the way that bit 30 in the instruction encoding selects 'arithmetic shift' when bit 31 is zero (signalling a logical-zero shift). We can re-use this so that when bit 31 is set (signalling a logical-ones shift), if bit 31 is also set, then we are doing a rotate. The following table summarizes the behavior:
 
@@ -519,7 +519,7 @@ This instruction is very useful for cryptography, hashing, and other operations.
 
 ## And-with-complement (`andc`)
 
-input{bextandc.tex}
+\input{bextandc.tex}
 
 This is an R-type instruction that implements the and-with-complement operation `x=(a & ~b)` with an assembly format of `andc ro,r1,r2`.
 
@@ -592,7 +592,7 @@ This is an R-type instruction that implements the generic bit scatter and bit ga
 ### Encoding:
 
 
-input{bextscagat.tex}
+\input{bextscagat.tex}
 
 
 This instruction should be encoded similarly to the instruction in the base spec. The exact instruction encoding is to be decided, however.
