@@ -1,0 +1,77 @@
+\documentclass[twoside,11pt]{book}
+
+\input{preamble}
+\usepackage{longtable,booktabs}
+
+\newcommand{\specrev}{0.33-draft}
+
+\begin{document}
+
+\title{\vspace{-0.7in}\Large {\bf RISC-V XBitmap Extension} \\
+    Document Version \specrev \vspace{-0.1in}
+}
+
+\author{Editors: Clifford Wolf$^{1}$, Rex McCrary $^{2}$ \\
+    $^{1}$Symbiotic GmbH, $^{2}$Advanced Micro Devices, Inc. \\
+    {\tt clifford@symbioticeda.com}, {\tt rmccrary@amd.com} \\
+    \today
+}
+\date{}
+\maketitle
+
+Contributors to all versions of the spec in
+alphabetical order (please contact editors to suggest
+corrections):
+%
+Steven Braeger,
+Rex McCrary,
+Po-wei Huang,
+and Clifford Wolf.
+
+This document is released under a Creative Commons Attribution 4.0
+International License.
+
+\markboth{RISC-V XBitmap Extension V\specrev}
+{RISC-V XBitmap Extension V\specrev}
+\thispagestyle{empty}
+
+\frontmatter
+
+\tableofcontents
+
+\mainmatter
+
+\input{intro}
+\input{bext}
+
+\chapter{Change History}\label{change-history}
+
+\begin{longtable}[c]{@{}lll@{}}
+\caption{Summary of Changes}\tabularnewline
+\toprule
+Date & Rev & Changes\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Date & Rev & Changes\tabularnewline
+\midrule
+\endhead
+2017-07-17 & 0.10 & Initial Draft\tabularnewline
+2017-11-02 & 0.11 & Removed roli, assembler can convert it to use a rori\tabularnewline
+           &      & Removed bitwise subset and replaced with \texttt{andc}\tabularnewline
+           &      & Doc source text same base for study and spec.\tabularnewline
+           &      & Fixed typos\tabularnewline
+2017-11-30 & 0.32 & Jump rev number to be on par with associated Study\tabularnewline
+           &      & Moved pdep/pext into spec draft and called it scattergaher\tabularnewline
+2018-04-07 & 0.33 & Move to github, throw out study, convert from .md to .tex\tabularnewline
+           &      & Fixed typos and fixed some reference C implementations\tabularnewline
+           &      & Rename bgat/bsca to bext/bdep\tabularnewline
+           &      & Remove post-add immediate from clz\tabularnewline
+           &      & Clean up encoding tables and code sections\tabularnewline
+\bottomrule
+\end{longtable}
+
+% \bibliographystyle{plain}
+% \bibliography{riscv-spec}
+
+\end{document}

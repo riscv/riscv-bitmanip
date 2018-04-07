@@ -1,5 +1,3 @@
-
-
 \vspace{-0.2in}
 \begin{center}
 \begin{tabular}{S@{}R@{}R@{}S@{}R@{}O}
@@ -19,33 +17,9 @@
 \multicolumn{1}{c|}{opcode} \\
 \hline
 7 & 5 & 5 & 3 & 5 & 7 \\
-0000000 & src2 & src1 & SLL/SRL     & dest & SCA/GAT    \\
-0000000 & src2 & src1 & ADDW        & dest & SCA/GAT-32    \\
-\end{tabular}
-\end{center}
-
-\vspace{-0.2in}
-\begin{center}
-\begin{tabular}{S@{}R@{}R@{}S@{}R@{}O}
-\\
-\instbitrange{31}{25} &
-\instbitrange{24}{20} &
-\instbitrange{19}{15} &
-\instbitrange{14}{12} &
-\instbitrange{11}{7} &
-\instbitrange{6}{0} \\
-\hline
-\multicolumn{1}{|c|}{funct7} &
-\multicolumn{1}{c|}{rs2} &
-\multicolumn{1}{c|}{rs1} &
-\multicolumn{1}{c|}{funct3} &
-\multicolumn{1}{c|}{rd} &
-\multicolumn{1}{c|}{opcode} \\
-\hline
-7 & 5 & 5 & 3 & 5 & 7 \\
-0000000 & src2 & src1 & BSC    & dest & OP       \\
-0100000 & src2 & src1 & BGA    & dest & OP       \\
-0000000 & src2 & src1 & BSCA   & dest & OP-32    \\
-0100000 & src2 & src1 & BGAT   & dest & OP-32    \\
+??????? & src2 & src1 & BEXT   & dest & OP       \\
+??????? & src2 & src1 & BDEP   & dest & OP       \\
+??????? & src2 & src1 & BEXTW  & dest & OP-32    \\
+??????? & src2 & src1 & BDEPW  & dest & OP-32    \\
 \end{tabular}
 \end{center}
