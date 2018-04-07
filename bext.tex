@@ -333,29 +333,29 @@ operations, except the shift shifts in ones values.
 
 \begin{verbatim}
 // Implementation of `slo(i)` in C
-uint_xlen_t sloi(uint_xlen_t rs1,int12_t immed)
-{
-    int12_t amount=(immed & (XLEN-1));
-    uint_xlen_t mask=((1 << amount)-1);
-    return (rs1 << amount) | mask;
-}
 uint_xlen_t slo(uint_xlen_t rs1,uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     uint_xlen_t mask=((1 << amount)-1);
     return (rs1 << amount) | mask;
 }
-
-// Implementation of `sro(i)` in C
-uint_xlen_t sroi(uint_xlen_t rs1,int12_t immed)
+uint_xlen_t sloi(uint_xlen_t rs1,int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
-    uint_xlen_t mask=~((1 << (XLEN-amount))-1);
-    return (rs1 >> amount) | mask;
+    uint_xlen_t mask=((1 << amount)-1);
+    return (rs1 << amount) | mask;
 }
+
+// Implementation of `sro(i)` in C
 uint_xlen_t sro(uint_xlen_t rs1,uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
+    uint_xlen_t mask=~((1 << (XLEN-amount))-1);
+    return (rs1 >> amount) | mask;
+}
+uint_xlen_t sroi(uint_xlen_t rs1,int12_t immed)
+{
+    int12_t amount=(immed & (XLEN-1));
     uint_xlen_t mask=~((1 << (XLEN-amount))-1);
     return (rs1 >> amount) | mask;
 }
@@ -445,23 +445,7 @@ register, in order. This is also called `circular shift'.
 \subsection{Functionality definition}
 
 \begin{verbatim}
-// Implementation of `rol(i)` in C
-uint_xlen_t roli(uint_xlen_t rs1,int12_t immed)
-{
-    int12_t amount=(immed & (XLEN-1));
-    return (rs1 << amount) | (rsl >> (XLEN-amount));
-}
-uint_xlen_t rol(uint_xlen_t rs1,uint_xlen_t rs2)
-{
-    int12_t amount=(rs2 & (XLEN-1));
-    return (rs1 << amount) | (rsl >> (XLEN-amount));
-}   
-
-uint_xlen_t roli(uint_xlen_t rs1,int12_t immed)
-{
-    int12_t amount=(immed & (XLEN-1));
-    return (rs1 << amount) | (rsl >> (XLEN-amount));
-}
+// Implementation of `rol` in C
 uint_xlen_t rol(uint_xlen_t rs1,uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
@@ -469,17 +453,16 @@ uint_xlen_t rol(uint_xlen_t rs1,uint_xlen_t rs2)
 }   
 
 // Implementation of `ror(i)` in C
-int_xlen_t rori(uint_xlen_t rs1,int12_t immed)
-{
-    int12_t amount=(immed & (XLEN-1));
-    return (rs1 >> amount) | (rs1 << (XLEN-amount));
-}
 uint_xlen_t ror(uint_xlen_t rs1,uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     return (rs1 >> amount) | (rsl << (XLEN-amount));
 }
-   
+int_xlen_t rori(uint_xlen_t rs1,int12_t immed)
+{
+    int12_t amount=(immed & (XLEN-1));
+    return (rs1 >> amount) | (rs1 << (XLEN-amount));
+}
 \end{verbatim}
 
 \subsection{Encoding}
