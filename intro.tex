@@ -1,0 +1,118 @@
+\chapter{Introduction}\label{introduction}
+
+\section{ISA Extension Proposal Scoring
+Criteria}\label{isa-extension-proposal-scoring-criteria}
+
+Any proposed changes to the ISA should be evaluated or scored according
+to the following criteria. Proposals which score higher according to the
+criteria should be considered as higher priority than proposals that
+score lower. Proposals that score consistently low should be rejected.
+Each of he five categories have equal weighting and each contribute up
+to 20 points toward an instructions total score from 0 to 100.
+
+\begin{itemize}
+\item
+  Architecture Consistency: Decisions must be consistent with RISC-V
+  philosophy. ISA changes should deviate as little as possible from
+  existing RISC-V standards (such as instruction encodings), and should
+  not re-implement features that are already found in the base
+  specification or other extensions.
+\item
+  Threshold Metric: The proposal should provide a \emph{significant}
+  savings in terms of clocks or instructions. As a heuristic, any
+  proposal should replace at least four instructions. An instruction
+  that only replaces three may be considered, but only if the frequency
+  of use is very high.
+\item
+  Data-Driven Value: Usage in real world applications, and corresponding
+  benchmarks showing a performance increase, will contribute to the
+  score of a proposal. A proposal will not be accepted on the merits of
+  its \emph{theoretical} value alone, unless it is used in the real
+  world.
+\item
+  Hardware Simplicity: Though instructions saved is the primary benefit,
+  proposals that dramatically increase the hardware complexity and area,
+  or are difficult to implement, should be penalized and given extra
+  scrutiny. The final proposals should only be made if a test
+  implementation can be produced.
+\item
+  Compiler Support: ISA changes that can be natively detected by the
+  compiler, or are already used as intrinsics, will score higher than
+  instructions which do not fit that criteria.
+\end{itemize}
+
+\section{B Extension Adoption
+Strategy}\label{b-extension-adoption-strategy}
+
+The overall goal of this extension is pervasive adoption by minimizing
+potential barriers and ensuring the instructions can mapped to the
+largest number of ops, either direct or pseudo, that are supported by
+the most popular processors and compilers. By adding generic
+instructions and taking advantage of the RISC-V base instruction that
+already operate on bits, the minimal set of instructions need to added
+while at the same time enabling a rich of operations.
+
+The instructions cover the four major categories of bit manipulation:
+Count, Extract, Insert, Swap. The set supports from RV32 through future
+RV1024 without new instruction formats. ``Clever'' obscure instructions
+are avoided in favor of more straight forward, fast, generic ones.
+Coordination with other emerging RISC-V ISA extensions groups is
+required to ensure our instruction sets are architecturally consistent.
+
+\section{Summary of Instructions}\label{summary-of-instructions}
+
+The following machine instruction are listed below, followed by a table
+that lists pseudo instructions.
+
+\begin{longtable}[c]{@{}ll@{}}
+\caption{Machine Instructions}\tabularnewline
+\toprule
+Instructions & Primary Applications\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Instructions & Primary Applications\tabularnewline
+\midrule
+\endhead
+clz(w,d) & Count Leading Zeros\tabularnewline
+pcnt & Population Count\tabularnewline
+grevi & Generalized Reverse\tabularnewline
+slo & Shift left Ones\tabularnewline
+sloi & Shift left Ones Immediate\tabularnewline
+sro & Shfit Right Ones\tabularnewline
+sroi & Shift Right Ones Immediate\tabularnewline
+andc & AND Complement\tabularnewline
+bsca & Bit Scatter\tabularnewline
+bgat & Bit Gather\tabularnewline
+rol & Rotate Left\tabularnewline
+ror & Rotate Right\tabularnewline
+rori & Rotate Right Immediate\tabularnewline
+\bottomrule
+\end{longtable}
+
+\section{Summary of Psuedo Ops}\label{summary-of-psuedo-ops}
+
+The following ops are supported by replacing with one or more machine
+operations. See instruction details for examples.
+
+\begin{longtable}[c]{@{}lll@{}}
+\caption{Psuedo Ops}\tabularnewline
+\toprule
+Instructions & Primary Applications & No. of Instr\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Instructions & Primary Applications & No. of Instr\tabularnewline
+\midrule
+\endhead
+flb, fls & Find Last Bit Set, Find Last Set: clz, sub & 2\tabularnewline
+ctz & Count Trailing Zeros: grevi, clz & 2\tabularnewline
+fbs, ffs & First Bit Set, Find First Set: grevi, clz & 2\tabularnewline
+roli{[}w,d{]} & Rotate Left Immediate: rori{[}w,d{]} with adjusted
+immedate value & 1\tabularnewline
+bfdep & Bit Field Deposit & 1\tabularnewline
+bfext & Bit Field Extract & 1\tabularnewline
+bdep & Bit Depsoit & 1\tabularnewline
+bext & Bit Extract & 1\tabularnewline
+\bottomrule
+\end{longtable}
