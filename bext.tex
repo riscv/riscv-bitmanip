@@ -11,22 +11,17 @@ intended to specify the desired functionality.
 This operation counts the number of 0 bits before the first 1 bit
 (counting from the most significant bit) in the source register. This is
 related to the ``integer logarithm''. It takes a single register as
-input and operates on the entire register.
-
-The 12 bit immediate is sign-extended to XLEN bits and added to the
-count. If the input is 0, the output is XLEN+immed. If the input is
-\textasciitilde{}0, the output is 0+immed.
+input and operates on the entire register. If the input is 0, the output is
+XLEN. If the input is \textasciitilde{}0, the output is 0.
 
 \begin{verbatim}
 // clz C implementation
-uint_xlen_t clz(uint_xlen_t rs1,int12_t immed)
+uint_xlen_t clz(uint_xlen_t rs1)
 {
-    unsigned int count;
-    for(count=0;count < XLEN;count++)
-    {
-        if((rs1 << count) & XLEN) break;
-    }
-    return count+sign_extend_xlen(immed);
+    for (int count = 0; count < XLEN; count++)
+        if ((rs1 << count) >> (XLEN-1))
+	    return count;
+    return XLEN;
 }
 \end{verbatim}
 
@@ -35,67 +30,16 @@ uint_xlen_t clz(uint_xlen_t rs1,int12_t immed)
 \input{bextclz.tex}
 
 \texttt{clz} is encoded as a standard I-type opcode, with a single
-source register and a 12-bit signed immediate. There is no
-\texttt{clzi}, because it only has one argument, so it would be
-redundant.
-
-Implementation Commentary
-
-This can be implemented in a very similar way to the logic for
-\texttt{addi}. In fact, it can be implemented in hardware as a prefix on
-the \texttt{rs1} operand to the \texttt{addi} implementation. Although
-this is not found in other instruction sets which do not have this
-second operand, the inclusion of the `immed' parameter which is added
-after the count is taken allows for efficient implementation of doing
-clz operations on sub-XLEN length data-types with no additional encoding
-complexity. For example, on RV64IB, we can implement a 32-bit
-\texttt{clz.w} as a single-instruction pseudo-instruction:
-
-\begin{verbatim}
-clz.w rOut,rIn:
-    clz rOut,rIn,-32
-\end{verbatim}
-
-Similarly, on RV32IB, counting the 64-bit clz can be implemented as a
-\texttt{mux} and two 32-bit clz with a positive offset.
-
-\begin{verbatim}
-//64-bit clz on RV32IB
-clz rHighCount,rSrcHigh,0
-clz rLowCount,rSrcLow,32
-mux rCountOut,rSrcHigh,rHighCount,rLowCount
-\end{verbatim}
-
-Finally, the common operation of `finding the index of the highest bit
-set' (also called \texttt{ilog2} or \texttt{bsr} or
-\texttt{find\ last\ set}) is normally computed as
-\texttt{XLEN-clz(rs1)}. The addition of the offset parameter doesn't
-cost anything in the encoding complexity and minimal cost for hardware
-complexity, but allows a 2 instruction pseudo-instruction for many of
-these operations where there would typically be 4.
-
-These patterns extend to RV128B+.
+source register and a 12-bit signed immediate.
 
 \subsection{Related Pseudo-instructions}
 
-\begin{verbatim}
-clz.w rOut,rIn,<immed>:
-    clz rOut,rIn,<immed-(XLEN-32)>
-clz.d rOut,rIn,<immed>:
-    clz rOut,rIn,<immed-(XLEN-64)>
+The common operation of `finding the index of the highest bit set' (also called
+\texttt{ilog2} or \texttt{bsr} or \texttt{find\ last\ set}) is computed as
+\texttt{XLEN-clz(rs1)}.
 
-ctz rOut,rIn:
-    brev rInReversed,rIn
-    clz rOut,rIn,0
-
-fls rOut,rIn:
-    clz rNegOut,rIn,<1-XLEN>
-    sub rOut,r0,rNegOut
-
-ilog2 rOut,rIn:
-    clz rNegOut,rIn,<-XLEN>
-    sub rOut,r0,rNegOut
-\end{verbatim}
+Counting trailing zeros is easily implemented by combining \texttt{clz} with
+the \texttt{grevi} instruction.
 
 \subsection{Criteria}
 
