@@ -1,0 +1,23 @@
+
+\vspace{-0.4in}
+\begin{center}
+\begin{tabular}{M@{}R@{}S@{}R@{}O}
+\\
+\instbitrange{31}{20} &
+\instbitrange{19}{15} &
+\instbitrange{14}{12} &
+\instbitrange{11}{7} &
+\instbitrange{6}{0} \\
+\hline
+\multicolumn{1}{|c|}{imm[11:0]} &
+\multicolumn{1}{c|}{rs1} &
+\multicolumn{1}{c|}{funct3} &
+\multicolumn{1}{c|}{rd} &
+\multicolumn{1}{c|}{opcode} \\
+\hline
+12 & 5 & 3 & 5 & 7 \\
+I-immediate[11:0] & src & CLZW  & dest & OP-IMM-32 \\
+I-immediate[11:0] & src & CLZ  & dest & OP-IMM \\
+\end{tabular}
+\end{center}
+
