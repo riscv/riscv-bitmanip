@@ -1,7 +1,6 @@
-\chapter{Introduction}\label{introduction}
+\chapter{Introduction}
 
-\section{ISA Extension Proposal Scoring
-Criteria}\label{isa-extension-proposal-scoring-criteria}
+\section{ISA Extension Proposal Scoring Criteria}
 
 Any proposed changes to the ISA should be evaluated or scored according
 to the following criteria. Proposals which score higher according to the
@@ -41,8 +40,7 @@ to 20 points toward an instructions total score from 0 to 100.
   instructions which do not fit that criteria.
 \end{itemize}
 
-\section{B Extension Adoption
-Strategy}\label{b-extension-adoption-strategy}
+\section{B Extension Adoption Strategy}
 
 The overall goal of this extension is pervasive adoption by minimizing
 potential barriers and ensuring the instructions can mapped to the
@@ -59,7 +57,7 @@ are avoided in favor of more straight forward, fast, generic ones.
 Coordination with other emerging RISC-V ISA extensions groups is
 required to ensure our instruction sets are architecturally consistent.
 
-\section{Summary of Instructions}\label{summary-of-instructions}
+\section{Summary of Instructions}
 
 The following machine instruction are listed below, followed by a table
 that lists pseudo instructions.
@@ -75,22 +73,22 @@ Instructions & Primary Applications\tabularnewline
 \midrule
 \endhead
 clz(w,d) & Count Leading Zeros\tabularnewline
-pcnt & Population Count\tabularnewline
-grevi & Generalized Reverse\tabularnewline
-slo & Shift left Ones\tabularnewline
-sloi & Shift left Ones Immediate\tabularnewline
-sro & Shfit Right Ones\tabularnewline
-sroi & Shift Right Ones Immediate\tabularnewline
-andc & AND Complement\tabularnewline
-bsca & Bit Scatter\tabularnewline
-bgat & Bit Gather\tabularnewline
-rol & Rotate Left\tabularnewline
-ror & Rotate Right\tabularnewline
-rori & Rotate Right Immediate\tabularnewline
+pcnt     & Population Count\tabularnewline
+grevi    & Generalized Reverse\tabularnewline
+slo      & Shift left Ones\tabularnewline
+sloi     & Shift left Ones Immediate\tabularnewline
+sro      & Shfit Right Ones\tabularnewline
+sroi     & Shift Right Ones Immediate\tabularnewline
+andc     & AND Complement\tabularnewline
+bext     & Bit Extract (Gather)\tabularnewline
+bdep     & Bit Depsoit (Scatter)\tabularnewline
+rol      & Rotate Left\tabularnewline
+ror      & Rotate Right\tabularnewline
+rori     & Rotate Right Immediate\tabularnewline
 \bottomrule
 \end{longtable}
 
-\section{Summary of Psuedo Ops}\label{summary-of-psuedo-ops}
+\section{Summary of Psuedo Ops}
 
 The following ops are supported by replacing with one or more machine
 operations. See instruction details for examples.
@@ -105,14 +103,11 @@ Instructions & Primary Applications & No. of Instr\tabularnewline
 Instructions & Primary Applications & No. of Instr\tabularnewline
 \midrule
 \endhead
-flb, fls & Find Last Bit Set, Find Last Set: clz, sub & 2\tabularnewline
-ctz & Count Trailing Zeros: grevi, clz & 2\tabularnewline
-fbs, ffs & First Bit Set, Find First Set: grevi, clz & 2\tabularnewline
-roli{[}w,d{]} & Rotate Left Immediate: rori{[}w,d{]} with adjusted
-immedate value & 1\tabularnewline
-bfdep & Bit Field Deposit & 1\tabularnewline
-bfext & Bit Field Extract & 1\tabularnewline
-bdep & Bit Depsoit & 1\tabularnewline
-bext & Bit Extract & 1\tabularnewline
+flb, fls      & Find Last Bit Set, Find Last Set: clz, sub                        & 2\tabularnewline
+ctz           & Count Trailing Zeros: grevi, clz                                  & 2\tabularnewline
+fbs, ffs      & First Bit Set, Find First Set: grevi, clz                         & 2\tabularnewline
+roli[w,d]     & Rotate Left Immediate: rori[w,d] with adjusted immedate value     & 1\tabularnewline
+bfdep         & Bit Field Deposit                                                 & 1\tabularnewline
+bfext         & Bit Field Extract                                                 & 1\tabularnewline
 \bottomrule
 \end{longtable}

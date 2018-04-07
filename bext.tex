@@ -4,8 +4,9 @@ In the proposals provided in this section, the C code examples are for
 illustration purposes. They are not optimal implementations, but are
 intended to specify the desired functionality.
 
-\section{\texorpdfstring{Count Leading Zeros
-(\texttt{clz})}{Count Leading Zeros (clz)}}\label{count-leading-zeros-clz}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Count Leading Zeros (\texttt{clz})}
 
 This operation counts the number of 0 bits before the first 1 bit
 (counting from the most significant bit) in the source register. This is
@@ -29,7 +30,7 @@ uint_xlen_t clz(uint_xlen_t rs1,int12_t immed)
 }
 \end{verbatim}
 
-\subsection{Encoding}\label{encoding}
+\subsection{Encoding}
 
 \input{bextclz.tex}
 
@@ -75,8 +76,7 @@ these operations where there would typically be 4.
 
 These patterns extend to RV128B+.
 
-\subsection{Related
-Pseudo-instructions:}\label{related-pseudo-instructions}
+\subsection{Related Pseudo-instructions}
 
 \begin{verbatim}
 clz.w rOut,rIn,<immed>:
@@ -97,12 +97,11 @@ ilog2 rOut,rIn:
     sub rOut,r0,rNegOut
 \end{verbatim}
 
-\subsection{Criteria}\label{criteria}
+\subsection{Criteria}
 
 The criteria evaluation is shown below:
 
 \begin{itemize}
-% \tightlist
 \item
   These operations all fit easily into the RISCV instruction encoding
   and philosophy.
@@ -129,26 +128,25 @@ to construct this without a lot of instructions. The algorithm above in
 C is a nearly asymptotically optimal implementation. It seems to pass
 the threshold criteria in this case.
 
-\paragraph{Benchmarks and
-Applications}\label{benchmarks-and-applications}
+\paragraph{Benchmarks and Applications}
 
 TBD
 
-\subsection{References}\label{references}
+\subsection{References}
 
 https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
 
 https://fgiesen.wordpress.com/2013/10/18/bit-scanning-equivalencies/
 
-\section{\texorpdfstring{Count Bits Set
-(\texttt{pcnt})}{Count Bits Set (pcnt)}}\label{count-bits-set-pcnt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Count Bits Set (\texttt{pcnt})}
 
 The purpose of this instruction is to compute the number of 1 bits in a
 register. It takes a single register as input and operates on the entire
 register.
 
-\subsection{Functionality
-definition.}\label{functionality-definition.}
+\subsection{Functionality definition}
 
 This operation counts the total number of set bits in the register.
 
@@ -165,7 +163,7 @@ uint_xlen_t pcnt(uint_xlen_t rs1)
 }
 \end{verbatim}
 
-\subsection{Encoding}\label{encoding-1}
+\subsection{Encoding}
 
 \input{bextpcnt.tex}
 
@@ -177,8 +175,7 @@ Implementation Commentary
 
 \texttt{pcnt} can be implemented in parallel, similarly to an adder.
 
-\subsection{Related
-Pseudo-Instructions:}\label{related-pseudo-instructions-1}
+\subsection{Related Pseudo-Instructions}
 
 \begin{verbatim}
 //odd parity
@@ -187,29 +184,28 @@ parity rOut,rIn:
     andi rOut,rPopulation,0x1
 \end{verbatim}
 
-\subsection{\texorpdfstring{Extensions: \texttt{pcnt.w}
-(R64I+),\texttt{pcnt.d}
-(R128I+)}{Extensions: pcnt.w (R64I+),pcnt.d (R128I+)}}\label{extensions-pcnt.w-r64ipcnt.d-r128i}
+\subsection{Extensions: \texttt{pcnt.w} (R64I+),\texttt{pcnt.d} (R128I+)}
 
 On RV64B+, the appropriate versions of pcnt that operate on sub-portions
 of the register are defined. On these platforms, the input source is set
 to zero for the high portions of the register. See \texttt{addi.w} and
 \texttt{addi.d} in the R64I/R128I specifications.
 
-\subsection{Justification}\label{justification}
+\subsection{Justification}
 
 This operation is one of the `core' bitwise instructions that is nearly
 universal on other ISAs. It is supported as an intrinsic on GCC, LLVM,
 and MSVC, and is supported in hardware on a plethora of platforms.
 
-\subsection{References}\label{references-1}
+\subsection{References}
 
 https://en.wikipedia.org/wiki/Hamming\_weight
 
 https://graphics.stanford.edu/\textasciitilde{}seander/bithacks.html
 
-\section{\texorpdfstring{Generalized Reverse
-(\texttt{grevi})}{Generalized Reverse (grevi)}}\label{generalized-reverse-grevi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Generalized Reverse (\texttt{grevi})}
 
 The purpose of this instruction is to provide a single hardware
 instruction that can implement all of byte-order swap, bitwise reversal,
@@ -219,8 +215,7 @@ takes in a single register value and an immediate that controls which
 function occurs, through controlling the levels in the recursive tree at
 which reversals occur.
 
-\subsection{Functionality
-definition.}\label{functionality-definition.-1}
+\subsection{Functionality definition}
 
 This operation iteratively checks each bit immed\_i from i=0 to XLEN-1,
 in XLEN stages, and if the corresponding bit of the `function\_select'
@@ -259,7 +254,7 @@ uint64_t grevi64(uint32_t rs1,int12_t immed)
 The above pattern should be intuitive to understand in order to extend
 this definition in an obvious manner for RV128+.
 
-\subsection{Encoding}\label{encoding-2}
+\subsection{Encoding}
 
 \input{bextgrev.tex}
 
@@ -280,8 +275,7 @@ select wires and the k bits should be used to AND out the computation at
 each stage. It uses log2(XLEN) stages of parallel circuitry (e.g., a
 ``butterfly circuit'').
 
-\subsection{Related
-Pseudo-Instructions}\label{related-pseudo-instructions-2}
+\subsection{Related Pseudo-Instructions}
 
 Related Pseudoinstruction List
 
@@ -354,7 +348,7 @@ nswap.b rOut,rIn:
 //Etc.  A total of XLEN different possible operations can be constructed.
 \end{verbatim}
 
-\subsection{Justification}\label{justification-1}
+\subsection{Justification}
 
 Quoted from page 102 of Hacker's Delight:
 
@@ -374,7 +368,7 @@ This strongly suggests that this generic instruction could allow us to
 use a great deal of other bitwise operations as pseudo-instructions.
 \end{quote}
 
-\subsection{References}\label{references-2}
+\subsection{References}
 
 Hackers Delight, Chapter 7.1, ``Generalized Bit Reversal'' in
 
@@ -382,15 +376,15 @@ https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onep
 
 http://hackersdelight.org/
 
-\section{\texorpdfstring{Shift Ones (Left/Right)
-(\texttt{slo,\ sloi,\ sro,\ sroi})}{Shift Ones (Left/Right) (slo, sloi, sro, sroi)}}\label{shift-ones-leftright-slo-sloi-sro-sroi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
 
 These instructions are similar to shift-logical operations from the base
 spec, except instead of shifting in zeros, it shifts in ones. This can
 be used in mask creation or bit-field insertions, for example.
 
-\subsection{Functionality
-definition.}\label{functionality-definition.-2}
+\subsection{Functionality definition}
 
 These instructions are exactly the same as the equivalent logical shift
 operations, except the shift shifts in ones values.
@@ -425,7 +419,7 @@ uint_xlen_t sro(uint_xlen_t rs1,uint_xlen_t rs2)
 }
 \end{verbatim}
 
-\subsection{Encoding:}\label{encoding-3}
+\subsection{Encoding}
 
 \input{bextsxo.tex}
 
@@ -446,9 +440,7 @@ a 1-bit register value that has been forwarded from the high bit of the
 instruction decode. This creates the desired behavior on both logical
 zero-shifts and logical ones-shifts.
 
-\subsection{\texorpdfstring{Extensions: \texttt{s(l/r)o(i).w}
-(R64I+),\texttt{s(l/r)o(i).d}
-(R128I+)}{Extensions: s(l/r)o(i).w (R64I+),s(l/r)o(i).d (R128I+)}}\label{extensions-slroi.w-r64islroi.d-r128i}
+\subsection{Extensions: \texttt{s(l/r)o(i).w} (R64I+),\texttt{s(l/r)o(i).d} (R128I+)}
 
 On RV64B+, the appropriate versions of shift-ones that operate on
 sub-portions of the register are defined. On these platforms, the input
@@ -458,8 +450,7 @@ shift only occurs on the lower portions of the register. See
 See \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I
 specifications.
 
-\subsection{Related
-Pseudo-Instructions:}\label{related-pseudo-instructions-3}
+\subsection{Related Pseudo-Instructions}
 
 \begin{verbatim}
 // builds a mask in the low-order bits up to a certain point
@@ -494,23 +485,22 @@ bfcleari rOut,rCurrent,iWidth,iOffset:
     andc rOut,rCurrent,rMask
 \end{verbatim}
 
-\subsection{Justification}\label{justification-2}
+\subsection{Justification}
 
 This instruction can be used to create masks, which is an incredibly
 common operation for modifying the bitfield structures.
 
-\subsection{References}\label{references-3}
+\subsection{References}
 
-\section{\texorpdfstring{Rotate (Left/Right) (\texttt{rol},
-\texttt{ror},
-\texttt{rori})}{Rotate (Left/Right) (rol, ror, rori)}}\label{rotate-leftright-rol-ror-rori}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Rotate (Left/Right) (\texttt{rol}, \texttt{ror}, \texttt{rori})}
 
 These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
 register, in order. This is also called `circular shift'.
 
-\subsection{Functionality
-definition.}\label{functionality-definition.-3}
+\subsection{Functionality definition}
 
 \begin{verbatim}
 // Implementation of `rol(i)` in C
@@ -550,7 +540,7 @@ uint_xlen_t ror(uint_xlen_t rs1,uint_xlen_t rs2)
    
 \end{verbatim}
 
-\subsection{Encoding:}\label{encoding-4}
+\subsection{Encoding}
 
 \input{bextrox.tex}
 
@@ -581,9 +571,7 @@ Bit 31 & Bit 30 & Meaning\tabularnewline
 
 Implementation Commentary
 
-\subsection{\texorpdfstring{Extensions: \texttt{ro(r/l)(i).w}
-(R64I+),\texttt{ro(r/l)(i).d}
-(R128I+)}{Extensions: ro(r/l)(i).w (R64I+),ro(r/l)(i).d (R128I+)}}\label{extensions-rorli.w-r64irorli.d-r128i}
+\subsection{Extensions: \texttt{ro(r/l)(i).w} (R64I+),\texttt{ro(r/l)(i).d} (R128I+)}
 
 On RV64B+, the appropriate versions of rotate that operate on
 sub-portions of the register are defined. On these platforms, the input
@@ -591,15 +579,16 @@ source is set to zero for the high portions of the register, and the
 shift only occurs on the lower portions of the register. See
 \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
 
-\subsection{Justification}\label{justification-3}
+\subsection{Justification}
 
 This instruction is very useful for cryptography, hashing, and other
 operations.
 
-\subsection{References}\label{references-4}
+\subsection{References}
 
-\section{\texorpdfstring{And-with-complement
-(\texttt{andc})}{And-with-complement (andc)}}\label{and-with-complement-andc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{And-with-complement (\texttt{andc})}
 
 \input{bextandc.tex}
 
@@ -612,8 +601,7 @@ implemented with the same ALU area (e.g.~as a single microcode
 instruction) using a scheme described in the implementation commentary,
 and fused versions can be implemented as well.
 
-\subsection{Functionality
-definition.}\label{functionality-definition.-4}
+\subsection{Functionality definition}
 
 \begin{verbatim}
 // Implementation of `andc` in C
@@ -626,8 +614,7 @@ uint_xlen_t andc(uint_xlen_t rs1,uint_xlen_t rs2)
 This instruction should be encoded similarly to the instruction in the
 base spec. The exact instruction encoding is to be decided, however.
 
-\subsection{Related
-Pseudo-Instructions:}\label{related-pseudo-instructions-4}
+\subsection{Related Pseudo-Instructions}
 
 \begin{verbatim}
 //this selects the corresponding bit from the two arguments A and B, based on whether or not Control is high.
@@ -647,60 +634,77 @@ mux rOut,rControl,rA,rB:
     or rOut,rTmp,rTmp2
 \end{verbatim}
 
-\subsection{Justification}\label{justification-4}
+\subsection{Justification}
 
-Can be very useful for compresssion/depcompression algorithms.
+http://svn.clifford.at/handicraft/2017/bitcode/
 
-\subsection{References}\label{references-5}
+\subsection{References}
 
 http://www.hackersdelight.org/basics2.pdf
 
-\section{\texorpdfstring{Bit Scatter/Gather (\texttt{bsc},
-\texttt{bga})}{Bit Scatter/Gather (bsc, bga)}}\label{bit-scattergather-bsc-bga}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This is an R-type instruction that implements the generic bit scatter
-and bit gather functions. Similar implementation can be referred to as
-scatter/gather or unpack/pack.
+\section{Bit Extract/Deposit (\texttt{bext}, \texttt{bdep})}
 
-\begin{verbatim}
-BGA[W] rd,rs1,rs2       Bit Gather      Collect LSB justified bits to rd from 
-                                        rs1 using extract mask in rs2 
-BSC[W] rd,rs1,rs2       Bit Scatter     Write LSB justified bits from rs1 to 
-                                        rd using deposit mask in rs2 
-\end{verbatim}
-
-\subsection{Functionality
-definition.}\label{functionality-definition.-5}
+This is an R-type instruction that implements the generic bit erxtract
+and bit deposit functions. Similar implementation can be referred to as
+gather/scatter or pack/unpack.
 
 \begin{verbatim}
-// Implementation of `bsci` in C
-uint_xlen_t andc(uint_xlen_t rs1,uint_xlen_t rs2)
+BEXT[W] rd,rs1,rs2      Bit Extract     Collect LSB justified bits to rd from
+                                        rs1 using extract mask in rs2
+BDEP[W] rd,rs1,rs2      Bit Deposit     Write LSB justified bits from rs1 to
+                                        rd using deposit mask in rs2
+\end{verbatim}
+
+\subsection{Functionality definition}
+
+\begin{verbatim}
+// Implementation of `bext` in C
+uint_xlen_t bext(uint_xlen_t v, uint_xlen_t mask)
 {
-    return rs1 & ~rs2;
+    uint32_t c = 0, m = 1;
+    while (mask) {
+        uint_xlen_t b = mask & -mask;
+        if (v & b)
+            c |= m;
+        mask -= b;
+        m <<= 1;
+    }
+    return c;
 }
 
-// Implementation of `bgai` in C
-uint_xlen_t andc(uint_xlen_t rs1,uint_xlen_t rs2)
+// Implementation of `bdep` in C
+uint_xlen_t bdep32(uint_xlen_t v, uint_xlen_t mask)
 {
-    return rs1 & ~rs2;
+    uint_xlen_t c = 0, m = 1;
+    while (mask) {
+        uint_xlen_t b = mask & -mask;
+        if (v & m)
+            c |= b;
+        mask -= b;
+        m <<= 1;
+    }
+    return c;
 }
 \end{verbatim}
 
-\subsection{Encoding:}\label{encoding-5}
+\subsection{Encoding}
 
 \input{bextscagat.tex}
 
 This instruction should be encoded similarly to the instruction in the
 base spec. The exact instruction encoding is to be decided, however.
 
-\subsection{Related
-Pseudo-Instructions:}\label{related-pseudo-instructions-5}
+\subsection{Related Pseudo-Instructions}
 
 TBD
 
-\subsection{Justification}\label{justification-5}
+\subsection{Justification}
 
-\subsection{References}\label{references-6}
+http://svn.clifford.at/handicraft/2017/permsyn/
+
+\subsection{References}
 
 http://programming.sirrida.de/bit\_perm.html\#gather\_scatter
 
@@ -709,3 +713,5 @@ Hackers Delight, Chapter 7.1, ``Compress, Generalized Extract'' in
 https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
 
 http://hackersdelight.org/
+
+https://github.com/cliffordwolf/bextdep
