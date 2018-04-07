@@ -128,7 +128,7 @@ parity rOut,rIn:
     andi rOut,rPopulation,0x1
 \end{verbatim}
 
-\subsection{Extensions: \texttt{pcnt.w} (R64I+),\texttt{pcnt.d} (R128I+)}
+\subsection{Extensions: \texttt{pcnt.w} (R64I+), \texttt{pcnt.d} (R128I+)}
 
 On RV64B+, the appropriate versions of pcnt that operate on sub-portions
 of the register are defined. On these platforms, the input source is set
@@ -335,13 +335,13 @@ operations, except the shift shifts in ones values.
 
 \begin{verbatim}
 // Implementation of `slo(i)` in C
-uint_xlen_t slo(uint_xlen_t rs1,uint_xlen_t rs2)
+uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     uint_xlen_t mask=((1 << amount)-1);
     return (rs1 << amount) | mask;
 }
-uint_xlen_t sloi(uint_xlen_t rs1,int12_t immed)
+uint_xlen_t sloi(uint_xlen_t rs1, int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
     uint_xlen_t mask=((1 << amount)-1);
@@ -349,13 +349,13 @@ uint_xlen_t sloi(uint_xlen_t rs1,int12_t immed)
 }
 
 // Implementation of `sro(i)` in C
-uint_xlen_t sro(uint_xlen_t rs1,uint_xlen_t rs2)
+uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     uint_xlen_t mask=~((1 << (XLEN-amount))-1);
     return (rs1 >> amount) | mask;
 }
-uint_xlen_t sroi(uint_xlen_t rs1,int12_t immed)
+uint_xlen_t sroi(uint_xlen_t rs1, int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
     uint_xlen_t mask=~((1 << (XLEN-amount))-1);
@@ -384,7 +384,7 @@ a 1-bit register value that has been forwarded from the high bit of the
 instruction decode. This creates the desired behavior on both logical
 zero-shifts and logical ones-shifts.
 
-\subsection{Extensions: \texttt{s(l/r)o(i).w} (R64I+),\texttt{s(l/r)o(i).d} (R128I+)}
+\subsection{Extensions: \texttt{s(l/r)o(i).w} (R64I+), \texttt{s(l/r)o(i).d} (R128I+)}
 
 On RV64B+, the appropriate versions of shift-ones that operate on
 sub-portions of the register are defined. On these platforms, the input
@@ -448,19 +448,19 @@ register, in order. This is also called `circular shift'.
 
 \begin{verbatim}
 // Implementation of `rol` in C
-uint_xlen_t rol(uint_xlen_t rs1,uint_xlen_t rs2)
+uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     return (rs1 << amount) | (rsl >> (XLEN-amount));
-}   
+}
 
 // Implementation of `ror(i)` in C
-uint_xlen_t ror(uint_xlen_t rs1,uint_xlen_t rs2)
+uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     return (rs1 >> amount) | (rsl << (XLEN-amount));
 }
-int_xlen_t rori(uint_xlen_t rs1,int12_t immed)
+int_xlen_t rori(uint_xlen_t rs1, int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
     return (rs1 >> amount) | (rs1 << (XLEN-amount));
@@ -532,7 +532,7 @@ and fused versions can be implemented as well.
 
 \begin{verbatim}
 // Implementation of `andc` in C
-uint_xlen_t andc(uint_xlen_t rs1,uint_xlen_t rs2)
+uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     return rs1 & ~rs2;
 }
@@ -544,16 +544,17 @@ base spec. The exact instruction encoding is to be decided, however.
 \subsection{Related Pseudo-Instructions}
 
 \begin{verbatim}
-// this selects the corresponding bit from the two arguments A and B, based on whether or not Control is high.
-// out[i] = Control[i] ? A[i] : B[i],
-// A & C | B & ~C
+// this selects the corresponding bit from the two arguments A and B, based on
+// whether or not Control is high.
+// out[i] = Control[i] ? A[i] : B[i]
 mix rOut,rControl,rA,rB:
     and rTmp,rA,rControl
     andc rTmp2,rB,rControl
     or rOut,rTmp,rTmp2
 
 // same as MIX but only use if the first bit of C is true (as in from a comparator)
-// C can only be zero or 1, so you need a SGT to implement nonzero comparator so its 5 instructions
+// C can only be zero or 1, so if you need a SGT to implement nonzero comparator
+// its 5 instructions in total.
 mux rOut,rControl,rA,rB:
     neg rC2,rControl
     and rTmp,rA,rC2
@@ -577,12 +578,11 @@ This is an R-type instruction that implements the generic bit erxtract
 and bit deposit functions. Similar implementation can be referred to as
 gather/scatter or pack/unpack.
 
-\begin{verbatim}
-BEXT[W] rd,rs1,rs2      Bit Extract     Collect LSB justified bits to rd from
-                                        rs1 using extract mask in rs2
-BDEP[W] rd,rs1,rs2      Bit Deposit     Write LSB justified bits from rs1 to
-                                        rd using deposit mask in rs2
-\end{verbatim}
+\texttt{BEXT[W] rd,rs1,rs2} collects LSB justified bits to rd from
+rs1 using extract mask in rs2.
+
+\texttt{BDEP[W] rd,rs1,rs2} writes LSB justified bits from rs1 to rd using
+deposit mask in rs2.
 
 \subsection{Functionality definition}
 
