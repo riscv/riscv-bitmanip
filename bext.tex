@@ -98,11 +98,9 @@ This operation counts the total number of set bits in the register.
 // popcount C implementation
 uint_xlen_t pcnt(uint_xlen_t rs1)
 {
-    unsigned int count=0;
-    for(unsigned int index=0;index < XLEN;index++)
-    {
-        count+=(rs1 >> index) & 0x1;
-    }
+    int count = 0;
+    for(int index=0; index < XLEN; index++)
+        count += (rs1 >> index) & 1;
     return count;
 }
 \end{verbatim}
@@ -171,8 +169,8 @@ immediate is true for the current stage, swaps each adjacent pair of
 \begin{verbatim}
 uint32_t grevi32(uint32_t rs1,int12_t immed)
 {
-    uint32_t x=rs1;
-    uint5_t k=(uint12_t)immed;
+    uint32_t x = rs1;
+    uint5_t k = (uint12_t)immed;
     if(k &  1) x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1);
     if(k &  2) x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2);
     if(k &  4) x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4);
@@ -183,8 +181,8 @@ uint32_t grevi32(uint32_t rs1,int12_t immed)
 
 uint64_t grevi64(uint32_t rs1,int12_t immed)
 {
-    uint64_t x=rs1;
-    uint6_t k=(uint12_t)immed;
+    uint64_t x = rs1;
+    uint6_t k = (uint12_t)immed;
     if(k &  1) x = ((x & 0x5555555555555555) << 1) | ((x & 0xAAAAAAAAAAAAAAAA) >> 1);
     if(k &  2) x = ((x & 0x3333333333333333) << 2) | ((x & 0xCCCCCCCCCCCCCCCC) >> 2);
     if(k &  4) x = ((x & 0x0F0F0F0F0F0F0F0F) << 4) | ((x & 0xF0F0F0F0F0F0F0F0) >> 4);
@@ -224,72 +222,72 @@ each stage. It uses log2(XLEN) stages of parallel circuitry (e.g., a
 Related Pseudoinstruction List
 
 \begin{verbatim}
-//reverse the bits in a register (this works on all platforms)
+// reverse the bits in a register (this works on all platforms)
 rev rOut,rIn:
     grevi rOut,rIn,-1
 
-//reverse the bits in each byte, but leave the bytes in the same order.
+// reverse the bits in each byte, but leave the bytes in the same order.
 rev.b rOut,rIn:
     grevi rOut,rIn,7
 
-//reverse the bits in each halfword, but leave the halfwords in the same order
+// reverse the bits in each halfword, but leave the halfwords in the same order
 rev.h rOut,rIn:
     grevi rOut,rIn,15
 
-//reverse the bits in each word, but leave the words in the same order (e.g. RV64IB+)
+// reverse the bits in each word, but leave the words in the same order (e.g. RV64IB+)
 rev.w rOut,rIn:
     grevi rOut,rIn,31
 
-//reverse the bits in each dword, but leave the dwords in the same order (e.g. RV128IB+)
+// reverse the bits in each dword, but leave the dwords in the same order (e.g. RV128IB+)
 rev.d rOut,rIn:
     grevi rOut,rIn,63
 
-//reverse the byte order of an entire register
+// reverse the byte order of an entire register
 bswap rOut,rIn:
     grevi rOut,rIn,-8
 
-//reverse the byte order of each halfword in the register, but leave them in the same
-//order (e.g, on RV32IB, this reverses the byte order of the high and lo halfwords)
+// reverse the byte order of each halfword in the register, but leave them in the same
+// order (e.g, on RV32IB, this reverses the byte order of the high and lo halfwords)
 bswap.h rOut,rIn:
     grevi rOut,rIn,8
 
-//reverse the byte order each word in the register (e.g, on RV64IB/RV128IB, this reverses
-//the byte order of each of the 2/4 words)
+// reverse the byte order each word in the register (e.g, on RV64IB/RV128IB, this
+// reverses the byte order of each of the 2/4 words)
 bswap.w rOut,rIn:
     grevi rOut,rIn,24
 
-//reverse the byte order of each dword in the register (e.g, on RV128IB, reverse the byte
-//order of the high and lo words)
+// reverse the byte order of each dword in the register (e.g, on RV128IB, reverse the
+// byte order of the high and lo words)
 bswap.d rOut,rIn:
     grevi rOut,rIn,56
 
-//reverse the halfword order of an entire register
+// reverse the halfword order of an entire register
 hswap rOut,rIn:
     grevi rOut,rIn,-16
 
-//reverse the halfword order of each word in the register
+// reverse the halfword order of each word in the register
 hswap.w rOut,rIn:
     grevi rOut,rIn,16
 
-//reverse the halfword order of each dword in the register (e.g. RV128IB+, there are 2
-//dwords)
+// reverse the halfword order of each dword in the register (e.g. RV128IB+, there are 2
+// dwords)
 hswap.d rOut,rIn:
     grevi rOut,rIn,48
 
-//reverse the word order of an entire register (only meaningful on RV64IB+)
+// reverse the word order of an entire register (only meaningful on RV64IB+)
 wswap rOut,rIn:
     grevi rOut,rIn,-32
 
-//reverse the word order of each dword in the register (e.g. RV128IB+, there are 2 dwords)
+// reverse the word order of each dword in the register (e.g. RV128IB+, there are 2 dwords)
 wswap.d rOut,rIn:
     grevi rOut,rIn,32
 
-//swap the nibbles of each byte in the whole register (useful for converting to/from
-//bigendian hex)
+// swap the nibbles of each byte in the whole register (useful for converting to/from
+// bigendian hex)
 nswap.b rOut,rIn:
     grevi rOut,rIn,4
 
-//Etc.  A total of XLEN different possible operations can be constructed.
+// Etc.  A total of XLEN different possible operations can be constructed.
 \end{verbatim}
 
 \subsection{Justification}
@@ -398,15 +396,15 @@ specifications.
 
 \begin{verbatim}
 // builds a mask in the low-order bits up to a certain point
-maski   rOut,iWidth:
+maski rOut,iWidth:
     sloi rOut,r0,iWidth
 
 // builds a mask in the low-order bits up to a certain point
-mask    rOut,rIn:
+mask rOut,rIn:
     slo rOut,r0,rIn
 
 // extracts a bitfield of length width from offset and moves it down to the bottom
-bfextracti  rOut,rIn,iWidth,iOffset:
+bfextracti rOut,rIn,iWidth,iOffset:
     slli rTop,rIn,XLEN-iWidth-iOffset
     srli rOut,rTop,XLEN-iWidth
 
@@ -561,15 +559,15 @@ base spec. The exact instruction encoding is to be decided, however.
 \subsection{Related Pseudo-Instructions}
 
 \begin{verbatim}
-//this selects the corresponding bit from the two arguments A and B, based on whether or not Control is high.
-//out[i]=Control[i] ? A[i] : B[i],
-//A & C | B & ~C
+// this selects the corresponding bit from the two arguments A and B, based on whether or not Control is high.
+// out[i] = Control[i] ? A[i] : B[i],
+// A & C | B & ~C
 mix rOut,rControl,rA,rB:
     and rTmp,rA,rControl
     andc rTmp2,rB,rControl
     or rOut,rTmp,rTmp2
 
-//same as MIX but only use if the first bit of C is true (as in from a comparator)
+// same as MIX but only use if the first bit of C is true (as in from a comparator)
 // C can only be zero or 1, so you need a SGT to implement nonzero comparator so its 5 instructions
 mux rOut,rControl,rA,rB:
     neg rC2,rControl
