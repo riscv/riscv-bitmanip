@@ -50,12 +50,31 @@ instructions and taking advantage of the RISC-V base instruction that
 already operate on bits, the minimal set of instructions need to added
 while at the same time enabling a rich of operations.
 
-The instructions cover the four major categories of bit manipulation:
-Count, Extract, Insert, Swap. The set supports from RV32 through future
-RV1024 without new instruction formats. ``Clever'' obscure instructions
-are avoided in favor of more straight forward, fast, generic ones.
-Coordination with other emerging RISC-V ISA extensions groups is
-required to ensure our instruction sets are architecturally consistent.
+The instructions cover the four major categories of bit manipulation: Count,
+Extract, Insert, Swap. The spec supports RV32, RV64, and RV128 without new
+instruction formats. ``Clever'' obscure and/or overly specific instructions are
+avoided in favor of more straight forward, fast, generic ones.  Coordination
+with other emerging RISC-V ISA extensions groups is required to ensure our
+instruction sets are architecturally consistent.
+
+\subsection{Next steps}
+
+\begin{itemize}
+\item
+  Allocate instruction opcodes for the instructions so we can build
+  experimental cores implementing the extension and compilers and other
+  software tools for generating RISC-V program utilizing the instruction.
+  For now it would be sufficient to allocate those opcodes in one of the
+  major opcodes reserved for cutsom extensions.
+\item
+  Add support for this extension to processor cores and compilers
+  so we can run quantitative evaluations on the instructions.
+\item
+  Create assembler snippets for common operations that do not map 1:1
+  to any instruction in this spec, but can be implemented easily using
+  clever combinations of the instructions. Add support for those snippets
+  to compilers.
+\end{itemize}
 
 \section{Summary of Instructions}
 
@@ -72,19 +91,19 @@ Instructions & Primary Applications\tabularnewline
 Instructions & Primary Applications\tabularnewline
 \midrule
 \endhead
-clz(w,d) & Count Leading Zeros\tabularnewline
+clz      & Count Leading Zeros\tabularnewline
 pcnt     & Population Count\tabularnewline
 grevi    & Generalized Reverse\tabularnewline
 slo      & Shift left Ones\tabularnewline
 sloi     & Shift left Ones Immediate\tabularnewline
 sro      & Shfit Right Ones\tabularnewline
 sroi     & Shift Right Ones Immediate\tabularnewline
-andc     & AND Complement\tabularnewline
-bext     & Bit Extract (Gather)\tabularnewline
-bdep     & Bit Depsoit (Scatter)\tabularnewline
 rol      & Rotate Left\tabularnewline
 ror      & Rotate Right\tabularnewline
 rori     & Rotate Right Immediate\tabularnewline
+andc     & AND Complement\tabularnewline
+bext     & Bit Extract (Gather)\tabularnewline
+bdep     & Bit Depsoit (Scatter)\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -103,11 +122,11 @@ Instructions & Primary Applications & No. of Instr\tabularnewline
 Instructions & Primary Applications & No. of Instr\tabularnewline
 \midrule
 \endhead
-flb, fls      & Find Last Bit Set, Find Last Set: clz, sub                        & 2\tabularnewline
-ctz           & Count Trailing Zeros: grevi, clz                                  & 2\tabularnewline
-fbs, ffs      & First Bit Set, Find First Set: grevi, clz                         & 2\tabularnewline
-roli[w,d]     & Rotate Left Immediate: rori[w,d] with adjusted immedate value     & 1\tabularnewline
-bfdep         & Bit Field Deposit                                                 & 1\tabularnewline
-bfext         & Bit Field Extract                                                 & 1\tabularnewline
+flb, fls & Find Last Bit Set, Find Last Set: clz, sub                        & 2\tabularnewline
+ctz      & Count Trailing Zeros: grevi, clz                                  & 2\tabularnewline
+fbs, ffs & First Bit Set, Find First Set: grevi, clz                         & 2\tabularnewline
+roli     & Rotate Left Immediate: rori with adjusted immedate value          & 1\tabularnewline
+bfdep    & Bit Field Deposit                                                 & 1\tabularnewline
+bfext    & Bit Field Extract                                                 & 1\tabularnewline
 \bottomrule
 \end{longtable}

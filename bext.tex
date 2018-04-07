@@ -22,7 +22,7 @@ uint_xlen_t clz(uint_xlen_t rs1)
 {
     for (int count = 0; count < XLEN; count++)
         if ((rs1 << count) >> (XLEN-1))
-	    return count;
+            return count;
     return XLEN;
 }
 \end{verbatim}
