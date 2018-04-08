@@ -424,7 +424,7 @@ common operation for modifying the bitfield structures.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Rotate (Left/Right) (\texttt{rol}, \texttt{ror}, \texttt{rori})}
+\section{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
 
 These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
@@ -558,9 +558,9 @@ http://www.hackersdelight.org/basics2.pdf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bit Extract/Deposit (\texttt{bext}, \texttt{bdep})}
+\section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
-This is an R-type instruction that implements the generic bit erxtract
+This is an R-type instruction that implements the generic bit extract
 and bit deposit functions. Similar implementation can be referred to as
 gather/scatter or pack/unpack.
 
@@ -628,3 +628,48 @@ https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onep
 http://hackersdelight.org/
 
 https://github.com/cliffordwolf/bextdep
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.clz,\ c.pcnt})}
+
+The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
+and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
+\texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as
+\texttt{sub\ rd,\ x0,\ rs}.
+
+In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations. But
+there are no compressed encodings for those operations because there is no \texttt{c.xori}
+instructions and \texttt{c.sub} can not operate on \texttt{x0}.
+
+Many bit manipulation operations that have dedicated opecodes in other ISAs
+must be constructed from smaller atoms in RISC-V XBitmanip code. But
+implementations might chose to implement them in a single micro-op using
+macro-op-fusion. For this it can be helpful when the fused sequences are short.
+\texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
+it can be helpful to have compressed opcodes for them.
+
+Likewise, \texttt{clz} and \texttt{pcnt} are very common atoms for building
+common bit manipulation operations. So it is helpful to have compressed opcodes
+for them as well.
+
+For example, the equivalent to the x86 instruction \texttt{BSR} (find index of
+highest set bit) can be implemented using the following 64 bit sequence that does not
+spill other registers (and thus is a prime candidate for macro-op-fusion):
+
+\begin{verbatim}
+bsr rd, rs:
+    c.clz rd, rs
+    c.neg rd
+    addi rd, rd, 32
+\end{verbatim}
+
+The compressed instructions \texttt{c.not,\ c.neg,\ c.clz,\ c.pcnt} must be supported by
+all implementations that supports the C extension and XBitmanip.
+
+\subsection{Encoding}
+
+\input{bextcompr}
+
+This four instructions fit nicely in the reserved space in C.LUI. They only occupy $0.13\%$
+of the $\approx15.6$ bits wide RVC encoding space.
