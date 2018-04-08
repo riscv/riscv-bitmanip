@@ -1,13 +1,17 @@
 \chapter{Introduction}
 
-\section{ISA Extension Proposal Scoring Criteria}
+This is the RISC-V XBitmanip Extension draft spec. Originally it was the
+B-Extension draft spec, but the work group got dissolved for burocratic
+reasons in November 2017.
 
-Any proposed changes to the ISA should be evaluated or scored according
-to the following criteria. Proposals which score higher according to the
-criteria should be considered as higher priority than proposals that
-score lower. Proposals that score consistently low should be rejected.
-Each of he five categories have equal weighting and each contribute up
-to 20 points toward an instructions total score from 0 to 100.
+It is currently an independently maintained document. We'd happily donate
+it to the RISC-V foundation as starting point for a new B-Extension work
+group, if there will be one.
+
+\section{ISA Extension Proposal Design Criteria}
+
+Any proposed changes to the ISA should be evaluated according to the following
+criteria.
 
 \begin{itemize}
 \item
@@ -51,13 +55,13 @@ already operate on bits, the minimal set of instructions need to added
 while at the same time enabling a rich of operations.
 
 The instructions cover the four major categories of bit manipulation: Count,
-Extract, Insert, Swap. The spec supports RV32, RV64, and RV128 without new
-instruction formats. ``Clever'' obscure and/or overly specific instructions are
-avoided in favor of more straight forward, fast, generic ones.  Coordination
-with other emerging RISC-V ISA extensions groups is required to ensure our
-instruction sets are architecturally consistent.
+Extract, Insert, Swap. The spec supports RV32, RV64, and RV128. ``Clever''
+obscure and/or overly specific instructions are avoided in favor of more
+straight forward, fast, generic ones.  Coordination with other emerging RISC-V
+ISA extensions groups is required to ensure our instruction sets are
+architecturally consistent.
 
-\subsection{Next steps}
+\section{Next steps}
 
 \begin{itemize}
 \item
@@ -76,57 +80,57 @@ instruction sets are architecturally consistent.
   to compilers.
 \end{itemize}
 
-\section{Summary of Instructions}
-
-The following machine instruction are listed below, followed by a table
-that lists pseudo instructions.
-
-\begin{longtable}[c]{@{}ll@{}}
-\caption{Machine Instructions}\tabularnewline
-\toprule
-Instructions & Primary Applications\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-Instructions & Primary Applications\tabularnewline
-\midrule
-\endhead
-clz      & Count Leading Zeros\tabularnewline
-pcnt     & Population Count\tabularnewline
-grevi    & Generalized Reverse\tabularnewline
-slo      & Shift left Ones\tabularnewline
-sloi     & Shift left Ones Immediate\tabularnewline
-sro      & Shfit Right Ones\tabularnewline
-sroi     & Shift Right Ones Immediate\tabularnewline
-rol      & Rotate Left\tabularnewline
-ror      & Rotate Right\tabularnewline
-rori     & Rotate Right Immediate\tabularnewline
-andc     & AND Complement\tabularnewline
-bext     & Bit Extract (Gather)\tabularnewline
-bdep     & Bit Depsoit (Scatter)\tabularnewline
-\bottomrule
-\end{longtable}
-
-\section{Summary of Psuedo Ops}
-
-The following ops are supported by replacing with one or more machine
-operations. See instruction details for examples.
-
-\begin{longtable}[c]{@{}lll@{}}
-\caption{Psuedo Ops}\tabularnewline
-\toprule
-Instructions & Primary Applications & No. of Instr\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-Instructions & Primary Applications & No. of Instr\tabularnewline
-\midrule
-\endhead
-flb, fls & Find Last Bit Set, Find Last Set: clz, sub                        & 2\tabularnewline
-ctz      & Count Trailing Zeros: grevi, clz                                  & 2\tabularnewline
-fbs, ffs & First Bit Set, Find First Set: grevi, clz                         & 2\tabularnewline
-roli     & Rotate Left Immediate: rori with adjusted immedate value          & 1\tabularnewline
-bfdep    & Bit Field Deposit                                                 & 1\tabularnewline
-bfext    & Bit Field Extract                                                 & 1\tabularnewline
-\bottomrule
-\end{longtable}
+% \section{Summary of Instructions}
+%
+% The following machine instruction are listed below, followed by a table
+% that lists pseudo instructions.
+%
+% \begin{longtable}[c]{@{}ll@{}}
+% \caption{Machine Instructions}\tabularnewline
+% \toprule
+% Instructions & Primary Applications\tabularnewline
+% \midrule
+% \endfirsthead
+% \toprule
+% Instructions & Primary Applications\tabularnewline
+% \midrule
+% \endhead
+% clz      & Count Leading Zeros\tabularnewline
+% pcnt     & Population Count\tabularnewline
+% grevi    & Generalized Reverse\tabularnewline
+% slo      & Shift left Ones\tabularnewline
+% sloi     & Shift left Ones Immediate\tabularnewline
+% sro      & Shfit Right Ones\tabularnewline
+% sroi     & Shift Right Ones Immediate\tabularnewline
+% rol      & Rotate Left\tabularnewline
+% ror      & Rotate Right\tabularnewline
+% rori     & Rotate Right Immediate\tabularnewline
+% andc     & AND Complement\tabularnewline
+% bext     & Bit Extract (Gather)\tabularnewline
+% bdep     & Bit Depsoit (Scatter)\tabularnewline
+% \bottomrule
+% \end{longtable}
+%
+% \section{Summary of Psuedo Ops}
+%
+% The following ops are supported by replacing with one or more machine
+% operations. See instruction details for examples.
+%
+% \begin{longtable}[c]{@{}lll@{}}
+% \caption{Psuedo Ops}\tabularnewline
+% \toprule
+% Instructions & Primary Applications & No. of Instr\tabularnewline
+% \midrule
+% \endfirsthead
+% \toprule
+% Instructions & Primary Applications & No. of Instr\tabularnewline
+% \midrule
+% \endhead
+% flb, fls & Find Last Bit Set, Find Last Set: clz, sub                        & 2\tabularnewline
+% ctz      & Count Trailing Zeros: grevi, clz                                  & 2\tabularnewline
+% fbs, ffs & First Bit Set, Find First Set: grevi, clz                         & 2\tabularnewline
+% roli     & Rotate Left Immediate: rori with adjusted immedate value          & 1\tabularnewline
+% bfdep    & Bit Field Deposit                                                 & 1\tabularnewline
+% bfext    & Bit Field Extract                                                 & 1\tabularnewline
+% \bottomrule
+% \end{longtable}
