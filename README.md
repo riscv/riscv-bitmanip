@@ -1,4 +1,4 @@
-# RISC-V Bit Manipulation Extension (XBitmanip)
+# RISC-V XBitmanip (Bit Manipulation) Extension
 
 This is the RISC-V XBitmanip Extension draft spec. The spec aims to
 extend the RISC-V instruction set to enable efficent bit manipulation.
