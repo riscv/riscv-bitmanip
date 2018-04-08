@@ -600,7 +600,7 @@ base spec. The exact instruction encoding is to be decided, however.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.clz,\ c.pcnt})}
+\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.clz,\ c.brev})}
 
 The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
 and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
@@ -618,9 +618,10 @@ macro-op-fusion. For this it can be helpful when the fused sequences are short.
 \texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
 it can be helpful to have compressed opcodes for them.
 
-Likewise, \texttt{clz} and \texttt{pcnt} are very common atoms for building
-common bit manipulation operations. So it is helpful to have compressed opcodes
-for them as well.
+Likewise, \texttt{clz} and \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1},
+i.e. bitwise reversal) are very common atoms for building common bit
+manipulation operations. So it is helpful to have compressed opcodes for them
+as well.
 
 For example, the equivalent to the x86 instruction \texttt{BSR} (find index of
 highest set bit) can be implemented using the following 64 bit sequence that does not
@@ -636,7 +637,7 @@ spill other registers (and thus is a prime candidate for macro-op-fusion):
 Likewise, the AMD TBM extension adds 10 x86 bit manipulation instructions. The equivalent
 RISC-V code sequences can utilize \texttt{c.not} in half of the cases.
 
-The compressed instructions \texttt{c.not,\ c.neg,\ c.clz,\ c.pcnt} must be supported by
+The compressed instructions \texttt{c.not,\ c.neg,\ c.clz,\ c.brev} must be supported by
 all implementations that support the C extension and XBitmanip.
 
 \input{bextcompr}
