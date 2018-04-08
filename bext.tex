@@ -91,8 +91,6 @@ The purpose of this instruction is to compute the number of 1 bits in a
 register. It takes a single register as input and operates on the entire
 register.
 
-\subsection{Functionality definition}
-
 This operation counts the total number of set bits in the register.
 
 \begin{verbatim}
@@ -154,8 +152,6 @@ reversal in a byte, etc, all from a single hardware instruction. It
 takes in a single register value and an immediate that controls which
 function occurs, through controlling the levels in the recursive tree at
 which reversals occur.
-
-\subsection{Functionality definition}
 
 This operation iteratively checks each bit immed\_i from i=0 to XLEN-1,
 in XLEN stages, and if the corresponding bit of the `function\_select'
@@ -310,8 +306,6 @@ These instructions are similar to shift-logical operations from the base
 spec, except instead of shifting in zeros, it shifts in ones. This can
 be used in mask creation or bit-field insertions, for example.
 
-\subsection{Functionality definition}
-
 These instructions are exactly the same as the equivalent logical shift
 operations, except the shift shifts in ones values.
 
@@ -426,8 +420,6 @@ These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
 register, in order. This is also called `circular shift'.
 
-\subsection{Functionality definition}
-
 \begin{verbatim}
 uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
 {
@@ -509,8 +501,6 @@ implemented with the same ALU area (e.g.~as a single microcode
 instruction) using a scheme described in the implementation commentary,
 and fused versions can be implemented as well.
 
-\subsection{Functionality definition}
-
 \begin{verbatim}
 uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 {
@@ -563,8 +553,6 @@ rs1 using extract mask in rs2.
 
 \texttt{BDEP[W] rd,rs1,rs2} writes LSB justified bits from rs1 to rd using
 deposit mask in rs2.
-
-\subsection{Functionality definition}
 
 \begin{verbatim}
 uint_xlen_t bext(uint_xlen_t v, uint_xlen_t mask)
