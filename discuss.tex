@@ -1,0 +1,116 @@
+\chapter{Discussion and Evaluation}
+
+\section{Frequently Asked Questions}
+
+\subsubsection{Why \texttt{clz} instead of \texttt{ctz}? Why not XYZ?}
+
+The important thing is that we wanted to have a small ISA that only provides
+useful atomics for building most of the other "usual" bit manipulation
+instructions.
+
+If we chose \texttt{clz} or \texttt{ctz} is not that important. But we want to
+pick only one and let the used build the other by combining the supported
+instruction with bitwise reverse (which is provided by \texttt{grevi}).
+
+\subsubsection{\texttt{grev[i]} seems to be overly complicated? Do we really need it?}
+
+The \texttt{grevi} instruction can be used to build a wide range of common
+bit permutation instructions. For example on RV32:
+
+\begin{longtable}[c]{@{}rl@{}}
+\caption{Some GREVI Pseudo-Instructions}\tabularnewline
+\toprule
+Mode & Meaning on RV32\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Mode & Meaning on RV32\tabularnewline
+\midrule
+\endhead
+4 & swap the nibbles of each byte\tabularnewline
+7 & reverse the bits in each byte\tabularnewline
+15 & reverse the bits in each halfword\tabularnewline
+16 & swap the two half words halfword\tabularnewline
+24 & reverse the byte order\tabularnewline
+31 & bitwise reverse\tabularnewline
+\bottomrule
+\end{longtable}
+
+If \texttt{grevi} were removed from this spec we would need to add a few new
+instructions in its place for operations such as bitwise reverse or
+endianness convertion.
+
+\subsubsection{Do we really need all the \texttt{*W} opcodes for 32 bit ops on RV64?}
+
+I don't know. I think nobody does know at the moment. But they add very little
+complexity to the core. So the only question is if it is worth the encoding
+space. We need to run proper experiments with compilers that support those
+instructions. So they are in for now and if future evaluations show that they
+are not worth the encoding space then we can still throw them out.
+
+\subsubsection{Why only \texttt{andc} and not any other complement operators?}
+
+Early versions of this spec also included other \texttt{*c} operators. But
+experiments\footnote{http://svn.clifford.at/handicraft/2017/bitcode/} have show that
+\texttt{andc} is much more common in bit manipulation code than any other operators.
+Especially because it is commonly used in \texttt{mix} and \texttt{mux} operations.
+
+\subsubsection{BEXT/BDEP look like really expensive operations. Do we really need them?}
+
+Yes, they are expensive, but not as expensive as one might expect. A
+single-cycle 32 bit BEXT+BDEP+GREV core can be implemented in less space than a
+single-cycle 16x16 bit multiplier with 32 bit output.\footnote{https://github.com/cliffordwolf/bextdep}
+
+\section{Analysis of used encoding space}
+
+So how much encoding space is used by the XBitmanip extension?
+
+\begin{longtable}[c]{@{}rr|rr|l@{}}
+\caption{XBitmanip encoding space ($log2$, i.e. in equivalent number of bits)}\tabularnewline
+\toprule
+\multicolumn{2}{c}{RV32} & \multicolumn{2}{c}{RV64} & Instruction\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+\multicolumn{2}{c}{RV32} & \multicolumn{2}{c}{RV64} & Instruction\tabularnewline
+\midrule
+\endhead
+1x & 10 & 2x & 10 & CLZ, CLZW\tabularnewline
+1x & 10 & 2x & 10 & PCNT, PCNTW\tabularnewline
+\midrule
+1x & 15 & 2x & 15 & GREV, GREVW\tabularnewline
+1x & 15 & 1x & 16 & GREVI\tabularnewline
+   &    & 1x & 15 & GREVIW\tabularnewline
+\midrule
+2x & 15 & 2x & 16 & SLOI, SROI\tabularnewline
+   &    & 2x & 15 & SLOIW, SROIW\tabularnewline
+2x & 15 & 4x & 15 & SLO, SRO, SLOW, SROW\tabularnewline
+\midrule
+1x & 15 & 1x & 16 & RORI\tabularnewline
+   &    & 1x & 15 & RORIW\tabularnewline
+2x & 15 & 4x & 15 & ROR, ROL, RORW, ROLW\tabularnewline
+\midrule
+3x & 15 & 3x & 15 & ANDC, BEXT, BDEP\tabularnewline
+\midrule
+4x &  4 & 4x &  4 & C.NEG, C.NOT, C.CLZ, C.PCNT\tabularnewline
+\bottomrule
+\end{longtable}
+
+In the compressed encoding space XBitmanip needs the equivalent of a 6 bit encoding space,
+or $\approx 0.13\%$ of the total $\approx 15.6$ bits available. ($ 100 / (2^{15.6-6}) \approx 0.13 $)
+
+On RV32, XBitmanip requires the equivalent of a $\approx 18.6$ bit encoding space in
+the uncompressed encoding space. For comparison: A single standard I-type
+instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
+encoding space. I.e. the entire RV32 XBitmanip extension needs less than
+one-eighth of the encoding space of the \texttt{SLTIU} instruction.
+
+$$ \frac{log(2\cdot2^{10} + 12\cdot2^{15})}{log(2)} \approx 18.6 $$
+
+On RV64, XBitmanip requires the equivalent of a $\approx 19.7$ bit encoding
+space in the uncompressed encoding space. I.e. the entire RV64 XBitmanip
+extension needs less than one-quarter of the encoding space of the
+\texttt{SLTIU} instruction.
+
+$$ \frac{log(4\cdot2^{10} + 17\cdot2^{15} + 4\cdot2^{16})}{log(2)} \approx 19.7 $$
+

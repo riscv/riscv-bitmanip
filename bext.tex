@@ -1,4 +1,4 @@
-\chapter{RISC-V XBitmanip Extension}\label{risc-v-b-hardware-instructions}
+\chapter{RISC-V XBitmanip Extension}
 
 In the proposals provided in this section, the C code examples are for
 illustration purposes. They are not optimal implementations, but are
@@ -17,7 +17,6 @@ input and operates on the entire register. If the input is 0, the output is
 XLEN. If the input is \textasciitilde{}0, the output is 0.
 
 \begin{verbatim}
-// clz C implementation
 uint_xlen_t clz(uint_xlen_t rs1)
 {
     for (int count = 0; count < XLEN; count++)
@@ -34,55 +33,55 @@ uint_xlen_t clz(uint_xlen_t rs1)
 \texttt{clz} is encoded as a standard I-type opcode, with a single
 source register and a 12-bit signed immediate.
 
-\subsection{Related Pseudo-instructions}
-
-The common operation of `finding the index of the highest bit set' (also called
-\texttt{ilog2} or \texttt{bsr} or \texttt{find\ last\ set}) is computed as
-\texttt{XLEN-clz(rs1)}.
-
-Counting trailing zeros is easily implemented by combining \texttt{clz} with
-the \texttt{grevi} instruction.
-
-\subsection{Criteria}
-
-The criteria evaluation is shown below:
-
-\begin{itemize}
-\item
-  These operations all fit easily into the RISCV instruction encoding
-  and philosophy.
-\item
-  The hardware to implement them is fairly simple, and can be done in a
-  logarithmic number of stages in parallel.
-\item
-  They all have current compiler and standard library support, and are
-  standardized intrinsics in many of those.
-\item
-  The threshold criteria gets a little complicated: Every one of these
-  operations can be implemented in 2-3 instructions in terms of
-  each-other, so we only need one of them in hardware, and the rest can
-  be pseudo-instructions.
-\end{itemize}
-
-However, implementing any of these instructions can also be done with a
-combination of \texttt{ctz} and a bitwise reverse (\texttt{brev}) in 1-2
-instructions. Similarly, \texttt{ctz} can be implemented in terms of
-these functions with a \texttt{brev} in 1-2 instructions.
-
-Without \texttt{brev} AND \texttt{ctz}, however, there is no simple way
-to construct this without a lot of instructions. The algorithm above in
-C is a nearly asymptotically optimal implementation. It seems to pass
-the threshold criteria in this case.
-
-\paragraph{Benchmarks and Applications}
-
-TBD
-
-\subsection{References}
-
-https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
-
-https://fgiesen.wordpress.com/2013/10/18/bit-scanning-equivalencies/
+% \subsection{Related Pseudo-instructions}
+%
+% The common operation of `finding the index of the highest bit set' (also called
+% \texttt{ilog2} or \texttt{bsr} or \texttt{find\ last\ set}) is computed as
+% \texttt{XLEN-clz(rs1)}.
+%
+% Counting trailing zeros is easily implemented by combining \texttt{clz} with
+% the \texttt{grevi} instruction.
+%
+% \subsection{Criteria}
+%
+% The criteria evaluation is shown below:
+%
+% \begin{itemize}
+% \item
+%   These operations all fit easily into the RISCV instruction encoding
+%   and philosophy.
+% \item
+%   The hardware to implement them is fairly simple, and can be done in a
+%   logarithmic number of stages in parallel.
+% \item
+%   They all have current compiler and standard library support, and are
+%   standardized intrinsics in many of those.
+% \item
+%   The threshold criteria gets a little complicated: Every one of these
+%   operations can be implemented in 2-3 instructions in terms of
+%   each-other, so we only need one of them in hardware, and the rest can
+%   be pseudo-instructions.
+% \end{itemize}
+%
+% However, implementing any of these instructions can also be done with a
+% combination of \texttt{ctz} and a bitwise reverse (\texttt{brev}) in 1-2
+% instructions. Similarly, \texttt{ctz} can be implemented in terms of
+% these functions with a \texttt{brev} in 1-2 instructions.
+%
+% Without \texttt{brev} AND \texttt{ctz}, however, there is no simple way
+% to construct this without a lot of instructions. The algorithm above in
+% C is a nearly asymptotically optimal implementation. It seems to pass
+% the threshold criteria in this case.
+%
+% \paragraph{Benchmarks and Applications}
+%
+% TBD
+%
+% \subsection{References}
+%
+% https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
+%
+% https://fgiesen.wordpress.com/2013/10/18/bit-scanning-equivalencies/
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -97,7 +96,6 @@ register.
 This operation counts the total number of set bits in the register.
 
 \begin{verbatim}
-// popcount C implementation
 uint_xlen_t pcnt(uint_xlen_t rs1)
 {
     int count = 0;
@@ -111,41 +109,39 @@ uint_xlen_t pcnt(uint_xlen_t rs1)
 
 \input{bextpcnt.tex}
 
-\texttt{pcnt} is encoded as a standard I-type opcode, with one source
-register and an immediate. There is no \texttt{pcnti}, because it only
-has one argument, so it would be redundant.
+\texttt{pcnt} is encoded as a standard I-type opcode.
 
-Implementation Commentary
-
-\texttt{pcnt} can be implemented in parallel, similarly to an adder.
-
-\subsection{Related Pseudo-Instructions}
-
-\begin{verbatim}
-//odd parity
-parity rOut,rIn:
-    pcnt rPopulation,rIn
-    andi rOut,rPopulation,0x1
-\end{verbatim}
-
-\subsection{Extensions: \texttt{pcnt.w} (R64I+), \texttt{pcnt.d} (R128I+)}
-
-On RV64B+, the appropriate versions of pcnt that operate on sub-portions
-of the register are defined. On these platforms, the input source is set
-to zero for the high portions of the register. See \texttt{addi.w} and
-\texttt{addi.d} in the R64I/R128I specifications.
-
-\subsection{Justification}
-
-This operation is one of the `core' bitwise instructions that is nearly
-universal on other ISAs. It is supported as an intrinsic on GCC, LLVM,
-and MSVC, and is supported in hardware on a plethora of platforms.
-
-\subsection{References}
-
-https://en.wikipedia.org/wiki/Hamming\_weight
-
-https://graphics.stanford.edu/\textasciitilde{}seander/bithacks.html
+% Implementation Commentary
+%
+% \texttt{pcnt} can be implemented in parallel, similarly to an adder.
+%
+% \subsection{Related Pseudo-Instructions}
+%
+% \begin{verbatim}
+% //odd parity
+% parity rOut,rIn:
+%     pcnt rPopulation,rIn
+%     andi rOut,rPopulation,0x1
+% \end{verbatim}
+%
+% \subsection{Extensions: \texttt{pcnt.w} (R64I+), \texttt{pcnt.d} (R128I+)}
+%
+% On RV64B+, the appropriate versions of pcnt that operate on sub-portions
+% of the register are defined. On these platforms, the input source is set
+% to zero for the high portions of the register. See \texttt{addi.w} and
+% \texttt{addi.d} in the R64I/R128I specifications.
+%
+% \subsection{Justification}
+%
+% This operation is one of the `core' bitwise instructions that is nearly
+% universal on other ISAs. It is supported as an intrinsic on GCC, LLVM,
+% and MSVC, and is supported in hardware on a plethora of platforms.
+%
+% \subsection{References}
+%
+% https://en.wikipedia.org/wiki/Hamming\_weight
+%
+% https://graphics.stanford.edu/\textasciitilde{}seander/bithacks.html
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -205,106 +201,106 @@ this definition in an obvious manner for RV128+.
 \texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
 encoded as standard I-type opcode.
 
-\subsection{Related Pseudo-Instructions}
-
-Related Pseudoinstruction List
-
-\begin{verbatim}
-// reverse the bits in a register (this works on all platforms)
-rev rOut,rIn:
-    grevi rOut,rIn,-1
-
-// reverse the bits in each byte, but leave the bytes in the same order.
-rev.b rOut,rIn:
-    grevi rOut,rIn,7
-
-// reverse the bits in each halfword, but leave the halfwords in the same order
-rev.h rOut,rIn:
-    grevi rOut,rIn,15
-
-// reverse the bits in each word, but leave the words in the same order (e.g. RV64IB+)
-rev.w rOut,rIn:
-    grevi rOut,rIn,31
-
-// reverse the bits in each dword, but leave the dwords in the same order (e.g. RV128IB+)
-rev.d rOut,rIn:
-    grevi rOut,rIn,63
-
-// reverse the byte order of an entire register
-bswap rOut,rIn:
-    grevi rOut,rIn,-8
-
-// reverse the byte order of each halfword in the register, but leave them in the same
-// order (e.g, on RV32IB, this reverses the byte order of the high and lo halfwords)
-bswap.h rOut,rIn:
-    grevi rOut,rIn,8
-
-// reverse the byte order each word in the register (e.g, on RV64IB/RV128IB, this
-// reverses the byte order of each of the 2/4 words)
-bswap.w rOut,rIn:
-    grevi rOut,rIn,24
-
-// reverse the byte order of each dword in the register (e.g, on RV128IB, reverse the
-// byte order of the high and lo words)
-bswap.d rOut,rIn:
-    grevi rOut,rIn,56
-
-// reverse the halfword order of an entire register
-hswap rOut,rIn:
-    grevi rOut,rIn,-16
-
-// reverse the halfword order of each word in the register
-hswap.w rOut,rIn:
-    grevi rOut,rIn,16
-
-// reverse the halfword order of each dword in the register (e.g. RV128IB+, there are 2
-// dwords)
-hswap.d rOut,rIn:
-    grevi rOut,rIn,48
-
-// reverse the word order of an entire register (only meaningful on RV64IB+)
-wswap rOut,rIn:
-    grevi rOut,rIn,-32
-
-// reverse the word order of each dword in the register (e.g. RV128IB+, there are 2 dwords)
-wswap.d rOut,rIn:
-    grevi rOut,rIn,32
-
-// swap the nibbles of each byte in the whole register (useful for converting to/from
-// bigendian hex)
-nswap.b rOut,rIn:
-    grevi rOut,rIn,4
-
-// Etc.  A total of XLEN different possible operations can be constructed.
-\end{verbatim}
-
-\subsection{Justification}
-
-Quoted from page 102 of Hacker's Delight:
-
-https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
-
-\begin{quote}
-For k=31, this operation reverses the bits in a word. For k=24, it
-reverses the bytes in a word. For k=7, it reverses the bits in each
-byte, without changing the positions of the bytes. For k=16, it swaps
-the left and right halfwords of a word, and so on. In general, it moves
-the bit at positing m to position m XOR k. It can be implemented in
-hardware very similarly to the way a rotate shifter is usually
-implemented (five stages of MUX, with each stage controlled by a bit of
-the shift amount k)
-
-This strongly suggests that this generic instruction could allow us to
-use a great deal of other bitwise operations as pseudo-instructions.
-\end{quote}
-
-\subsection{References}
-
-Hackers Delight, Chapter 7.1, ``Generalized Bit Reversal'' in
-
-https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
-
-http://hackersdelight.org/
+% \subsection{Related Pseudo-Instructions}
+%
+% Related Pseudoinstruction List
+%
+% \begin{verbatim}
+% // reverse the bits in a register (this works on all platforms)
+% rev rOut,rIn:
+%     grevi rOut,rIn,-1
+%
+% // reverse the bits in each byte, but leave the bytes in the same order.
+% rev.b rOut,rIn:
+%     grevi rOut,rIn,7
+%
+% // reverse the bits in each halfword, but leave the halfwords in the same order
+% rev.h rOut,rIn:
+%     grevi rOut,rIn,15
+%
+% // reverse the bits in each word, but leave the words in the same order (e.g. RV64IB+)
+% rev.w rOut,rIn:
+%     grevi rOut,rIn,31
+%
+% // reverse the bits in each dword, but leave the dwords in the same order (e.g. RV128IB+)
+% rev.d rOut,rIn:
+%     grevi rOut,rIn,63
+%
+% // reverse the byte order of an entire register
+% bswap rOut,rIn:
+%     grevi rOut,rIn,-8
+%
+% // reverse the byte order of each halfword in the register, but leave them in the same
+% // order (e.g, on RV32IB, this reverses the byte order of the high and lo halfwords)
+% bswap.h rOut,rIn:
+%     grevi rOut,rIn,8
+%
+% // reverse the byte order each word in the register (e.g, on RV64IB/RV128IB, this
+% // reverses the byte order of each of the 2/4 words)
+% bswap.w rOut,rIn:
+%     grevi rOut,rIn,24
+%
+% // reverse the byte order of each dword in the register (e.g, on RV128IB, reverse the
+% // byte order of the high and lo words)
+% bswap.d rOut,rIn:
+%     grevi rOut,rIn,56
+%
+% // reverse the halfword order of an entire register
+% hswap rOut,rIn:
+%     grevi rOut,rIn,-16
+%
+% // reverse the halfword order of each word in the register
+% hswap.w rOut,rIn:
+%     grevi rOut,rIn,16
+%
+% // reverse the halfword order of each dword in the register (e.g. RV128IB+, there are 2
+% // dwords)
+% hswap.d rOut,rIn:
+%     grevi rOut,rIn,48
+%
+% // reverse the word order of an entire register (only meaningful on RV64IB+)
+% wswap rOut,rIn:
+%     grevi rOut,rIn,-32
+%
+% // reverse the word order of each dword in the register (e.g. RV128IB+, there are 2 dwords)
+% wswap.d rOut,rIn:
+%     grevi rOut,rIn,32
+%
+% // swap the nibbles of each byte in the whole register (useful for converting to/from
+% // bigendian hex)
+% nswap.b rOut,rIn:
+%     grevi rOut,rIn,4
+%
+% // Etc.  A total of XLEN different possible operations can be constructed.
+% \end{verbatim}
+%
+% \subsection{Justification}
+%
+% Quoted from page 102 of Hacker's Delight:
+%
+% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
+%
+% \begin{quote}
+% For k=31, this operation reverses the bits in a word. For k=24, it
+% reverses the bytes in a word. For k=7, it reverses the bits in each
+% byte, without changing the positions of the bytes. For k=16, it swaps
+% the left and right halfwords of a word, and so on. In general, it moves
+% the bit at positing m to position m XOR k. It can be implemented in
+% hardware very similarly to the way a rotate shifter is usually
+% implemented (five stages of MUX, with each stage controlled by a bit of
+% the shift amount k)
+%
+% This strongly suggests that this generic instruction could allow us to
+% use a great deal of other bitwise operations as pseudo-instructions.
+% \end{quote}
+%
+% \subsection{References}
+%
+% Hackers Delight, Chapter 7.1, ``Generalized Bit Reversal'' in
+%
+% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
+%
+% http://hackersdelight.org/
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -320,13 +316,13 @@ These instructions are exactly the same as the equivalent logical shift
 operations, except the shift shifts in ones values.
 
 \begin{verbatim}
-// Implementation of `slo(i)` in C
 uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     uint_xlen_t mask=((1 << amount)-1);
     return (rs1 << amount) | mask;
 }
+
 uint_xlen_t sloi(uint_xlen_t rs1, int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
@@ -334,13 +330,13 @@ uint_xlen_t sloi(uint_xlen_t rs1, int12_t immed)
     return (rs1 << amount) | mask;
 }
 
-// Implementation of `sro(i)` in C
 uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     uint_xlen_t mask=~((1 << (XLEN-amount))-1);
     return (rs1 >> amount) | mask;
 }
+
 uint_xlen_t sroi(uint_xlen_t rs1, int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
@@ -362,7 +358,7 @@ in the highest bit of the encoded instruction. This encoding is
 backwards compatible with the definition for the shifts in the base
 spec, but allows for simple addition of a ones-insert.
 
-Implementation Commentary
+\subsection{Implementation Commentary}
 
 When implementing this circuit, the only change in the ALU over a
 standard logical shift is that the value shifted in is not zero, but is
@@ -370,57 +366,57 @@ a 1-bit register value that has been forwarded from the high bit of the
 instruction decode. This creates the desired behavior on both logical
 zero-shifts and logical ones-shifts.
 
-\subsection{Extensions: \texttt{s(l/r)o(i).w} (R64I+), \texttt{s(l/r)o(i).d} (R128I+)}
-
-On RV64B+, the appropriate versions of shift-ones that operate on
-sub-portions of the register are defined. On these platforms, the input
-source is set to zero for the high portions of the register, and the
-shift only occurs on the lower portions of the register. See
-\texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
-See \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I
-specifications.
-
-\subsection{Related Pseudo-Instructions}
-
-\begin{verbatim}
-// builds a mask in the low-order bits up to a certain point
-maski rOut,iWidth:
-    sloi rOut,r0,iWidth
-
-// builds a mask in the low-order bits up to a certain point
-mask rOut,rIn:
-    slo rOut,r0,rIn
-
-// extracts a bitfield of length width from offset and moves it down to the bottom
-bfextracti rOut,rIn,iWidth,iOffset:
-    slli rTop,rIn,XLEN-iWidth-iOffset
-    srli rOut,rTop,XLEN-iWidth
-
-// updates a bitfield of length width at offset in rCurrent with the value from rIn
-bfupdatei rOut,rCurrent,rIn,iWidth,iOffset:
-    sloi rTop,rIn,<XLEN-iWidth>
-    sroi rField,rTop,<XLEN-iWidth-iOffset>
-    and rOut,rCurrent,rField
-
-// sets a bitfield of length-width at offset to 1
-bfseti rOut,rCurrent,iWidth,iOffset:
-    sloi rMask,r0,iWidth
-    slli rMask,rMask,iOffset
-    or rOut,rCurrent,rMask
-
-// sets a bitfield of length-width at offset to 0
-bfcleari rOut,rCurrent,iWidth,iOffset:
-    sloi rMask,r0,iWidth
-    slli rMask,rMask,iOffset
-    andc rOut,rCurrent,rMask
-\end{verbatim}
-
-\subsection{Justification}
-
-This instruction can be used to create masks, which is an incredibly
-common operation for modifying the bitfield structures.
-
-\subsection{References}
+% \subsection{Extensions: \texttt{s(l/r)o(i).w} (R64I+), \texttt{s(l/r)o(i).d} (R128I+)}
+%
+% On RV64B+, the appropriate versions of shift-ones that operate on
+% sub-portions of the register are defined. On these platforms, the input
+% source is set to zero for the high portions of the register, and the
+% shift only occurs on the lower portions of the register. See
+% \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
+% See \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I
+% specifications.
+%
+% \subsection{Related Pseudo-Instructions}
+%
+% \begin{verbatim}
+% // builds a mask in the low-order bits up to a certain point
+% maski rOut,iWidth:
+%     sloi rOut,r0,iWidth
+%
+% // builds a mask in the low-order bits up to a certain point
+% mask rOut,rIn:
+%     slo rOut,r0,rIn
+%
+% // extracts a bitfield of length width from offset and moves it down to the bottom
+% bfextracti rOut,rIn,iWidth,iOffset:
+%     slli rTop,rIn,XLEN-iWidth-iOffset
+%     srli rOut,rTop,XLEN-iWidth
+%
+% // updates a bitfield of length width at offset in rCurrent with the value from rIn
+% bfupdatei rOut,rCurrent,rIn,iWidth,iOffset:
+%     sloi rTop,rIn,<XLEN-iWidth>
+%     sroi rField,rTop,<XLEN-iWidth-iOffset>
+%     and rOut,rCurrent,rField
+%
+% // sets a bitfield of length-width at offset to 1
+% bfseti rOut,rCurrent,iWidth,iOffset:
+%     sloi rMask,r0,iWidth
+%     slli rMask,rMask,iOffset
+%     or rOut,rCurrent,rMask
+%
+% // sets a bitfield of length-width at offset to 0
+% bfcleari rOut,rCurrent,iWidth,iOffset:
+%     sloi rMask,r0,iWidth
+%     slli rMask,rMask,iOffset
+%     andc rOut,rCurrent,rMask
+% \end{verbatim}
+%
+% \subsection{Justification}
+%
+% This instruction can be used to create masks, which is an incredibly
+% common operation for modifying the bitfield structures.
+%
+% \subsection{References}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -433,19 +429,18 @@ register, in order. This is also called `circular shift'.
 \subsection{Functionality definition}
 
 \begin{verbatim}
-// Implementation of `rol` in C
 uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     return (rs1 << amount) | (rsl >> (XLEN-amount));
 }
 
-// Implementation of `ror(i)` in C
 uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int12_t amount=(rs2 & (XLEN-1));
     return (rs1 >> amount) | (rsl << (XLEN-amount));
 }
+
 int_xlen_t rori(uint_xlen_t rs1, int12_t immed)
 {
     int12_t amount=(immed & (XLEN-1));
@@ -482,22 +477,22 @@ Bit 31 & Bit 30 & Meaning\tabularnewline
 \bottomrule
 \end{longtable}
 
-Implementation Commentary
-
-\subsection{Extensions: \texttt{ro(r/l)(i).w} (R64I+),\texttt{ro(r/l)(i).d} (R128I+)}
-
-On RV64B+, the appropriate versions of rotate that operate on
-sub-portions of the register are defined. On these platforms, the input
-source is set to zero for the high portions of the register, and the
-shift only occurs on the lower portions of the register. See
-\texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
-
-\subsection{Justification}
-
-This instruction is very useful for cryptography, hashing, and other
-operations.
-
-\subsection{References}
+% Implementation Commentary
+%
+% \subsection{Extensions: \texttt{ro(r/l)(i).w} (R64I+),\texttt{ro(r/l)(i).d} (R128I+)}
+%
+% On RV64B+, the appropriate versions of rotate that operate on
+% sub-portions of the register are defined. On these platforms, the input
+% source is set to zero for the high portions of the register, and the
+% shift only occurs on the lower portions of the register. See
+% \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
+%
+% \subsection{Justification}
+%
+% This instruction is very useful for cryptography, hashing, and other
+% operations.
+%
+% \subsection{References}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -517,7 +512,6 @@ and fused versions can be implemented as well.
 \subsection{Functionality definition}
 
 \begin{verbatim}
-// Implementation of `andc` in C
 uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     return rs1 & ~rs2;
@@ -527,34 +521,34 @@ uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 This instruction should be encoded similarly to the instruction in the
 base spec. The exact instruction encoding is to be decided, however.
 
-\subsection{Related Pseudo-Instructions}
-
-\begin{verbatim}
-// this selects the corresponding bit from the two arguments A and B, based on
-// whether or not Control is high.
-// out[i] = Control[i] ? A[i] : B[i]
-mix rOut,rControl,rA,rB:
-    and rTmp,rA,rControl
-    andc rTmp2,rB,rControl
-    or rOut,rTmp,rTmp2
-
-// same as MIX but only use if the first bit of C is true (as in from a comparator)
-// C can only be zero or 1, so if you need a SGT to implement nonzero comparator
-// its 5 instructions in total.
-mux rOut,rControl,rA,rB:
-    neg rC2,rControl
-    and rTmp,rA,rC2
-    andc rTmp2,rB,rC2
-    or rOut,rTmp,rTmp2
-\end{verbatim}
-
-\subsection{Justification}
-
-http://svn.clifford.at/handicraft/2017/bitcode/
-
-\subsection{References}
-
-http://www.hackersdelight.org/basics2.pdf
+% \subsection{Related Pseudo-Instructions}
+%
+% \begin{verbatim}
+% // this selects the corresponding bit from the two arguments A and B, based on
+% // whether or not Control is high.
+% // out[i] = Control[i] ? A[i] : B[i]
+% mix rOut,rControl,rA,rB:
+%     and rTmp,rA,rControl
+%     andc rTmp2,rB,rControl
+%     or rOut,rTmp,rTmp2
+%
+% // same as MIX but only use if the first bit of C is true (as in from a comparator)
+% // C can only be zero or 1, so if you need a SGT to implement nonzero comparator
+% // its 5 instructions in total.
+% mux rOut,rControl,rA,rB:
+%     neg rC2,rControl
+%     and rTmp,rA,rC2
+%     andc rTmp2,rB,rC2
+%     or rOut,rTmp,rTmp2
+% \end{verbatim}
+%
+% \subsection{Justification}
+%
+% http://svn.clifford.at/handicraft/2017/bitcode/
+%
+% \subsection{References}
+%
+% http://www.hackersdelight.org/basics2.pdf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -573,7 +567,6 @@ deposit mask in rs2.
 \subsection{Functionality definition}
 
 \begin{verbatim}
-// Implementation of `bext` in C
 uint_xlen_t bext(uint_xlen_t v, uint_xlen_t mask)
 {
     uint32_t c = 0, m = 1;
@@ -587,7 +580,6 @@ uint_xlen_t bext(uint_xlen_t v, uint_xlen_t mask)
     return c;
 }
 
-// Implementation of `bdep` in C
 uint_xlen_t bdep32(uint_xlen_t v, uint_xlen_t mask)
 {
     uint_xlen_t c = 0, m = 1;
@@ -609,25 +601,25 @@ uint_xlen_t bdep32(uint_xlen_t v, uint_xlen_t mask)
 This instruction should be encoded similarly to the instruction in the
 base spec. The exact instruction encoding is to be decided, however.
 
-\subsection{Related Pseudo-Instructions}
-
-TBD
-
-\subsection{Justification}
-
-http://svn.clifford.at/handicraft/2017/permsyn/
-
-\subsection{References}
-
-http://programming.sirrida.de/bit\_perm.html\#gather\_scatter
-
-Hackers Delight, Chapter 7.1, ``Compress, Generalized Extract'' in
-
-https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
-
-http://hackersdelight.org/
-
-https://github.com/cliffordwolf/bextdep
+% \subsection{Related Pseudo-Instructions}
+%
+% TBD
+%
+% \subsection{Justification}
+%
+% http://svn.clifford.at/handicraft/2017/permsyn/
+%
+% \subsection{References}
+%
+% http://programming.sirrida.de/bit\_perm.html\#gather\_scatter
+%
+% Hackers Delight, Chapter 7.1, ``Compress, Generalized Extract'' in
+%
+% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
+%
+% http://hackersdelight.org/
+%
+% https://github.com/cliffordwolf/bextdep
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -658,11 +650,14 @@ highest set bit) can be implemented using the following 64 bit sequence that doe
 spill other registers (and thus is a prime candidate for macro-op-fusion):
 
 \begin{verbatim}
-bsr rd, rs:
+  bsr rd, rs:
     c.clz rd, rs
     c.neg rd
     addi rd, rd, 32
 \end{verbatim}
+
+Likewise, the AMD TBM extension adds 10 x86 bit manipulation instructions. The equivalent
+RISC-V code sequences can utilize \texttt{c.not} in half of the cases.
 
 The compressed instructions \texttt{c.not,\ c.neg,\ c.clz,\ c.pcnt} must be supported by
 all implementations that supports the C extension and XBitmanip.
