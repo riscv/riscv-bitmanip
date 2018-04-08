@@ -149,7 +149,7 @@ https://graphics.stanford.edu/\textasciitilde{}seander/bithacks.html
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized Reverse (\texttt{grevi})}
+\section{Generalized Reverse (\texttt{grev,\ grevi})}
 
 The purpose of this instruction is to provide a single hardware
 instruction that can implement all of byte-order swap, bitwise reversal,
@@ -173,11 +173,11 @@ uint32_t grevi32(uint32_t rs1,int12_t immed)
 {
     uint32_t x = rs1;
     uint5_t k = (uint12_t)immed;
-    if(k &  1) x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1);
-    if(k &  2) x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2);
-    if(k &  4) x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4);
-    if(k &  8) x = ((x & 0x00FF00FF) << 8) | ((x & 0xFF00FF00) >> 8);
-    if(k & 16) x = ((x & 0x0000FFFF) <<16) | ((x & 0xFFFF0000) >> 16);
+    if (k &  1) x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1);
+    if (k &  2) x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2);
+    if (k &  4) x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4);
+    if (k &  8) x = ((x & 0x00FF00FF) << 8) | ((x & 0xFF00FF00) >> 8);
+    if (k & 16) x = ((x & 0x0000FFFF) <<16) | ((x & 0xFFFF0000) >> 16);
     return x;
 }
 
@@ -185,12 +185,12 @@ uint64_t grevi64(uint32_t rs1,int12_t immed)
 {
     uint64_t x = rs1;
     uint6_t k = (uint12_t)immed;
-    if(k &  1) x = ((x & 0x5555555555555555) << 1) | ((x & 0xAAAAAAAAAAAAAAAA) >> 1);
-    if(k &  2) x = ((x & 0x3333333333333333) << 2) | ((x & 0xCCCCCCCCCCCCCCCC) >> 2);
-    if(k &  4) x = ((x & 0x0F0F0F0F0F0F0F0F) << 4) | ((x & 0xF0F0F0F0F0F0F0F0) >> 4);
-    if(k &  8) x = ((x & 0x00FF00FF00FF00FF) << 8) | ((x & 0xFF00FF00FF00FF00) >> 8);
-    if(k & 16) x = ((x & 0x0000FFFF0000FFFF) <<16) | ((x & 0xFFFF0000FFFF0000) >> 16);
-    if(k & 32) x = ((x & 0x00000000FFFFFFFF) <<32) | ((x & 0xFFFFFFFF00000000) >> 32);
+    if (k &  1) x = ((x & 0x5555555555555555) << 1) | ((x & 0xAAAAAAAAAAAAAAAA) >> 1);
+    if (k &  2) x = ((x & 0x3333333333333333) << 2) | ((x & 0xCCCCCCCCCCCCCCCC) >> 2);
+    if (k &  4) x = ((x & 0x0F0F0F0F0F0F0F0F) << 4) | ((x & 0xF0F0F0F0F0F0F0F0) >> 4);
+    if (k &  8) x = ((x & 0x00FF00FF00FF00FF) << 8) | ((x & 0xFF00FF00FF00FF00) >> 8);
+    if (k & 16) x = ((x & 0x0000FFFF0000FFFF) <<16) | ((x & 0xFFFF0000FFFF0000) >> 16);
+    if (k & 32) x = ((x & 0x00000000FFFFFFFF) <<32) | ((x & 0xFFFFFFFF00000000) >> 32);
     return x;
 }
 \end{verbatim}
@@ -202,22 +202,8 @@ this definition in an obvious manner for RV128+.
 
 \input{bextgrev.tex}
 
-\texttt{grevi} is encoded as a standard I-type opcode with one source
-register and one immediate.
-
-There is no similar \texttt{grev}, R-type opcode with a dynamic argument
-for the function select, because it seems unlikely that functionality
-would ever be useful compared to the hardware implementation complexity
-required, and since the function select parameter only ranges from
-\texttt{0:XLEN-1}, it could be easily implemented as an XLEN-sized jump
-table by the compiler.
-
-Implementation Commentary
-
-When implementing this circuit, the masks and shifts should be used to
-select wires and the k bits should be used to AND out the computation at
-each stage. It uses log2(XLEN) stages of parallel circuitry (e.g., a
-``butterfly circuit'').
+\texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
+encoded as standard I-type opcode.
 
 \subsection{Related Pseudo-Instructions}
 
