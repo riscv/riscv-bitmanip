@@ -439,7 +439,9 @@ bit 30 in the instruction encoding selects `arithmetic shift' when bit
 31 is zero (signalling a logical-zero shift). We can re-use this so that
 when bit 31 is set (signalling a logical-ones shift), if bit 31 is also
 set, then we are doing a rotate. The following table summarizes the
-behavior:
+behavior. The generalized reverse opcodes can be encoded using the
+bit pattern that would otherwise encode an ``Arithmetic Left Shift''
+(which is an operation that does not exist).
 
 \begin{longtable}[c]{@{}lll@{}}
 \caption{Rotate Encodings}\tabularnewline

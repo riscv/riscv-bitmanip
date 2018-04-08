@@ -89,6 +89,33 @@ Simply invert before executing the \texttt{clz} instruction:
   clz a0, a0
 \end{verbatim}
 
+\section{MIX/MUX Operations}
+
+\subsubsection{MIX Operation}
+
+A MIX operation selects bits from arguments a1 and a2 based on the bits in
+the control word a0.
+
+\begin{verbatim}
+  and a1, a1, a0
+  andc a2, a2, a0
+  or a0, a1, a2
+\end{verbatim}
+
+\subsubsection{MUX Operation}
+
+A MUX operation selects word a1 or a2 based on if the control word a0 is
+zero or nonzero, without branching. (The {\tt snez} instruction is optional
+if a0 is already either 0 or 1.)
+
+\begin{verbatim}
+  snez a0, a0
+  neg a0, a0
+  and a1, a1, a0
+  andc a2, a2, a0
+  or a0, a1, a2
+\end{verbatim}
+
 \section{Butterfly Operations}
 
 The \texttt{grev}, \texttt{bext}, and \texttt{bdep} instructions are commonly
