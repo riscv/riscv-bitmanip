@@ -8,6 +8,10 @@ Most assembler routines in this chapter are written as if they were ABI function
 i.e. arguments are passed in a0, a1, \dots\ and results are returned in a0. Registers
 t0, t1, \dots\ are used for spilling.
 
+Some of the assembler routines below can not or should not overwrite their
+first argument. In those cases the arguments are passed in a1, a2, \dots\ and
+results are returned in a0.
+
 \section{GREVI Pseudo-Ops}
 
 Tables~\ref{pseudos-grevi32}~and~\ref{pseudos-grevi64} list assembler

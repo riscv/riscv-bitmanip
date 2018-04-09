@@ -107,3 +107,14 @@ uint64_t grev64(uint64_t x, int k)
 	if (k & 32) x = ((x & 0x00000000FFFFFFFFull) << 32) | ((x & 0xFFFFFFFF00000000ull) >> 32);
 	return x;
 }
+
+uint32_t slo32(uint32_t x, int k)
+{
+	return ~((~x) << k);
+}
+
+uint32_t sro32(uint32_t x, int k)
+{
+	return ~((~x) >> k);
+}
+
