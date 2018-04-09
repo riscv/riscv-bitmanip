@@ -116,6 +116,43 @@ if a0 is already either 0 or 1.)
   or a0, a1, a2
 \end{verbatim}
 
+% \section{Emulating other Bit Manipulation ISAs}
+%
+% ABM:
+% POPCNT	Population count
+% LZCNT	Leading zeros count
+%
+% BMI1:
+% ANDN	Logical and not	~x & y
+% BEXTR	Bit field extract (with register)	(src >> start) & ((1 << len)-1)[8]
+% BLSI	Extract lowest set isolated bit	x & -x
+% BLSMSK	Get mask up to lowest set bit	x ^ (x - 1)
+% BLSR	Reset lowest set bit	x & (x - 1)
+% TZCNT	Count the number of trailing zero bits	N/A
+%
+% BMI2:
+% BZHI	Zero high bits starting with specified bit position
+% MULX	Unsigned multiply without affecting flags, and arbitrary destination registers
+% PDEP	Parallel bits deposit
+% PEXT	Parallel bits extract
+% RORX	Rotate right logical without affecting flags
+% SARX	Shift arithmetic right without affecting flags
+% SHRX	Shift logical right without affecting flags
+% SHLX	Shift logical left without affecting flags
+%
+% TBM:
+% Instruction	Description[3]	Equivalent C expression[13]
+% BEXTR	Bit field extract (with immediate)	(src >> start) & ((1 << len)-1)
+% BLCFILL	Fill from lowest clear bit	x & (x + 1)
+% BLCI	Isolate lowest clear bit	x | ~(x + 1)
+% BLCIC	Isolate lowest clear bit and complement	~x & (x + 1)
+% BLCMSK	Mask from lowest clear bit	x ^ (x + 1)
+% BLCS	Set lowest clear bit	x | (x + 1)
+% BLSFILL	Fill from lowest set bit	x | (x - 1)
+% BLSIC	Isolate lowest set bit and complement	~x | (x - 1)
+% T1MSKC	Inverse mask from trailing ones	~x | (x + 1)
+% TZMSK	Mask from trailing zeros	~x & (x - 1)
+
 \section{Butterfly Operations}
 
 The \texttt{grev}, \texttt{bext}, and \texttt{bdep} instructions are commonly
