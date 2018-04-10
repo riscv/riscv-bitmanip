@@ -141,9 +141,9 @@ x86 Ext & x86 Instruction & \multicolumn{2}{c}{Bytes} & RISC-V Code\tabularnewli
         &                 & x86 & RV            &\tabularnewline
 \midrule
 \endhead
-ABM  & {\tt popcnt}           & 5 &  2 & {\tt c.pcnt a0, a0}\tabularnewline
+ABM  & {\tt popcnt}           & 5 &  2 & {\tt c.pcnt a0}\tabularnewline
 \cline{2-5}
-     & {\tt lzcnt}            & 5 &  2 & {\tt c.clz a0, a0}\tabularnewline
+     & {\tt lzcnt}            & 5 &  2 & {\tt c.clz a0}\tabularnewline
 \midrule
 BMI1 & {\tt andn}             & 5 &  4 & {\tt andc a0, a2, a1}\tabularnewline
 \cline{2-5}
@@ -151,22 +151,22 @@ BMI1 & {\tt andn}             & 5 &  4 & {\tt andc a0, a2, a1}\tabularnewline
          The BMI1 {\tt bextr} instruction expects the length and start position packed in one
 	 register operand. Our version expects the length in a0, start position in a1, and source
 	 value in a2.
-                            } & 5 & 12 & {\tt c.add a0, a0, a1}\tabularnewline
+                            } & 5 & 12 & {\tt c.add a0, a1}\tabularnewline
      &                        &   &    & {\tt slo a0, zero, a0}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a0, a2}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a2}\tabularnewline
      &                        &   &    & {\tt srl a0, a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blsi}             & 5 &  6 & {\tt neg a0, a1}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blsmsk}           & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt c.xor a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.xor a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blsr}             & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
 \midrule
 BMI2 & {\tt bzhi}             & 5 &  6 & {\tt slo a0, zero, a2}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt mulx}\footnote{
          The \texttt{*x} BMI2 isnstructions just perform the indicated operation without
@@ -186,41 +186,123 @@ BMI2 & {\tt bzhi}             & 5 &  6 & {\tt slo a0, zero, a2}\tabularnewline
 \cline{2-5}
      & {\tt shlx}$^{\ref{bmix}}$ & 5 &  4 & {\tt sll}\tabularnewline
 \midrule
-TBM  & {\tt bextr} (imm)      & 7 &  4 & {\tt c.slli a0, a0, (32-START-LEN)}\tabularnewline
-     &                        &   &    & {\tt c.srli a0, a0, (32-LEN)}\tabularnewline
+TBM  & {\tt bextr} (imm)      & 7 &  4 & {\tt c.slli a0, (32-START-LEN)}\tabularnewline
+     &                        &   &    & {\tt c.srli a0, (32-LEN)}\tabularnewline
 \cline{2-5}
      & {\tt blcfill}          & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blci}             & 5 &  8 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
-     &                        &   &    & {\tt c.or a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.not a0}\tabularnewline
+     &                        &   &    & {\tt c.or a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blcic}            & 5 & 10 & {\tt addi a0, a1, 1}\tabularnewline
      &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
-     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+     &                        &   &    & {\tt c.not a0}\tabularnewline
 \cline{2-5}
      & {\tt blcmsk}           & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.xor a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.xor a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blcs}             & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.or a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.or a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blsfill}          & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt c.or a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.or a0, a1}\tabularnewline
 \cline{2-5}
      & {\tt blsic}            & 5 & 10 & {\tt addi a0, a1, -1}\tabularnewline
      &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
-     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+     &                        &   &    & {\tt c.not a0}\tabularnewline
 \cline{2-5}
      & {\tt t1mskc}           & 5 & 10 & {\tt addi a0, a1, +1}\tabularnewline
      &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
-     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+     &                        &   &    & {\tt c.not a0}\tabularnewline
 \cline{2-5}
      & {\tt t1msk}            & 5 &  8 & {\tt addi a0, a1, -1}\tabularnewline
      &                        &   &    & {\tt andc a0, a0, a1}\tabularnewline
 \bottomrule
 \end{longtable}
+
+\section{Decoding RISC-V Immediates}
+
+The following code snippets decode the immedate from RISC-V S-type, B-type, and
+J-type instructions using \texttt{bext}.
+
+\begin{small}
+\begin{center}
+\begin{tabular}{p{0in}p{0.4in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.4in}p{0.6in}p{0.4in}p{0.6in}p{0.7in}l}
+& & & & & & & & & & \\
+                      &
+\multicolumn{1}{l}{\instbit{31}} &
+\multicolumn{1}{r}{\instbit{27}} &
+\instbit{26} &
+\instbit{25} &
+\multicolumn{1}{l}{\instbit{24}} &
+\multicolumn{1}{r}{\instbit{20}} &
+\instbitrange{19}{15} &
+\instbitrange{14}{12} &
+\instbitrange{11}{7} &
+\instbitrange{6}{0} \\
+\cline{2-11}
+
+&
+\multicolumn{4}{|c|}{imm[11:5]} &
+\multicolumn{2}{c|}{rs2} &
+\multicolumn{1}{c|}{rs1} &
+\multicolumn{1}{c|}{funct3} &
+\multicolumn{1}{c|}{imm[4:0]} &
+\multicolumn{1}{c|}{opcode} & S-type \\
+\cline{2-11}
+
+&
+\multicolumn{4}{|c|}{imm[12$\vert$10:5]} &
+\multicolumn{2}{c|}{rs2} &
+\multicolumn{1}{c|}{rs1} &
+\multicolumn{1}{c|}{funct3} &
+\multicolumn{1}{c|}{imm[4:1$\vert$11]} &
+\multicolumn{1}{c|}{opcode} & B-type \\
+\cline{2-11}
+
+&
+\multicolumn{8}{|c|}{imm[20$\vert$10:1$\vert$11$\vert$19:12]} &
+\multicolumn{1}{c|}{rd} &
+\multicolumn{1}{c|}{opcode} & J-type \\
+\cline{2-11}
+
+\end{tabular}
+\end{center}
+\end{small}
+
+\begin{verbatim}
+  decode_s:
+    li t0, 0xfe000f80
+    bext a0, a0, t0
+    c.slli a0, 20
+    c.srai a0, 20
+
+  decode_b:
+    li t0, 0x80000080
+    li t1, 0x7e000f00
+    bext a1, a0, t0
+    bext a0, a0, t1
+    c.slli a1, 30
+    c.slli a0, 20
+    c.or a0, a1
+    c.srai a0, 19
+
+  decode_j:
+    li t0, 0x800ff000
+    li t1, 0x00100000
+    li t2, 0x7fe00000
+    bext a2, a0, t0
+    bext a1, a0, t1
+    bext a0, a0, t2
+    c.slli a2, 23
+    c.slli a1, 22
+    c.slli a0, 12
+    c.or a0, a2
+    c.or a0, a1
+    c.srai a0, 11
+\end{verbatim}
 
 \section{Butterfly Operations}
 

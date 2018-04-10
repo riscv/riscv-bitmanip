@@ -28,7 +28,7 @@ uint32_t signext(uint32_t data, int len)
 uint32_t uintbits32(uint32_t data, int lo, int len)
 {
 	uint32_t b = data << (32-lo-len);
-	return b >> (32 - len);
+	return b >> (32-len);
 }
 
 uint32_t sintbits32(uint32_t data, int lo, int len)
@@ -71,6 +71,38 @@ void check_s_imm(insn_t insn)
 
 	uint32_t b = bext32(insn.b, 0xfe000f80);
 	b = signext(b, 12);
+
+	assert(a == b);
+}
+
+void check_sb_imm(insn_t insn)
+{
+	uint32_t a = insn.sb_imm();
+
+	uint32_t t0 = bext32(insn.b, 0x80000080) << 11;
+	uint32_t t1 = bext32(insn.b, 0x7e000f00) << 1;
+	uint32_t b = signext(t0 | t1, 13);
+
+	assert(a == b);
+}
+
+void check_u_imm(insn_t insn)
+{
+	uint32_t a = insn.u_imm();
+
+	uint32_t b = insn.b & 0xfffff000;
+
+	assert(a == b);
+}
+
+void check_uj_imm(insn_t insn)
+{
+	uint32_t a = insn.uj_imm();
+
+	uint32_t t0 = bext32(insn.b, 0x800ff000) << 12;
+	uint32_t t1 = bext32(insn.b, 0x00100000) << 11;
+	uint32_t t2 = bext32(insn.b, 0x7fe00000) << 1;
+	uint32_t b = signext(t0 | t1 | t2, 21);
 
 	assert(a == b);
 }

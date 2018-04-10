@@ -628,10 +628,10 @@ highest set bit) can be implemented using the following 64 bit sequence that doe
 spill other registers (and thus is a prime candidate for macro-op-fusion):
 
 \begin{verbatim}
-  bsr rd, rs:
-    c.clz rd, rs
-    c.neg rd
-    addi rd, rd, 32
+  bsr rsd:
+    c.clz rsd
+    c.neg rsd
+    addi rsd, rsd, 32
 \end{verbatim}
 
 Likewise, the AMD TBM extension adds 10 x86 bit manipulation instructions. The equivalent
