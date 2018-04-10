@@ -120,8 +120,7 @@ void rv32_tbm_blcic(uint32_t x)
 	uint32_t a = ~x | (x + 1);
 
 	uint32_t b = x + 1;
-	b = ~b;
-	b = x & b;
+	b = x & ~b;
 	b = ~b;
 
 	assert(a == b);
@@ -162,8 +161,7 @@ void rv32_tbm_blsic(uint32_t x)
 	uint32_t a = ~x | (x - 1);
 
 	uint32_t b = x - 1;
-	b = ~b;
-	b = x & b;
+	b = x & ~b;
 	b = ~b;
 
 	assert(a == b);
@@ -174,8 +172,7 @@ void rv32_tbm_t1mskc(uint32_t x)
 	uint32_t a = ~x | (x + 1);
 
 	uint32_t b = x + 1;
-	b = ~b;
-	b = x & b;
+	b = x & ~b;
 	b = ~b;
 
 	assert(a == b);
@@ -186,9 +183,7 @@ void rv32_tbm_t1msk(uint32_t x)
 	uint32_t a = ~x & (x - 1);
 
 	uint32_t b = x - 1;
-	b = ~b;
-	b = x | b;
-	b = ~b;
+	b = b & ~x;
 
 	assert(a == b);
 }

@@ -120,42 +120,103 @@ if a0 is already either 0 or 1.)
   or a0, a0, t0
 \end{verbatim}
 
-% \section{Emulating other Bit Manipulation ISAs}
-%
-% ABM:
-% POPCNT	Population count
-% LZCNT	Leading zeros count
-%
-% BMI1:
-% ANDN	Logical and not	~x & y
-% BEXTR	Bit field extract (with register)	(src >> start) & ((1 << len)-1)[8]
-% BLSI	Extract lowest set isolated bit	x & -x
-% BLSMSK	Get mask up to lowest set bit	x ^ (x - 1)
-% BLSR	Reset lowest set bit	x & (x - 1)
-% TZCNT	Count the number of trailing zero bits	N/A
-%
-% BMI2:
-% BZHI	Zero high bits starting with specified bit position
-% MULX	Unsigned multiply without affecting flags, and arbitrary destination registers
-% PDEP	Parallel bits deposit
-% PEXT	Parallel bits extract
-% RORX	Rotate right logical without affecting flags
-% SARX	Shift arithmetic right without affecting flags
-% SHRX	Shift logical right without affecting flags
-% SHLX	Shift logical left without affecting flags
-%
-% TBM:
-% Instruction	Description[3]	Equivalent C expression[13]
-% BEXTR	Bit field extract (with immediate)	(src >> start) & ((1 << len)-1)
-% BLCFILL	Fill from lowest clear bit	x & (x + 1)
-% BLCI	Isolate lowest clear bit	x | ~(x + 1)
-% BLCIC	Isolate lowest clear bit and complement	~x & (x + 1)
-% BLCMSK	Mask from lowest clear bit	x ^ (x + 1)
-% BLCS	Set lowest clear bit	x | (x + 1)
-% BLSFILL	Fill from lowest set bit	x | (x - 1)
-% BLSIC	Isolate lowest set bit and complement	~x | (x - 1)
-% T1MSKC	Inverse mask from trailing ones	~x | (x + 1)
-% TZMSK	Mask from trailing zeros	~x & (x - 1)
+\section{Emulating other Bit Manipulation ISAs using macro-op fusion}
+
+The following code snippets implement all instructions from the x86 bit manipulation
+ISA extensions ABM, BMI1, BMI2, and TBM using RISC-V code that does not spill any
+registers and thus could easily be implemented in a single instruction using macro-op
+fusion. (Some of them simply map directly to instructions in this spec and so no
+macro-op fusion is needed.) Note that shorter RISC-V code sequences are possible if
+we allow spilling to temporary registers.
+
+\begin{longtable}[c]{@{}llrrl@{}}
+\caption{Emulating other Bit Manipulation ISAs using macro-op fusion}\tabularnewline
+\toprule
+x86 Ext & x86 Instruction & \multicolumn{2}{c}{Bytes} & RISC-V Code\tabularnewline
+        &                 & x86 & RV            &\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+x86 Ext & x86 Instruction & \multicolumn{2}{c}{Bytes} & RISC-V Code\tabularnewline
+        &                 & x86 & RV            &\tabularnewline
+\midrule
+\endhead
+ABM  & {\tt popcnt}           & 5 &  2 & {\tt c.pcnt a0, a0}\tabularnewline
+\cline{2-5}
+     & {\tt lzcnt}            & 5 &  2 & {\tt c.clz a0, a0}\tabularnewline
+\midrule
+BMI1 & {\tt andn}             & 5 &  4 & {\tt andc a0, a2, a1}\tabularnewline
+\cline{2-5}
+     & {\tt bextr} (regs)\footnote{
+         The BMI1 {\tt bextr} instruction expects the length and start position packed in one
+	 register operand. Our version expects the length in a0, start position in a1, and source
+	 value in a2.
+                             }& 5 & 12 & {\tt c.add a0, a0, a1}\tabularnewline
+     &                        &   &    & {\tt slo a0, zero, a0}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a0, a2}\tabularnewline
+     &                        &   &    & {\tt srl a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blsi}             & 5 &  6 & {\tt neg a0, a1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blsmsk}           & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
+     &                        &   &    & {\tt c.xor a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blsr}             & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+\midrule
+BMI1 & {\tt bzhi}             & 5 &  6 & {\tt slo a0, zero, a2}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt mulx}             & 5 &  4 & {\tt mul}\tabularnewline
+\cline{2-5}
+     & {\tt pdep}             & 5 &  4 & {\tt bdep}\tabularnewline
+\cline{2-5}
+     & {\tt pext}             & 5 &  4 & {\tt bext}\tabularnewline
+\cline{2-5}
+     & {\tt rorx}             & 6 &  4 & {\tt rori}\tabularnewline
+\cline{2-5}
+     & {\tt sarx}             & 5 &  4 & {\tt sra}\tabularnewline
+\cline{2-5}
+     & {\tt shrx}             & 5 &  4 & {\tt srl}\tabularnewline
+\cline{2-5}
+     & {\tt shlx}             & 5 &  4 & {\tt sll}\tabularnewline
+\midrule
+TBM  & {\tt bextr} (imm)      & 7 &  4 & {\tt c.slli a0, a0, (32-START-LEN)}\tabularnewline
+     &                        &   &    & {\tt c.srli a0, a0, (32-LEN)}\tabularnewline
+\cline{2-5}
+     & {\tt blcfill}          & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
+     &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blci}             & 5 &  8 & {\tt addi a0, a1, 1}\tabularnewline
+     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+     &                        &   &    & {\tt c.or a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blcic}            & 5 & 10 & {\tt addi a0, a1, 1}\tabularnewline
+     &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
+     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+\cline{2-5}
+     & {\tt blcmsk}           & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
+     &                        &   &    & {\tt c.xor a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blcs}             & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
+     &                        &   &    & {\tt c.or a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blsfill}          & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
+     &                        &   &    & {\tt c.or a0, a0, a1}\tabularnewline
+\cline{2-5}
+     & {\tt blsic}            & 5 & 10 & {\tt addi a0, a1, -1}\tabularnewline
+     &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
+     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+\cline{2-5}
+     & {\tt t1mskc}           & 5 & 10 & {\tt addi a0, a1, +1}\tabularnewline
+     &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
+     &                        &   &    & {\tt c.not a0, a0}\tabularnewline
+\cline{2-5}
+     & {\tt t1msk}            & 5 &  8 & {\tt addi a0, a1, -1}\tabularnewline
+     &                        &   &    & {\tt andc a0, a0, a1}\tabularnewline
+\bottomrule
+\end{longtable}
 
 \section{Butterfly Operations}
 
