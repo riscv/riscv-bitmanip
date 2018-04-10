@@ -151,7 +151,7 @@ BMI1 & {\tt andn}             & 5 &  4 & {\tt andc a0, a2, a1}\tabularnewline
          The BMI1 {\tt bextr} instruction expects the length and start position packed in one
 	 register operand. Our version expects the length in a0, start position in a1, and source
 	 value in a2.
-                             }& 5 & 12 & {\tt c.add a0, a0, a1}\tabularnewline
+                            } & 5 & 12 & {\tt c.add a0, a0, a1}\tabularnewline
      &                        &   &    & {\tt slo a0, zero, a0}\tabularnewline
      &                        &   &    & {\tt c.and a0, a0, a2}\tabularnewline
      &                        &   &    & {\tt srl a0, a0, a1}\tabularnewline
@@ -165,22 +165,26 @@ BMI1 & {\tt andn}             & 5 &  4 & {\tt andc a0, a2, a1}\tabularnewline
      & {\tt blsr}             & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
      &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
 \midrule
-BMI1 & {\tt bzhi}             & 5 &  6 & {\tt slo a0, zero, a2}\tabularnewline
+BMI2 & {\tt bzhi}             & 5 &  6 & {\tt slo a0, zero, a2}\tabularnewline
      &                        &   &    & {\tt c.and a0, a0, a1}\tabularnewline
 \cline{2-5}
-     & {\tt mulx}             & 5 &  4 & {\tt mul}\tabularnewline
+     & {\tt mulx}\footnote{
+         The \texttt{*x} BMI2 isnstructions just perform the indicated operation without
+	 changing any flags. RISC-V does not use flags, so this instructions trivially
+	 just map to their regular RISC-V counterparts.
+                \label{bmix}} & 5 &  4 & {\tt mul}\tabularnewline
 \cline{2-5}
      & {\tt pdep}             & 5 &  4 & {\tt bdep}\tabularnewline
 \cline{2-5}
      & {\tt pext}             & 5 &  4 & {\tt bext}\tabularnewline
 \cline{2-5}
-     & {\tt rorx}             & 6 &  4 & {\tt rori}\tabularnewline
+     & {\tt rorx}$^{\ref{bmix}}$ & 6 &  4 & {\tt rori}\tabularnewline
 \cline{2-5}
-     & {\tt sarx}             & 5 &  4 & {\tt sra}\tabularnewline
+     & {\tt sarx}$^{\ref{bmix}}$ & 5 &  4 & {\tt sra}\tabularnewline
 \cline{2-5}
-     & {\tt shrx}             & 5 &  4 & {\tt srl}\tabularnewline
+     & {\tt shrx}$^{\ref{bmix}}$ & 5 &  4 & {\tt srl}\tabularnewline
 \cline{2-5}
-     & {\tt shlx}             & 5 &  4 & {\tt sll}\tabularnewline
+     & {\tt shlx}$^{\ref{bmix}}$ & 5 &  4 & {\tt sll}\tabularnewline
 \midrule
 TBM  & {\tt bextr} (imm)      & 7 &  4 & {\tt c.slli a0, a0, (32-START-LEN)}\tabularnewline
      &                        &   &    & {\tt c.srli a0, a0, (32-LEN)}\tabularnewline
