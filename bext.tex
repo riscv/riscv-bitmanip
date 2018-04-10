@@ -548,7 +548,7 @@ deposit mask in rs2.
 \begin{verbatim}
 uint_xlen_t bext(uint_xlen_t v, uint_xlen_t mask)
 {
-    uint32_t c = 0, m = 1;
+    uint_xlen_t c = 0, m = 1;
     while (mask) {
         uint_xlen_t b = mask & -mask;
         if (v & b)
@@ -559,7 +559,7 @@ uint_xlen_t bext(uint_xlen_t v, uint_xlen_t mask)
     return c;
 }
 
-uint_xlen_t bdep32(uint_xlen_t v, uint_xlen_t mask)
+uint_xlen_t bdep(uint_xlen_t v, uint_xlen_t mask)
 {
     uint_xlen_t c = 0, m = 1;
     while (mask) {
