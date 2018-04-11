@@ -95,7 +95,7 @@ This operation counts the total number of set bits in the register.
 uint_xlen_t pcnt(uint_xlen_t rs1)
 {
     int count = 0;
-    for(int index=0; index < XLEN; index++)
+    for (int index = 0; index < XLEN; index++)
         count += (rs1 >> index) & 1;
     return count;
 }
@@ -158,7 +158,7 @@ immediate is true for the current stage, swaps each adjacent pair of
 \texttt{grevi} `butterfly' implementation in C on various architectures
 
 \begin{verbatim}
-uint32_t grevi32(uint32_t rs1,int12_t immed)
+uint32_t grevi32(uint32_t rs1, int12_t immed)
 {
     uint32_t x = rs1;
     uint5_t k = (uint12_t)immed;
@@ -170,7 +170,7 @@ uint32_t grevi32(uint32_t rs1,int12_t immed)
     return x;
 }
 
-uint64_t grevi64(uint32_t rs1,int12_t immed)
+uint64_t grevi64(uint32_t rs1, int12_t immed)
 {
     uint64_t x = rs1;
     uint6_t k = (uint12_t)immed;
@@ -307,30 +307,26 @@ operations, except the shift shifts in ones values.
 \begin{verbatim}
 uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t amount=(rs2 & (XLEN-1));
-    uint_xlen_t mask=((1 << amount)-1);
-    return (rs1 << amount) | mask;
+    int12_t shamt = rs2 & (XLEN-1);
+    return ~(~rs1 << shamt);
 }
 
 uint_xlen_t sloi(uint_xlen_t rs1, int12_t immed)
 {
-    int12_t amount=(immed & (XLEN-1));
-    uint_xlen_t mask=((1 << amount)-1);
-    return (rs1 << amount) | mask;
+    int12_t shamt = immed & (XLEN-1);
+    return ~(~rs1 << shamt);
 }
 
 uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t amount=(rs2 & (XLEN-1));
-    uint_xlen_t mask=~((1 << (XLEN-amount))-1);
-    return (rs1 >> amount) | mask;
+    int12_t shamt = rs2 & (XLEN-1);
+    return ~(~rs1 >> shamt);
 }
 
 uint_xlen_t sroi(uint_xlen_t rs1, int12_t immed)
 {
-    int12_t amount=(immed & (XLEN-1));
-    uint_xlen_t mask=~((1 << (XLEN-amount))-1);
-    return (rs1 >> amount) | mask;
+    int12_t shamt = immed & (XLEN-1);
+    return ~(~rs1 >> shamt);
 }
 \end{verbatim}
 
@@ -414,26 +410,26 @@ register, in order. This is also called `circular shift'.
 \begin{verbatim}
 uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t amount=(rs2 & (XLEN-1));
-    return (rs1 << amount) | (rsl >> (XLEN-amount));
+    int12_t shamt = rs2 & (XLEN-1);
+    return (rs1 << shamt) | (rsl >> (XLEN-shamt));
 }
 
 uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t amount=(rs2 & (XLEN-1));
-    return (rs1 >> amount) | (rsl << (XLEN-amount));
+    int12_t shamt = rs2 & (XLEN-1);
+    return (rs1 >> shamt) | (rsl << (XLEN-shamt));
 }
 
 int_xlen_t rori(uint_xlen_t rs1, int12_t immed)
 {
-    int12_t amount=(immed & (XLEN-1));
-    return (rs1 >> amount) | (rs1 << (XLEN-amount));
+    int12_t shamt = immed & (XLEN-1);
+    return (rs1 >> shamt) | (rs1 << (XLEN-shamt));
 }
 \end{verbatim}
 
 \input{bextrox.tex}
 
-\texttt{ror(i),rol(i)} is implemented very similarly to the other shift
+Rotate shift is implemented very similarly to the other shift
 instructions. One possible way to encode it is to re-use the way that
 bit 30 in the instruction encoding selects `arithmetic shift' when bit
 31 is zero (signalling a logical-zero shift). We can re-use this so that
