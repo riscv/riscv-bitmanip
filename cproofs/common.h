@@ -118,3 +118,19 @@ uint32_t sro32(uint32_t x, int k)
 	return ~((~x) >> k);
 }
 
+uint32_t sll32(uint32_t x, int k)
+{
+	return x << k;
+}
+
+uint32_t srl32(uint32_t x, int k)
+{
+	return x >> k;
+}
+
+uint32_t sra32(uint32_t x, int k)
+{
+	if (x >> 31)
+		return ~(~x >> k);
+	return x >> k;
+}

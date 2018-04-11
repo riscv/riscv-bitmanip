@@ -19,19 +19,19 @@
 
 // ---------------------------------------------------------
 
-uint32_t signext(uint32_t data, int len)
+inline uint32_t signext(uint32_t data, int len)
 {
 	uint32_t smask = ((data >> (len-1)) & 1) ? 0xffffffff : 0;
 	return data | (smask << len);
 }
 
-uint32_t uintbits32(uint32_t data, int lo, int len)
+inline uint32_t uintbits32(uint32_t data, int lo, int len)
 {
 	uint32_t b = data << (32-lo-len);
 	return b >> (32-len);
 }
 
-uint32_t sintbits32(uint32_t data, int lo, int len)
+inline uint32_t sintbits32(uint32_t data, int lo, int len)
 {
 	return signext(uintbits32(data, lo, len), len);
 }
@@ -39,14 +39,15 @@ uint32_t sintbits32(uint32_t data, int lo, int len)
 struct insn_t
 {
 	uint32_t b;
+	insn_t(uint32_t b) : b(b) { }
 	uint32_t x(int lo, int len) { return uintbits32(b, lo, len); }
 	uint32_t xs(int lo, int len) { return sintbits32(b, lo, len); }
 	uint32_t imm_sign() { return xs(31, 1); }
 
-	int32_t s_imm() { return x(7, 5) + (xs(25, 7) << 5); }
-	int32_t sb_imm() { return (x(8, 4) << 1) + (x(25,6) << 5) + (x(7,1) << 11) + (imm_sign() << 12); }
-	int32_t u_imm() { return int32_t(b) >> 12 << 12; }
-	int32_t uj_imm() { return (x(21, 10) << 1) + (x(20, 1) << 11) + (x(12, 8) << 12) + (imm_sign() << 20); }
+	inline int32_t s_imm() { return x(7, 5) + (xs(25, 7) << 5); }
+	inline int32_t sb_imm() { return (x(8, 4) << 1) + (x(25,6) << 5) + (x(7,1) << 11) + (imm_sign() << 12); }
+	inline int32_t u_imm() { return int32_t(b) >> 12 << 12; }
+	inline int32_t uj_imm() { return (x(21, 10) << 1) + (x(20, 1) << 11) + (x(12, 8) << 12) + (imm_sign() << 20); }
 
 	int32_t rvc_imm() { return x(2, 5) + (xs(12, 1) << 5); }
 	int32_t rvc_zimm() { return x(2, 5) + (x(12, 1) << 5); }
@@ -65,44 +66,65 @@ struct insn_t
 
 // ---------------------------------------------------------
 
+extern "C" uint32_t decode_s_imm(uint32_t b);
+extern "C" uint32_t decode_sb_imm(uint32_t b);
+extern "C" uint32_t decode_uj_imm(uint32_t b);
+
+uint32_t decode_s_imm(uint32_t b)
+{
+	return insn_t(b).s_imm();
+}
+
+uint32_t decode_sb_imm(uint32_t b)
+{
+	return insn_t(b).sb_imm();
+}
+
+uint32_t decode_uj_imm(uint32_t b)
+{
+	return insn_t(b).uj_imm();
+}
+
+// ---------------------------------------------------------
+
 void check_s_imm(insn_t insn)
 {
-	uint32_t a = insn.s_imm();
+	uint32_t ref = insn.s_imm();
 
-	uint32_t b = bext32(insn.b, 0xfe000f80);
-	b = signext(b, 12);
+	uint32_t a0 = bext32(insn.b, 0xfe000f80);
+	a0 = sll32(a0, 20);
+	a0 = sra32(a0, 20);
 
-	assert(a == b);
+	assert(ref == a0);
 }
 
 void check_sb_imm(insn_t insn)
 {
-	uint32_t a = insn.sb_imm();
+	uint32_t ref = insn.sb_imm();
 
-	uint32_t t0 = bext32(insn.b, 0x80000080) << 11;
-	uint32_t t1 = bext32(insn.b, 0x7e000f00) << 1;
-	uint32_t b = signext(t0 | t1, 13);
+	uint32_t a1 = bext32(insn.b, 0x80000080);
+	uint32_t a0 = bext32(insn.b, 0x7e000f00);
+	a1 = sll32(a1, 30);
+	a0 = sll32(a0, 20);
+	a0 = a0 | a1;
+	a0 = sra32(a0, 19);
 
-	assert(a == b);
-}
-
-void check_u_imm(insn_t insn)
-{
-	uint32_t a = insn.u_imm();
-
-	uint32_t b = insn.b & 0xfffff000;
-
-	assert(a == b);
+	assert(ref == a0);
 }
 
 void check_uj_imm(insn_t insn)
 {
-	uint32_t a = insn.uj_imm();
+	uint32_t ref = insn.uj_imm();
 
-	uint32_t t0 = bext32(insn.b, 0x800ff000) << 12;
-	uint32_t t1 = bext32(insn.b, 0x00100000) << 11;
-	uint32_t t2 = bext32(insn.b, 0x7fe00000) << 1;
-	uint32_t b = signext(t0 | t1 | t2, 21);
+	uint32_t a2 = bext32(insn.b, 0x800ff000);
+	uint32_t a1 = bext32(insn.b, 0x00100000);
+	uint32_t a0 = bext32(insn.b, 0x7fe00000);
+	a2 = sll32(a2, 23);
+	a1 = sll32(a1, 22);
+	a0 = sll32(a0, 12);
+	a0 = a0 | a2;
+	a0 = a0 | a1;
+	a0 = sra32(a0, 11);
 
-	assert(a == b);
+	assert(ref == a0);
 }
