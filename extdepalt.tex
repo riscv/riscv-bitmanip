@@ -83,10 +83,10 @@ mnemonic with a fourth constant parameter for $N$, and also provide
 
 With the help of \texttt{grevm}$N$ an arbitrary bit permutation can be computed
 using $4(log_2\textrm{XLEN})-2$ instructions and $(log_2\textrm{XLEN})-0.5$ data words using a
-Beneš network. For example on RV32:
+{\it Bene\v{s} network}. For example on RV32:
 
 \begin{verbatim}
-  lhu a2, 4(a1)
+  lhu a2, 0(a1)
   grevm a0, a0, a2, 4
 
   lhu a2, 2(a1)
@@ -153,7 +153,10 @@ uint_xlen_t unzip(uint_xlen_t rs1)
 \end{verbatim}
 
 The \texttt{zip} instruction followed by a \texttt{grevm0} instruction
-implements a single stage of an omega network.
+implements a single stage of an {\it omega network}.
+
+The \texttt{unzip} instruction followed by a \texttt{grevm4} instruction (or
+\texttt{grevm5} on RV64) implements a single stage of a {\it flip network}.
 
 The \texttt{zip} instruction with the upper half of its input cleared performs
 the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
