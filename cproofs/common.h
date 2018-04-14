@@ -35,6 +35,14 @@ uint64_t xorshift64()
 	return (r << 32) | xorshift32();
 }
 
+uint32_t clz32(uint32_t rs1)
+{
+	for (int count = 0; count < 32; count++)
+		if ((rs1 << count) >> 31)
+			return count;
+	return 32;
+}
+
 uint32_t bext32(uint32_t v, uint32_t mask)
 {
 	uint32_t c = 0, m = 1;
@@ -105,6 +113,26 @@ uint64_t grev64(uint64_t x, int k)
 	if (k &  8) x = ((x & 0x00FF00FF00FF00FFull) <<  8) | ((x & 0xFF00FF00FF00FF00ull) >>  8);
 	if (k & 16) x = ((x & 0x0000FFFF0000FFFFull) << 16) | ((x & 0xFFFF0000FFFF0000ull) >> 16);
 	if (k & 32) x = ((x & 0x00000000FFFFFFFFull) << 32) | ((x & 0xFFFFFFFF00000000ull) >> 32);
+	return x;
+}
+
+uint32_t zip32(uint32_t rs1)
+{
+	uint32_t x = 0;
+	for (int i = 0; i < 16; i++) {
+		x |= ((rs1 >> i) & 1) << (2*i);
+		x |= ((rs1 >> (i+16)) & 1) << (2*i+1);
+	}
+	return x;
+}
+
+uint32_t unzip32(uint32_t rs1)
+{
+	uint32_t x = 0;
+	for (int i = 0; i < 16; i++) {
+		x |= ((rs1 >> (2*i)) & 1) << i;
+		x |= ((rs1 >> (2*i+1)) & 1) << (i+16);
+	}
 	return x;
 }
 

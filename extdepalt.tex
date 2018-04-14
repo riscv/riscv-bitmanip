@@ -1,0 +1,178 @@
+\chapter{Alternatives to \texttt{bext} and \texttt{bdep}}
+
+There are issues with \texttt{bext} and \texttt{bdep}. One is the high hardware cost
+of the unit performing the operations. Another is the open question of patents potentially
+preventing implementations to use the best-known single-cycle implementations.
+
+Various multi-cycle implementations have been proposed, but preliminary evaluations of
+real-world bit manipulation tasks show that multi-cycle \texttt{bext} and \texttt{bdep}
+often are not fast outperform algortihms that use sequences of shifts and bit
+masks.
+
+However, some operations that would benefit from \texttt{bext} and \texttt{bdep} would
+be very hard to implement without them. Some examples are Bit scatter/gather
+(compress/uncompress) operations, goats-and-sheeps, and calulating the index of the Nth
+set bit in a word. For example, the following code efficiently calculates the
+index of the twelfth set bit in {\tt a0} using \texttt{bdep}:
+
+\begin{verbatim}
+  li a1, 0x00000800
+  bdep a0, a0, a1
+  brev a0, a0
+  clz a0, a0
+\end{verbatim}
+
+The instruction encoding space used by \texttt{bext} and \texttt{bdep} is
+minimal, i.e. not much is gained by preserving the opcode space occupied
+by the two instructions. So one possible solution would be to make \texttt{bext}
+and \texttt{bdep} optional features that may be emulated by software, and add
+fast implementations of the much simpler instructions below that simplify some
+of the most common cases that would otherwise benefit from a fast \texttt{bext}
+and \texttt{bdep} unit.
+
+For small cores this would be an immense simplification because they would not
+need to implement \texttt{bext} and \texttt{bdep} in hardware. For large cores
+that provide \texttt{bext} and \texttt{bdep} hardware, adding the instructions
+below is only a minor additional effort. But this additional effort would not
+be in vain because the instructions below are somewhat orthoganal to
+\texttt{bext} and \texttt{bdep}, so that overall the combined feature set of
+\texttt{bext} and \texttt{bdep} and the instructions below would be even more
+powerful than \texttt{bext} and \texttt{bdep} alone.
+
+A compiler would decide to use \texttt{bext} or \texttt{bdep} based on the optimization
+profile for the concrete processor it is optimizing for, similar to the decision whether
+to use MUL or DIV with a constant, or to perform the same operation using a
+longer sequence of simpler operations.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Generalized Reverse Masked (\texttt{grevm0, grevm1, ...})}
+
+The \texttt{grevm}$N$ instructions performs the \texttt{grev} operation
+with argument $2^N$, followed by a mask uperation using the lower
+$\textrm{XLEN}/2$ bits of the second argument, one mask bit for each pair of bits
+that may be swapped by the \texttt{grev} operation. If the mask bit
+is set then the swap is taken, otherwise the bit values stay in their
+position.
+
+\begin{verbatim}
+uint_xlen_t swapbits(uint_xlen_t x, int p, int q)
+{
+    assert(p < q);
+    x = x ^ ((x & (1 << p)) << (q-p));
+    x = x ^ ((x & (1 << q)) >> (q-p));
+    x = x ^ ((x & (1 << p)) << (q-p));
+}
+
+uint_xlen_t grevmN(uint_xlen_t rs1, uint_xlen_t rs1, int N)
+{
+    int a = 1 << N, b = 2*b;
+    uint_xlen_t x = rs1;
+    for (int i = 0; i < XLEN/2; i++) {
+        int p = b*(i/a) + i%a, q = b*(i/a) + i%a + a;
+        if (rs1 & (1 << i))
+            x = swapbits(x, p, q);
+    }
+    return x;
+}
+\end{verbatim}
+
+The assembler should implement those instructions using a generic \texttt{grevm}
+mnemonic with a fourth constant parameter for $N$, and also provide
+\texttt{grevm}$N$ pseudo-ops.
+
+With the help of \texttt{grevm}$N$ an arbitrary bit permutation can be computed
+using $4(log_2\textrm{XLEN})-2$ instructions and $(log_2\textrm{XLEN})-0.5$ data words using a
+Beneš network. For example on RV32:
+
+\begin{verbatim}
+  lhu a2, 4(a1)
+  grevm a0, a0, a2, 4
+
+  lhu a2, 2(a1)
+  grevm a0, a0, a2, 3
+
+  lhu a2, 4(a1)
+  grevm a0, a0, a2, 2
+
+  lhu a2, 6(a1)
+  grevm a0, a0, a2, 1
+
+  lhu a2, 8(a1)
+  grevm a0, a0, a2, 0
+
+  lhu a2, 10(a1)
+  grevm a0, a0, a2, 1
+
+  lhu a2, 12(a1)
+  grevm a0, a0, a2, 2
+
+  lhu a2, 14(a1)
+  grevm a0, a0, a2, 3
+
+  lhu a2, 16(a1)
+  grevm a0, a0, a2, 4
+\end{verbatim}
+
+Similarly, a butterfly network or inverse butterfly network can be implemented
+in $2(log_2\textrm{XLEN})$ instructions and $(log_2\textrm{XLEN})/2$ data words.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit Shuffle (\texttt{zip,\ unzip})}
+
+The \texttt{zip} instruction interleaves the bits of the lower and upper
+half of its argument. The \texttt{unzip} instruction performs the inverse.
+
+In other words, \texttt{zip} performs a rotate left shift on the bit indices,
+and \texttt{unzip} performs a rotate right shift on the bit indices.
+
+Performing \texttt{zip} $log_2\textrm{XLEN}$ times is the identity. Performing it
+$(log_2\textrm{XLEN})-1$ times is equivalent to one execution of \texttt{unzip}.
+
+\begin{verbatim}
+uint_xlen_t zip(uint_xlen_t rs1)
+{
+    uint_xlen_t x = 0;
+    for (int i = 0; i < XLEN/2; i++) {
+        x |= ((rs1 >> i) & 1) << (2*i);
+        x |= ((rs1 >> (i+XLEN/2)) & 1) << (2*i+1);
+    }
+    return x;
+}
+
+uint_xlen_t unzip(uint_xlen_t rs1)
+{
+    uint_xlen_t x = 0;
+    for (int i = 0; i < XLEN/2; i++) {
+        x |= ((rs1 >> (2*i)) & 1) << i;
+        x |= ((rs1 >> (2*i+1)) & 1) << (i+XLEN/2);
+    }
+    return x;
+}
+\end{verbatim}
+
+The \texttt{zip} instruction followed by a \texttt{grevm0} instruction
+implements a single stage of an omega network.
+
+The \texttt{zip} instruction with the upper half of its input cleared performs
+the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
+0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits
+in the lower quarter of the input word by a spacing of 4 bits.
+
+For example, calculating the bitwise prefix sum of the bits in the lower byte
+of a 32 bit word on RV32:
+
+\begin{verbatim}
+  andi a0, a0, 0xff
+  zip a0, a0
+  zip a0, a0
+  slli a1, a0, 4
+  add a0, a1
+  slli a1, a0, 8
+  add a0, a1
+  slli a1, a0, 16
+  add a0, a1
+\end{verbatim}
+
+The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.
