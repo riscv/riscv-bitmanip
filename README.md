@@ -16,3 +16,5 @@ group, if there will be one.
 
 See [xbitmanip-draft.pdf](xbitmanip-draft.pdf) for a pre-built version
 of the PDF spec document.
+
+There is also a [riscv-xbitmanip google group](https://groups.google.com/forum/#!forum/riscv-xbitmanip).
