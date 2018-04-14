@@ -6,7 +6,7 @@ preventing implementations to use the best-known single-cycle implementations.
 
 Various multi-cycle implementations have been proposed, but preliminary evaluations of
 real-world bit manipulation tasks show that multi-cycle \texttt{bext} and \texttt{bdep}
-often are not fast outperform algortihms that use sequences of shifts and bit
+often are not fast enough to outperform algortihms that use sequences of shifts and bit
 masks.
 
 However, some operations that would benefit from \texttt{bext} and \texttt{bdep} would
@@ -42,7 +42,7 @@ powerful than \texttt{bext} and \texttt{bdep} alone.
 A compiler would decide to use \texttt{bext} or \texttt{bdep} based on the optimization
 profile for the concrete processor it is optimizing for, similar to the decision whether
 to use MUL or DIV with a constant, or to perform the same operation using a
-longer sequence of simpler operations.
+longer sequence of much simpler operations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
