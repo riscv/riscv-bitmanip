@@ -290,15 +290,30 @@ J-type instructions.
     c.srai a0, 19
     ret
 
+  // variant 1
+  decode_j:
+    li t0, 0x0fff0000
+    grevm3 a0, a0, t0
+    li t0, 0x0f900000
+    grevm2 a0, a0, t0
+    li t0, 0x70fe0000
+    grevm4 a0, a0, t0
+    li t0, 0x8ff170fe
+    bext a0, a0, t0
+    c.slli a0, 12
+    c.srai a0, 11
+    ret
+
+  // variant 2
   decode_j:
     li t0, 0x800ff000
-    li t1, 0x00100000
-    li t2, 0x7fe00000
+    li a1, 0x00100000
+    li t1, 0x7fe00000
     bext a2, a0, t0
-    bext a1, a0, t1
-    bext a0, a0, t2
+    c.and a1, a0
+    bext a0, a0, t1
     c.slli a2, 23
-    c.slli a1, 22
+    c.slli a1, 2
     c.slli a0, 12
     c.or a0, a2
     c.or a0, a1
