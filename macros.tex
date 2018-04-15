@@ -308,10 +308,10 @@ J-type instructions.
   decode_j:
     li t0, 0x800ff000
     li a1, 0x00100000
-    li t1, 0x7fe00000
     bext a2, a0, t0
     c.and a1, a0
-    bext a0, a0, t1
+    c.slli a0, a0, 1
+    c.srli a0, a0, 22
     c.slli a2, 23
     c.slli a1, 2
     c.slli a0, 12

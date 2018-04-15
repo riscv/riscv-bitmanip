@@ -146,14 +146,14 @@ void check_uj_imm2(insn_t insn)
 	uint32_t ref = insn.uj_imm();
 
 	uint32_t a0 = insn.b;
-	uint32_t t0, t1, t2, a1, a2;
+	uint32_t t0, a1, a2;
 
 	t0 = 0x800ff000;
 	a1 = 0x00100000;
-	t1 = 0x7fe00000;
 	a2 = bext32(a0, t0);
 	a1 = a1 & a0;
-	a0 = bext32(a0, t1);
+	a0 = sll32(a0, 1);
+	a0 = srl32(a0, 22);
 	a2 = sll32(a2, 23);
 	a1 = sll32(a1, 2);
 	a0 = sll32(a0, 12);
