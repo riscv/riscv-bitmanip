@@ -55,6 +55,11 @@ that may be swapped by the \texttt{grev} operation. If the mask bit
 is set then the swap is taken, otherwise the bit values stay in their
 position.
 
+The 32 bit version of this command uses the upper 16 bits of the second argument
+as mask if the lower 16 bits are all cleared. This guarantees that a constant
+mask can always be set using a single {\tt lui} instruction while preserving
+the ability to load a mask using the {\tt lhu} instruction.
+
 \begin{verbatim}
 uint_xlen_t swapbits(uint_xlen_t x, int p, int q)
 {
@@ -69,6 +74,8 @@ uint_xlen_t grevmN(uint_xlen_t rs1, uint_xlen_t rs2, int N)
 {
     int a = 1 << N, b = 2*a;
     uint_xlen_t x = rs1;
+    if (XLEN == 32 && !(rs2 & 0xffff))
+        rs2 = rs2 >> 16;
     for (int i = 0; i < XLEN/2; i++) {
         int p = b*(i/a) + i%a, q = p + a;
         if (rs2 & (1 << i))

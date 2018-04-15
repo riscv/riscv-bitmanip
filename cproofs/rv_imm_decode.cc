@@ -91,7 +91,11 @@ void check_s_imm(insn_t insn)
 {
 	uint32_t ref = insn.s_imm();
 
-	uint32_t a0 = bext32(insn.b, 0xfe000f80);
+	uint32_t a0 = insn.b;
+	uint32_t t0;
+
+	t0 = 0xfe000f80;
+	a0 = bext32(a0, t0);
 	a0 = sll32(a0, 20);
 	a0 = sra32(a0, 20);
 
@@ -102,11 +106,15 @@ void check_sb_imm(insn_t insn)
 {
 	uint32_t ref = insn.sb_imm();
 
-	uint32_t a1 = bext32(insn.b, 0x80000080);
-	uint32_t a0 = bext32(insn.b, 0x7e000f00);
-	a1 = sll32(a1, 30);
+	uint32_t a0 = insn.b;
+	uint32_t t0;
+
+	t0 = 0x01ff0000;
+	a0 = grevm32(a0, t0, 3);
+	a0 = zip32(a0);
+	t0 = 0xeaa80055;
+	a0 = bext32(a0, t0);
 	a0 = sll32(a0, 20);
-	a0 = a0 | a1;
 	a0 = sra32(a0, 19);
 
 	assert(ref == a0);
@@ -116,82 +124,25 @@ void check_uj_imm(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
-	uint32_t a2 = bext32(insn.b, 0x800ff000);
-	uint32_t a1 = bext32(insn.b, 0x00100000);
-	uint32_t a0 = bext32(insn.b, 0x7fe00000);
-	a2 = sll32(a2, 23);
-	a1 = sll32(a1, 22);
-	a0 = sll32(a0, 12);
-	a0 = a0 | a2;
-	a0 = a0 | a1;
-	a0 = sra32(a0, 11);
-
-	assert(ref == a0);
-}
-
-// ---------------------------------------------------------
-
-void check_s_imm2(insn_t insn)
-{
-	uint32_t ref = insn.s_imm();
-
-	uint32_t t0 = 0x0107;
-	uint32_t t1 = 0x0b07;
-	uint32_t t2 = 0x0628;
-	uint32_t t3 = 0x0a1c;
-	uint32_t t4 = 0x01fb;
-
 	uint32_t a0 = insn.b;
+	uint32_t t0;
+
+	a0 = ror32(a0, 5);
+	a0 = zip32(a0);
+	t0 = 0x75110000;
 	a0 = grevm32(a0, t0, 3);
-	a0 = grevm32(a0, t1, 2);
-	a0 = grevm32(a0, t2, 1);
-	a0 = grevm32(a0, t3, 0);
-	a0 = grevm32(a0, t4, 4);
-	a0 = sra32(a0, 20);
-
-	assert(ref == a0);
-}
-
-void check_sb_imm2(insn_t insn)
-{
-	uint32_t ref = insn.sb_imm();
-
-	uint32_t t0 = 0x5040;
-	uint32_t t1 = 0x00ef;
-	uint32_t t2 = 0x4d1f;
-	uint32_t t3 = 0x70f3;
-	uint32_t t4 = 0x40f6;
-
-	uint32_t a0 = insn.b;
-	a0 = grevm32(a0, t0, 1);
-	a0 = grevm32(a0, t1, 3);
-	a0 = grevm32(a0, t2, 2);
-	a0 = grevm32(a0, t3, 0);
-	a0 = grevm32(a0, t4, 4);
-	a0 = sra32(a0, 19);
-	a0 = a0 & ~1;
-
-	assert(ref == a0);
-}
-
-void check_uj_imm2(insn_t insn)
-{
-	uint32_t ref = insn.uj_imm();
-
-	uint32_t t0 = 0x001f;
-	uint32_t t1 = 0x00ff;
-	uint32_t t2 = 0x8100;
-	uint32_t t3 = 0x1e00;
-
-	uint32_t a0 = insn.b;
+	a0 = ror32(a0, 4);
+	a0 = unzip32(a0);
+	t0 = 0xfffe0000;
 	a0 = grevm32(a0, t0, 4);
-	a0 = grevm32(a0, t1, 2);
-	a0 = ror32(a0, 15);
-	a0 = grevm32(a0, t2, 0);
-	a0 = grevm32(a0, t3, 3);
-	a0 = ror32(a0, 26);
+	a0 = ror32(a0, 1);
+	t0 = 0xe1ff0000;
+	a0 = grevm32(a0, t0, 3);
+	a0 = ror32(a0, 5);
+	t0 = 0x47f08bff;
+	a0 = bext32(a0, t0);
+	a0 = sll32(a0, 12);
 	a0 = sra32(a0, 11);
-	a0 = a0 & ~1;
 
 	assert(ref == a0);
 }

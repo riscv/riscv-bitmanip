@@ -129,6 +129,8 @@ uint32_t grevm32(uint32_t rs1, uint32_t rs2, int N)
 {
 	int a = 1 << N, b = 2 * a;
 	uint32_t x = rs1;
+	if (!(rs2 & 0xffff))
+		rs2 = rs2 >> 16;
 	for (int i = 0; i < 16; i++) {
 		int p = b * (i / a) + i % a, q = p + a;
 		if (rs2 & (1 << i))
