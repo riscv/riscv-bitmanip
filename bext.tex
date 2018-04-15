@@ -307,25 +307,25 @@ operations, except the shift shifts in ones values.
 \begin{verbatim}
 uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t shamt = rs2 & (XLEN-1);
+    int shamt = rs2 & (XLEN-1);
     return ~(~rs1 << shamt);
 }
 
 uint_xlen_t sloi(uint_xlen_t rs1, int12_t immed)
 {
-    int12_t shamt = immed & (XLEN-1);
+    int shamt = immed & (XLEN-1);
     return ~(~rs1 << shamt);
 }
 
 uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t shamt = rs2 & (XLEN-1);
+    int shamt = rs2 & (XLEN-1);
     return ~(~rs1 >> shamt);
 }
 
 uint_xlen_t sroi(uint_xlen_t rs1, int12_t immed)
 {
-    int12_t shamt = immed & (XLEN-1);
+    int shamt = immed & (XLEN-1);
     return ~(~rs1 >> shamt);
 }
 \end{verbatim}
@@ -410,19 +410,19 @@ register, in order. This is also called `circular shift'.
 \begin{verbatim}
 uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t shamt = rs2 & (XLEN-1);
-    return (rs1 << shamt) | (rsl >> (XLEN-shamt));
+    int shamt = rs2 & (XLEN-1);
+    return (rs1 << shamt) | (rs1 >> (XLEN-shamt));
 }
 
 uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-    int12_t shamt = rs2 & (XLEN-1);
-    return (rs1 >> shamt) | (rsl << (XLEN-shamt));
+    int shamt = rs2 & (XLEN-1);
+    return (rs1 >> shamt) | (rs1 << (XLEN-shamt));
 }
 
 int_xlen_t rori(uint_xlen_t rs1, int12_t immed)
 {
-    int12_t shamt = immed & (XLEN-1);
+    int shamt = immed & (XLEN-1);
     return (rs1 >> shamt) | (rs1 << (XLEN-shamt));
 }
 \end{verbatim}
