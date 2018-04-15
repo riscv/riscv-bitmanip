@@ -128,3 +128,70 @@ void check_uj_imm(insn_t insn)
 
 	assert(ref == a0);
 }
+
+// ---------------------------------------------------------
+
+void check_s_imm2(insn_t insn)
+{
+	uint32_t ref = insn.s_imm();
+
+	uint32_t t0 = 0x0107;
+	uint32_t t1 = 0x0b07;
+	uint32_t t2 = 0x0628;
+	uint32_t t3 = 0x0a1c;
+	uint32_t t4 = 0x01fb;
+
+	uint32_t a0 = insn.b;
+	a0 = grevm32(a0, t0, 3);
+	a0 = grevm32(a0, t1, 2);
+	a0 = grevm32(a0, t2, 1);
+	a0 = grevm32(a0, t3, 0);
+	a0 = grevm32(a0, t4, 4);
+	a0 = sra32(a0, 20);
+
+	assert(ref == a0);
+}
+
+void check_sb_imm2(insn_t insn)
+{
+	uint32_t ref = insn.sb_imm();
+
+	uint32_t t0 = 0x5040;
+	uint32_t t1 = 0x00ef;
+	uint32_t t2 = 0x4d1f;
+	uint32_t t3 = 0x70f3;
+	uint32_t t4 = 0x40f6;
+
+	uint32_t a0 = insn.b;
+	a0 = grevm32(a0, t0, 1);
+	a0 = grevm32(a0, t1, 3);
+	a0 = grevm32(a0, t2, 2);
+	a0 = grevm32(a0, t3, 0);
+	a0 = grevm32(a0, t4, 4);
+	a0 = sra32(a0, 19);
+	a0 = a0 & ~1;
+
+	assert(ref == a0);
+}
+
+void check_uj_imm2(insn_t insn)
+{
+	uint32_t ref = insn.uj_imm();
+
+	uint32_t t0 = 0x001f;
+	uint32_t t1 = 0x00ff;
+	uint32_t t2 = 0x8100;
+	uint32_t t3 = 0x1e00;
+
+	uint32_t a0 = insn.b;
+	a0 = grevm32(a0, t0, 4);
+	a0 = grevm32(a0, t1, 2);
+	a0 = ror32(a0, 15);
+	a0 = grevm32(a0, t2, 0);
+	a0 = grevm32(a0, t3, 3);
+	a0 = ror32(a0, 26);
+	a0 = sra32(a0, 11);
+	a0 = a0 & ~1;
+
+	assert(ref == a0);
+}
