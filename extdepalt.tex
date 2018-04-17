@@ -170,8 +170,8 @@ Mode & Description \\ \hline
 Modes that are reserved for future standard or non-standard extensions must return
 0 in rd on implementations that do not support those future extensions.
 
-\texttt{shuffle} with rs1$=$0 (x0) implements just a zip operation (butterfly is
-disabled because mask$=$0), and \texttt{unshuffle} with rs1$=$0 implements just
+\texttt{shuffle} with rs2$=$0 (x0) implements just a zip operation (butterfly is
+disabled because mask$=$0), and \texttt{unshuffle} with rs2$=$0 implements just
 an unzip operation.
 
 The \texttt{zip} (aka ``shuffle'') operation interleaves the bits of the lower and upper
