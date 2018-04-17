@@ -138,13 +138,13 @@ Mode & Description \\ \hline
 \begin{tabular}{l l}
 Mode & Description \\ \hline
 
-0000 & unzip + butterfly(mask, 0) \\
-0001 & unzip + butterfly(mask, 1) \\
-0010 & unzip + butterfly(mask, 2) \\
-0011 & unzip + butterfly(mask, 3) \\
-0100 & unzip + butterfly(mask, 4) \\
-0101 & unzip + butterfly(mask, 5) (RV64/128; NSE) \\
-0110 & unzip + butterfly(mask, 6) (RV128; NSE) \\
+0000 & butterfly(mask, 0) + unzip \\
+0001 & butterfly(mask, 1) + unzip \\
+0010 & butterfly(mask, 2) + unzip \\
+0011 & butterfly(mask, 3) + unzip \\
+0100 & butterfly(mask, 4) + unzip \\
+0101 & butterfly(mask, 5) + unzip (RV64/128; NSE) \\
+0110 & butterfly(mask, 6) + unzip (RV128; NSE) \\
 0111 & reserved for future standard extensions \\
 
 \hline
@@ -207,7 +207,7 @@ uint_xlen_t unzip(uint_xlen_t rs1)
 The butterfly operation performs a single butterfly stage N (i.e. the {\tt grev} operation
 with argument $2^N$), which performs $\textrm{XLEN}/2$ pairwise bit swaps. But unlike
 {\tt grev} the individual bit swaps are conditional and the $\textrm{XLEN}/2$
-bits in mask determine which bit swaps are taken and which are skipped.
+bits in mask determine which bit swaps are taken.
 
 \begin{verbatim}
 uint_xlen_t swapbits(uint_xlen_t x, int p, int q)
@@ -281,7 +281,9 @@ For example, an arbitrary RV32 bit permutation using a complete butterfly networ
 \subsubsection{Pseudo instructions {\tt omega} and {\tt flip}}
 
 A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
-An unzip operation followed by a butterfly($\log_2(\textrm{XLEN})-1$) is commonly
+
+A butterfly(0) operation followed by unzip (equivalent to an unzip operation followed
+by butterfly($\log_2(\textrm{XLEN})-1$)) is commonly
 known as a {\it flip stage}. The assember should provide appropiate
 pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
 
@@ -289,7 +291,7 @@ pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
   omega rd, rs, mask     ->     lui rd, (mask << 4)
                                 shuffle rd, rs, rd
 
-  flip  rd, rs, mask     ->     lui rd, (mask << 4) | (log2(XLEN)-1)
+  flip  rd, rs, mask     ->     lui rd, (mask << 4)
                                 unshuffle rd, rs, rd
 \end{verbatim}
 

@@ -159,6 +159,18 @@ uint32_t unzip32(uint32_t rs1)
 	return x;
 }
 
+uint32_t bfly32(uint32_t rs1, uint32_t mask, int N)
+{
+	int a = 1 << N, b = 2 * a;
+	uint32_t x = rs1;
+	for (int i = 0; i < 32 / 2; i++) {
+		int p = b * (i / a) + i % a, q = p + a;
+		if ((mask >> 1) & 1)
+			x = swapbits(x, p, q);
+	}
+	return x;
+}
+
 uint32_t slo32(uint32_t x, int k)
 {
 	return ~((~x) << k);
