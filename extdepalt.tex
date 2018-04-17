@@ -278,6 +278,9 @@ For example, an arbitrary RV32 bit permutation using a complete butterfly networ
   bfly a0, a2, <maskI>, 4
 \end{verbatim}
 
+Permutations arising from real-world applications can often be implemented using
+shorter sequences.
+
 \subsubsection{Pseudo instructions {\tt omega} and {\tt flip}}
 
 A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
@@ -309,6 +312,13 @@ For example, an arbitrary RV32 bit permutation using a complete omega-flip netwo
   flip  a1, a0, <maskI>
   flip  a0, a1, <maskJ>
 \end{verbatim}
+
+(Either {\tt <maskE>} or {\tt <maskF>} can be zero, effectively turning either
+the last {\tt omega} into a {\tt zip} or the first {\tt flip} into an {\tt unzip}.)
+
+As for butterfly networks, permutations arising from real-world applications
+can often be implemented using a much shorter sequence. Especially if {\tt bfly},
+{\tt omega} and {\tt flip} can be mixed arbitrarily.
 
 \subsubsection{Pseudo instructions {\tt zip} and {\tt unzip}}
 
