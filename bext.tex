@@ -605,7 +605,7 @@ and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
 
 In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations. But
 there are no compressed encodings for those operations because there is no \texttt{c.xori}
-instructions and \texttt{c.sub} can not operate on \texttt{x0}.
+instruction and \texttt{c.sub} can not operate on \texttt{x0}.
 
 Many bit manipulation operations that have dedicated opecodes in other ISAs
 must be constructed from smaller atoms in RISC-V XBitmanip code. But
