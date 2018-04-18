@@ -17,7 +17,7 @@ index of the tenth set bit in {\tt a0} using \texttt{bdep}:
 
 \begin{verbatim}
   li a1, 0x00000200
-  bdep a0, a0, a1
+  bdep a0, a1, a0
   brev a0, a0
   clz a0, a0
 \end{verbatim}
