@@ -26,9 +26,9 @@ The instruction encoding space used by \texttt{bext} and \texttt{bdep} is
 minimal, i.e. not much is gained by preserving the opcode space occupied
 by the two instructions. So one possible solution would be to make \texttt{bext}
 and \texttt{bdep} optional features that may be emulated by software, and add
-fast implementations of the much simpler instructions below that simplify some
-of the most common cases that would otherwise benefit from a fast \texttt{bext}
-and \texttt{bdep} unit.
+fast implementations of the much simpler {\tt shuffle} and {\tt unshuffle} instructions
+described below. Those instructions simplify some of the most common cases that
+would otherwise benefit from a fast \texttt{bext} and \texttt{bdep} unit.
 
 For small cores this would be an immense simplification because they would not
 need to implement \texttt{bext} and \texttt{bdep} in hardware. For large cores
