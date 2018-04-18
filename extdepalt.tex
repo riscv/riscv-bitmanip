@@ -254,11 +254,12 @@ base spec. The exact instruction encoding is to be decided, however.
 
 {\tt shuffle} with mode[3]$=$1 (and mode[2:0] $<$ $log_2(\textrm{XLEN})$) performs
 a butterfly operation. The assembler should provide a {\tt bfly} pseudo-instruction
-for rd $\neq$ rs and constant {\tt mask} and {\tt N}:
+for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N} is omitted then
+{\tt N}$=$0 is assumed):
 
 \begin{verbatim}
-  bfly rd, rs, mask, N     ->     lui rd, ((mask << 4) | 8 | N)
-                                  shuffle rd, rs, rd
+  bfly rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | 8 | N)
+                                    shuffle rd, rs, rd
 \end{verbatim}
 
 (On RV64, longer sequences are required instead of {\tt lui} to load the full
@@ -288,14 +289,15 @@ A zip operation followed by a butterfly(0) is commonly known as an {\it omega st
 A butterfly(0) operation followed by unzip (equivalent to an unzip operation followed
 by butterfly($\log_2(\textrm{XLEN})-1$)) is commonly
 known as a {\it flip stage}. The assember should provide appropiate
-pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
+pseudo-instructions for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N}
+is omitted then {\tt N}$=$0 is assumed):
 
 \begin{verbatim}
-  omega rd, rs, mask     ->     lui rd, (mask << 4)
-                                shuffle rd, rs, rd
+  omega rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
+                                     shuffle rd, rs, rd
 
-  flip  rd, rs, mask     ->     lui rd, (mask << 4)
-                                unshuffle rd, rs, rd
+  flip  rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
+                                     unshuffle rd, rs, rd
 \end{verbatim}
 
 For example, an arbitrary RV32 bit permutation using a complete omega-flip network:
