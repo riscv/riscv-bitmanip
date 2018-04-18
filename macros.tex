@@ -222,10 +222,16 @@ TBM  & {\tt bextr} (imm)      & 7 &  4 & {\tt c.slli a0, (32-START-LEN)}\tabular
 \bottomrule
 \end{longtable}
 
+There will be a separate RISC-V standard for recommended sequences for macro-op fusion.
+The macros listed here are merely for demonstrating that suitable sequences exist. We
+do not advocate for any of those sequences to become ``standard sequences'' for macro-op
+fusion.
+
 \section{Decoding RISC-V Immediates}
 
-The following code snippets decode the immedate from RISC-V S-type, B-type, and
-J-type instructions.
+The following code snippets decode the immedate from RISC-V S-type, B-type, J-type,
+and CJ-type instructions. They are nice ``nothing up my sleeve''-examples for
+real-world bit permutations.
 
 \begin{small}
 \begin{center}
@@ -246,27 +252,56 @@ J-type instructions.
 
 &
 \multicolumn{4}{|c|}{imm[11:5]} &
-\multicolumn{2}{c|}{rs2} &
-\multicolumn{1}{c|}{rs1} &
-\multicolumn{1}{c|}{funct3} &
+\multicolumn{2}{c|}{} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{} &
 \multicolumn{1}{c|}{imm[4:0]} &
-\multicolumn{1}{c|}{opcode} & S-type \\
+\multicolumn{1}{c|}{} & S-type \\
 \cline{2-11}
 
 &
 \multicolumn{4}{|c|}{imm[12$\vert$10:5]} &
-\multicolumn{2}{c|}{rs2} &
-\multicolumn{1}{c|}{rs1} &
-\multicolumn{1}{c|}{funct3} &
+\multicolumn{2}{c|}{} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{} &
 \multicolumn{1}{c|}{imm[4:1$\vert$11]} &
-\multicolumn{1}{c|}{opcode} & B-type \\
+\multicolumn{1}{c|}{} & B-type \\
 \cline{2-11}
 
 &
 \multicolumn{8}{|c|}{imm[20$\vert$10:1$\vert$11$\vert$19:12]} &
-\multicolumn{1}{c|}{rd} &
-\multicolumn{1}{c|}{opcode} & J-type \\
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{} & J-type \\
 \cline{2-11}
+
+\end{tabular}
+
+\begin{tabular}{p{0in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}l}
+& & & & & & & & & & \\
+                      &
+\instbit{15} &
+\instbit{14} &
+\instbit{13} &
+\multicolumn{1}{c}{\instbit{12}} &
+\instbit{11} &
+\instbit{10} &
+\instbit{9} &
+\instbit{8} &
+\instbit{7} &
+\instbit{6} &
+\multicolumn{1}{c}{\instbit{5}} &
+\instbit{4} &
+\instbit{3} &
+\instbit{2} &
+\instbit{1} &
+\instbit{0} \\
+\cline{2-17}
+
+&
+\multicolumn{3}{|c|}{} &
+\multicolumn{11}{c|}{imm[11$\vert$4$\vert$9:8$\vert$10$\vert$6$\vert$7$\vert$3:1$\vert$5]} &
+\multicolumn{2}{c|}{} & CJ-type \\
+\cline{2-17}
 
 \end{tabular}
 \end{center}
@@ -281,9 +316,8 @@ J-type instructions.
     ret
 
   decode_b:
-    li t0, 0x01ff0000
-    grevm3 a0, a0, t0
-    zip a0, a0
+    lui t0, 0x51574
+    shuffle a0, a0, t0
     li t0, 0xeaa80055
     bext a0, a0, t0
     c.slli a0, 20
@@ -292,12 +326,12 @@ J-type instructions.
 
   // variant 1
   decode_j:
-    li t0, 0x0fff0000
-    grevm3 a0, a0, t0
-    li t0, 0x0f900000
-    grevm2 a0, a0, t0
-    li t0, 0x70fe0000
-    grevm4 a0, a0, t0
+    lui t0, 0x0fff3
+    unshuffle a0, a0, t0
+    lui t0, 0x34349
+    shuffle a0, a0, t0
+    lui t0, 0x70fe4
+    shuffle a0, a0, t0
     li t0, 0x8ff170fe
     bext a0, a0, t0
     c.slli a0, 12
@@ -318,6 +352,18 @@ J-type instructions.
     c.or a0, a2
     c.or a0, a1
     c.srai a0, 11
+    ret
+
+  decode_cj:
+    rori a0, a0, 24
+    lui t0, 0x399cb
+    shuffle a0, a0, t0
+    lui t0, 0xf2d30
+    unshuffle a0, a0, t0
+    li t0, 0x538a2046
+    bext a0, a0, t0
+    c.slli a0, 21
+    c.srai a0, 20
     ret
 \end{verbatim}
 

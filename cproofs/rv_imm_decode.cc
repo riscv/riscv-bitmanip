@@ -75,12 +75,12 @@ uint32_t decode_s_imm(uint32_t b)
 	return insn_t(b).s_imm();
 }
 
-uint32_t decode_sb_imm(uint32_t b)
+uint32_t decode_b_imm(uint32_t b)
 {
 	return insn_t(b).sb_imm();
 }
 
-uint32_t decode_uj_imm(uint32_t b)
+uint32_t decode_j_imm(uint32_t b)
 {
 	return insn_t(b).uj_imm();
 }
@@ -102,16 +102,15 @@ void check_s_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_sb_imm(insn_t insn)
+void check_b_imm(insn_t insn)
 {
 	uint32_t ref = insn.sb_imm();
 
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	t0 = 0x01ff0000;
-	a0 = grevm32(a0, t0, 3);
-	a0 = zip32(a0);
+	t0 = 0x51574000;
+	a0 = shuffle32(a0, t0);
 	t0 = 0xeaa80055;
 	a0 = bext32(a0, t0);
 	a0 = sll32(a0, 20);
@@ -120,19 +119,19 @@ void check_sb_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_uj_imm(insn_t insn)
+void check_j_imm(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	t0 = 0x0fff0000;
-	a0 = grevm32(a0, t0, 3);
-	t0 = 0x0f900000;
-	a0 = grevm32(a0, t0, 2);
-	t0 = 0x70fe0000;
-	a0 = grevm32(a0, t0, 4);
+	t0 = 0x0fff3000;
+	a0 = unshuffle32(a0, t0);
+	t0 = 0x34349000;
+	a0 = shuffle32(a0, t0);
+	t0 = 0x70fe4000;
+	a0 = shuffle32(a0, t0);
 	t0 = 0x8ff170fe;
 	a0 = bext32(a0, t0);
 	a0 = sll32(a0, 12);
@@ -141,7 +140,7 @@ void check_uj_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_uj_imm2(insn_t insn)
+void check_j_imm2(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
@@ -160,6 +159,26 @@ void check_uj_imm2(insn_t insn)
 	a0 = a0 | a2;
 	a0 = a0 | a1;
 	a0 = sra32(a0, 11);
+
+	assert(ref == a0);
+}
+
+void check_cj_imm(insn_t insn)
+{
+	uint32_t ref = insn.rvc_j_imm();
+
+	uint32_t a0 = insn.b;
+	uint32_t t0;
+
+	a0 = ror32(a0, 24);
+	t0 = 0x399cb000;
+	a0 = shuffle32(a0, t0);
+	t0 = 0xf2d30000;
+	a0 = unshuffle32(a0, t0);
+	t0 = 0x538a2046;
+	a0 = bext32(a0, t0);
+	a0 = sll32(a0, 21);
+	a0 = sra32(a0, 20);
 
 	assert(ref == a0);
 }

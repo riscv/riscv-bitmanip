@@ -165,9 +165,49 @@ uint32_t bfly32(uint32_t rs1, uint32_t mask, int N)
 	uint32_t x = rs1;
 	for (int i = 0; i < 32 / 2; i++) {
 		int p = b * (i / a) + i % a, q = p + a;
-		if ((mask >> 1) & 1)
+		if ((mask >> i) & 1)
 			x = swapbits(x, p, q);
 	}
+	return x;
+}
+
+uint32_t omega32(uint32_t rs1, uint32_t mask, int N)
+{
+	return bfly32(zip32(rs1), mask, N);
+}
+
+uint32_t flip32(uint32_t rs1, uint32_t mask, int N)
+{
+	return unzip32(bfly32(rs1, mask, N));
+}
+
+uint32_t shuffle32(uint32_t x, uint32_t ctrl)
+{
+	uint32_t mask = ctrl >> 16;
+	bool dozip = !((ctrl >> 15) & 1);
+	int stage = (ctrl >> 12) & 7;
+	int cmd = ctrl & 0xfff;
+
+	if (cmd != 0 || stage > 4)
+		return 0;
+
+	x = dozip ? zip32(x) : x;
+	x = bfly32(x, mask, stage);
+	return x;
+}
+
+uint32_t unshuffle32(uint32_t x, uint32_t ctrl)
+{
+	uint32_t mask = ctrl >> 16;
+	bool dounzip = !((ctrl >> 15) & 1);
+	int stage = (ctrl >> 12) & 7;
+	int cmd = ctrl & 0xfff;
+
+	if (cmd != 0 || stage > 4 || !dounzip)
+		return 0;
+
+	x = bfly32(x, mask, stage);
+	x = unzip32(x);
 	return x;
 }
 
