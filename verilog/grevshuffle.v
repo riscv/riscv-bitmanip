@@ -78,3 +78,13 @@ module grevshuffle #(
 		dout <= buffer;
 	end
 endmodule
+
+module shift (
+	input             clk,
+	input      [ 4:0] shamt,
+	input      [31:0] din,
+	output reg [31:0] dout
+);
+	always @(posedge clk)
+		dout <= din << shamt;
+endmodule
