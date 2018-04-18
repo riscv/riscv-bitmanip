@@ -136,29 +136,6 @@ uint64_t grev64(uint64_t x, int k)
 	return x;
 }
 
-uint32_t swapbits(uint32_t x, int p, int q)
-{
-	assert(p < q);
-	x = x ^ ((x & (1 << p)) << (q-p));
-	x = x ^ ((x & (1 << q)) >> (q-p));
-	x = x ^ ((x & (1 << p)) << (q-p));
-	return x;
-}
-
-uint32_t grevm32(uint32_t rs1, uint32_t rs2, int N)
-{
-	int a = 1 << N, b = 2 * a;
-	uint32_t x = rs1;
-	if (!(rs2 & 0xffff))
-		rs2 = rs2 >> 16;
-	for (int i = 0; i < 16; i++) {
-		int p = b * (i / a) + i % a, q = p + a;
-		if (rs2 & (1 << i))
-			x = swapbits(x, p, q);
-	}
-	return x;
-}
-
 uint32_t zip32(uint32_t rs1)
 {
 	uint32_t x = 0;
@@ -176,6 +153,15 @@ uint32_t unzip32(uint32_t rs1)
 		x |= ((rs1 >> (2*i)) & 1) << i;
 		x |= ((rs1 >> (2*i+1)) & 1) << (i+16);
 	}
+	return x;
+}
+
+uint32_t swapbits(uint32_t x, int p, int q)
+{
+	assert(p < q);
+	x = x ^ ((x & (1 << p)) << (q-p));
+	x = x ^ ((x & (1 << q)) >> (q-p));
+	x = x ^ ((x & (1 << p)) << (q-p));
 	return x;
 }
 
