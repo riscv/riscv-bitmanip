@@ -33,6 +33,13 @@ uint32_t flip(uint32_t x, uint32_t mask)
 	return x;
 }
 
+uint32_t flip_alt(uint32_t x, uint32_t mask)
+{
+	x = unzip32(x);
+	x = bfly32(x, mask, 31);
+	return x;
+}
+
 void omega_flip_invcheck(uint32_t src, uint32_t mask)
 {
 	uint32_t a = omega(flip(src, mask), mask);
@@ -40,4 +47,11 @@ void omega_flip_invcheck(uint32_t src, uint32_t mask)
 
 	uint32_t b = flip(omega(src, mask), mask);
 	assert(b == src);
+}
+
+void flip_alt_check(uint32_t src, uint32_t mask)
+{
+	uint32_t a = flip(src, 0xffff);
+	uint32_t b = flip_alt(src, 0xffff);
+	assert(a == b);
 }
