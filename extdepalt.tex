@@ -219,15 +219,48 @@ uint_xlen_t swapbits(uint_xlen_t x, int p, int q)
     return x;
 }
 
-uint_xlen_t butterfly(uint_xlen_t rs1, uint_xlen_t mask, int N)
+uint_xlen_t butterfly(uint_xlen_t x, uint_xlen_t mask, int N)
 {
     int a = 1 << N, b = 2*a;
-    uint_xlen_t x = rs1;
     for (int i = 0; i < XLEN/2; i++) {
         int p = b*(i/a) + i%a, q = p + a;
-        if ((mask >> 1) & 1)
+        if ((mask >> i) & 1)
             x = swapbits(x, p, q);
     }
+    return x;
+}
+\end{verbatim}
+
+Putting it all together:
+
+\begin{verbatim}
+uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
+{
+    uint_xlen_t mask = ctrl >> 16;
+    bool dozip = !((ctrl >> 15) & 1);
+    int stage = (ctrl >> 12) & 7;
+    int cmd = ctrl & 0xfff;
+
+    if (cmd != 0 || stage >= LOG2_XLEN)
+        return 0;
+
+    x = dozip ? zip(x) : x;
+    x = butterfly(x, mask, stage);
+    return x;
+}
+
+uint_xlen_t unshuffle(uint_xlen_t x, uint_xlen_t ctrl)
+{
+    uint_xlen_t mask = ctrl >> 16;
+    bool dounzip = !((ctrl >> 15) & 1);
+    int stage = (ctrl >> 12) & 7;
+    int cmd = ctrl & 0xfff;
+
+    if (cmd != 0 || stage >= LOG2_XLEN || !dounzip)
+        return 0;
+
+    x = butterfly(x, mask, stage);
+    x = unzip(x);
     return x;
 }
 \end{verbatim}
