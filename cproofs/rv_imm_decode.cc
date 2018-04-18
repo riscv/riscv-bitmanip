@@ -67,8 +67,10 @@ struct insn_t
 // ---------------------------------------------------------
 
 extern "C" uint32_t decode_s_imm(uint32_t b);
-extern "C" uint32_t decode_sb_imm(uint32_t b);
-extern "C" uint32_t decode_uj_imm(uint32_t b);
+extern "C" uint32_t decode_b_imm(uint32_t b);
+extern "C" uint32_t decode_j_imm(uint32_t b);
+extern "C" uint32_t decode_cj_imm(uint32_t b);
+extern "C" uint32_t decode_cj_imm2(uint32_t b);
 
 uint32_t decode_s_imm(uint32_t b)
 {
@@ -83,6 +85,33 @@ uint32_t decode_b_imm(uint32_t b)
 uint32_t decode_j_imm(uint32_t b)
 {
 	return insn_t(b).uj_imm();
+}
+
+uint32_t decode_cj_imm(uint32_t b)
+{
+	return insn_t(b).rvc_j_imm();
+}
+
+uint32_t decode_cj_imm2(uint32_t b)
+{
+	static const uint16_t table[64] = {
+		0x0000, 0x0000, 0x0000, 0x0000, 0x0020, 0x0020, 0x0020, 0x0020,
+		0x0002, 0x0002, 0x0002, 0x0002, 0x0022, 0x0022, 0x0022, 0x0022,
+		0x0000, 0x0004, 0x0008, 0x000c, 0x0080, 0x0084, 0x0088, 0x008c,
+		0x0040, 0x0044, 0x0048, 0x004c, 0x00c0, 0x00c4, 0x00c8, 0x00cc,
+		0x0000, 0x0400, 0x0100, 0x0500, 0x0200, 0x0600, 0x0300, 0x0700,
+		0x0010, 0x0410, 0x0110, 0x0510, 0x0210, 0x0610, 0x0310, 0x0710,
+		0x0000, 0xf800, 0x0000, 0xf800, 0x0000, 0xf800, 0x0000, 0xf800,
+		0x0000, 0xf800, 0x0000, 0xf800, 0x0000, 0xf800, 0x0000, 0xf800,
+	};
+
+	uint32_t x = 0;
+	x |= int16_t(table[ 0 + ((b >>  0) & 15)]);
+	x |= int16_t(table[16 + ((b >>  4) & 15)]);
+	x |= int16_t(table[32 + ((b >>  8) & 15)]);
+	x |= int16_t(table[48 + ((b >> 12) & 15)]);
+
+	return x;
 }
 
 // ---------------------------------------------------------
@@ -182,3 +211,59 @@ void check_cj_imm(insn_t insn)
 
 	assert(ref == a0);
 }
+
+void check_cj_imm2(insn_t insn)
+{
+	uint32_t ref = insn.rvc_j_imm();
+	uint32_t x = decode_cj_imm2(insn.b);
+
+	assert(ref == x);
+}
+
+#if 0
+int main()
+{
+	printf("---- table for decode_cj_imm2() ----\n");
+
+	uint16_t table[64] = { /* zeros */ };
+
+	int perm[16] = {
+		/* 15 */ 12, 12, 12, 12, /* 12 */
+		/* 11 */ 12,  8, 10,  9, /*  8 */
+		/*  7 */  6,  7,  2, 11, /*  4 */
+		/*  3 */  5,  4,  3,  0, /*  0 */
+	};
+
+	for (int i = 0; i < 4; i++)
+	for (int j = 0; j < 16; j++)
+	{
+		uint16_t v = 0;
+
+		for (int k = 0; k < 16; k++)
+		{
+			int p = perm[15-k];
+
+			if (p == 0)
+				continue;
+
+			p -= 4*i;
+
+			if (p < 0 || 3 < p)
+				continue;
+
+			if ((j & (1 << p)) == 0)
+				continue;
+
+			v |= 1 << k;
+		}
+
+		table[16*i + j] = v;
+	}
+
+	for (int i = 0; i < 64; i++)
+		printf("%s0x%04x%s", i%8 == 0 ? "" : ", ",
+				table[i], i%8 == 7 ? ",\n" : "");
+
+	return 0;
+}
+#endif

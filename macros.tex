@@ -324,7 +324,7 @@ real-world bit permutations.
     c.srai a0, 19
     ret
 
-  // variant 1
+  // variant 1 (with shuffle/unshuffle/bext)
   decode_j:
     lui t0, 0x0fff3
     unshuffle a0, a0, t0
@@ -338,7 +338,7 @@ real-world bit permutations.
     c.srai a0, 11
     ret
 
-  // variant 2
+  // variant 2 (with bext but without shuffle/unshuffle)
   decode_j:
     li t0, 0x800ff000
     li a1, 0x00100000
@@ -354,6 +354,7 @@ real-world bit permutations.
     c.srai a0, 11
     ret
 
+  // variant 1 (with shuffle/unshuffle/bext)
   decode_cj:
     rori a0, a0, 24
     lui t0, 0x399cb
@@ -364,6 +365,34 @@ real-world bit permutations.
     bext a0, a0, t0
     c.slli a0, 21
     c.srai a0, 20
+    ret
+
+  // variant 2 (without shuffle/unshuffle/bext)
+  decode_cj:
+    srli a5, a0, 2
+    srli a4, a0, 7
+    c.andi a4, 16
+    slli a3, a0, 3
+    c.andi a5, 14
+    c.add a5, a4
+    andi a3, a3, 32
+    srli a4, a0, 1
+    c.add a5, a3
+    andi a4, a4, 64
+    slli a2, a0, 1
+    c.add a5, a4
+    andi a2, a2, 128
+    srli a3, a0, 1
+    slli a4, a0, 19
+    c.add a5, a2
+    andi a3, a3, 768
+    c.slli a0, 2
+    c.add a5, a3
+    andi a0, a0, 1024
+    c.srai a4, 31
+    c.add a5, a0
+    slli a0, a4, 11
+    c.add a0, a5
     ret
 \end{verbatim}
 
