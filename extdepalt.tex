@@ -13,10 +13,10 @@ However, some operations that would benefit from \texttt{bext} and \texttt{bdep}
 be very hard to implement without them. Some examples are Bit scatter/gather
 (compress/uncompress) operations, goats-and-sheeps, and calulating the index of the Nth
 set bit in a word. For example, the following code efficiently calculates the
-index of the twelfth set bit in {\tt a0} using \texttt{bdep}:
+index of the tenth set bit in {\tt a0} using \texttt{bdep}:
 
 \begin{verbatim}
-  li a1, 0x00000800
+  li a1, 0x00000200
   bdep a0, a0, a1
   brev a0, a0
   clz a0, a0

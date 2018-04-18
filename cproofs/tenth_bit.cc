@@ -19,43 +19,31 @@
 
 // ---------------------------------------------------------
 
-int twelfth_bit_reference(uint32_t src)
+int tenth_bit_reference(uint32_t src)
 {
 	int k = 0;
 	for (int i = 0; i < 32; i++) {
 		if ((src >> i) & 1)
 			k++;
-		if (k == 12)
+		if (k == 10)
 			return i;
 	}
 	return 32;
 }
 
-int twelfth_bit_impl(uint32_t src)
+int tenth_bit_impl(uint32_t src)
 {
 	uint32_t a0 = src;
-	uint32_t a1 = 0x00000800;
+	uint32_t a1 = 0x00000200;
 	a0 = bdep32(a1, a0);
 	a0 = grev32(a0, 31);
 	a0 = clz32(a0);
 	return a0;
 }
 
-void twelfth_bit_check(uint32_t src)
+void tenth_bit_check(uint32_t src)
 {
-	uint32_t a = twelfth_bit_reference(src);
-	uint32_t b = twelfth_bit_impl(src);
+	uint32_t a = tenth_bit_reference(src);
+	uint32_t b = tenth_bit_impl(src);
 	assert(a == b);
-}
-
-int main()
-{
-	twelfth_bit_check(0x00000000);
-	twelfth_bit_check(0xffffffff);
-	for (int i = 0; i < 1000000; i++) {
-		uint32_t src = xorshift32();
-		twelfth_bit_check(src);
-	}
-	printf("pass\n");
-	return 0;
 }

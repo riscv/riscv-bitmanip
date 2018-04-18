@@ -46,7 +46,12 @@ uint32_t clz32(uint32_t rs1)
 uint32_t bext32(uint32_t v, uint32_t mask)
 {
 	uint32_t c = 0, m = 1;
+#if 1
+	// help cprover see the max bounds on this loop
+	for (int i = 0; mask && i < 32; i++) {
+#else
 	while (mask) {
+#endif
 		uint32_t b = mask & -mask;
 		if (v & b)
 			c |= m;
@@ -59,7 +64,12 @@ uint32_t bext32(uint32_t v, uint32_t mask)
 uint64_t bext64(uint64_t v, uint64_t mask)
 {
 	uint64_t c = 0, m = 1;
+#if 1
+	// help cprover see the max bounds on this loop
+	for (int i = 0; mask && i < 64; i++) {
+#else
 	while (mask) {
+#endif
 		uint64_t b = mask & -mask;
 		if (v & b)
 			c |= m;
@@ -72,7 +82,12 @@ uint64_t bext64(uint64_t v, uint64_t mask)
 uint32_t bdep32(uint32_t v, uint32_t mask)
 {
 	uint32_t c = 0, m = 1;
+#if 1
+	// help cprover see the max bounds on this loop
+	for (int i = 0; mask && i < 32; i++) {
+#else
 	while (mask) {
+#endif
 		uint32_t b = mask & -mask;
 		if (v & m)
 			c |= b;
@@ -85,7 +100,12 @@ uint32_t bdep32(uint32_t v, uint32_t mask)
 uint64_t bdep64(uint64_t v, uint64_t mask)
 {
 	uint64_t c = 0, m = 1;
+#if 1
+	// help cprover see the max bounds on this loop
+	for (int i = 0; mask && i < 64; i++) {
+#else
 	while (mask) {
+#endif
 		uint64_t b = mask & -mask;
 		if (v & m)
 			c |= b;
