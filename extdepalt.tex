@@ -61,8 +61,9 @@ is performed is defined by the control word in rs2 (Table~\ref{shuffle-ctrl}).
 \begin{table}[h]
 \begin{small}
 \begin{center}
-\begin{tabular}{p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.2in}p{0.2in}p{0.05in}p{0.05in}l}
-& & & & & & & & & & \\
+\begin{tabular}{p{0.1in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.2in}p{0.2in}p{0.05in}p{0.05in}l}
+& & & & & & & & & & & \\
+\multicolumn{1}{r}{\instbit{64}} &
 \multicolumn{1}{l}{\instbit{63}} &
 \multicolumn{1}{r}{\instbit{48}} &
 \multicolumn{1}{l}{\instbit{47}} &
@@ -73,19 +74,26 @@ is performed is defined by the control word in rs2 (Table~\ref{shuffle-ctrl}).
 \multicolumn{1}{r}{\instbit{12}} &
 \multicolumn{1}{l}{\instbit{11}} &
 \multicolumn{1}{r}{\instbit{0}} & \\
-\cline{1-10}
+\cline{1-11}
 
-\multicolumn{2}{|c|}{unused} &
+\multicolumn{1}{c}{} &
+\multicolumn{4}{c}{mask} &
+\multicolumn{2}{c|}{} &
+\multicolumn{2}{c|}{mode} &
+\multicolumn{2}{c|}{command} & RV128 \\
+\cline{1-11}
+
+& \multicolumn{2}{|c|}{unused} &
 \multicolumn{4}{c|}{mask} &
 \multicolumn{2}{c|}{mode} &
 \multicolumn{2}{c|}{command} & RV64 \\
-\cline{1-10}
+\cline{2-11}
 
-& & & &
+& & & & &
 \multicolumn{2}{|c|}{mask} &
 \multicolumn{2}{c|}{mode} &
 \multicolumn{2}{c|}{command} & RV32 \\
-\cline{5-10}
+\cline{6-11}
 
 \end{tabular}
 \end{center}
@@ -108,28 +116,28 @@ existing butterfly network that implements the GREV instructions.
 \begin{table}[h]
 \begin{small}
 \begin{center}
-\begin{tabular}{l l}
-Mode & Description \\ \hline
+\begin{tabular}{l l l}
+Mode & Description & Pseudo instructions \\ \hline
 
-0000 & zip + butterfly(mask, 0) \\
-0001 & zip + butterfly(mask, 1) \\
-0010 & zip + butterfly(mask, 2) \\
-0011 & zip + butterfly(mask, 3) \\
-0100 & zip + butterfly(mask, 4) \\
-0101 & zip + butterfly(mask, 5) (RV64/128; NSE) \\
-0110 & zip + butterfly(mask, 6) (RV128; NSE) \\
-0111 & unzip + butterfly(mask, LOG2\_XLEN-1) \\
+0000 & zip + butterfly(mask, 0)                  & {\tt omega, zip} \\
+0001 & zip + butterfly(mask, 1)                  & {\tt omega} \\
+0010 & zip + butterfly(mask, 2)                  & {\tt omega} \\
+0011 & zip + butterfly(mask, 3)                  & {\tt omega} \\
+0100 & zip + butterfly(mask, 4)                  & {\tt omega} \\
+0101 & zip + butterfly(mask, 5) (RV64/128; NSE)  & {\tt omega} \\
+0110 & zip + butterfly(mask, 6) (RV128; NSE)     & {\tt omega} \\
+0111 & unzip + butterfly(mask, LOG2\_XLEN-1)     & {\tt flip, unzip} \\
 
 \hline
 
-1000 & butterfly(mask, 0) \\
-1001 & butterfly(mask, 1) \\
-1010 & butterfly(mask, 2) \\
-1011 & butterfly(mask, 3) \\
-1100 & butterfly(mask, 4) \\
-1101 & butterfly(mask, 5) (RV64/128; NSE) \\
-1110 & butterfly(mask, 6) (RV128; NSE) \\
-1111 & reserved for future standard extensions \\
+1000 & butterfly(mask, 0)                        & {\tt bfly} \\
+1001 & butterfly(mask, 1)                        & {\tt bfly} \\
+1010 & butterfly(mask, 2)                        & {\tt bfly} \\
+1011 & butterfly(mask, 3)                        & {\tt bfly} \\
+1100 & butterfly(mask, 4)                        & {\tt bfly} \\
+1101 & butterfly(mask, 5) (RV64/128; NSE)        & {\tt bfly} \\
+1110 & butterfly(mask, 6) (RV128; NSE)           & {\tt bfly} \\
+1111 & reserved for future standard extensions   & --- \\
 
 \end{tabular}
 \end{center}
@@ -280,14 +288,15 @@ A zip operation followed by a butterfly(0) is commonly known as an {\it omega st
 
 An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) is
 commonly known as a {\it flip stage}. The assember should provide appropiate
-pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
+pseudo-instructions for rd $\neq$ rs and constant {\tt mask} (if {\tt N} is omitted
+then {\tt N}$=$0 is assumed):
 
 \begin{verbatim}
-  omega rd, rs, mask     ->     lui rd, (mask << 4)
-                                shuffle rd, rs, rd
+  omega rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
+                                     shuffle rd, rs, rd
 
-  flip  rd, rs, mask     ->     lui rd, ((mask << 4) | 7)
-                                shuffle rd, rs, rd
+  flip  rd, rs, mask          ->     lui rd, ((mask << 4) | 7)
+                                     shuffle rd, rs, rd
 \end{verbatim}
 
 For example, an arbitrary RV32 bit permutation using a complete omega-flip network:
