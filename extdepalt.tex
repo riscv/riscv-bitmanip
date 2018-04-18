@@ -1,8 +1,10 @@
-\chapter{Alternatives to \texttt{bext} and \texttt{bdep}}
+\chapter{Bit Permutation Instructions}
 
-There are issues with \texttt{bext} and \texttt{bdep}. One is the high hardware cost
-of the unit performing the operations. Another is the open question of patents potentially
-preventing implementations to use the best-known single-cycle implementations.
+Not all implementations will be able to provide single-cycle \texttt{bext} and
+\texttt{bdep}. One reason is the hardware cost of the unit performing the
+operations. Another is the open question of patents potentially preventing
+implementations to use the best-known single-cycle implementations. {\it (We don't
+know either way at the moment. It really is an open question.)}
 
 Various multi-cycle implementations have been proposed, but preliminary evaluations of
 real-world bit manipulation tasks show that multi-cycle \texttt{bext} and \texttt{bdep}
@@ -22,13 +24,18 @@ index of the tenth set bit in {\tt a0} using \texttt{bdep}:
   clz a0, a0
 \end{verbatim}
 
+For such algorithms even slow \texttt{bext} and \texttt{bdep} implementations
+are a big help.
+
 The instruction encoding space used by \texttt{bext} and \texttt{bdep} is
 minimal, i.e. not much is gained by preserving the opcode space occupied
-by the two instructions. So one possible solution would be to make \texttt{bext}
-and \texttt{bdep} optional features that may be emulated by software, and add
-fast implementations of the much simpler {\tt shuffle} and {\tt unshuffle} instructions
-described below. Those instructions simplify some of the most common cases that
-would otherwise benefit from a fast \texttt{bext} and \texttt{bdep} unit.
+by the two instructions. So we are proposing to make \texttt{bext} and
+\texttt{bdep} optional features that may be emulated by software, and add the
+much simpler {\tt shuffle} and {\tt unshuffle} instructions described below.
+Those instructions simplify some of the most common cases that would otherwise
+benefit from a fast \texttt{bext} and \texttt{bdep} unit. The hardware cost for
+{\tt shuffle} and {\tt unshuffle} is comparably low for a processor that
+already implements the {\tt grev} instruction.
 
 For small cores this would be an immense simplification because they would not
 need to implement \texttt{bext} and \texttt{bdep} in hardware. For large cores
@@ -139,13 +146,13 @@ Mode & Description \\ \hline
 \begin{tabular}{l l}
 Mode & Description \\ \hline
 
-0000 & butterfly(mask, 0) + unzip \\
-0001 & butterfly(mask, 1) + unzip \\
-0010 & butterfly(mask, 2) + unzip \\
-0011 & butterfly(mask, 3) + unzip \\
-0100 & butterfly(mask, 4) + unzip \\
-0101 & butterfly(mask, 5) + unzip (RV64/128; NSE) \\
-0110 & butterfly(mask, 6) + unzip (RV128; NSE) \\
+0000 & unzip + butterfly(mask, 0) \\
+0001 & unzip + butterfly(mask, 1) \\
+0010 & unzip + butterfly(mask, 2) \\
+0011 & unzip + butterfly(mask, 3) \\
+0100 & unzip + butterfly(mask, 4) \\
+0101 & unzip + butterfly(mask, 5) (RV64/128; NSE) \\
+0110 & unzip + butterfly(mask, 6) (RV128; NSE) \\
 0111 & reserved for future standard extensions \\
 
 \hline
@@ -260,8 +267,8 @@ uint_xlen_t unshuffle(uint_xlen_t x, uint_xlen_t ctrl)
     if (cmd != 0 || stage >= LOG2_XLEN || !dounzip)
         return 0;
 
-    x = butterfly(x, mask, stage);
     x = unzip(x);
+    x = butterfly(x, mask, stage);
     return x;
 }
 \end{verbatim}
@@ -274,10 +281,7 @@ applications can be implemented in shorter sequences.
 Commands in the range 1-2047 with the upper bits (mask/mode) set to zero can be
 loaded with a single \texttt{li} instruction. Note that there is no
 requirement for future non-zero commands to perform bit-permutations or even
-reversible operations. But if they do, and if they are not their own inverse,
-then {\tt shuffle} and {\tt unshuffle} on the same control word should
-implement inverse operatations. (This is the case for command $0$. Note that a
-butterfly operation without zip or unzip is its own inverse.)
+reversible operations.
 
 \input{bextshuffle.tex}
 
@@ -324,7 +328,8 @@ A butterfly(0) operation followed by unzip (equivalent to an unzip operation fol
 by butterfly($\log_2(\textrm{XLEN})-1$)) is commonly
 known as a {\it flip stage}. The assember should provide appropiate
 pseudo-instructions for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N}
-is omitted then {\tt N}$=$0 is assumed):
+is omitted then $\texttt{N}=0$ is assumed for {\tt omega} and
+$\texttt{N}=\log_2(\textrm{XLEN})-1$ is assumed for {\tt flip}):
 
 \begin{verbatim}
   omega rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
@@ -348,9 +353,6 @@ For example, an arbitrary RV32 bit permutation using a complete omega-flip netwo
   flip  a1, a0, <maskI>
   flip  a0, a1, <maskJ>
 \end{verbatim}
-
-(Either {\tt <maskE>} or {\tt <maskF>} can be zero, effectively turning either
-the last {\tt omega} into a {\tt zip} or the first {\tt flip} into an {\tt unzip}.)
 
 As for butterfly networks, permutations arising from real-world applications
 can often be implemented using a much shorter sequence. Especially if {\tt bfly},
