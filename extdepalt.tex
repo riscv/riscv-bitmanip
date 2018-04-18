@@ -31,11 +31,11 @@ The instruction encoding space used by \texttt{bext} and \texttt{bdep} is
 minimal, i.e. not much is gained by preserving the opcode space occupied
 by the two instructions. So we are proposing to make \texttt{bext} and
 \texttt{bdep} optional features that may be emulated by software, and add the
-much simpler {\tt shuffle} and {\tt unshuffle} instructions described below.
-Those instructions simplify some of the most common cases that would otherwise
+much simpler {\tt shuffle} instruction described below.
+This instruction simplify some of the most common cases that would otherwise
 benefit from a fast \texttt{bext} and \texttt{bdep} unit. The hardware cost for
-{\tt shuffle} and {\tt unshuffle} is comparably low for a processor that
-already implements the {\tt grev} instruction.
+{\tt shuffle} is comparably low for a processor that already implements the
+{\tt grev} instruction.
 
 For small cores this would be an immense simplification because they would not
 need to implement \texttt{bext} and \texttt{bdep} in hardware. For large cores
@@ -53,10 +53,10 @@ longer sequence of much simpler operations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized Bit Permutations (\texttt{shuffle,\ unshuffle})}
+\section{Generalized Bit Permutations (\texttt{shuffle})}
 
-This instructions perform a bit permutation on the value in rs1. Which bit permutation
-is performed is defined by the control word in rs2 (Table~\ref{shuffle-unshuffle-ctrl}).
+This instruction performs a bit permutation on the value in rs1. Which bit permutation
+is performed is defined by the control word in rs2 (Table~\ref{shuffle-ctrl}).
 
 \begin{table}[h]
 \begin{small}
@@ -90,8 +90,8 @@ is performed is defined by the control word in rs2 (Table~\ref{shuffle-unshuffle
 \end{tabular}
 \end{center}
 \end{small}
-\caption{\texttt{shuffle,\,unshuffle} control word}
-\label{shuffle-unshuffle-ctrl}
+\caption{\texttt{shuffle} control word}
+\label{shuffle-ctrl}
 \end{table}
 
 This spec only defines command $=$ 0. Non-zero command values are reserved for
@@ -101,8 +101,8 @@ reserved for non-standard extensions (NSE).
 
 Command 0 implements functions that are required for computing zip and unzip
 operations, butterfly stages or entire butterfly networks, omega stages or networks, flip
-stages or network, and similar operations. Tables~\ref{shuffle-modes} and~\ref{unshuffle-modes}
-list the operations performed by command 0. Note that this functions can all use the
+stages or network, and similar operations. Table~\ref{shuffle-modes} lists the
+operations performed by command 0. Note that this functions can all use the
 existing butterfly network that implements the GREV instructions.
 
 \begin{table}[h]
@@ -118,7 +118,7 @@ Mode & Description \\ \hline
 0100 & zip + butterfly(mask, 4) \\
 0101 & zip + butterfly(mask, 5) (RV64/128; NSE) \\
 0110 & zip + butterfly(mask, 6) (RV128; NSE) \\
-0111 & reserved for future standard extensions \\
+0111 & unzip + butterfly(mask, LOG2\_XLEN-1) \\
 
 \hline
 
@@ -131,8 +131,6 @@ Mode & Description \\ \hline
 1110 & butterfly(mask, 6) (RV128; NSE) \\
 1111 & reserved for future standard extensions \\
 
-\hline
-
 \end{tabular}
 \end{center}
 \end{small}
@@ -140,50 +138,14 @@ Mode & Description \\ \hline
 \label{shuffle-modes}
 \end{table}
 
-\begin{table}[h]
-\begin{small}
-\begin{center}
-\begin{tabular}{l l}
-Mode & Description \\ \hline
-
-0000 & unzip + butterfly(mask, 0) \\
-0001 & unzip + butterfly(mask, 1) \\
-0010 & unzip + butterfly(mask, 2) \\
-0011 & unzip + butterfly(mask, 3) \\
-0100 & unzip + butterfly(mask, 4) \\
-0101 & unzip + butterfly(mask, 5) (RV64/128; NSE) \\
-0110 & unzip + butterfly(mask, 6) (RV128; NSE) \\
-0111 & reserved for future standard extensions \\
-
-\hline
-
-1000 & reserved for future standard extensions \\
-1001 & reserved for future standard extensions \\
-1010 & reserved for future standard extensions \\
-1011 & reserved for future standard extensions \\
-1100 & reserved for future standard extensions \\
-1101 & reserved for future standard extensions \\
-1110 & reserved for future standard extensions \\
-1111 & reserved for future standard extensions \\
-
-\hline
-
-\end{tabular}
-\end{center}
-\end{small}
-\caption{Modes for unshuffle command 0}
-\label{unshuffle-modes}
-\end{table}
-
 Modes that are reserved for future standard or non-standard extensions must return
 0 in rd on implementations that do not support those future extensions.
 
 \texttt{shuffle} with rs2$=$0 (x0) implements just a zip operation (butterfly is
-disabled because mask$=$0), and \texttt{unshuffle} with rs2$=$0 implements just
-an unzip operation.
+disabled because mask$=$0).
 
 The \texttt{zip} (aka ``shuffle'') operation interleaves the bits of the lower and upper
-half of its argument. The \texttt{unzip} (aka ``unshuffle'') instruction performs the inverse.
+half of its argument. The \texttt{unzip} (aka ``unshuffle'') operation performs the inverse.
 
 In other words, \texttt{zip} performs a rotate left shift on the bit indices,
 and \texttt{unzip} performs a rotate right shift on the bit indices.
@@ -249,34 +211,26 @@ uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
     int stage = (ctrl >> 12) & 7;
     int cmd = ctrl & 0xfff;
 
-    if (cmd != 0 || stage >= LOG2_XLEN)
+    if (cmd != 0)
         return 0;
 
-    x = dozip ? zip(x) : x;
-    x = butterfly(x, mask, stage);
-    return x;
-}
+    if (dozip && (stage == 7))
+        return butterfly(unzip(x), mask, LOG2_XLEN-1);
 
-uint_xlen_t unshuffle(uint_xlen_t x, uint_xlen_t ctrl)
-{
-    uint_xlen_t mask = ctrl >> 16;
-    bool dounzip = !((ctrl >> 15) & 1);
-    int stage = (ctrl >> 12) & 7;
-    int cmd = ctrl & 0xfff;
-
-    if (cmd != 0 || stage >= LOG2_XLEN || !dounzip)
+    if (stage >= LOG2_XLEN)
         return 0;
 
-    x = unzip(x);
-    x = butterfly(x, mask, stage);
-    return x;
+    if (dozip)
+        return butterfly(zip(x), mask, stage);
+
+    return butterfly(x, mask, stage);
 }
 \end{verbatim}
 
 On RV32, a control word for command 0 can be loaded using a single \texttt{lui} instruction.
-At most $2\cdot{}log_2(\textrm{XLEN})-1$ shuffle or unshuffle operations are required to
-perform an arbitrary bit permutation. Most bit permutations that arise from real-world
-applications can be implemented in shorter sequences.
+At most $2\cdot{}log_2(\textrm{XLEN})-1$ shuffle operations are required to
+perform an arbitrary bit permutation. Most bit permutations that arise from
+real-world applications can be implemented in shorter sequences.
 
 Commands in the range 1-2047 with the upper bits (mask/mode) set to zero can be
 loaded with a single \texttt{li} instruction. Note that there is no
@@ -324,19 +278,16 @@ shorter sequences.
 
 A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
 
-A butterfly(0) operation followed by unzip (equivalent to an unzip operation followed
-by butterfly($\log_2(\textrm{XLEN})-1$)) is commonly
-known as a {\it flip stage}. The assember should provide appropiate
-pseudo-instructions for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N}
-is omitted then $\texttt{N}=0$ is assumed for {\tt omega} and
-$\texttt{N}=\log_2(\textrm{XLEN})-1$ is assumed for {\tt flip}):
+An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) is
+commonly known as a {\it flip stage}. The assember should provide appropiate
+pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
 
 \begin{verbatim}
-  omega rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
-                                     shuffle rd, rs, rd
+  omega rd, rs, mask     ->     lui rd, (mask << 4)
+                                shuffle rd, rs, rd
 
-  flip  rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
-                                     unshuffle rd, rs, rd
+  flip  rd, rs, mask     ->     lui rd, ((mask << 4) | 7)
+                                shuffle rd, rs, rd
 \end{verbatim}
 
 For example, an arbitrary RV32 bit permutation using a complete omega-flip network:
@@ -360,25 +311,19 @@ can often be implemented using a much shorter sequence. Especially if {\tt bfly}
 
 \subsubsection{Pseudo instructions {\tt zip} and {\tt unzip}}
 
-With a zero value as control word, {\tt shuffle} and {\tt unshuffle} perform
-simple zip or unzip operations. The assembler should provide pseudo-instructions
-for those cases (Table~\ref{pseudos-zip-unzip}).
+With a zero value as control word, {\tt shuffle} performs a simple zip
+operation. The assembler should provide an according pseudo-instruction:
 
-\begin{table}[h]
-\begin{small}
-\begin{center}
-\begin{tabular}{l l l}
-Pseudoinstruction & Base Instruction(s) \\ \hline
-{\tt zip rd, rs} & {\tt shuffle rd, rs, zero} \\
-{\tt unzip rd, rs} & {\tt unshuffle rd, rs, zero} \\
-\hline
+\begin{verbatim}
+  zip rd, rs      ->     shuffle rd, rs, zero
+\end{verbatim}
 
-\end{tabular}
-\end{center}
-\end{small}
-\caption{Pseudo instructions {\tt zip} and {\tt unzip}}
-\label{pseudos-zip-unzip}
-\end{table}
+And for rd $\neq$ rs:
+
+\begin{verbatim}
+  unzip rd, rs    ->     lui rd, 7
+                         shuffle rd, rs, rd
+\end{verbatim}
 
 The \texttt{zip} instruction with the upper half of its input cleared performs
 the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
