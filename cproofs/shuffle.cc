@@ -55,3 +55,77 @@ void flip_alt_check(uint32_t src, uint32_t mask)
 	uint32_t b = flip_alt(src, mask);
 	assert(a == b);
 }
+
+// ---------------------------------------------------------
+
+uint32_t baseline(uint32_t x, uint32_t mask, int k)
+{
+	uint32_t y = 0;
+	x = bfly32(x, mask, 0);
+
+	int num_blocks = 1 << k;
+	int block_size = 1 << (5-k);
+
+	for (int block = 0; block < num_blocks; block++)
+	{
+		int start_offset = block*block_size;
+		for (int i = 0; i < block_size/2; i++)
+		{
+			int i1 = start_offset + 2*i;
+			int i2 = start_offset + 2*i + 1;
+
+			int o1 = start_offset + i;
+			int o2 = start_offset + block_size/2 + i;
+
+			y |= ((x >> i1) & 1) << o1;
+			y |= ((x >> i2) & 1) << o2;
+		}
+	}
+
+	return y;
+}
+
+void baseline_bfly_check(uint32_t x, uint32_t mask)
+{
+	uint32_t a = baseline(x, mask, 4);
+	uint32_t b = bfly32(x, mask, 0);
+	assert(a == b);
+}
+
+void baseline_unzip_check(uint32_t x, uint32_t mask)
+{
+	uint32_t a = baseline(x, mask, 0);
+	uint32_t b = unzip32(bfly32(x, mask, 0));
+	assert(a == b);
+}
+
+// ---------------------------------------------------------
+
+void omega_flip_bfly_check(uint32_t x, uint32_t maskA, uint32_t maskB, uint32_t maskC, uint32_t maskD, uint32_t maskE,
+		uint32_t maskF, uint32_t maskG, uint32_t maskH, uint32_t maskI, uint32_t maskJ)
+{
+	uint32_t a = x;
+	a = omega(a, maskA);
+	a = omega(a, maskB);
+	a = omega(a, maskC);
+	a = omega(a, maskD);
+	a = omega(a, maskE);
+	a = flip(a, maskF);
+	a = flip(a, maskG);
+	a = flip(a, maskH);
+	a = flip(a, maskI);
+	a = flip(a, maskJ);
+
+	uint32_t b = x;
+	b = omega(b, maskA);
+	b = omega(b, maskB);
+	b = omega(b, maskC);
+	b = omega(b, maskD);
+	b = bfly32(b, maskE ^ maskF, 4);
+	b = flip(b, maskG);
+	b = flip(b, maskH);
+	b = flip(b, maskI);
+	b = flip(b, maskJ);
+
+	assert(a == b);
+}

@@ -120,13 +120,13 @@ existing butterfly network that implements the GREV instructions.
 Mode & Description & Pseudo instructions \\ \hline
 
 0000 & zip + butterfly(mask, 0)                    & {\tt omega, zip} \\
-0001 & {\it baseline network stage (?)}            & --- \\
-0010 & {\it baseline network stage (?)}            & --- \\
-0011 & {\it baseline network stage (?)}            & --- \\
-0100 & {\it baseline network stage (?)}            & --- \\
-0101 & {\it baseline network stage (?)}            & --- \\
-0110 & {\it baseline network stage (?)}            & --- \\
-0111 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
+0001 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
+0010 & {\it reserved, fwd/rev baseline stage (?)}  & --- \\
+0011 & {\it reserved, fwd/rev baseline stage (?)}  & --- \\
+0100 & {\it reserved, fwd/rev baseline stage (?)}  & --- \\
+0101 & {\it reserved, fwd/rev baseline stage (?)}  & --- \\
+0110 & {\it reserved, fwd/rev baseline stage (?)}  & --- \\
+0111 & {\it reserved, fwd/rev baseline stage (?)}  & --- \\
 
 \hline
 
@@ -224,7 +224,7 @@ uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
     if (mode == 0)
         return butterfly(zip(x), mask, 0);
 
-    if (mode == 7)
+    if (mode == 1)
         return unzip(butterfly(x, mask, 0));
 
     if (mode > 7)
@@ -308,6 +308,21 @@ For example, an arbitrary RV32 bit permutation using a complete omega-flip netwo
   flip  a0, a1, <maskH>
   flip  a1, a0, <maskI>
   flip  a0, a1, <maskJ>
+\end{verbatim}
+
+Or one instruction shorter by merging the center omega+flip pair into a
+butterfly operation:
+
+\begin{verbatim}
+  omega a1, a0, <maskA>
+  omega a2, a1, <maskB>
+  omega a0, a2, <maskC>
+  omega a1, a0, <maskD>
+  bfly  a2, a1, <maskE> ^ <maskF>, 4
+  flip  a0, a2, <maskG>
+  flip  a1, a0, <maskH>
+  flip  a2, a1, <maskI>
+  flip  a0, a2, <maskJ>
 \end{verbatim}
 
 As for butterfly networks, permutations arising from real-world applications
