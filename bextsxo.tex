@@ -9,16 +9,18 @@
 \instbitrange{11}{7} &
 \instbitrange{6}{0} \\
 \hline
-\multicolumn{1}{|c|}{imm[11:5]} &
-\multicolumn{1}{c|}{imm[4:0]} &
+\multicolumn{1}{|c|}{funct7} &
+\multicolumn{1}{c|}{rs2} &
 \multicolumn{1}{c|}{rs1} &
 \multicolumn{1}{c|}{funct3} &
 \multicolumn{1}{c|}{rd} &
 \multicolumn{1}{c|}{opcode} \\
 \hline
 7 & 5 & 5 & 3 & 5 & 7 \\
-10????? & shamt & src & SLOIW & dest & OP-IMM-32 \\
-10????? & shamt & src & SROIW & dest & OP-IMM-32 \\
+10????? & src2 & src1 & SRO    & dest & OP    \\
+10????? & src2 & src1 & SLO    & dest & OP    \\
+10????? & src2 & src1 & SROW   & dest & OP-32 \\
+10????? & src2 & src1 & SLOW   & dest & OP-32 \\
 \end{tabular}
 \end{center}
 
@@ -57,17 +59,15 @@
 \instbitrange{11}{7} &
 \instbitrange{6}{0} \\
 \hline
-\multicolumn{1}{|c|}{funct7} &
-\multicolumn{1}{c|}{rs2} &
+\multicolumn{1}{|c|}{imm[11:5]} &
+\multicolumn{1}{c|}{imm[4:0]} &
 \multicolumn{1}{c|}{rs1} &
 \multicolumn{1}{c|}{funct3} &
 \multicolumn{1}{c|}{rd} &
 \multicolumn{1}{c|}{opcode} \\
 \hline
 7 & 5 & 5 & 3 & 5 & 7 \\
-10????? & src2 & src1 & SRO    & dest & OP    \\
-10????? & src2 & src1 & SLO    & dest & OP    \\
-10????? & src2 & src1 & SROW   & dest & OP-32 \\
-10????? & src2 & src1 & SLOW   & dest & OP-32 \\
+10????? & shamt & src & SLOIW & dest & OP-IMM-32 \\
+10????? & shamt & src & SROIW & dest & OP-IMM-32 \\
 \end{tabular}
 \end{center}

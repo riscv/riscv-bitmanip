@@ -1,6 +1,6 @@
 \vspace{-0.4in}
 \begin{center}
-\begin{tabular}{R@{}R@{}R@{}S@{}R@{}O}
+\begin{tabular}{S@{}R@{}R@{}S@{}R@{}O}
 \\
 \instbitrange{31}{25} &
 \instbitrange{24}{20} &
@@ -9,15 +9,16 @@
 \instbitrange{11}{7} &
 \instbitrange{6}{0} \\
 \hline
-\multicolumn{1}{|c|}{imm[11:5]} &
-\multicolumn{1}{c|}{imm[4:0]} &
+\multicolumn{1}{|c|}{funct7} &
+\multicolumn{1}{c|}{rs2} &
 \multicolumn{1}{c|}{rs1} &
 \multicolumn{1}{c|}{funct3} &
 \multicolumn{1}{c|}{rd} &
 \multicolumn{1}{c|}{opcode} \\
 \hline
 7 & 5 & 5 & 3 & 5 & 7 \\
-??????? & mode & src & GREVIW  & dest & OP-IMM-32 \\
+??????? & src2 & src1 & GREV   & dest & OP    \\
+??????? & src2 & src1 & GREVW  & dest & OP-32 \\
 \end{tabular}
 \end{center}
 
@@ -46,7 +47,7 @@
 
 \vspace{-0.4in}
 \begin{center}
-\begin{tabular}{S@{}R@{}R@{}S@{}R@{}O}
+\begin{tabular}{R@{}R@{}R@{}S@{}R@{}O}
 \\
 \instbitrange{31}{25} &
 \instbitrange{24}{20} &
@@ -55,15 +56,14 @@
 \instbitrange{11}{7} &
 \instbitrange{6}{0} \\
 \hline
-\multicolumn{1}{|c|}{funct7} &
-\multicolumn{1}{c|}{rs2} &
+\multicolumn{1}{|c|}{imm[11:5]} &
+\multicolumn{1}{c|}{imm[4:0]} &
 \multicolumn{1}{c|}{rs1} &
 \multicolumn{1}{c|}{funct3} &
 \multicolumn{1}{c|}{rd} &
 \multicolumn{1}{c|}{opcode} \\
 \hline
 7 & 5 & 5 & 3 & 5 & 7 \\
-??????? & src2 & src1 & GREV   & dest & OP    \\
-??????? & src2 & src1 & GREVW  & dest & OP-32 \\
+??????? & mode & src & GREVIW  & dest & OP-IMM-32 \\
 \end{tabular}
 \end{center}
