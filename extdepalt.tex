@@ -119,25 +119,25 @@ existing butterfly network that implements the GREV instructions.
 \begin{tabular}{l l l}
 Mode & Description & Pseudo instructions \\ \hline
 
-0000 & zip + butterfly(mask, 0)                  & {\tt omega, zip} \\
-0001 & reserved (for baseline network stages?)   & --- \\
-0010 & reserved (for baseline network stages?)   & --- \\
-0011 & reserved (for baseline network stages?)   & --- \\
-0100 & reserved (for baseline network stages?)   & --- \\
-0101 & reserved (for baseline network stages?)   & --- \\
-0110 & reserved (for baseline network stages?)   & --- \\
-0111 & unzip + butterfly(mask, LOG2\_XLEN-1)     & {\tt flip, unzip} \\
+0000 & zip + butterfly(mask, 0)                    & {\tt omega, zip} \\
+0001 & {\it baseline network stage (?)}            & --- \\
+0010 & {\it baseline network stage (?)}            & --- \\
+0011 & {\it baseline network stage (?)}            & --- \\
+0100 & {\it baseline network stage (?)}            & --- \\
+0101 & {\it baseline network stage (?)}            & --- \\
+0110 & {\it baseline network stage (?)}            & --- \\
+0111 & unzip + butterfly(mask, LOG2\_XLEN-1)       & {\tt flip, unzip} \\
 
 \hline
 
-1000 & butterfly(mask, 0)                        & {\tt bfly} \\
-1001 & butterfly(mask, 1)                        & {\tt bfly} \\
-1010 & butterfly(mask, 2)                        & {\tt bfly} \\
-1011 & butterfly(mask, 3)                        & {\tt bfly} \\
-1100 & butterfly(mask, 4)                        & {\tt bfly} \\
-1101 & butterfly(mask, 5) (RV64/128; NSE)        & {\tt bfly} \\
-1110 & butterfly(mask, 6) (RV128; NSE)           & {\tt bfly} \\
-1111 & reserved for future standard extensions   & --- \\
+1000 & butterfly(mask, 0)                          & {\tt bfly} \\
+1001 & butterfly(mask, 1)                          & {\tt bfly} \\
+1010 & butterfly(mask, 2)                          & {\tt bfly} \\
+1011 & butterfly(mask, 3)                          & {\tt bfly} \\
+1100 & butterfly(mask, 4)                          & {\tt bfly} \\
+1101 & butterfly(mask, 5) (RV64/128; NSE)          & {\tt bfly} \\
+1110 & butterfly(mask, 6) (RV128; NSE)             & {\tt bfly} \\
+1111 & reserved for future standard extensions     & --- \\
 
 \end{tabular}
 \end{center}
