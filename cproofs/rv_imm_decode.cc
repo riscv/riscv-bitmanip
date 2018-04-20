@@ -138,9 +138,10 @@ void check_b_imm(insn_t insn)
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	t0 = 0x51574000;
+	a0 = ror32(a0, 8);
+	t0 = 0x804eb000;
 	a0 = shuffle32(a0, t0);
-	t0 = 0xeaa80055;
+	t0 = 0x80fe0e01;
 	a0 = bext32(a0, t0);
 	a0 = sll32(a0, 20);
 	a0 = sra32(a0, 19);
@@ -155,11 +156,11 @@ void check_j_imm(insn_t insn)
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	t0 = 0x0fff3000;
-	a0 = unshuffle32(a0, t0);
-	t0 = 0x34349000;
+	t0 = 0x0fffb000;
 	a0 = shuffle32(a0, t0);
-	t0 = 0x70fe4000;
+	t0 = 0x0f40a000;
+	a0 = shuffle32(a0, t0);
+	t0 = 0x70fec000;
 	a0 = shuffle32(a0, t0);
 	t0 = 0x8ff170fe;
 	a0 = bext32(a0, t0);
@@ -199,12 +200,12 @@ void check_cj_imm(insn_t insn)
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	a0 = ror32(a0, 24);
-	t0 = 0x399cb000;
+	a0 = grev32(a0, 1);
+	t0 = 0xebcac000;
 	a0 = shuffle32(a0, t0);
-	t0 = 0xf2d30000;
-	a0 = unshuffle32(a0, t0);
-	t0 = 0x538a2046;
+	t0 = 0xe3469000;
+	a0 = shuffle32(a0, t0);
+	t0 = 0x8bc20464;
 	a0 = bext32(a0, t0);
 	a0 = sll32(a0, 21);
 	a0 = sra32(a0, 20);

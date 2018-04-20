@@ -190,31 +190,22 @@ uint32_t flip32(uint32_t rs1, uint32_t mask, int N)
 uint32_t shuffle32(uint32_t x, uint32_t ctrl)
 {
 	uint32_t mask = ctrl >> 16;
-	bool dozip = !((ctrl >> 15) & 1);
-	int stage = (ctrl >> 12) & 7;
+	int mode = (ctrl >> 12) & 15;
 	int cmd = ctrl & 0xfff;
 
-	if (cmd != 0 || stage > 4)
+	if (cmd != 0 || mode > 12)
 		return 0;
 
-	x = dozip ? zip32(x) : x;
-	x = bfly32(x, mask, stage);
-	return x;
-}
+	if (mode == 0)
+		return bfly32(zip32(x), mask, 0);
 
-uint32_t unshuffle32(uint32_t x, uint32_t ctrl)
-{
-	uint32_t mask = ctrl >> 16;
-	bool dounzip = !((ctrl >> 15) & 1);
-	int stage = (ctrl >> 12) & 7;
-	int cmd = ctrl & 0xfff;
+	if (mode == 1)
+		return unzip32(bfly32(x, mask, 0));
 
-	if (cmd != 0 || stage > 4 || !dounzip)
-		return 0;
+	if (mode > 7)
+		return bfly32(x, mask, mode & 7);
 
-	x = bfly32(x, mask, stage);
-	x = unzip32(x);
-	return x;
+	return 0;
 }
 
 uint32_t slo32(uint32_t x, int k)
