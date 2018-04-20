@@ -120,12 +120,12 @@ existing butterfly network that implements the GREV instructions.
 Mode & Description & Pseudo instructions \\ \hline
 
 0000 & zip + butterfly(mask, 0)                  & {\tt omega, zip} \\
-0001 & zip + butterfly(mask, 1)                  & {\tt omega} \\
-0010 & zip + butterfly(mask, 2)                  & {\tt omega} \\
-0011 & zip + butterfly(mask, 3)                  & {\tt omega} \\
-0100 & zip + butterfly(mask, 4)                  & {\tt omega} \\
-0101 & zip + butterfly(mask, 5) (RV64/128; NSE)  & {\tt omega} \\
-0110 & zip + butterfly(mask, 6) (RV128; NSE)     & {\tt omega} \\
+0001 & reserved (for baseline network stages?)   & --- \\
+0010 & reserved (for baseline network stages?)   & --- \\
+0011 & reserved (for baseline network stages?)   & --- \\
+0100 & reserved (for baseline network stages?)   & --- \\
+0101 & reserved (for baseline network stages?)   & --- \\
+0110 & reserved (for baseline network stages?)   & --- \\
 0111 & unzip + butterfly(mask, LOG2\_XLEN-1)     & {\tt flip, unzip} \\
 
 \hline
@@ -288,11 +288,10 @@ A zip operation followed by a butterfly(0) is commonly known as an {\it omega st
 
 An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) is
 commonly known as a {\it flip stage}. The assember should provide appropiate
-pseudo-instructions for rd $\neq$ rs and constant {\tt mask} (if {\tt N} is omitted
-then {\tt N}$=$0 is assumed):
+pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
 
 \begin{verbatim}
-  omega rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | N)
+  omega rd, rs, mask          ->     lui rd, (mask << 4)
                                      shuffle rd, rs, rd
 
   flip  rd, rs, mask          ->     lui rd, ((mask << 4) | 7)
