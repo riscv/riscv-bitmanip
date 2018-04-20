@@ -126,7 +126,7 @@ Mode & Description & Pseudo instructions \\ \hline
 0100 & {\it baseline network stage (?)}            & --- \\
 0101 & {\it baseline network stage (?)}            & --- \\
 0110 & {\it baseline network stage (?)}            & --- \\
-0111 & unzip + butterfly(mask, LOG2\_XLEN-1)       & {\tt flip, unzip} \\
+0111 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
 
 \hline
 
@@ -225,7 +225,7 @@ uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
         return butterfly(zip(x), mask, 0);
 
     if (mode == 7)
-        return butterfly(unzip(x), mask, LOG2_XLEN-1);
+        return unzip(butterfly(x, mask, 0));
 
     if (mode > 7)
         return butterfly(x, mask, mode & 7);
@@ -282,9 +282,10 @@ shorter sequences.
 
 A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
 
-An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) is
-commonly known as a {\it flip stage}. The assember should provide appropiate
-pseudo-instructions for rd $\neq$ rs and constant {\tt mask}:
+An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) (or
+equivialently, butterfly(0) followed by unzip) is commonly known as a {\it flip
+stage}. The assember should provide appropiate pseudo-instructions for rd
+$\neq$ rs and constant {\tt mask}:
 
 \begin{verbatim}
   omega rd, rs, mask          ->     lui rd, (mask << 4)
