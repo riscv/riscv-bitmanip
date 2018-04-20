@@ -5,30 +5,10 @@
 \subsubsection{\texttt{grev} seems to be overly complicated? Do we really need it?}
 
 The \texttt{grev} instruction can be used to build a wide range of common
-bit permutation instructions. For example on RV32:
+bit permutation instructions, such as endianess convertion or bit reversal.
 
-\begin{longtable}[c]{@{}rl@{}}
-\caption{Some GREVI Pseudo-Instructions}\tabularnewline
-\toprule
-Mode & Meaning on RV32\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-Mode & Meaning on RV32\tabularnewline
-\midrule
-\endhead
-4 & swap the nibbles of each byte\tabularnewline
-7 & reverse the bits in each byte\tabularnewline
-15 & reverse the bits in each halfword\tabularnewline
-16 & swap the two half words halfword\tabularnewline
-24 & reverse the byte order\tabularnewline
-31 & bitwise reverse\tabularnewline
-\bottomrule
-\end{longtable}
-
-If \texttt{grev} were removed from this spec we would need to add a few new
-instructions in its place for operations such as bitwise reverse or
-endianness convertion.
+If \texttt{grev} were removed from this spec we would need to add a few
+new instructions in its place for those operations.
 
 \subsubsection{Do we really need all the \texttt{*W} opcodes for 32 bit ops on RV64?}
 
