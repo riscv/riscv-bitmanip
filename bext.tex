@@ -8,13 +8,17 @@ The sections on encodings are mere placeholders.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Count Leading Zeros (\texttt{clz})}
+\section{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
 
-This operation counts the number of 0 bits before the first 1 bit
+The {\tt clz} operation counts the number of 0 bits before the first 1 bit
 (counting from the most significant bit) in the source register. This is
 related to the ``integer logarithm''. It takes a single register as
 input and operates on the entire register. If the input is 0, the output is
 XLEN. If the input is \textasciitilde{}0, the output is 0.
+
+The {\tt ctz} operation counts the number of 0 bits after the last 1 bit.
+If the input is 0, the output is XLEN. If the input is \textasciitilde{}0,
+the output is 0.
 
 \begin{verbatim}
 uint_xlen_t clz(uint_xlen_t rs1)
@@ -24,12 +28,20 @@ uint_xlen_t clz(uint_xlen_t rs1)
             return count;
     return XLEN;
 }
+
+uint_xlen_t ctz(uint_xlen_t rs1)
+{
+    for (int count = 0; count < XLEN; count++)
+        if ((rs1 >> count) & 1)
+            return count;
+    return XLEN;
+}
 \end{verbatim}
 
 \input{bextclz.tex}
 
-One possible encoding for \texttt{clz} is as a standard I-type opcode somewhere
-in the brownfield surrounding the shift-immediate instructions.
+One possible encoding for \texttt{clz} and \texttt{ctz} is as standard I-type opcodes
+somewhere in the brownfield surrounding the shift-immediate instructions.
 
 % \subsection{Related Pseudo-instructions}
 %
@@ -596,7 +608,7 @@ base spec. The exact instruction encoding is to be decided, however.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.clz,\ c.brev})}
+\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.brev})}
 
 The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
 and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
@@ -614,26 +626,11 @@ macro-op-fusion. For this it can be helpful when the fused sequences are short.
 \texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
 it can be helpful to have compressed opcodes for them.
 
-Likewise, \texttt{clz} and \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1},
-i.e. bitwise reversal) are very common atoms for building common bit
-manipulation operations. So it is helpful to have compressed opcodes for them
-as well.
+Likewise \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1}, i.e. bitwise
+reversal) is also a very common atom for building bit manipulation operations. So it
+is helpful to have a compressed opcode for this instruction as well.
 
-For example, the equivalent to the x86 instruction \texttt{BSR} (find index of
-highest set bit) can be implemented using the following 64 bit sequence that does not
-spill other registers (and thus is a prime candidate for macro-op-fusion):
-
-\begin{verbatim}
-  bsr rsd:
-    c.clz rsd
-    c.neg rsd
-    addi rsd, rsd, 32
-\end{verbatim}
-
-Likewise, the AMD TBM extension adds 10 x86 bit manipulation instructions. The equivalent
-RISC-V code sequences can utilize \texttt{c.not} in half of the cases.
-
-The compressed instructions \texttt{c.not,\ c.neg,\ c.clz,\ c.brev} must be supported by
+The compressed instructions \texttt{c.not,\ c.neg,\ c.brev} must be supported by
 all implementations that support the C extension and XBitmanip.
 
 \input{bextcompr}
