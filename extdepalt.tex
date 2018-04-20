@@ -215,23 +215,22 @@ Putting it all together:
 uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
 {
     uint_xlen_t mask = ctrl >> 16;
-    bool dozip = !((ctrl >> 15) & 1);
-    int stage = (ctrl >> 12) & 7;
+    int mode = (ctrl >> 12) & 15;
     int cmd = ctrl & 0xfff;
 
-    if (cmd != 0)
+    if (cmd != 0 || mode > 7+LOG2_XLEN)
         return 0;
 
-    if (dozip && (stage == 7))
+    if (mode == 0)
+        return butterfly(zip(x), mask, 0);
+
+    if (mode == 7)
         return butterfly(unzip(x), mask, LOG2_XLEN-1);
 
-    if (stage >= LOG2_XLEN)
-        return 0;
+    if (mode > 7)
+        return butterfly(x, mask, mode & 7);
 
-    if (dozip)
-        return butterfly(zip(x), mask, stage);
-
-    return butterfly(x, mask, stage);
+    return 0;
 }
 \end{verbatim}
 

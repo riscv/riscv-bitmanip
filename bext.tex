@@ -170,28 +170,26 @@ immediate is true for the current stage, swaps each adjacent pair of
 \texttt{grevi} `butterfly' implementation in C on various architectures
 
 \begin{verbatim}
-uint32_t grevi32(uint32_t rs1, int12_t immed)
+uint32_t grev32(uint32_t rs1, int32_t rs2)
 {
     uint32_t x = rs1;
-    uint5_t k = (uint12_t)immed;
-    if (k &  1) x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1);
-    if (k &  2) x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2);
-    if (k &  4) x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4);
-    if (k &  8) x = ((x & 0x00FF00FF) << 8) | ((x & 0xFF00FF00) >> 8);
-    if (k & 16) x = ((x & 0x0000FFFF) <<16) | ((x & 0xFFFF0000) >> 16);
+    if (rs2 &  1) x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1);
+    if (rs2 &  2) x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2);
+    if (rs2 &  4) x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4);
+    if (rs2 &  8) x = ((x & 0x00FF00FF) << 8) | ((x & 0xFF00FF00) >> 8);
+    if (rs2 & 16) x = ((x & 0x0000FFFF) <<16) | ((x & 0xFFFF0000) >> 16);
     return x;
 }
 
-uint64_t grevi64(uint32_t rs1, int12_t immed)
+uint64_t grev64(uint32_t rs1, int32_t rs2)
 {
     uint64_t x = rs1;
-    uint6_t k = (uint12_t)immed;
-    if (k &  1) x = ((x & 0x5555555555555555) << 1) | ((x & 0xAAAAAAAAAAAAAAAA) >> 1);
-    if (k &  2) x = ((x & 0x3333333333333333) << 2) | ((x & 0xCCCCCCCCCCCCCCCC) >> 2);
-    if (k &  4) x = ((x & 0x0F0F0F0F0F0F0F0F) << 4) | ((x & 0xF0F0F0F0F0F0F0F0) >> 4);
-    if (k &  8) x = ((x & 0x00FF00FF00FF00FF) << 8) | ((x & 0xFF00FF00FF00FF00) >> 8);
-    if (k & 16) x = ((x & 0x0000FFFF0000FFFF) <<16) | ((x & 0xFFFF0000FFFF0000) >> 16);
-    if (k & 32) x = ((x & 0x00000000FFFFFFFF) <<32) | ((x & 0xFFFFFFFF00000000) >> 32);
+    if (rs2 &  1) x = ((x & 0x5555555555555555) << 1) | ((x & 0xAAAAAAAAAAAAAAAA) >> 1);
+    if (rs2 &  2) x = ((x & 0x3333333333333333) << 2) | ((x & 0xCCCCCCCCCCCCCCCC) >> 2);
+    if (rs2 &  4) x = ((x & 0x0F0F0F0F0F0F0F0F) << 4) | ((x & 0xF0F0F0F0F0F0F0F0) >> 4);
+    if (rs2 &  8) x = ((x & 0x00FF00FF00FF00FF) << 8) | ((x & 0xFF00FF00FF00FF00) >> 8);
+    if (rs2 & 16) x = ((x & 0x0000FFFF0000FFFF) <<16) | ((x & 0xFFFF0000FFFF0000) >> 16);
+    if (rs2 & 32) x = ((x & 0x00000000FFFFFFFF) <<32) | ((x & 0xFFFFFFFF00000000) >> 32);
     return x;
 }
 \end{verbatim}
@@ -323,21 +321,9 @@ uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
     return ~(~rs1 << shamt);
 }
 
-uint_xlen_t sloi(uint_xlen_t rs1, int12_t immed)
-{
-    int shamt = immed & (XLEN-1);
-    return ~(~rs1 << shamt);
-}
-
 uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
 {
     int shamt = rs2 & (XLEN-1);
-    return ~(~rs1 >> shamt);
-}
-
-uint_xlen_t sroi(uint_xlen_t rs1, int12_t immed)
-{
-    int shamt = immed & (XLEN-1);
     return ~(~rs1 >> shamt);
 }
 \end{verbatim}
@@ -431,12 +417,6 @@ uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
     int shamt = rs2 & (XLEN-1);
     return (rs1 >> shamt) | (rs1 << (XLEN-shamt));
 }
-
-int_xlen_t rori(uint_xlen_t rs1, int12_t immed)
-{
-    int shamt = immed & (XLEN-1);
-    return (rs1 >> shamt) | (rs1 << (XLEN-shamt));
-}
 \end{verbatim}
 
 \input{bextrox.tex}
@@ -489,16 +469,7 @@ Bit 31 & Bit 30 & Meaning\tabularnewline
 
 \section{And-with-complement (\texttt{andc})}
 
-\input{bextandc.tex}
-
-This is an R-type instruction that implements the and-with-complement
-operation \texttt{x=(a\ \&\ \textasciitilde{}b)} with an assembly format
-of \texttt{andc\ ro,r1,r2}.
-
-Additionally, the four positive bitwise operations can all be
-implemented with the same ALU area (e.g.~as a single microcode
-instruction) using a scheme described in the implementation commentary,
-and fused versions can be implemented as well.
+This instruction implements the and-with-complement operation.
 
 \begin{verbatim}
 uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
@@ -507,8 +478,12 @@ uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 \end{verbatim}
 
-This instruction should be encoded similarly to the instruction in the
-base spec. The exact instruction encoding is to be decided, however.
+Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
+by combining {\tt not} ({\tt c.not}) with the base ALU operation. (Which can
+fit in 32 bit when using two compressed instructions.) Only and-with-complement
+occurs frequently enough to warrant a dedicated instruction.
+
+\input{bextandc.tex}
 
 % \subsection{Related Pseudo-Instructions}
 %
@@ -543,9 +518,9 @@ base spec. The exact instruction encoding is to be decided, however.
 
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
-This is an R-type instruction that implements the generic bit extract
-and bit deposit functions. Similar implementation can be referred to as
-gather/scatter or pack/unpack.
+This instructions implement the generic bit extract and bit deposit functions.
+This operation is also referred to as bit gather/scatter, bit pack/unpack,
+parallel extract/deposit, compress/expand, or right\_compress/right\_expand.
 
 \texttt{BEXT[W] rd,rs1,rs2} collects LSB justified bits to rd from
 rs1 using extract mask in rs2.
