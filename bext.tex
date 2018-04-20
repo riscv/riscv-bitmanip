@@ -556,6 +556,29 @@ uint_xlen_t bdep(uint_xlen_t v, uint_xlen_t mask)
 }
 \end{verbatim}
 
+Implementations might chose to use smaller multi-cycle implementations of
+\texttt{bext} and \texttt{bdep}. Even though multi-cycle \texttt{bext} and
+\texttt{bdep} often are not fast enough to outperform algortihms that use
+sequences of shifts and bit masks, dedicated instructions for those operations
+can still be of great advantage, especially in cases where the mask argument
+is not constant.
+
+For example, the following code efficiently calculates the index of the tenth
+set bit in {\tt a0} using \texttt{bdep}:
+
+\begin{verbatim}
+  li a1, 0x00000200
+  bdep a0, a1, a0
+  brev a0, a0
+  clz a0, a0
+\end{verbatim}
+
+For cases with a constant mask an optimizing compiler would decide when to use
+\texttt{bext} or \texttt{bdep} based on the optimization profile for the
+concrete processor it is optimizing for. This is similar to the decision
+whether to use MUL or DIV with a constant, or to perform the same operation
+using a longer sequence of much simpler operations.
+
 \input{bextscagat.tex}
 
 % \subsection{Related Pseudo-Instructions}
@@ -577,6 +600,201 @@ uint_xlen_t bdep(uint_xlen_t v, uint_xlen_t mask)
 % http://hackersdelight.org/
 %
 % https://github.com/cliffordwolf/bextdep
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Generalized Bit Permutations (\texttt{shuffle})}
+
+This instruction performs a bit permutation on the value in rs1. Which bit permutation
+is performed is defined by the control word in rs2 (Table~\ref{shuffle-ctrl}).
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{p{0.1in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.2in}p{0.2in}p{0.05in}p{0.05in}l}
+& & & & & & & & & & & \\
+\multicolumn{1}{r}{\instbit{64}} &
+\multicolumn{1}{l}{\instbit{63}} &
+\multicolumn{1}{r}{\instbit{48}} &
+\multicolumn{1}{l}{\instbit{47}} &
+\multicolumn{1}{r}{\instbit{32}} &
+\multicolumn{1}{l}{\instbit{31}} &
+\multicolumn{1}{r}{\instbit{16}} &
+\multicolumn{1}{l}{\instbit{15}} &
+\multicolumn{1}{r}{\instbit{12}} &
+\multicolumn{1}{l}{\instbit{11}} &
+\multicolumn{1}{r}{\instbit{0}} & \\
+\cline{1-11}
+
+\multicolumn{1}{c}{} &
+\multicolumn{4}{c}{mask} &
+\multicolumn{2}{c|}{} &
+\multicolumn{2}{c|}{mode} &
+\multicolumn{2}{c|}{command} & RV128 \\
+\cline{1-11}
+
+& \multicolumn{2}{|c|}{unused} &
+\multicolumn{4}{c|}{mask} &
+\multicolumn{2}{c|}{mode} &
+\multicolumn{2}{c|}{command} & RV64 \\
+\cline{2-11}
+
+& & & & &
+\multicolumn{2}{|c|}{mask} &
+\multicolumn{2}{c|}{mode} &
+\multicolumn{2}{c|}{command} & RV32 \\
+\cline{6-11}
+
+\end{tabular}
+\end{center}
+\end{small}
+\caption{\texttt{shuffle} control word}
+\label{shuffle-ctrl}
+\end{table}
+
+This spec only defines command $=$ 0. Non-zero command values are reserved for
+future use.  An implementation that does not support a given command must
+return 0 in rd. Support for command 0 is mandatory. Command values 1-7 are
+reserved for non-standard extensions (NSE).
+
+Command 0 implements functions that are required for computing zip and unzip
+operations, butterfly stages or entire butterfly networks, omega stages or networks, flip
+stages or network, and similar operations. Table~\ref{shuffle-modes} lists the
+operations performed by command 0. Note that this functions can all use the
+existing butterfly network that implements the GREV instructions.
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{l l l}
+Mode & Description & Pseudo instructions \\ \hline
+
+0000 & zip + butterfly(mask, 0)                    & {\tt omega, zip} \\
+0001 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
+0010 & reserved for future standard extensions     & --- \\
+0011 & reserved for future standard extensions     & --- \\
+0100 & reserved for future standard extensions     & --- \\
+0101 & reserved for future standard extensions     & --- \\
+0110 & reserved for future standard extensions     & --- \\
+0111 & reserved for future standard extensions     & --- \\
+
+\hline
+
+1000 & butterfly(mask, 0)                          & {\tt bfly} \\
+1001 & butterfly(mask, 1)                          & {\tt bfly} \\
+1010 & butterfly(mask, 2)                          & {\tt bfly} \\
+1011 & butterfly(mask, 3)                          & {\tt bfly} \\
+1100 & butterfly(mask, 4)                          & {\tt bfly} \\
+1101 & butterfly(mask, 5) (RV64/128; NSE)          & {\tt bfly} \\
+1110 & butterfly(mask, 6) (RV128; NSE)             & {\tt bfly} \\
+1111 & reserved for future standard extensions     & --- \\
+
+\end{tabular}
+\end{center}
+\end{small}
+\caption{Modes for shuffle command 0}
+\label{shuffle-modes}
+\end{table}
+
+Modes that are reserved for future standard or non-standard extensions must return
+0 in rd on implementations that do not support those future extensions.
+
+\texttt{shuffle} with rs2$=$0 (x0) implements just a zip operation (butterfly is
+disabled because mask$=$0).
+
+The \texttt{zip} (aka ``shuffle'') operation interleaves the bits of the lower and upper
+half of its argument. The \texttt{unzip} (aka ``unshuffle'') operation performs the inverse.
+
+In other words, \texttt{zip} performs a rotate left shift on the bit indices,
+and \texttt{unzip} performs a rotate right shift on the bit indices.
+Performing \texttt{zip} $log_2(\textrm{XLEN})$ times is the identity. Performing it
+$log_2(\textrm{XLEN})-1$ times is equivalent to one execution of \texttt{unzip}.
+
+\begin{verbatim}
+uint_xlen_t zip(uint_xlen_t rs1)
+{
+    uint_xlen_t x = 0;
+    for (int i = 0; i < XLEN/2; i++) {
+        x |= ((rs1 >> i) & 1) << (2*i);
+        x |= ((rs1 >> (i+XLEN/2)) & 1) << (2*i+1);
+    }
+    return x;
+}
+
+uint_xlen_t unzip(uint_xlen_t rs1)
+{
+    uint_xlen_t x = 0;
+    for (int i = 0; i < XLEN/2; i++) {
+        x |= ((rs1 >> (2*i)) & 1) << i;
+        x |= ((rs1 >> (2*i+1)) & 1) << (i+XLEN/2);
+    }
+    return x;
+}
+\end{verbatim}
+
+The butterfly operation performs a single butterfly stage N (i.e. the {\tt grev} operation
+with argument $2^N$), which performs $\textrm{XLEN}/2$ pairwise bit swaps. But unlike
+{\tt grev} the individual bit swaps are conditional and the $\textrm{XLEN}/2$
+bits in mask determine which bit swaps are taken.
+
+\begin{verbatim}
+uint_xlen_t swapbits(uint_xlen_t x, int p, int q)
+{
+    assert(p < q);
+    x = x ^ ((x & (1 << p)) << (q-p));
+    x = x ^ ((x & (1 << q)) >> (q-p));
+    x = x ^ ((x & (1 << p)) << (q-p));
+    return x;
+}
+
+uint_xlen_t butterfly(uint_xlen_t x, uint_xlen_t mask, int N)
+{
+    int a = 1 << N, b = 2*a;
+    for (int i = 0; i < XLEN/2; i++) {
+        int p = b*(i/a) + i%a, q = p + a;
+        if ((mask >> i) & 1)
+            x = swapbits(x, p, q);
+    }
+    return x;
+}
+\end{verbatim}
+
+Putting it all together:
+
+\begin{verbatim}
+uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
+{
+    uint_xlen_t mask = ctrl >> 16;
+    int mode = (ctrl >> 12) & 15;
+    int cmd = ctrl & 0xfff;
+
+    if (cmd != 0 || mode > 7+LOG2_XLEN)
+        return 0;
+
+    if (mode == 0)
+        return butterfly(zip(x), mask, 0);
+
+    if (mode == 1)
+        return unzip(butterfly(x, mask, 0));
+
+    if (mode > 7)
+        return butterfly(x, mask, mode & 7);
+
+    return 0;
+}
+\end{verbatim}
+
+On RV32, a control word for command 0 can be loaded using a single \texttt{lui} instruction.
+At most $2\cdot{}log_2(\textrm{XLEN})-1$ shuffle operations are required to
+perform an arbitrary bit permutation. Most bit permutations that arise from
+real-world applications can be implemented in shorter sequences.
+
+Commands in the range 1-2047 with the upper bits (mask/mode) set to zero can be
+loaded with a single \texttt{li} instruction. Note that there is no
+requirement for future non-zero commands to perform bit-permutations or even
+reversible operations.
+
+\input{bextshuffle.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -609,3 +827,252 @@ all implementations that support the C extension and XBitmanip.
 
 This three instructions fit nicely in the reserved space in C.LUI/C.ADDI16SP.
 They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Pseudo instructions and macros}
+
+RISC-V is a RISC instruction set. Unless there is a good argument against it, we try not
+to assign dedicated opcodes for complex operations that are just easily macro-op fusable
+short sequences of already existing instructions, especially if compressed instructions
+can be used to keep the length of those sequences reasonably short.
+
+The assembler should provide pseudo-instructions for some of the sequences that
+are implemented using dedicated instructions in some CISC bit-maniuplation instruction
+sets. The sections describing sequences where the assembler should provide pseudo-instructions
+are titled ``pseudo instruction'', whereas sections that just informally describe useful
+sequences are titles ``macro''.
+
+Many of the code snippets below can utilize compressed instructions. But for simplicity
+we use uncompressed instructions in the assembler listings. Some of the macros
+spill to temporary registers. {\tt t0, t1, t2, \dots} is used for spilling in the
+assembler listings. The input register are referred to by {\tt rs1, rs2, \dots} and
+the output register is {\tt rd}.
+
+\subsection{MIX/MUX Macros}
+
+\subsubsection{MIX Operation}
+
+A MIX operation selects bits from {\tt rs1} and {\tt rs2} based on the bits in
+the control word {\tt rs3}.
+
+\begin{verbatim}
+  and t0, rs1, rs3
+  andc t1, rs2, rs3
+  or rd, t0, t1
+\end{verbatim}
+
+\subsubsection{MUX Operation}
+
+A MUX operation selects word {\tt rs1} or {\tt rs2} based on if the control
+word {\tt rs3} is zero or nonzero, without branching.
+
+\begin{verbatim}
+  snez t0, rs3
+  neg t0, t0
+  and t1, rs1, t0
+  andc t2, rs2, t0
+  or rd, t1, t2
+\end{verbatim}
+
+Or when {\tt rs3} is already either 0 or 1:
+
+\begin{verbatim}
+  neg t0, rs3
+  and t1, rs1, t0
+  andc t2, rs2, t0
+  or rd, t1, t2
+\end{verbatim}
+
+\subsection{Bit-field extract and deposit}
+
+\subsubsection{Pseudo instruction {\tt bfext}}
+
+Extract the continous bit field starting at {\tt pos} with length {\tt len}
+from {\tt rs}:
+
+\begin{verbatim}
+  bfext rd, rs, pos, len   ->   slli rd, rs, (XLEN-po-len)
+                                srli rd, rd, (XLEN-len)
+\end{verbatim}
+
+\subsubsection{Macros for bit-field deposit}
+
+Deposit {\tt len} bits from {\tt rs2} at {\tt pos} in {\tt rd}, remaining bits
+in {\tt rd} are filled from {\tt rs1}.
+
+Assuming {\tt rs1[pos+len-1:pos]}$=$0 and {\tt rs2[XLEN-1:pos]}$=$0:
+
+\begin{verbatim}
+  slli t0, rs2, pos
+  or rd, rs1, t0
+\end{verbatim}
+
+Otherwise masking and/or shift operations should be used to clear the extra
+bits in {\tt rs1} and {\tt rs2}.
+
+On a machine with fast {\tt bdep}, the {\tt bdep} instruction can be used to
+shift and mask at the same time:
+
+\begin{verbatim}
+  li t0, ((1 << len)-1) << pos
+  andc t1, rs1, t0
+  bdep t0, rs2, t0
+  or rd, t0, t1
+\end{verbatim}
+
+\subsection{Pseudo instructions using {\tt grevi}}
+
+On RV32:
+
+\begin{verbatim}
+  brev    rd, rs   ->    grevi rd, rs, 31    ; bitwise reverse
+  brev.h  rd, rs   ->    grevi rd, rs, 15    ; reverse bits in each 16 bit half-word
+  brev.b  rd, rs   ->    grevi rd, rs,  7    ; reverse bits in each  8 bit byte
+
+  bswap   rd, rs   ->    grevi rd, rs, 24    ; reverse the byte order
+  bswap.h rd, rs   ->    grevi rd, rs, 24    ; swap bytes in each 16 bit half-word
+
+  hswap   rd, rs   ->    grevi rd, rs, 16    ; swap the two 16 bit half-words
+\end{verbatim}
+
+On RV64:
+
+\begin{verbatim}
+  brev    rd, rs   ->    grevi rd, rs, 63    ; bitwise reverse
+  brev.w  rd, rs   ->    grevi rd, rs, 31    ; reverse bits in each 16 bit half-word
+  brev.h  rd, rs   ->    grevi rd, rs, 15    ; reverse bits in each 16 bit half-word
+  brev.b  rd, rs   ->    grevi rd, rs,  7    ; reverse bits in each  8 bit byte
+
+  bswap   rd, rs   ->    grevi rd, rs, 56    ; reverse the byte order
+  bswap.w rd, rs   ->    grevi rd, rs, 24    ; swap bytes in each 16 bit half-word
+  bswap.h rd, rs   ->    grevi rd, rs,  8    ; swap bytes in each 16 bit half-word
+
+  hswap   rd, rs   ->    grevi rd, rs, 48    ; reverse order of 16 bit half-words
+  hswap.w rd, rs   ->    grevi rd, rs, 16    ; swap 16 bit half-words in each 32 bit word
+
+  wswap   rd, rs   ->    grevi rd, rs, 32    ; swap the two 32 bit words
+\end{verbatim}
+
+\subsection{Pseudo instructions using {\tt shuffle}}
+
+\subsubsection{Pseudo instruction {\tt bfly}}
+
+{\tt shuffle} with mode[3]$=$1 (and mode[2:0] $<$ $log_2(\textrm{XLEN})$) performs
+a butterfly operation. The assembler should provide a {\tt bfly} pseudo-instruction
+for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N} is omitted then
+{\tt N}$=$0 is assumed):
+
+\begin{verbatim}
+  bfly rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | 8 | N)
+                                    shuffle rd, rs, rd
+\end{verbatim}
+
+(On RV64, longer sequences are required instead of {\tt lui} to load the full
+32 bit mask into {\tt rd}.)
+
+For example, an arbitrary RV32 bit permutation using a complete butterfly network:
+
+\begin{verbatim}
+  bfly a1, a0, <maskA>, 4
+  bfly a2, a1, <maskB>, 3
+  bfly a0, a2, <maskC>, 2
+  bfly a1, a0, <maskD>, 1
+  bfly a2, a1, <maskE>, 0
+  bfly a0, a2, <maskF>, 1
+  bfly a1, a0, <maskG>, 2
+  bfly a2, a1, <maskH>, 3
+  bfly a0, a2, <maskI>, 4
+\end{verbatim}
+
+Permutations arising from real-world applications can often be implemented using
+shorter sequences.
+
+\subsubsection{Pseudo instructions {\tt omega} and {\tt flip}}
+
+A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
+
+An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) (or
+equivialently, butterfly(0) followed by unzip) is commonly known as a {\it flip
+stage}. The assember should provide appropiate pseudo-instructions for rd
+$\neq$ rs and constant {\tt mask}:
+
+\begin{verbatim}
+  omega rd, rs, mask          ->     lui rd, (mask << 4)
+                                     shuffle rd, rs, rd
+
+  flip  rd, rs, mask          ->     lui rd, ((mask << 4) | 1)
+                                     shuffle rd, rs, rd
+\end{verbatim}
+
+For example, an arbitrary RV32 bit permutation using a complete omega-flip network:
+
+\begin{verbatim}
+  omega a1, a0, <maskA>
+  omega a0, a1, <maskB>
+  omega a1, a0, <maskC>
+  omega a0, a1, <maskD>
+  omega a1, a0, <maskE>
+  flip  a0, a1, <maskF>
+  flip  a1, a0, <maskG>
+  flip  a0, a1, <maskH>
+  flip  a1, a0, <maskI>
+  flip  a0, a1, <maskJ>
+\end{verbatim}
+
+Or one instruction shorter by merging the center omega+flip pair into a
+butterfly operation:
+
+\begin{verbatim}
+  omega a1, a0, <maskA>
+  omega a2, a1, <maskB>
+  omega a0, a2, <maskC>
+  omega a1, a0, <maskD>
+  bfly  a2, a1, <maskE> ^ <maskF>, 4
+  flip  a0, a2, <maskG>
+  flip  a1, a0, <maskH>
+  flip  a2, a1, <maskI>
+  flip  a0, a2, <maskJ>
+\end{verbatim}
+
+As for butterfly networks, permutations arising from real-world applications
+can often be implemented using a much shorter sequence. Especially if {\tt bfly},
+{\tt omega} and {\tt flip} can be mixed arbitrarily.
+
+\subsubsection{Pseudo instructions {\tt zip} and {\tt unzip}}
+
+With a zero value as control word, {\tt shuffle} performs a simple zip
+operation. The assembler should provide an according pseudo-instruction:
+
+\begin{verbatim}
+  zip rd, rs      ->     shuffle rd, rs, zero
+\end{verbatim}
+
+And for rd $\neq$ rs:
+
+\begin{verbatim}
+  unzip rd, rs    ->     lui rd, 1
+                         shuffle rd, rs, rd
+\end{verbatim}
+
+The \texttt{zip} instruction with the upper half of its input cleared performs
+the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
+0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits
+in the lower quarter of the input word by a spacing of 4 bits.
+
+For example, the following code calculates the bitwise prefix sum of the bits
+in the lower byte of a 32 bit word on RV32:
+
+\begin{verbatim}
+  andi a0, a0, 0xff
+  zip a0, a0
+  zip a0, a0
+  slli a1, a0, 4
+  add a0, a1
+  slli a1, a0, 8
+  add a0, a1
+  slli a1, a0, 16
+  add a0, a1
+\end{verbatim}
+
+The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.

@@ -1,8 +1,8 @@
-\chapter{Pseudo-Ops, Macros, Algorithms}
+\chapter{Evaluation, Algorithms}
 
-This chapter contains a collection of psudo-ops, macros, and algorithms using
-the XBitmanip extension. For the sake of simplicity we assume RV32 for most
-examples in this chapter.
+This chapter contains a collection of short code snippets and algorithms using
+the XBitmanip extension for evaluation purposes. For the sake of simplicity we
+assume RV32 for most examples in this chapter.
 
 Most assembler routines in this chapter are written as if they were ABI functions,
 i.e. arguments are passed in a0, a1, \dots\ and results are returned in a0. Registers
@@ -12,112 +12,38 @@ Some of the assembler routines below can not or should not overwrite their
 first argument. In those cases the arguments are passed in a1, a2, \dots\ and
 results are returned in a0.
 
-\section{GREVI Pseudo-Ops}
-
-Tables~\ref{pseudos-grevi32}~and~\ref{pseudos-grevi64} list assembler
-pseudo-ops for commonly used {\tt grevi} commands.
-
-\begin{table}[h]
-\begin{small}
-\begin{center}
-\begin{tabular}{l l l}
-Pseudoinstruction & Base Instruction(s) & Meaning \\ \hline
-
-{\tt brev rd, rs} & {\tt grevi rd, rs, 31} & bitwise reverse \\
-{\tt bswap rd, rs} & {\tt grevi rd, rs, 24} & reverse the byte order \\
-{\tt bswap.h rd, rs} & {\tt grevi rd, rs, 8} & reverse the byte order in each half word \\
-{\tt hswap rd, rs} & {\tt grevi rd, rs, 16} & reverse the order of half words \\
-
-\hline
-
-\end{tabular}
-\end{center}
-\end{small}
-\caption{RV32 GREVI Pseudoinstructions.}
-\label{pseudos-grevi32}
-\end{table}
-
-\begin{table}[h]
-\begin{small}
-\begin{center}
-\begin{tabular}{l l l}
-Pseudoinstruction & Base Instruction(s) & Meaning \\ \hline
-
-{\tt brev rd, rs} & {\tt grevi rd, rs, 63} & bitwise reverse \\
-{\tt bswap rd, rs} & {\tt grevi rd, rs, 56} & reverse the byte order \\
-{\tt bswap.h rd, rs} & {\tt grevi rd, rs, 8} & reverse the byte order in each half word \\
-{\tt bswap.w rd, rs} & {\tt grevi rd, rs, 24} & reverse the byte order in each word \\
-{\tt hswap rd, rs} & {\tt grevi rd, rs, 48} & reverse the order of half words \\
-{\tt hswap.w rd, rs} & {\tt grevi rd, rs, 16} & reverse the order of half words in each word \\
-{\tt wswap rd, rs} & {\tt grevi rd, rs, 32} & reverse the order of words \\
-\hline
-
-\end{tabular}
-\end{center}
-\end{small}
-\caption{RV64 GREVI Pseudoinstructions.}
-\label{pseudos-grevi64}
-\end{table}
-
-\section{Bit Scanning Operations}
-
-\subsubsection{Count Leading Zeros}
-
-This is trivially just the \texttt{clz} instruction:
-
-\begin{verbatim}
-  clz a0, a0
-\end{verbatim}
-
-\subsubsection{Count Leading Ones}
-
-Simply invert before executing the \texttt{clz} instruction:
-
-\begin{verbatim}
-  not a0, a0
-  clz a0, a0
-\end{verbatim}
-
-\subsubsection{Find index of highest bit set (aka \texttt{ilog2})}
-
-\begin{verbatim}
-  clz a0, a0
-  neg a0, a0
-  addi a0, a0, 32
-\end{verbatim}
-
-\subsubsection{Find index of lowest bit set}
-
-\begin{verbatim}
-  ctz a0, a0
-\end{verbatim}
-
-\section{MIX/MUX Operations}
-
-\subsubsection{MIX Operation}
-
-A MIX operation selects bits from arguments a1 and a2 based on the bits in
-the control word a0.
-
-\begin{verbatim}
-  and t0, a1, a0
-  andc a0, a2, a0
-  or a0, a0, t0
-\end{verbatim}
-
-\subsubsection{MUX Operation}
-
-A MUX operation selects word a1 or a2 based on if the control word a0 is
-zero or nonzero, without branching. (The {\tt snez} instruction is optional
-if a0 is already either 0 or 1.)
-
-\begin{verbatim}
-  snez a0, a0
-  neg a0, a0
-  and t0, a1, a0
-  andc a0, a2, a0
-  or a0, a0, t0
-\end{verbatim}
+% \section{Bit Scanning Operations}
+%
+% \subsubsection{Count Leading Zeros}
+%
+% This is trivially just the \texttt{clz} instruction:
+%
+% \begin{verbatim}
+%   clz a0, a0
+% \end{verbatim}
+%
+% \subsubsection{Count Leading Ones}
+%
+% Simply invert before executing the \texttt{clz} instruction:
+%
+% \begin{verbatim}
+%   not a0, a0
+%   clz a0, a0
+% \end{verbatim}
+%
+% \subsubsection{Find index of highest bit set (aka \texttt{ilog2})}
+%
+% \begin{verbatim}
+%   clz a0, a0
+%   neg a0, a0
+%   addi a0, a0, 32
+% \end{verbatim}
+%
+% \subsubsection{Find index of lowest bit set}
+%
+% \begin{verbatim}
+%   ctz a0, a0
+% \end{verbatim}
 
 \section{Emulating other Bit Manipulation ISAs using macro-op fusion}
 
@@ -395,72 +321,72 @@ real-world bit permutations.
     ret
 \end{verbatim}
 
-\section{Butterfly Operations}
-
-The \texttt{grev}, \texttt{bext}, and \texttt{bdep} instructions are commonly
-implemented using butterfly circuits\footnote{http://programming.sirrida.de/bit\_perm.html\#butterfly}.
-(Butterfly circuits are a powerful tool for implementing bit permutations.)
-However, sometimes one wants to use butterfly operations directly in a program
-and it is not immediately obvious how to use GREVI and BDEP to perform
-butterfly operations.
-
-One can easily implement a single butterfly stage using GREVI in just four
-instructions:
-
-\begin{verbatim}
-  grevi t0, a0, N
-  and t0, t0, a1
-  andc a0, a0, a1
-  or a0, a0, t0
-\end{verbatim}
-
-With {\tt a0} containing the data input on entry and the result on exit. {\tt N} is a
-power of two indicating which butterfly stage to implement, and {\tt a1} contains
-an XLEN bitmask derived from the XLEN/2 butterfly control word.
-
-This bitmask can either be pre-computed or, if it needs to be generated
-on-the-fly, it can easily be calculated with the help of BDEP. For example
-for the first butterfly stage (using a0 as input and output):
-
-\begin{verbatim}
-  li t0, 0x55555555
-  bdep t0, a0, t0
-  slli a0, t0, 1
-  or a0, a0, t0
-\end{verbatim}
-
-Likewise for the second butterfly stage:
-
-\begin{verbatim}
-  li t0, 0x33333333
-  bdep t0, a0, t0
-  slli a0, t0, 2
-  or a0, a0, t0
-\end{verbatim}
-
-For the third stage:
-
-\begin{verbatim}
-  li t0, 0x0f0f0f0f
-  bdep t0, a0, t0
-  slli a0, t0, 4
-  or a0, a0, t0
-\end{verbatim}
-
-For the fourth stage:
-
-\begin{verbatim}
-  li t0, 0x00ff00ff
-  bdep t0, a0, t0
-  slli a0, t0, 8
-  or a0, a0, t0
-\end{verbatim}
-
-And for the fifth stage:
-
-\begin{verbatim}
-  li t0, 0x0000ffff
-  and t0, a0, t0
-  slli a0, t0, 16
-  or a0, a0, t0
-\end{verbatim}
+% \section{Butterfly Operations}
+%
+% The \texttt{grev}, \texttt{bext}, and \texttt{bdep} instructions are commonly
+% implemented using butterfly circuits\footnote{http://programming.sirrida.de/bit\_perm.html\#butterfly}.
+% (Butterfly circuits are a powerful tool for implementing bit permutations.)
+% However, sometimes one wants to use butterfly operations directly in a program
+% and it is not immediately obvious how to use GREVI and BDEP to perform
+% butterfly operations.
+%
+% One can easily implement a single butterfly stage using GREVI in just four
+% instructions:
+%
+% \begin{verbatim}
+%   grevi t0, a0, N
+%   and t0, t0, a1
+%   andc a0, a0, a1
+%   or a0, a0, t0
+% \end{verbatim}
+%
+% With {\tt a0} containing the data input on entry and the result on exit. {\tt N} is a
+% power of two indicating which butterfly stage to implement, and {\tt a1} contains
+% an XLEN bitmask derived from the XLEN/2 butterfly control word.
+%
+% This bitmask can either be pre-computed or, if it needs to be generated
+% on-the-fly, it can easily be calculated with the help of BDEP. For example
+% for the first butterfly stage (using a0 as input and output):
+%
+% \begin{verbatim}
+%   li t0, 0x55555555
+%   bdep t0, a0, t0
+%   slli a0, t0, 1
+%   or a0, a0, t0
+% \end{verbatim}
+%
+% Likewise for the second butterfly stage:
+%
+% \begin{verbatim}
+%   li t0, 0x33333333
+%   bdep t0, a0, t0
+%   slli a0, t0, 2
+%   or a0, a0, t0
+% \end{verbatim}
+%
+% For the third stage:
+%
+% \begin{verbatim}
+%   li t0, 0x0f0f0f0f
+%   bdep t0, a0, t0
+%   slli a0, t0, 4
+%   or a0, a0, t0
+% \end{verbatim}
+%
+% For the fourth stage:
+%
+% \begin{verbatim}
+%   li t0, 0x00ff00ff
+%   bdep t0, a0, t0
+%   slli a0, t0, 8
+%   or a0, a0, t0
+% \end{verbatim}
+%
+% And for the fifth stage:
+%
+% \begin{verbatim}
+%   li t0, 0x0000ffff
+%   and t0, a0, t0
+%   slli a0, t0, 16
+%   or a0, a0, t0
+% \end{verbatim}

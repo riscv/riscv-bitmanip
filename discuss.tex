@@ -1,10 +1,10 @@
-\chapter{Discussion and Evaluation}
+\chapter{Discussion}
 
 \section{Frequently Asked Questions}
 
-\subsubsection{\texttt{grev[i]} seems to be overly complicated? Do we really need it?}
+\subsubsection{\texttt{grev} seems to be overly complicated? Do we really need it?}
 
-The \texttt{grevi} instruction can be used to build a wide range of common
+The \texttt{grev} instruction can be used to build a wide range of common
 bit permutation instructions. For example on RV32:
 
 \begin{longtable}[c]{@{}rl@{}}
@@ -26,7 +26,7 @@ Mode & Meaning on RV32\tabularnewline
 \bottomrule
 \end{longtable}
 
-If \texttt{grevi} were removed from this spec we would need to add a few new
+If \texttt{grev} were removed from this spec we would need to add a few new
 instructions in its place for operations such as bitwise reverse or
 endianness convertion.
 
@@ -45,11 +45,77 @@ experiments\footnote{http://svn.clifford.at/handicraft/2017/bitcode/} have show 
 \texttt{andc} is much more common in bit manipulation code than any other operators.
 Especially because it is commonly used in \texttt{mix} and \texttt{mux} operations.
 
+\subsubsection{Why \texttt{andc}? It can easily be emulated using \texttt{and} and \texttt{not}.}
+
+Yes, and we did not include any other ALU+complement operators. But \texttt{andc}
+is so common (mostly because of the \texttt{mix} and \texttt{mux} patterns), and
+it's implementation is so cheap, that we decided to dedicate an R-type instruction
+to the operation.
+
+\subsubsection{The shift-ones instructions can be emulated using {\tt not} and logical shift? Do we really need it?}
+
+Yes, a shift-ones instruction can easily be implemented using the logical shift
+instructions, with a bitwise invert before and after it. (This is literally the
+code we are using in the reference C implementation of rotate shift.)
+
+We have decided to include it for now so that we can collect benchmark data before
+making a final decision on the inclusion or exclusion of those instructions.
+
 \subsubsection{BEXT/BDEP look like really expensive operations. Do we really need them?}
 
 Yes, they are expensive, but not as expensive as one might expect. A
 single-cycle 32 bit BEXT+BDEP+GREV core can be implemented in less space than a
 single-cycle 16x16 bit multiplier with 32 bit output.\footnote{https://github.com/cliffordwolf/bextdep}
+
+It is also important to keep in mind that implementing those operations in
+software is very expensive. Hacker's Delight contains a highly optimized
+software implementation of 32-bit BEXT that requires $>120$ instruction. Their
+BDEP software implementation requires $>160$ instructions. (Please disregard the
+``hardware-oriented algorithm'' described in Hacker's Delight. It is
+extremely expensive compared to other implementations.\footnote{https://github.com/cliffordwolf/bextdep})
+
+\subsubsection{SHUFFLE looks like really expensive operation. Do we really need it?}
+
+Even though this instruction looks expensive, it is actually quite simple to
+implement.  The butterfly operation can just reuse the butterfly circuit that
+is already present to support the {\tt grev} instruction, and zip and unzip are
+very cheap to implement (just one additional word-wide mux each). The ``return
+0'' part for nonzero commands and reserved modes is also very cheap.
+
+Considering that SHUFFLE is very cheap to implement ontop an existing GREV
+implementation, and considering that it only requires a single R-type
+instruction, and that software emulation of similar functionality requires tens
+of instructions (and/or multiplies with large ``magic constants''), it is a
+relatively good option.
+
+With dedicated unary ZIP/UNZIP instructions it would be possible to emulate
+a single SHUFFLE instruction in under 10 instructions. For example,
+emulating a single OMEGA pseudo-instruction (input in a0 and mask in a1):
+
+\begin{verbatim}
+  grevi t0, a0, 0
+  zip a1, a1
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
+  unzip a0, a0
+\end{verbatim}
+
+Or emulating a single BFLY(2) instruction:
+
+\begin{verbatim}
+  grevi t0, a0, 0
+  zip a1, a1
+  zip a1, a1
+  zip a1, a1
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
+\end{verbatim}
+
+This is not too bad, but considering that a single 32-bit permutation takes up to
+9 of those, it is probably not a viable option for many bit permutations found
+in real-world applications.
 
 \section{Analysis of used encoding space}
 
@@ -76,7 +142,8 @@ So how much encoding space is used by the XBitmanip extension?
 2x & 15 & 5x & 15 & ROR, ROL, RORW, ROLW, RORIW\tabularnewline
 1x & 15 & 1x & 16 & RORI\tabularnewline
 \midrule
-3x & 15 & 6x & 15 & ANDC, BEXT, BDEP, ANDCW, BEXTW, BDEPW\tabularnewline
+4x & 15 & 4x & 15 & ANDC, BEXT, BDEP, SHUFFLE\tabularnewline
+   &    & 4x & 15 & ANDCW, BEXTW, BDEPW, SHUFFLEW\tabularnewline
 \midrule
 3x &  4 & 3x &  4 & C.NEG, C.NOT, C.BREV\tabularnewline
 \bottomrule
@@ -92,18 +159,18 @@ encoding space, or $\approx 0.1\%$ of the total $\approx 15.6$ bits available.
 $$ log_2(3 \cdot 2^4) \approx 5.585 $$
 $$ 100 / (2^{15.585-5.585}) \approx 0.098 $$
 
-On RV32, XBitmanip requires the equivalent of a $\approx 18.6$ bit encoding space in
+On RV32, XBitmanip requires the equivalent of a $\approx 18.7$ bit encoding space in
 the uncompressed encoding space. For comparison: A single standard I-type
 instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
 encoding space. I.e. the entire RV32 XBitmanip extension needs less than
 one-eighth of the encoding space of the \texttt{SLTIU} instruction.
 
-$$ log_2(3\cdot2^{10} + 12\cdot2^{15}) \approx 18.596 $$
+$$ log_2(3\cdot2^{10} + 13\cdot2^{15}) \approx 18.711 $$
 
-On RV64, XBitmanip requires the equivalent of a $\approx 19.8$ bit encoding
+On RV64, XBitmanip requires the equivalent of a $\approx 19.9$ bit encoding
 space in the uncompressed encoding space. I.e. the entire RV64 XBitmanip
 extension needs less than one-quarter of the encoding space of the
 \texttt{SLTIU} instruction.
 
-$$ log_2(6\cdot2^{10} + 20\cdot2^{15} + 4\cdot2^{16}) \approx 19.817 $$
+$$ log_2(6\cdot2^{10} + 22\cdot2^{15} + 4\cdot2^{16}) \approx 19.911 $$
 
