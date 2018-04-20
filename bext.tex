@@ -909,10 +909,9 @@ Assuming {\tt rs1[pos+len-1:pos]}$=$0 and {\tt rs2[XLEN-1:pos]}$=$0:
 \end{verbatim}
 
 Otherwise masking and/or shift operations should be used to clear the extra
-bits in {\tt rs1} and {\tt rs2}.
-
-On a machine with fast {\tt bdep}, the {\tt bdep} instruction can be used to
-shift and mask at the same time:
+bits in {\tt rs1} and {\tt rs2} first. On a machine with fast {\tt bdep},
+the {\tt bdep} instruction can be used to shift and mask {\tt rs2} in one
+instruction using at the same mask that is also used to mask {\tt rs1}:
 
 \begin{verbatim}
   li t0, ((1 << len)-1) << pos
