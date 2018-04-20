@@ -45,7 +45,7 @@ results are returned in a0.
 %   ctz a0, a0
 % \end{verbatim}
 
-\section{Emulating other Bit Manipulation ISAs using macro-op fusion}
+\section{Emulating x86 Bit Manipulation ISAs}
 
 The following code snippets implement all instructions from the x86 bit manipulation
 ISA extensions ABM, BMI1, BMI2, and TBM using RISC-V code that does not spill any
@@ -151,6 +151,10 @@ There will be a separate RISC-V standard for recommended sequences for macro-op 
 The macros listed here are merely for demonstrating that suitable sequences exist. We
 do not advocate for any of those sequences to become ``standard sequences'' for macro-op
 fusion.
+
+\section{Emulating RI5CY Bit Manipulation ISA}
+
+TBD
 
 \section{Decoding RISC-V Immediates}
 

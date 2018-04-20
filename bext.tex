@@ -931,7 +931,7 @@ On RV32:
   brev.b  rd, rs   ->    grevi rd, rs,  7    ; reverse bits in each  8 bit byte
 
   bswap   rd, rs   ->    grevi rd, rs, 24    ; reverse the byte order
-  bswap.h rd, rs   ->    grevi rd, rs, 24    ; swap bytes in each 16 bit half-word
+  bswap.h rd, rs   ->    grevi rd, rs,  8    ; swap bytes in each 16 bit half-word
 
   hswap   rd, rs   ->    grevi rd, rs, 16    ; swap the two 16 bit half-words
 \end{verbatim}
@@ -940,12 +940,12 @@ On RV64:
 
 \begin{verbatim}
   brev    rd, rs   ->    grevi rd, rs, 63    ; bitwise reverse
-  brev.w  rd, rs   ->    grevi rd, rs, 31    ; reverse bits in each 16 bit half-word
+  brev.w  rd, rs   ->    grevi rd, rs, 31    ; reverse bits in each 32 bit word
   brev.h  rd, rs   ->    grevi rd, rs, 15    ; reverse bits in each 16 bit half-word
   brev.b  rd, rs   ->    grevi rd, rs,  7    ; reverse bits in each  8 bit byte
 
   bswap   rd, rs   ->    grevi rd, rs, 56    ; reverse the byte order
-  bswap.w rd, rs   ->    grevi rd, rs, 24    ; swap bytes in each 16 bit half-word
+  bswap.w rd, rs   ->    grevi rd, rs, 24    ; reverse byte order in each 32 bit word
   bswap.h rd, rs   ->    grevi rd, rs,  8    ; swap bytes in each 16 bit half-word
 
   hswap   rd, rs   ->    grevi rd, rs, 48    ; reverse order of 16 bit half-words

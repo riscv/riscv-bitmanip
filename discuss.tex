@@ -85,12 +85,12 @@ very cheap to implement (just one additional word-wide mux each). The ``return
 Considering that SHUFFLE is very cheap to implement ontop an existing GREV
 implementation, and considering that it only requires a single R-type
 instruction, and that software emulation of similar functionality requires tens
-of instructions (and/or multiplies with large ``magic constants''), it is a
+of instructions (and/or multiplications with large ``magic constants''), it is a
 relatively good option.
 
 With dedicated unary ZIP/UNZIP instructions it would be possible to emulate
 a single SHUFFLE instruction in under 10 instructions. For example,
-emulating a single OMEGA pseudo-instruction (input in a0 and mask in a1):
+emulating a single OMEGA instruction (input in a0 and mask in a1):
 
 \begin{verbatim}
   grevi t0, a0, 0
