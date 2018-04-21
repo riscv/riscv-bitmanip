@@ -166,12 +166,17 @@ uint64_t grev64(uint64_t rs1, uint64_t rs2)
 #endif
 
 // --REF-BEGIN-- zip
+uint_xlen_t bitmove(uint_xlen_t x, int p, int q)
+{
+	return ((x >> p) & 1) << q;
+}
+
 uint_xlen_t zip(uint_xlen_t rs1)
 {
 	uint_xlen_t x = 0;
-	for (int i = 0; i < XLEN / 2; i++) {
-		x |= ((rs1 >> i) & 1) << (2 * i);
-		x |= ((rs1 >> (i + XLEN / 2)) & 1) << (2 * i + 1);
+	for (int i = 0; i < XLEN/2; i++) {
+		x |= bitmove(rs1, i,          2*i);
+		x |= bitmove(rs1, i + XLEN/2, 2*i + 1);
 	}
 	return x;
 }
@@ -179,9 +184,35 @@ uint_xlen_t zip(uint_xlen_t rs1)
 uint_xlen_t unzip(uint_xlen_t rs1)
 {
 	uint_xlen_t x = 0;
-	for (int i = 0; i < XLEN / 2; i++) {
-		x |= ((rs1 >> (2 * i)) & 1) << i;
-		x |= ((rs1 >> (2 * i + 1)) & 1) << (i + XLEN / 2);
+	for (int i = 0; i < XLEN/2; i++) {
+		x |= bitmove(rs1, 2*i,     i);
+		x |= bitmove(rs1, 2*i + 1, i + XLEN/2);
+	}
+	return x;
+}
+// --REF-END--
+
+// --REF-BEGIN-- zipN
+uint_xlen_t zipN(uint_xlen_t rs1, int N)
+{
+	uint_xlen_t x = 0;
+	for (int k = 0; k < XLEN/N; k++) {
+		for (int i = 0; i < N/2; i++) {
+			x |= bitmove(rs1, N*k + i,       N*k + 2*i);
+			x |= bitmove(rs1, N*k + i + N/2, N*k + 2*i + 1);
+		}
+	}
+	return x;
+}
+
+uint_xlen_t unzipN(uint_xlen_t rs1, int N)
+{
+	uint_xlen_t x = 0;
+	for (int k = 0; k < XLEN/N; k++) {
+		for (int i = 0; i < N/2; i++) {
+			x |= bitmove(rs1, N*k + 2*i,     N*k + i);
+			x |= bitmove(rs1, N*k + 2*i + 1, N*k + i + N/2);
+		}
 	}
 	return x;
 }
@@ -220,16 +251,20 @@ uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
 	if (cmd != 0 || mode > 7 + LOG2_XLEN)
 		return 0;
 
-	if (mode == 0)
-		return bfly(zip(x), mask, 0);
+	switch (mode)
+	{
+		case  0: return bfly(zip (x    ), mask, 0);
+		case  1: return bfly(zipN(x,  4), mask, 0);
+		case  2: return bfly(zipN(x,  8), mask, 0);
+		case  3: return bfly(zipN(x, 16), mask, 0);
 
-	if (mode == 1)
-		return unzip(bfly(x, mask, 0));
+		case  4: return unzip (bfly(x, mask, 0)    );
+		case  5: return unzipN(bfly(x, mask, 0),  4);
+		case  6: return unzipN(bfly(x, mask, 0),  8);
+		case  7: return unzipN(bfly(x, mask, 0), 16);
 
-	if (mode > 7)
-		return bfly(x, mask, mode & 7);
-
-	return 0;
+		default: return bfly(x, mask, mode & 7);
+	}
 }
 // --REF-END--
 

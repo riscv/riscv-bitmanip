@@ -616,6 +616,8 @@ perform the unzip operation on each nibble, byte, and half-word of the argument.
 unzip on a 2-bit unit is just a zero-order butterfly. On RV64 the SHUFFLEW command can be used
 to perform a zip or unzip on the lower 32 bits of a register.)
 
+\input{bextcref-zipN}
+
 The butterfly operation performs a single butterfly stage N (i.e. the {\tt grev} operation
 with argument $2^N$), which performs $\textrm{XLEN}/2$ pairwise bit swaps. But unlike
 {\tt grev} the individual bit swaps are conditional and the $\textrm{XLEN}/2$
