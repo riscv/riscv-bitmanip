@@ -815,7 +815,8 @@ for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N} is omitted then
 (On RV64, longer sequences are required instead of {\tt lui} to load the full
 32 bit mask into {\tt rd}.)
 
-For example, an arbitrary RV32 bit permutation using a complete butterfly network:
+For example, an arbitrary 32 bit permutation using a butterfly network followed
+by an inverse butterfly network (Bene{\v s} network):
 
 \begin{verbatim}
   bfly a1, a0, <maskA>, 4
@@ -842,14 +843,32 @@ stage}. The assember should provide appropiate pseudo-instructions for rd
 $\neq$ rs and constant {\tt mask}:
 
 \begin{verbatim}
-  omega rd, rs, mask          ->     lui rd, (mask << 4)
+  omega rd, rs, mask[, XLEN]  ->     lui rd, (mask << 4)
                                      shuffle rd, rs, rd
 
-  flip  rd, rs, mask          ->     lui rd, ((mask << 4) | 1)
+  omega rd, rs, mask, 4       ->     lui rd, ((mask << 4) | 1)
+                                     shuffle rd, rs, rd
+
+  omega rd, rs, mask, 8       ->     lui rd, ((mask << 4) | 2)
+                                     shuffle rd, rs, rd
+
+  omega rd, rs, mask, 16      ->     lui rd, ((mask << 4) | 3)
+                                     shuffle rd, rs, rd
+
+  flip  rd, rs, mask[, XLEN]  ->     lui rd, ((mask << 4) | 4)
+                                     shuffle rd, rs, rd
+
+  flip  rd, rs, mask, 4       ->     lui rd, ((mask << 4) | 5)
+                                     shuffle rd, rs, rd
+
+  flip  rd, rs, mask, 8       ->     lui rd, ((mask << 4) | 6)
+                                     shuffle rd, rs, rd
+
+  flip  rd, rs, mask, 16      ->     lui rd, ((mask << 4) | 7)
                                      shuffle rd, rs, rd
 \end{verbatim}
 
-For example, an arbitrary RV32 bit permutation using a complete omega-flip network:
+For example, an arbitrary 32 bit permutation using a complete omega-flip network:
 
 \begin{verbatim}
   omega a1, a0, <maskA>
@@ -882,6 +901,21 @@ butterfly operation:
 As for butterfly networks, permutations arising from real-world applications
 can often be implemented using a much shorter sequence. Especially if {\tt bfly},
 {\tt omega} and {\tt flip} can be mixed arbitrarily.
+
+It's also possible to implement an arbitrary 32 bit permutation using a
+baseline network followed by an inverse baseline network:
+
+\begin{verbatim}
+  flip  a1, a0, <maskA>, 32
+  flip  a2, a1, <maskB>, 16
+  flip  a0, a2, <maskC>,  8
+  flip  a1, a0, <maskD>,  4
+  bfly  a2, a1, <maskE>
+  omega a0, a2, <maskF>,  4
+  omega a1, a0, <maskG>,  8
+  omega a2, a1, <maskH>, 16
+  omega a0, a2, <maskI>, 32
+\end{verbatim}
 
 \subsubsection{Pseudo instructions {\tt zip} and {\tt unzip}}
 
