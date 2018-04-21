@@ -242,28 +242,28 @@ uint_xlen_t bfly(uint_xlen_t rs1, uint_xlen_t mask, int N)
 // --REF-END--
 
 // --REF-BEGIN-- shuffle
-uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
+uint_xlen_t shuffle(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	uint_xlen_t mask = ctrl >> 16;
-	int mode = (ctrl >> 12) & 15;
-	int cmd = ctrl & 0xfff;
+	uint_xlen_t mask = rs2 >> 16;
+	int mode = (rs2 >> 12) & 15;
+	int cmd = rs2 & 0xfff;
 
 	if (cmd != 0 || mode > 7 + LOG2_XLEN)
 		return 0;
 
 	switch (mode)
 	{
-		case  0: return bfly(zip (x    ), mask, 0);
-		case  1: return bfly(zipN(x,  4), mask, 0);
-		case  2: return bfly(zipN(x,  8), mask, 0);
-		case  3: return bfly(zipN(x, 16), mask, 0);
+		case  0: return bfly(zip (rs1    ), mask, 0);
+		case  1: return bfly(zipN(rs1,  4), mask, 0);
+		case  2: return bfly(zipN(rs1,  8), mask, 0);
+		case  3: return bfly(zipN(rs1, 16), mask, 0);
 
-		case  4: return unzip (bfly(x, mask, 0)    );
-		case  5: return unzipN(bfly(x, mask, 0),  4);
-		case  6: return unzipN(bfly(x, mask, 0),  8);
-		case  7: return unzipN(bfly(x, mask, 0), 16);
+		case  4: return unzip (bfly(rs1, mask, 0)    );
+		case  5: return unzipN(bfly(rs1, mask, 0),  4);
+		case  6: return unzipN(bfly(rs1, mask, 0),  8);
+		case  7: return unzipN(bfly(rs1, mask, 0), 16);
 
-		default: return bfly(x, mask, mode & 7);
+		default: return bfly(rs1, mask, mode & 7);
 	}
 }
 // --REF-END--
