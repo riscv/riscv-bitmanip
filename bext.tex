@@ -458,8 +458,8 @@ Implementations might chose to use smaller multi-cycle implementations of
 \texttt{bext} and \texttt{bdep}. Even though multi-cycle \texttt{bext} and
 \texttt{bdep} often are not fast enough to outperform algortihms that use
 sequences of shifts and bit masks, dedicated instructions for those operations
-can still be of great advantage, especially in cases where the mask argument
-is not constant.
+can still be of great advantage in cases where the mask argument is not
+constant.
 
 For example, the following code efficiently calculates the index of the tenth
 set bit in {\tt a0} using \texttt{bdep}:
@@ -923,14 +923,32 @@ With a zero value as control word, {\tt shuffle} performs a simple zip
 operation. The assembler should provide an according pseudo-instruction:
 
 \begin{verbatim}
-  zip rd, rs      ->     shuffle rd, rs, zero
+  zip rd, rs[, XLEN]      ->   shuffle rd, rs, zero
 \end{verbatim}
 
 And for rd $\neq$ rs:
 
 \begin{verbatim}
-  unzip rd, rs    ->     lui rd, 1
-                         shuffle rd, rs, rd
+  zip   rd, rs, 4         ->   lui rd, 1
+                               shuffle rd, rs, rd
+
+  zip   rd, rs, 8         ->   lui rd, 2
+                               shuffle rd, rs, rd
+
+  zip   rd, rs, 16        ->   lui rd, 3
+                               shuffle rd, rs, rd
+
+  unzip rd, rs[, XLEN]    ->   lui rd, 4
+                               shuffle rd, rs, rd
+
+  unzip rd, rs, 4         ->   lui rd, 5
+                               shuffle rd, rs, rd
+
+  unzip rd, rs, 8         ->   lui rd, 6
+                               shuffle rd, rs, rd
+
+  unzip rd, rs, 16        ->   lui rd, 7
+                               shuffle rd, rs, rd
 \end{verbatim}
 
 The \texttt{zip} instruction with the upper half of its input cleared performs
