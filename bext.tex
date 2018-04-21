@@ -670,13 +670,13 @@ existing butterfly network that implements the GREV instructions.
 Mode & Description & Pseudo instructions \\ \hline
 
 0000 & zip + butterfly(mask, 0)                    & {\tt omega, zip} \\
-0001 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
-0010 & reserved for future standard extensions     & --- \\
-0011 & reserved for future standard extensions     & --- \\
-0100 & reserved for future standard extensions     & --- \\
-0101 & reserved for future standard extensions     & --- \\
-0110 & reserved for future standard extensions     & --- \\
-0111 & reserved for future standard extensions     & --- \\
+0001 & zip4 + butterfly(mask, 0)                   & {\tt omega, zip} \\
+0010 & zip8 + butterfly(mask, 0)                   & {\tt omega, zip} \\
+0011 & zip16 + butterfly(mask, 0)                  & {\tt omega, zip} \\
+0100 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
+0101 & butterfly(mask, 0) + unzip4                 & {\tt flip, unzip} \\
+0110 & butterfly(mask, 0) + unzip8                 & {\tt flip, unzip} \\
+0111 & butterfly(mask, 0) + unzip16                & {\tt flip, unzip} \\
 
 \hline
 
@@ -731,6 +731,12 @@ uint_xlen_t unzip(uint_xlen_t rs1)
     return x;
 }
 \end{verbatim}
+
+The operations \texttt{zip4}, \texttt{zip8}, and \texttt{zip16} perform a zip on each nibble,
+byte, and half-word of the argument and \texttt{unzip4}, \texttt{unzip8}, and \texttt{unzip16}
+perform the unzip operation on each nibble, byte, and half-word of the argument. (A zip or
+unzip on a 2-bit unit is just a zero-order butterfly. On RV64 the SHUFFLEW command can be used
+to perform a zip or unzip on the lower 32 bits of a register.)
 
 The butterfly operation performs a single butterfly stage N (i.e. the {\tt grev} operation
 with argument $2^N$), which performs $\textrm{XLEN}/2$ pairwise bit swaps. But unlike
