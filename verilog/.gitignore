@@ -3,3 +3,9 @@
 /grevshuffle_nozip.log
 /grevshuffle_shuffle.log
 /grevshuffle_shift.log
+/testdata
+/testdata_grev.hex
+/testdata_shuffle.hex
+/tinygrev.log
+/tinygrev_tb
+/tinygrev_tb.vcd
