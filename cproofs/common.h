@@ -20,9 +20,253 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define XLEN 32
+#define LOG2_XLEN 5
+typedef uint32_t uint_xlen_t;
+typedef int32_t int_xlen_t;
+
+// --REF-BEGIN-- clz-ctz
+uint_xlen_t clz(uint_xlen_t rs1)
+{
+	for (int count = 0; count < XLEN; count++)
+		if ((rs1 << count) >> (XLEN - 1))
+			return count;
+	return XLEN;
+}
+
+uint_xlen_t ctz(uint_xlen_t rs1)
+{
+	for (int count = 0; count < XLEN; count++)
+		if ((rs1 >> count) & 1)
+			return count;
+	return XLEN;
+}
+// --REF-END--
+
+// --REF-BEGIN-- pcnt
+uint_xlen_t pcnt(uint_xlen_t rs1)
+{
+	int count = 0;
+	for (int index = 0; index < XLEN; index++)
+		count += (rs1 >> index) & 1;
+	return count;
+}
+// --REF-END--
+
+// --REF-BEGIN-- sxo
+uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	int shamt = rs2 & (XLEN - 1);
+	return ~(~rs1 << shamt);
+}
+
+uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	int shamt = rs2 & (XLEN - 1);
+	return ~(~rs1 >> shamt);
+}
+// --REF-END--
+
+// --REF-BEGIN-- rox
+uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	int shamt = rs2 & (XLEN - 1);
+	return (rs1 << shamt) | (rs1 >> (XLEN - shamt));
+}
+
+uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	int shamt = rs2 & (XLEN - 1);
+	return (rs1 >> shamt) | (rs1 << (XLEN - shamt));
+}
+// --REF-END--
+
+// --REF-BEGIN-- andc
+uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 & ~rs2;
+}
+// --REF-END--
+
+// --REF-BEGIN-- bext
+uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t c = 0, m = 1, mask = rs2;
+#if 1                                                       // NOREF
+	for (int iter = 0; mask && iter <= XLEN; iter++) {  // NOREF
+		assert(iter < XLEN);                        // NOREF
+#else                                                       // NOREF
+	while (mask) {
+#endif                                                      // NOREF
+		uint_xlen_t b = mask & -mask;
+		if (rs1 & b)
+			c |= m;
+		mask -= b;
+		m <<= 1;
+	}
+	return c;
+}
+
+uint_xlen_t bdep(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t c = 0, m = 1, mask = rs2;
+#if 1                                                       // NOREF
+	for (int iter = 0; mask && iter <= XLEN; iter++) {  // NOREF
+		assert(iter < XLEN);                        // NOREF
+#else                                                       // NOREF
+	while (mask) {
+#endif                                                      // NOREF
+		uint_xlen_t b = mask & -mask;
+		if (rs1 & m)
+			c |= b;
+		mask -= b;
+		m <<= 1;
+	}
+	return c;
+}
+// --REF-END--
+
+// --REF-BEGIN-- grev
+uint32_t grev32(uint32_t rs1, uint32_t rs2)
+{
+	uint32_t x = rs1;
+	int shamt = rs2 & 31;
+	if (shamt &  1) x = ((x & 0x55555555) <<  1) | ((x & 0xAAAAAAAA) >>  1);
+	if (shamt &  2) x = ((x & 0x33333333) <<  2) | ((x & 0xCCCCCCCC) >>  2);
+	if (shamt &  4) x = ((x & 0x0F0F0F0F) <<  4) | ((x & 0xF0F0F0F0) >>  4);
+	if (shamt &  8) x = ((x & 0x00FF00FF) <<  8) | ((x & 0xFF00FF00) >>  8);
+	if (shamt & 16) x = ((x & 0x0000FFFF) << 16) | ((x & 0xFFFF0000) >> 16);
+	return x;
+}
+
+uint64_t grev64(uint64_t rs1, uint64_t rs2)
+{
+	uint64_t x = rs1;
+	int shamt = rs2 & 63;
+	if (shamt &  1) x = ((x & 0x5555555555555555ull) <<  1) |
+	                    ((x & 0xAAAAAAAAAAAAAAAAull) >>  1);
+	if (shamt &  2) x = ((x & 0x3333333333333333ull) <<  2) |
+	                    ((x & 0xCCCCCCCCCCCCCCCCull) >>  2);
+	if (shamt &  4) x = ((x & 0x0F0F0F0F0F0F0F0Full) <<  4) |
+	                    ((x & 0xF0F0F0F0F0F0F0F0ull) >>  4);
+	if (shamt &  8) x = ((x & 0x00FF00FF00FF00FFull) <<  8) |
+	                    ((x & 0xFF00FF00FF00FF00ull) >>  8);
+	if (shamt & 16) x = ((x & 0x0000FFFF0000FFFFull) << 16) |
+	                    ((x & 0xFFFF0000FFFF0000ull) >> 16);
+	if (shamt & 32) x = ((x & 0x00000000FFFFFFFFull) << 32) |
+	                    ((x & 0xFFFFFFFF00000000ull) >> 32);
+	return x;
+}
+// --REF-END--
+
+#if XLEN == 32
+#  define grev grev32
+#else
+#  define grev grev64
+#endif
+
+// --REF-BEGIN-- zip
+uint_xlen_t zip(uint_xlen_t rs1)
+{
+	uint_xlen_t x = 0;
+	for (int i = 0; i < XLEN / 2; i++) {
+		x |= ((rs1 >> i) & 1) << (2 * i);
+		x |= ((rs1 >> (i + XLEN / 2)) & 1) << (2 * i + 1);
+	}
+	return x;
+}
+
+uint_xlen_t unzip(uint_xlen_t rs1)
+{
+	uint_xlen_t x = 0;
+	for (int i = 0; i < XLEN / 2; i++) {
+		x |= ((rs1 >> (2 * i)) & 1) << i;
+		x |= ((rs1 >> (2 * i + 1)) & 1) << (i + XLEN / 2);
+	}
+	return x;
+}
+// --REF-END--
+
+// --REF-BEGIN-- bfly
+uint_xlen_t swapbits(uint_xlen_t x, int p, int q)
+{
+	assert(p < q);
+	x = x ^ ((x & (1 << p)) << (q - p));
+	x = x ^ ((x & (1 << q)) >> (q - p));
+	x = x ^ ((x & (1 << p)) << (q - p));
+	return x;
+}
+
+uint_xlen_t bfly(uint_xlen_t rs1, uint_xlen_t mask, int N)
+{
+	uint_xlen_t x = rs1;
+	int a = 1 << N, b = 2 * a;
+	for (int i = 0; i < XLEN / 2; i++) {
+		int p = b * (i / a) + i % a, q = p + a;
+		if ((mask >> i) & 1)
+			x = swapbits(x, p, q);
+	}
+	return x;
+}
+// --REF-END--
+
+// --REF-BEGIN-- shuffle
+uint_xlen_t shuffle(uint_xlen_t x, uint_xlen_t ctrl)
+{
+	uint_xlen_t mask = ctrl >> 16;
+	int mode = (ctrl >> 12) & 15;
+	int cmd = ctrl & 0xfff;
+
+	if (cmd != 0 || mode > 7 + LOG2_XLEN)
+		return 0;
+
+	if (mode == 0)
+		return bfly(zip(x), mask, 0);
+
+	if (mode == 1)
+		return unzip(bfly(x, mask, 0));
+
+	if (mode > 7)
+		return bfly(x, mask, mode & 7);
+
+	return 0;
+}
+// --REF-END--
+
+uint_xlen_t omega(uint_xlen_t x, uint_xlen_t mask)
+{
+	x = zip(x);
+	x = bfly(x, mask, 0);
+	return x;
+}
+
+uint_xlen_t flip(uint_xlen_t x, uint_xlen_t mask)
+{
+	x = bfly(x, mask, 0);
+	x = unzip(x);
+	return x;
+}
+
+uint_xlen_t sll(uint_xlen_t x, int k)
+{
+	return x << k;
+}
+
+uint_xlen_t srl(uint_xlen_t x, int k)
+{
+	return x >> k;
+}
+
+uint_xlen_t sra(uint_xlen_t x, int k)
+{
+	if (x >> (XLEN-1))
+		return ~(~x >> k);
+	return x >> k;
+}
+
 uint32_t xorshift32()
 {
-	static uint32_t x32 = 314159265;
+	static uint32_t x32 = 123456789;
 	x32 ^= x32 << 13;
 	x32 ^= x32 >> 17;
 	x32 ^= x32 << 5;
@@ -33,216 +277,4 @@ uint64_t xorshift64()
 {
 	uint64_t r = xorshift32();
 	return (r << 32) | xorshift32();
-}
-
-uint32_t clz32(uint32_t rs1)
-{
-	for (int count = 0; count < 32; count++)
-		if ((rs1 << count) >> 31)
-			return count;
-	return 32;
-}
-
-uint32_t bext32(uint32_t v, uint32_t mask)
-{
-	uint32_t c = 0, m = 1;
-#if 1
-	// help cprover see the max bounds on this loop
-	for (int i = 0; mask && i < 32; i++) {
-#else
-	while (mask) {
-#endif
-		uint32_t b = mask & -mask;
-		if (v & b)
-			c |= m;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint64_t bext64(uint64_t v, uint64_t mask)
-{
-	uint64_t c = 0, m = 1;
-#if 1
-	// help cprover see the max bounds on this loop
-	for (int i = 0; mask && i < 64; i++) {
-#else
-	while (mask) {
-#endif
-		uint64_t b = mask & -mask;
-		if (v & b)
-			c |= m;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint32_t bdep32(uint32_t v, uint32_t mask)
-{
-	uint32_t c = 0, m = 1;
-#if 1
-	// help cprover see the max bounds on this loop
-	for (int i = 0; mask && i < 32; i++) {
-#else
-	while (mask) {
-#endif
-		uint32_t b = mask & -mask;
-		if (v & m)
-			c |= b;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint64_t bdep64(uint64_t v, uint64_t mask)
-{
-	uint64_t c = 0, m = 1;
-#if 1
-	// help cprover see the max bounds on this loop
-	for (int i = 0; mask && i < 64; i++) {
-#else
-	while (mask) {
-#endif
-		uint64_t b = mask & -mask;
-		if (v & m)
-			c |= b;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint32_t grev32(uint32_t x, int k)
-{
-	if (k &  1) x = ((x & 0x55555555) <<  1) | ((x & 0xAAAAAAAA) >>  1);
-	if (k &  2) x = ((x & 0x33333333) <<  2) | ((x & 0xCCCCCCCC) >>  2);
-	if (k &  4) x = ((x & 0x0F0F0F0F) <<  4) | ((x & 0xF0F0F0F0) >>  4);
-	if (k &  8) x = ((x & 0x00FF00FF) <<  8) | ((x & 0xFF00FF00) >>  8);
-	if (k & 16) x = ((x & 0x0000FFFF) << 16) | ((x & 0xFFFF0000) >> 16);
-	return x;
-}
-
-uint64_t grev64(uint64_t x, int k)
-{
-	if (k &  1) x = ((x & 0x5555555555555555ull) <<  1) | ((x & 0xAAAAAAAAAAAAAAAAull) >>  1);
-	if (k &  2) x = ((x & 0x3333333333333333ull) <<  2) | ((x & 0xCCCCCCCCCCCCCCCCull) >>  2);
-	if (k &  4) x = ((x & 0x0F0F0F0F0F0F0F0Full) <<  4) | ((x & 0xF0F0F0F0F0F0F0F0ull) >>  4);
-	if (k &  8) x = ((x & 0x00FF00FF00FF00FFull) <<  8) | ((x & 0xFF00FF00FF00FF00ull) >>  8);
-	if (k & 16) x = ((x & 0x0000FFFF0000FFFFull) << 16) | ((x & 0xFFFF0000FFFF0000ull) >> 16);
-	if (k & 32) x = ((x & 0x00000000FFFFFFFFull) << 32) | ((x & 0xFFFFFFFF00000000ull) >> 32);
-	return x;
-}
-
-uint32_t zip32(uint32_t rs1)
-{
-	uint32_t x = 0;
-	for (int i = 0; i < 16; i++) {
-		x |= ((rs1 >> i) & 1) << (2*i);
-		x |= ((rs1 >> (i+16)) & 1) << (2*i+1);
-	}
-	return x;
-}
-
-uint32_t unzip32(uint32_t rs1)
-{
-	uint32_t x = 0;
-	for (int i = 0; i < 16; i++) {
-		x |= ((rs1 >> (2*i)) & 1) << i;
-		x |= ((rs1 >> (2*i+1)) & 1) << (i+16);
-	}
-	return x;
-}
-
-uint32_t swapbits(uint32_t x, int p, int q)
-{
-	assert(p < q);
-	x = x ^ ((x & (1 << p)) << (q-p));
-	x = x ^ ((x & (1 << q)) >> (q-p));
-	x = x ^ ((x & (1 << p)) << (q-p));
-	return x;
-}
-
-uint32_t bfly32(uint32_t rs1, uint32_t mask, int N)
-{
-	int a = 1 << N, b = 2 * a;
-	uint32_t x = rs1;
-	for (int i = 0; i < 32 / 2; i++) {
-		int p = b * (i / a) + i % a, q = p + a;
-		if ((mask >> i) & 1)
-			x = swapbits(x, p, q);
-	}
-	return x;
-}
-
-uint32_t omega32(uint32_t rs1, uint32_t mask, int N)
-{
-	return bfly32(zip32(rs1), mask, N);
-}
-
-uint32_t flip32(uint32_t rs1, uint32_t mask, int N)
-{
-	return unzip32(bfly32(rs1, mask, N));
-}
-
-uint32_t shuffle32(uint32_t x, uint32_t ctrl)
-{
-	uint32_t mask = ctrl >> 16;
-	int mode = (ctrl >> 12) & 15;
-	int cmd = ctrl & 0xfff;
-
-	if (cmd != 0 || mode > 12)
-		return 0;
-
-	if (mode == 0)
-		return bfly32(zip32(x), mask, 0);
-
-	if (mode == 1)
-		return unzip32(bfly32(x, mask, 0));
-
-	if (mode > 7)
-		return bfly32(x, mask, mode & 7);
-
-	return 0;
-}
-
-uint32_t slo32(uint32_t x, int k)
-{
-	return ~((~x) << k);
-}
-
-uint32_t sro32(uint32_t x, int k)
-{
-	return ~((~x) >> k);
-}
-
-uint32_t sll32(uint32_t x, int k)
-{
-	return x << k;
-}
-
-uint32_t srl32(uint32_t x, int k)
-{
-	return x >> k;
-}
-
-uint32_t sra32(uint32_t x, int k)
-{
-	if (x >> 31)
-		return ~(~x >> k);
-	return x >> k;
-}
-
-uint32_t rol32(uint32_t rs1, uint32_t rs2)
-{
-	int shamt = rs2 & 31;
-	return (rs1 << shamt) | (rs1 >> (32-shamt));
-}
-
-uint32_t ror32(uint32_t rs1, uint32_t rs2)
-{
-	int shamt = rs2 & 31;
-	return (rs1 >> shamt) | (rs1 << (32-shamt));
 }

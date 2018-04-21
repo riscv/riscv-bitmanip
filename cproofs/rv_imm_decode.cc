@@ -124,9 +124,9 @@ void check_s_imm(insn_t insn)
 	uint32_t t0;
 
 	t0 = 0xfe000f80;
-	a0 = bext32(a0, t0);
-	a0 = sll32(a0, 20);
-	a0 = sra32(a0, 20);
+	a0 = bext(a0, t0);
+	a0 = sll(a0, 20);
+	a0 = sra(a0, 20);
 
 	assert(ref == a0);
 }
@@ -138,13 +138,13 @@ void check_b_imm(insn_t insn)
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	a0 = ror32(a0, 8);
+	a0 = ror(a0, 8);
 	t0 = 0x804eb000;
-	a0 = shuffle32(a0, t0);
+	a0 = shuffle(a0, t0);
 	t0 = 0x80fe0e01;
-	a0 = bext32(a0, t0);
-	a0 = sll32(a0, 20);
-	a0 = sra32(a0, 19);
+	a0 = bext(a0, t0);
+	a0 = sll(a0, 20);
+	a0 = sra(a0, 19);
 
 	assert(ref == a0);
 }
@@ -157,15 +157,15 @@ void check_j_imm(insn_t insn)
 	uint32_t t0;
 
 	t0 = 0x0fffb000;
-	a0 = shuffle32(a0, t0);
+	a0 = shuffle(a0, t0);
 	t0 = 0x0f40a000;
-	a0 = shuffle32(a0, t0);
+	a0 = shuffle(a0, t0);
 	t0 = 0x70fec000;
-	a0 = shuffle32(a0, t0);
+	a0 = shuffle(a0, t0);
 	t0 = 0x8ff170fe;
-	a0 = bext32(a0, t0);
-	a0 = sll32(a0, 12);
-	a0 = sra32(a0, 11);
+	a0 = bext(a0, t0);
+	a0 = sll(a0, 12);
+	a0 = sra(a0, 11);
 
 	assert(ref == a0);
 }
@@ -179,16 +179,16 @@ void check_j_imm2(insn_t insn)
 
 	t0 = 0x800ff000;
 	a1 = 0x00100000;
-	a2 = bext32(a0, t0);
+	a2 = bext(a0, t0);
 	a1 = a1 & a0;
-	a0 = sll32(a0, 1);
-	a0 = srl32(a0, 22);
-	a2 = sll32(a2, 23);
-	a1 = sll32(a1, 2);
-	a0 = sll32(a0, 12);
+	a0 = sll(a0, 1);
+	a0 = srl(a0, 22);
+	a2 = sll(a2, 23);
+	a1 = sll(a1, 2);
+	a0 = sll(a0, 12);
 	a0 = a0 | a2;
 	a0 = a0 | a1;
-	a0 = sra32(a0, 11);
+	a0 = sra(a0, 11);
 
 	assert(ref == a0);
 }
@@ -200,15 +200,15 @@ void check_cj_imm(insn_t insn)
 	uint32_t a0 = insn.b;
 	uint32_t t0;
 
-	a0 = grev32(a0, 1);
+	a0 = grev(a0, 1);
 	t0 = 0xebcac000;
-	a0 = shuffle32(a0, t0);
+	a0 = shuffle(a0, t0);
 	t0 = 0xe3469000;
-	a0 = shuffle32(a0, t0);
+	a0 = shuffle(a0, t0);
 	t0 = 0x8bc20464;
-	a0 = bext32(a0, t0);
-	a0 = sll32(a0, 21);
-	a0 = sra32(a0, 20);
+	a0 = bext(a0, t0);
+	a0 = sll(a0, 21);
+	a0 = sra(a0, 20);
 
 	assert(ref == a0);
 }

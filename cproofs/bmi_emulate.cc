@@ -27,7 +27,7 @@ void rv32_bmi1_bextr(uint32_t src, uint32_t start, uint32_t len)
 	uint32_t a = (src >> start) & ((1 << len)-1);
 
 	uint32_t b = start + len;
-	b = slo32(0, b);
+	b = slo(0, b);
 	b = src & b;
 	b = b >> start;
 
@@ -73,7 +73,7 @@ void rv32_bmi2_bzhi(uint32_t x, uint32_t k)
 
 	uint32_t a = x & ((1 << k)-1);
 
-	uint32_t b = slo32(0, k);
+	uint32_t b = slo(0, k);
 	b = x & b;
 
 	assert(a == b);

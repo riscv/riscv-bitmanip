@@ -38,16 +38,16 @@ uint32_t prefix_byte_nibbles_impl(uint32_t src)
 	uint32_t a0, a1;
 
 	a0 = src & 0xff;
-	a0 = zip32(a0);
-	a0 = zip32(a0);
+	a0 = zip(a0);
+	a0 = zip(a0);
 
-	a1 = sll32(a0, 4);
+	a1 = sll(a0, 4);
 	a0 += a1;
 
-	a1 = sll32(a0, 8);
+	a1 = sll(a0, 8);
 	a0 += a1;
 
-	a1 = sll32(a0, 16);
+	a1 = sll(a0, 16);
 	a0 += a1;
 
 	return a0;

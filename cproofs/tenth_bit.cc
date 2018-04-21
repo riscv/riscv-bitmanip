@@ -35,9 +35,9 @@ int tenth_bit_impl(uint32_t src)
 {
 	uint32_t a0 = src;
 	uint32_t a1 = 0x00000200;
-	a0 = bdep32(a1, a0);
-	a0 = grev32(a0, 31);
-	a0 = clz32(a0);
+	a0 = bdep(a1, a0);
+	a0 = grev(a0, 31);
+	a0 = clz(a0);
 	return a0;
 }
 

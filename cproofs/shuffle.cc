@@ -19,24 +19,10 @@
 
 // ---------------------------------------------------------
 
-uint32_t omega(uint32_t x, uint32_t mask)
-{
-	x = zip32(x);
-	x = bfly32(x, mask, 0);
-	return x;
-}
-
-uint32_t flip(uint32_t x, uint32_t mask)
-{
-	x = bfly32(x, mask, 0);
-	x = unzip32(x);
-	return x;
-}
-
 uint32_t flip_alt(uint32_t x, uint32_t mask)
 {
-	x = unzip32(x);
-	x = bfly32(x, mask, 4);
+	x = unzip(x);
+	x = bfly(x, mask, 4);
 	return x;
 }
 
@@ -61,7 +47,7 @@ void flip_alt_check(uint32_t src, uint32_t mask)
 uint32_t baseline(uint32_t x, uint32_t mask, int k)
 {
 	uint32_t y = 0;
-	x = bfly32(x, mask, 0);
+	x = bfly(x, mask, 0);
 
 	int num_blocks = 1 << k;
 	int block_size = 1 << (5-k);
@@ -88,14 +74,14 @@ uint32_t baseline(uint32_t x, uint32_t mask, int k)
 void baseline_bfly_check(uint32_t x, uint32_t mask)
 {
 	uint32_t a = baseline(x, mask, 4);
-	uint32_t b = bfly32(x, mask, 0);
+	uint32_t b = bfly(x, mask, 0);
 	assert(a == b);
 }
 
 void baseline_unzip_check(uint32_t x, uint32_t mask)
 {
 	uint32_t a = baseline(x, mask, 0);
-	uint32_t b = unzip32(bfly32(x, mask, 0));
+	uint32_t b = unzip(bfly(x, mask, 0));
 	assert(a == b);
 }
 
@@ -121,7 +107,7 @@ void omega_flip_bfly_check(uint32_t x, uint32_t maskA, uint32_t maskB, uint32_t 
 	b = omega(b, maskB);
 	b = omega(b, maskC);
 	b = omega(b, maskD);
-	b = bfly32(b, maskE ^ maskF, 4);
+	b = bfly(b, maskE ^ maskF, 4);
 	b = flip(b, maskG);
 	b = flip(b, maskH);
 	b = flip(b, maskI);

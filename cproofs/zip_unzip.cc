@@ -21,23 +21,23 @@
 
 void zip_unzip_invcheck(uint32_t src)
 {
-	uint32_t a = zip32(unzip32(src));
+	uint32_t a = zip(unzip(src));
 	assert(a == src);
 
-	uint32_t b = unzip32(zip32(src));
+	uint32_t b = unzip(zip(src));
 	assert(b == src);
 }
 
 void zip4_unzip_eqcheck(uint32_t src)
 {
-	uint32_t a = zip32(zip32(zip32(zip32(src))));
-	uint32_t b = unzip32(src);
+	uint32_t a = zip(zip(zip(zip(src))));
+	uint32_t b = unzip(src);
 	assert(a == b);
 }
 
 void zip_unzip4_eqcheck(uint32_t src)
 {
-	uint32_t a = zip32(src);
-	uint32_t b = unzip32(unzip32(unzip32(unzip32(src))));
+	uint32_t a = zip(src);
+	uint32_t b = unzip(unzip(unzip(unzip(src))));
 	assert(a == b);
 }
