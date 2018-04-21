@@ -54,7 +54,16 @@ BDEP software implementation requires $>160$ instructions. (Please disregard the
 ``hardware-oriented algorithm'' described in Hacker's Delight. It is
 extremely expensive compared to other implementations.\footnote{https://github.com/cliffordwolf/bextdep})
 
-\subsubsection{SHUFFLE looks like really expensive operation. Do we really need it?}
+\subsubsection{But do we really need 64-bit BEXT/BDEP?}
+
+Good question. A 64-bit BEXT/BDEP unit certainly is more than 2x the size of a
+32-bit unit and in most cases 32-bit would be sufficient.
+
+However, one solution here would be to still reserve the opcode for 64-bit
+BEXT/BDEP and leave it to the implementation to decide whether to implement the
+function in hardware or emulating it using a software trap.
+
+\subsubsection{SHUFFLE looks like a really expensive operation. Do we really need it?}
 
 Even though this instruction looks expensive, it is actually quite simple to
 implement.  The butterfly operation can just reuse the butterfly circuit that
