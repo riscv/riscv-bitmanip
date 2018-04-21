@@ -313,3 +313,13 @@ uint64_t xorshift64()
 	uint64_t r = xorshift32();
 	return (r << 32) | xorshift32();
 }
+
+uint32_t bitmove32(uint32_t x, int p, int q)
+{
+	return ((x >> p) & 1) << q;
+}
+
+uint64_t bitmove64(uint64_t x, int p, int q)
+{
+	return ((x >> p) & 1) << q;
+}
