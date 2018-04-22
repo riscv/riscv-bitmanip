@@ -143,7 +143,7 @@ in XLEN stages, and if the corresponding bit of the `function\_select'
 immediate is true for the current stage, swaps each adjacent pair of
 2\^{}i bits in the register.
 
-\texttt{grevi} `butterfly' implementation in C on various architectures
+\texttt{grevi} `butterfly' implementation in C on various architectures:
 
 \input{bextcref-grev}
 
@@ -454,7 +454,7 @@ deposit mask in rs2.
 
 \input{bextcref-bext}
 
-Implementations might chose to use smaller multi-cycle implementations of
+Implementations might choose to use smaller multi-cycle implementations of
 \texttt{bext} and \texttt{bdep}. Even though multi-cycle \texttt{bext} and
 \texttt{bdep} often are not fast enough to outperform algortihms that use
 sequences of shifts and bit masks, dedicated instructions for those operations
@@ -654,9 +654,9 @@ In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations
 there are no compressed encodings for those operations because there is no \texttt{c.xori}
 instruction and \texttt{c.sub} can not operate on \texttt{x0}.
 
-Many bit manipulation operations that have dedicated opecodes in other ISAs
+Many bit manipulation operations that have dedicated opcodes in other ISAs
 must be constructed from smaller atoms in RISC-V XBitmanip code. But
-implementations might chose to implement them in a single micro-op using
+implementations might choose to implement them in a single micro-op using
 macro-op-fusion. For this it can be helpful when the fused sequences are short.
 \texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
 it can be helpful to have compressed opcodes for them.
@@ -837,9 +837,9 @@ shorter sequences.
 
 A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
 
-An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$)) (or
-equivialently, butterfly(0) followed by unzip) is commonly known as a {\it flip
-stage}. The assember should provide appropiate pseudo-instructions for rd
+An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$))
+(alternatively: butterfly(0) followed by unzip) is commonly known as a {\it flip
+stage}. The assember should provide appropriate pseudo-instructions for rd
 $\neq$ rs and constant {\tt mask}:
 
 \begin{verbatim}

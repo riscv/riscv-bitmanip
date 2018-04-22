@@ -5,7 +5,7 @@
 \subsubsection{\texttt{grev} seems to be overly complicated? Do we really need it?}
 
 The \texttt{grev} instruction can be used to build a wide range of common
-bit permutation instructions, such as endianess convertion or bit reversal.
+bit permutation instructions, such as endianess conversion or bit reversal.
 
 If \texttt{grev} were removed from this spec we would need to add a few
 new instructions in its place for those operations.
@@ -29,7 +29,7 @@ Especially because it is commonly used in \texttt{mix} and \texttt{mux} operatio
 
 Yes, and we did not include any other ALU+complement operators. But \texttt{andc}
 is so common (mostly because of the \texttt{mix} and \texttt{mux} patterns), and
-it's implementation is so cheap, that we decided to dedicate an R-type instruction
+its implementation is so cheap, that we decided to dedicate an R-type instruction
 to the operation.
 
 \subsubsection{The shift-ones instructions can be emulated using {\tt not} and logical shift? Do we really need it?}
@@ -71,7 +71,7 @@ is already present to support the {\tt grev} instruction, and zip and unzip are
 very cheap to implement (just one additional word-wide mux each). The ``return
 0'' part for nonzero commands and reserved modes is also very cheap.
 
-Considering that SHUFFLE is very cheap to implement ontop an existing GREV
+Considering that SHUFFLE is very cheap to implement on top an existing GREV
 implementation, and considering that it only requires a single R-type
 instruction, and that software emulation of similar functionality requires tens
 of instructions (and/or multiplications with large ``magic constants''), it is a
