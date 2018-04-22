@@ -201,6 +201,14 @@ void zip_bfly_3_check(uint32_t src, uint32_t mask)
 	assert(a == b);
 }
 
+void bxchg_bfly_4_check(uint32_t src, uint32_t mask)
+{
+	uint32_t a = bxchg(src, (mask & 0xffff) ^ (~mask << 16));
+	uint32_t b = bfly(src, mask, 4);
+
+	assert(a == b);
+}
+
 // ---------------------------------------------------------
 
 #if 0

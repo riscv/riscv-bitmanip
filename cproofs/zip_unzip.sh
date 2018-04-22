@@ -24,5 +24,6 @@ cbmc --trace --function zip_bfly_0_check       zip_unzip.cc
 cbmc --trace --function zip_bfly_1_check       zip_unzip.cc
 cbmc --trace --function zip_bfly_2_check       zip_unzip.cc
 cbmc --trace --function zip_bfly_3_check       zip_unzip.cc
+cbmc --trace --function bxchg_bfly_4_check     zip_unzip.cc
 
 echo OK

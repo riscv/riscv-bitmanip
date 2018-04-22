@@ -1,0 +1,81 @@
+\chapter{Alternative to \texttt{shuffle} instruction}
+
+There are a couple of issues with the {\tt shuffle} instruction as currently proposed.
+
+(1) It performs a fairly complex operation (the description of the instruction
+spans 4 pages).
+
+(2) It tries to do two things at the same time, namely perform various zip/unzip
+operations and perform butterfly operations of different orders.
+
+(3) Even though all butterfly stages should be present in a GREV unit, tapping into
+those stages to inject the masks for {\tt shuffle} increases overall complexity of
+the core. This is not really necessary: A single butterfly stage would be sufficient
+because zip/unzip operations can be used to emulate the other butterfly stages.
+
+This chapter proposed to replace the {\tt shuffle} instruction with a simpler \texttt{bxchg}
+instruction that performs the butterfly($log_2(\textrm{XLEN})-1$) operation with a
+slighly different semantic for the mask, and a few dedicated instructions for zip/unzip
+oerations.
+
+The highes order butterfly stage is chosen because it uses a permutation that is not only
+already present in a GREV unit, but is also the last stage of a rotate-shift.
+Therefore there is more potential to share resources with an existing hardware
+unit. This butterfly stage is also the one with the most natural layout for
+the mask, which simplifies the use of the instruction.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Butterfly exchange (\texttt{bxchg})}
+
+The {\tt bxchg} instruction selects bits from the upper or lower half of {\tt rs1}
+based on the mask in {\tt rs2}.
+
+\input{bextcref-bxchg}
+
+When the upper half of {\tt rs2} is the bitwise inverse of the lower half of
+{\tt rs2} then this instruction performs a butterfly operation of order
+$log_2(\textrm{XLEN})-1$.
+
+In combination with the {\tt zip} instructions \texttt{bxchg} can be used to
+implement a wide range of permutation networks, including butterfly and
+inverse-butterfly networks, Bene{\v s} networks, omega-flip networks, and
+baseline networks.
+
+When the upper half of {\tt rs2} is not the bitwise inverse of the lower half
+of {\tt rs2} then \texttt{bxchg} will duplicate bits (and overwrite others).
+Combined with the {\tt zip} instructions this enables the use of the above networks
+for more than just permutations.
+
+When {\tt rs2} is zero then \texttt{bxchg} produces the contents of the lower
+half of {\tt rs1} in the both halves of the result.
+
+\texttt{bxchg} is encoded as R-type instruction.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Zip and unzip (\texttt{zip,\ unzip})}
+
+A range of unary zip/unzip operations is needed to make use of \texttt{bxchg} to implement
+arbitrary bit permutations. The process of evaluating which set of zip/unzip operations
+is a sufficient minimal subset to implement the others with minmal effort is currently ongoing.
+
+The following operations should be easy to implement with the set of selected
+zip/unzip operations:
+
+(1) Bitwise zip/unzip of a complete XLEN word.
+
+(2) Bitwise zip/unzip of each word (RV64), half-word, byte, and nibble in an XLEN word.
+
+(3) Zipping/unzipping of the half-words (RV64), bytes, nibbles, and bit-pairs
+in an XLEN word without changing the order of the bits inside those blocks.
+
+Note that bitwise zipping/unzipping of bit-pairs is a no-op. So is zipping/unzipping of
+the two XLEN/2 blocks of a complete XLEN word.
+
+Bitwise zip/unzip of a complete XLEN word must be performed up to 6 times to
+implement an arbitrary XLEN butterfly operation with \texttt{bxchg}. So at least
+those two operations should be available as dedicated instructions.
+
+The zip instructions will be encoded as I-type unary instructions, similar to {\tt clz},
+{\tt ctz}, and {\tt pcnt}.

@@ -268,6 +268,20 @@ uint_xlen_t shuffle(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- bxchg
+uint_xlen_t bxchg(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint32_t upper = rs1 >> (XLEN/2);
+	upper |= upper << (XLEN/2);
+
+	uint32_t lower = rs1 << (XLEN/2);
+	lower |= lower >> (XLEN/2);
+
+	return (upper & rs2) | (lower & ~rs2);
+}
+// --REF-END--
+
+
 uint_xlen_t omega(uint_xlen_t x, uint_xlen_t mask)
 {
 	x = zip(x);
