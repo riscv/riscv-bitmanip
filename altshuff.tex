@@ -13,69 +13,83 @@ those stages to inject the masks for {\tt shuffle} increases overall complexity 
 the core. This is not really necessary: A single butterfly stage would be sufficient
 because zip/unzip operations can be used to emulate the other butterfly stages.
 
-This chapter proposed to replace the {\tt shuffle} instruction with a simpler \texttt{bxchg}
-instruction that performs the butterfly($log_2(\textrm{XLEN})-1$) operation with a
-slighly different semantic for the mask, and a few dedicated instructions for zip/unzip
-oerations.
+(4) Implementing a butterfly+mask operation can easily be done with grevi, zip,
+and the mix pattern (and+andc+or).
 
-The highes order butterfly stage is chosen because it uses a permutation that is not only
-already present in a GREV unit, but is also the last stage of a rotate-shift.
-Therefore there is more potential to share resources with an existing hardware
-unit. This butterfly stage is also the one with the most natural layout for
-the mask, which simplifies the use of the instruction.
+This chapter proposes to replace the {\tt shuffle} instruction with a generalized
+{\tt zip} instruction with an encoding similar to {\tt grevi}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Butterfly exchange (\texttt{bxchg})}
+\section{Generalized zip (\texttt{zip})}
 
-The {\tt bxchg} instruction selects bits from the upper or lower half of {\tt rs1}
-based on the mask in {\tt rs2}.
+{\it Under construction}
 
-\input{bextcref-bxchg}
+{\tt zip} is the third bit permutation instruction in XBitmanip, after {\tt rori}
+and {\tt grevi}.
 
-When the upper half of {\tt rs2} is the bitwise inverse of the lower half of
-{\tt rs2} then this instruction performs a butterfly operation of order
-$log_2(\textrm{XLEN})-1$.
+The {\tt zip} instruction uses an I-type encoding similar to {\tt grevi}. There
+are XLEN different generalized zip operations, with 0 being the identity. See
+Table~\ref{zip-modes}.
 
-In combination with the {\tt zip} instructions \texttt{bxchg} can be used to
-implement a wide range of permutation networks, including butterfly and
-inverse-butterfly networks, Bene{\v s} networks, omega-flip networks, and
-baseline networks.
+Like GREV and rotate shift, the {\tt zip} instruction can be implemented using a short
+sequence of ``atomic'' permutations, that are enabled or disabled by the mode (shamt)
+bits. Zip has one more stage than a shift or GREV unit, with the first and last stage
+both controlled by mode$[0]$. As a special case, mode$=$00001 only activates the
+first or last stage.
 
-When the upper half of {\tt rs2} is not the bitwise inverse of the lower half
-of {\tt rs2} then \texttt{bxchg} will duplicate bits (and overwrite others).
-Combined with the {\tt zip} instructions this enables the use of the above networks
-for more than just permutations.
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{l l l}
+      mode   & Bit index rotations              & Comments / Pseudo instruction \\ \hline
 
-When {\tt rs2} is zero then \texttt{bxchg} produces the contents of the lower
-half of {\tt rs1} in the both halves of the result.
+      00000  & no-op                            & \\
+      00001  & bit-reversal                     & \\
+      00010  & {\tt i[1] -> i[0]}               & \\
+\sout{00011} & {\tt i[1] <- i[0]}               & {\it equivalent to 00010} \\
+      00100  & {\tt i[2] -> i[1]}               & \\
+\sout{00101} & {\tt i[2] <- i[1]}               & {\it equivalent to 00100} \\
+      00110  & {\tt i[2] -> i[0]}               & {\tt shuffle.b} \\
+      00111  & {\tt i[2] <- i[0]}               & {\tt unshuffle.b} \\
 
-\texttt{bxchg} is encoded as R-type instruction.
+\hline
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      01000  & {\tt i[3] -> i[2]}               & \\
+\sout{01001} & {\tt i[3] <- i[2]}               & {\it equivalent to 01000} \\
+      01010  & {\tt i[3] -> i[2], i[1] -> i[0]} & \\
+\sout{01011} & {\tt i[3] <- i[2], i[1] <- i[0]} & {\it equivalent to 01010} \\
+      01100  & {\tt i[3] -> i[1]}               & {\tt shuffle4.h} \\
+      01101  & {\tt i[3] <- i[1]}               & {\tt unshuffle4.h} \\
+      01110  & {\tt i[3] -> i[0]}               & {\tt shuffle.h} \\
+      01111  & {\tt i[3] <- i[0]}               & {\tt unshuffle.h} \\
 
-\section{Zip and unzip (\texttt{zip,\ unzip})}
+\hline
 
-A range of unary zip/unzip operations is needed to make use of \texttt{bxchg} to implement
-arbitrary bit permutations. The process of evaluating which set of zip/unzip operations
-is a sufficient minimal subset to implement the others with minmal effort is currently ongoing.
+      10000  & {\tt i[4] -> i[3]}               & \\
+\sout{10001} & {\tt i[4] <- i[3]}               & {\it equivalent to 01010} \\
+      10010  & {\tt i[4] -> i[3], i[1] -> i[0]} & \\
+\sout{10011} & {\tt i[4] <- i[3], i[1] <- i[0]} & {\it equivalent to 10010} \\
+      10100  & {\tt i[4] -> i[3], i[2] -> i[1]} & \\
+\sout{10101} & {\tt i[4] <- i[3], i[2] <- i[1]} & {\it equivalent to 10100} \\
+      10110  & {\tt i[4] -> i[3], i[2] -> i[0]} & \\
+      10111  & {\tt i[4] <- i[3], i[2] <- i[0]} & \\
 
-The following operations should be easy to implement with the set of selected
-zip/unzip operations:
+\hline
 
-(1) Bitwise zip/unzip of a complete XLEN word.
+      11000  & {\tt i[4] -> i[2]}               & {\tt shuffle8} \\
+      11001  & {\tt i[4] <- i[2]}               & {\tt unshuffle8} \\
+      11010  & {\tt i[4] -> i[2], i[1] -> i[0]} & \\
+      11011  & {\tt i[4] <- i[2], i[1] <- i[0]} & \\
+      11100  & {\tt i[4] -> i[1]}               & {\tt shuffle4} \\
+      11101  & {\tt i[4] <- i[1]}               & {\tt unshuffle4} \\
+      11110  & {\tt i[4] -> i[0]}               & {\tt shuffle} \\
+      11111  & {\tt i[4] <- i[0]}               & {\tt unshuffle} \\
 
-(2) Bitwise zip/unzip of each word (RV64), half-word, byte, and nibble in an XLEN word.
+\end{tabular}
+\end{center}
+\end{small}
+\caption{RV32 modes for {\tt zip} instruction}
+\label{zip-modes}
+\end{table}
 
-(3) Zipping/unzipping of the half-words (RV64), bytes, nibbles, and bit-pairs
-in an XLEN word without changing the order of the bits inside those blocks.
-
-Note that bitwise zipping/unzipping of bit-pairs is a no-op. So is zipping/unzipping of
-the two XLEN/2 blocks of a complete XLEN word.
-
-Bitwise zip/unzip of a complete XLEN word must be performed up to 6 times to
-implement an arbitrary XLEN butterfly operation with \texttt{bxchg}. So at least
-those two operations should be available as dedicated instructions.
-
-The zip instructions will be encoded as I-type unary instructions, similar to {\tt clz},
-{\tt ctz}, and {\tt pcnt}.
