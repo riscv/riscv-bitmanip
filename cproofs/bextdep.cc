@@ -105,12 +105,8 @@ void bdep32_bdep64(uint64_t src, uint64_t mask)
 
 	uint32_t result_lo = bdep32(src_lo, mask_lo);
 
-	if (mask_lo == 0) {
-		src_hi = src_lo;
-	} else {
-		int p = pcnt(mask_lo), q = 32 - p;
-		src_hi = (src_hi << q) | (src_lo >> p);
-	}
+	int p = pcnt(mask_lo), q = 32 - p;
+	src_hi = (uint64_t(src_hi) << q) | (uint64_t(src_lo) >> p);
 
 	uint32_t result_hi = bdep32(src_hi, mask_hi);
 	uint64_t result = result_lo | (uint64_t(result_hi) << 32);
@@ -128,11 +124,20 @@ int main()
 	for (int i = 0; i < 1000; i++) {
 		uint64_t src = xorshift64();
 		uint64_t mask = xorshift64();
-		printf("%016llx %016llx\n", (long long)src, (long long)mask);
+		// printf("%016llx %016llx\n", (long long)src, (long long)mask);
+		bext32_bext64(src, mask);
+		bext32_bext64(src, mask & 0xffffffff00000000ull);
+		bdep32_bdep64(src, mask);
+		bdep32_bdep64(src, mask & 0xffffffff00000000ull);
+	}
+	for (int i = 0; i < 64; i++)
+	for (int j = 0; j < 64; j++) {
+		uint64_t src = 1ull << i;
+		uint64_t mask = 1ull << j;
+		// printf("%016llx %016llx\n", (long long)src, (long long)mask);
 		bext32_bext64(src, mask);
 		bdep32_bdep64(src, mask);
 	}
-
 	printf("passed.\n");
 	return 0;
 }

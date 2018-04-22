@@ -51,10 +51,10 @@ void rv32_brev_b(uint32_t x)
 
 	for (int i = 0; i < 8; i++)
 	{
-		b |= bitmove32(x,    i,    15-i);
-		b |= bitmove32(x,  8+i,  8+15-i);
-		b |= bitmove32(x, 16+i, 16+15-i);
-		b |= bitmove32(x, 24+i, 24+15-i);
+		b |= bitmove32(x,    i,    7-i);
+		b |= bitmove32(x,  8+i,  8+7-i);
+		b |= bitmove32(x, 16+i, 16+7-i);
+		b |= bitmove32(x, 24+i, 24+7-i);
 	}
 
 	assert(a == b);
