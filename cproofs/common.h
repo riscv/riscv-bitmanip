@@ -299,12 +299,18 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 	return x >> k;
 }
 
+uint32_t xs32(uint32_t x)
+{
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	return x;
+}
+
 uint32_t xorshift32()
 {
 	static uint32_t x32 = 123456789;
-	x32 ^= x32 << 13;
-	x32 ^= x32 >> 17;
-	x32 ^= x32 << 5;
+	x32 = xs32(x32);
 	return x32;
 }
 

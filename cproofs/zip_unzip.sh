@@ -20,4 +20,9 @@ cbmc --trace --function zip_unzip2_eqcheck_N8  zip_unzip.cc
 cbmc --trace --function zip_unzip_invcheck_N4  zip_unzip.cc
 cbmc --trace --function zip_unzip_eqcheck_N4   zip_unzip.cc
 
+cbmc --trace --function zip_bfly_0_check       zip_unzip.cc
+cbmc --trace --function zip_bfly_1_check       zip_unzip.cc
+cbmc --trace --function zip_bfly_2_check       zip_unzip.cc
+cbmc --trace --function zip_bfly_3_check       zip_unzip.cc
+
 echo OK
