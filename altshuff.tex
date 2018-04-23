@@ -20,23 +20,16 @@ This chapter proposes to replace the {\tt shuffle} instruction with a generalize
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized zip (\texttt{zip})}
+\section{Generalized zip/unzip (\texttt{gzip})}
 
 {\it Under construction}
 
-{\tt zip} is the third bit permutation instruction in XBitmanip, after {\tt rori}
+{\tt gzip} is the third bit permutation instruction in XBitmanip, after {\tt rori}
 and {\tt grevi}.
 
-The {\tt zip} instruction uses an I-type encoding similar to {\tt grevi}. There
+The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}. There
 are XLEN different generalized zip operations, with 0 being the identity. See
-Table~\ref{zip-modes}.
-
-Like GREV and rotate shift, the {\tt zip} instruction can be implemented using a short
-sequence of ``atomic'' permutations, that are enabled or disabled by the mode (shamt)
-bits. Zip has one more stage than a shift or GREV unit, with the first and last stage
-both controlled by mode$[0]$.
-
-There is no R-type instruction for {\tt zip}. It is an I-type only instruction.
+Table~\ref{gzip-modes}.
 
 \begin{table}[h]
 \begin{small}
@@ -88,6 +81,21 @@ There is no R-type instruction for {\tt zip}. It is an I-type only instruction.
 \end{tabular}
 \end{center}
 \end{small}
-\caption{RV32 modes for {\tt zip} instruction}
-\label{zip-modes}
+\caption{RV32 modes for {\tt gzip} instruction}
+\label{gzip-modes}
 \end{table}
+
+Like GREV and rotate shift, the {\tt gzip} instruction can be implemented using a short
+sequence of atomic permutations, that are enabled or disabled by the mode (shamt)
+bits. Zip has one more stage than a shift or GREV unit, with the first and last stage
+both controlled by mode$[0]$.
+
+\input{bextcref-gzip32}
+
+Or alternatively using two shorter permutation networks, one for zip operations
+and one for unzip operations:
+
+\input{bextcref-gzip32-alt}
+
+There is no R-type instruction for {\tt gzip}. It is an I-type only instruction.
+

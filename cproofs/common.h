@@ -165,6 +165,73 @@ uint64_t grev64(uint64_t rs1, uint64_t rs2)
 #  define grev grev64
 #endif
 
+// --REF-BEGIN-- gzip32
+uint32_t gzip32_stage0(uint32_t src)
+{
+	uint32_t x = src & 0x88224411;
+	x |= ((src <<  6) & 0x22001100) | ((src >>  6) & 0x00880044);
+	x |= ((src <<  9) & 0x00440000) | ((src >>  9) & 0x00002200);
+	x |= ((src << 15) & 0x44110000) | ((src >> 15) & 0x00008822);
+	x |= ((src << 21) & 0x11000000) | ((src >> 21) & 0x00000088);
+	return x;
+}
+
+uint32_t gzip32_stageN(uint32_t src, uint32_t maskL, uint32_t maskR, int N)
+{
+	uint32_t x = src & ~(maskL | maskR);
+	x |= ((src <<  N) & maskL) | ((src >>  N) & maskR);
+	return x;
+}
+
+uint32_t gzip32(uint32_t rs1, uint32_t rs2)
+{
+	uint32_t x = rs1;
+	int mode = rs2 & 31;
+
+	if (mode &  1)
+		x = gzip32_stage0(x);
+
+	if ((mode & 17) == 16 || (mode &  3) ==  3)
+		x = gzip32_stageN(x, 0x00ff0000, 0x0000ff00, 8);
+
+	if ((mode &  9) ==  8 || (mode &  5) ==  5)
+		x = gzip32_stageN(x, 0x0f000f00, 0x00f000f0, 4);
+
+	if ((mode &  5) ==  4 || (mode &  9) ==  9)
+		x = gzip32_stageN(x, 0x30303030, 0x0c0c0c0c, 2);
+
+	if ((mode &  3) ==  2 || (mode & 17) == 17)
+		x = gzip32_stageN(x, 0x44444444, 0x22222222, 1);
+
+	if (mode &  1)
+		x = gzip32_stage0(x);
+
+	return x;
+}
+// --REF-END--
+
+// --REF-BEGIN-- gzip32-alt
+uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
+{
+	uint32_t x = rs1;
+	int mode = rs2 & 31;
+
+	if (mode & 1) {
+		if (mode &  2) x = gzip32_stageN(x, 0x44444444, 0x22222222, 1);
+		if (mode &  4) x = gzip32_stageN(x, 0x30303030, 0x0c0c0c0c, 2);
+		if (mode &  8) x = gzip32_stageN(x, 0x0f000f00, 0x00f000f0, 4);
+		if (mode & 16) x = gzip32_stageN(x, 0x00ff0000, 0x0000ff00, 8);
+	} else {
+		if (mode & 16) x = gzip32_stageN(x, 0x00ff0000, 0x0000ff00, 8);
+		if (mode &  8) x = gzip32_stageN(x, 0x0f000f00, 0x00f000f0, 4);
+		if (mode &  4) x = gzip32_stageN(x, 0x30303030, 0x0c0c0c0c, 2);
+		if (mode &  2) x = gzip32_stageN(x, 0x44444444, 0x22222222, 1);
+	}
+
+	return x;
+}
+// --REF-END--
+
 // --REF-BEGIN-- zip
 uint_xlen_t bitmove(uint_xlen_t x, int p, int q)
 {
