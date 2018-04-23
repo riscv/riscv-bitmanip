@@ -36,7 +36,7 @@ with open("bextcref-printperm.tex", "w") as outfile:
     for i in range(5):
         for j in range(32):
             k = ror_permdata[j][1 << i]
-            print("\\draw (%.3f, %d) -- (%.3f, %d);" % (k * 0.375, i * 2, j * 0.375, i * 2 + 2), file=outfile)
+            print("\\draw (%.3f, %d) -- (%.3f, %d);" % ((31-k) * 0.375, i * 2, (31-j) * 0.375, i * 2 + 2), file=outfile)
         print("\\node at (%.3f, %d) {ror stage %d};" % (1.5 + 32 * 0.375, i * 2 + 1, i), file=outfile)
 
     for i in range(6):

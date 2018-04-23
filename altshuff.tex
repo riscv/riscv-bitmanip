@@ -21,6 +21,7 @@ This chapter proposes to replace the {\tt shuffle} instruction with a generalize
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Generalized zip/unzip (\texttt{gzip})}
+\label{gzip}
 
 {\it Under construction}
 
@@ -28,8 +29,9 @@ This chapter proposes to replace the {\tt shuffle} instruction with a generalize
 and {\tt grevi}.
 
 The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}. There
-are XLEN different generalized zip operations, with 0 being the identity. See
-Table~\ref{gzip-modes}.
+are XLEN different generalized zip operations, some of which are reserved because
+they are no-ops or equivalent to other modes. See Table~\ref{gzip-modes}. The
+reserved modes can be used to encode unary functions such as {\tt ctz} and {\tt clz}.
 
 \begin{table}[h]
 \begin{small}
@@ -37,8 +39,8 @@ Table~\ref{gzip-modes}.
 \begin{tabular}{c l l}
       mode   & Bit index rotations               & Instruction \\ \hline
 
-      0000 0  & no-op                            & {\it reserved} \\
-      0000 1  & no-op                            & {\it reserved} \\
+\sout{0000 0} & no-op                            & {\it reserved} \\
+\sout{0000 1} & no-op                            & {\it reserved} \\
       0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n} \\
 \sout{0001 1} & {\it equivalent to 0001 0}       & {\it reserved} \\
       0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
@@ -87,13 +89,17 @@ Table~\ref{gzip-modes}.
 
 Like GREV and rotate shift, the {\tt gzip} instruction can be implemented using a short
 sequence of atomic permutations, that are enabled or disabled by the mode (shamt)
-bits. Zip has one more stage than a shift or GREV unit, with the first and last stage
-both controlled by mode$[0]$.
+bits. But zip has one stage fewer than GREV and the LSB bit of mode controls the order
+in which the stages are applied:
 
 \input{bextcref-gzip32}
 
-Or alternatively using two shorter permutation networks, one for zip operations
-and one for unzip operations:
+Alternatively {\tt gzip} can be implemented in a single network with one more
+stage than GREV, with the additional first and last stage executing a
+permutation that effectively reverses the order of the inner stages. However,
+since the inner stages only mux half of the bits in the word each, a hardware
+implementation using this additional ``flip'' stages might actually be more
+expensive than simply creating two networks.
 
 \input{bextcref-gzip32-alt}
 
