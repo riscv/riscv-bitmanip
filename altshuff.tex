@@ -10,8 +10,7 @@ operations and perform butterfly operations of different orders.
 
 (3) Even though all butterfly stages should be present in a GREV unit, tapping into
 those stages to inject the masks for {\tt shuffle} increases overall complexity of
-the core. This is not really necessary: A single butterfly stage would be sufficient
-because zip/unzip operations can be used to emulate the other butterfly stages.
+the core.
 
 (4) Implementing a butterfly+mask operation can easily be done with grevi, zip,
 and the mix pattern (and+andc+or).
