@@ -35,61 +35,60 @@ Table~\ref{zip-modes}.
 Like GREV and rotate shift, the {\tt zip} instruction can be implemented using a short
 sequence of ``atomic'' permutations, that are enabled or disabled by the mode (shamt)
 bits. Zip has one more stage than a shift or GREV unit, with the first and last stage
-both controlled by mode$[0]$. As a special case, mode$=$00001 only activates the
-first or last stage.
+both controlled by mode$[0]$.
+
+There is no R-type instruction for {\tt zip}. It is an I-type only instruction.
 
 \begin{table}[h]
 \begin{small}
 \begin{center}
-\begin{tabular}{l l l}
-      mode   & Bit index rotations              & Comments / Pseudo instruction \\ \hline
+\begin{tabular}{c l l}
+      mode   & Bit index rotations               & Instruction \\ \hline
 
-      00000  & no-op                            & \\
-      00001  & bit-reversal                     & \\
-      00010  & {\tt i[1] -> i[0]}               & \\
-\sout{00011} & {\tt i[1] <- i[0]}               & {\it equivalent to 00010} \\
-      00100  & {\tt i[2] -> i[1]}               & \\
-\sout{00101} & {\tt i[2] <- i[1]}               & {\it equivalent to 00100} \\
-      00110  & {\tt i[2] -> i[0]}               & {\tt shuffle.b} \\
-      00111  & {\tt i[2] <- i[0]}               & {\tt unshuffle.b} \\
-
-\hline
-
-      01000  & {\tt i[3] -> i[2]}               & \\
-\sout{01001} & {\tt i[3] <- i[2]}               & {\it equivalent to 01000} \\
-      01010  & {\tt i[3] -> i[2], i[1] -> i[0]} & \\
-\sout{01011} & {\tt i[3] <- i[2], i[1] <- i[0]} & {\it equivalent to 01010} \\
-      01100  & {\tt i[3] -> i[1]}               & {\tt shuffle4.h} \\
-      01101  & {\tt i[3] <- i[1]}               & {\tt unshuffle4.h} \\
-      01110  & {\tt i[3] -> i[0]}               & {\tt shuffle.h} \\
-      01111  & {\tt i[3] <- i[0]}               & {\tt unshuffle.h} \\
+      0000 0  & no-op                            & {\it reserved} \\
+      0000 1  & no-op                            & {\it reserved} \\
+      0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n} \\
+\sout{0001 1} & {\it equivalent to 0001 0}       & {\it reserved} \\
+      0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
+\sout{0010 1} & {\it equivalent to 0010 0}       & {\it reserved} \\
+      0011 0  & {\tt i[2] -> i[0]}               & {\tt zip.b} \\
+      0011 1  & {\tt i[2] <- i[0]}               & {\tt unzip.b} \\
 
 \hline
 
-      10000  & {\tt i[4] -> i[3]}               & \\
-\sout{10001} & {\tt i[4] <- i[3]}               & {\it equivalent to 10000} \\
-      10010  & {\tt i[4] -> i[3], i[1] -> i[0]} & \\
-\sout{10011} & {\tt i[4] <- i[3], i[1] <- i[0]} & {\it equivalent to 10010} \\
-      10100  & {\tt i[4] -> i[3], i[2] -> i[1]} & \\
-\sout{10101} & {\tt i[4] <- i[3], i[2] <- i[1]} & {\it equivalent to 10100} \\
-      10110  & {\tt i[4] -> i[3], i[2] -> i[0]} & \\
-      10111  & {\tt i[4] <- i[3], i[2] <- i[0]} & \\
+      0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
+\sout{0100 1} & {\it equivalent to 0100 0}       & {\it reserved} \\
+      0101 0  & {\tt i[3] -> i[2], i[1] -> i[0]} & --- \\
+\sout{0101 1} & {\it equivalent to 0101 0}       & {\it reserved} \\
+      0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h} \\
+      0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h} \\
+      0111 0  & {\tt i[3] -> i[0]}               & {\tt zip.h} \\
+      0111 1  & {\tt i[3] <- i[0]}               & {\tt unzip.h} \\
 
 \hline
 
-      11000  & {\tt i[4] -> i[2]}               & {\tt shuffle8} \\
-      11001  & {\tt i[4] <- i[2]}               & {\tt unshuffle8} \\
-      11010  & {\tt i[4] -> i[2], i[1] -> i[0]} & \\
-      11011  & {\tt i[4] <- i[2], i[1] <- i[0]} & \\
-      11100  & {\tt i[4] -> i[1]}               & {\tt shuffle4} \\
-      11101  & {\tt i[4] <- i[1]}               & {\tt unshuffle4} \\
-      11110  & {\tt i[4] -> i[0]}               & {\tt shuffle} \\
-      11111  & {\tt i[4] <- i[0]}               & {\tt unshuffle} \\
+      1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8} \\
+\sout{1000 1} & {\it equivalent to 1000 0}       & {\it reserved} \\
+      1001 0  & {\tt i[4] -> i[3], i[1] -> i[0]} & --- \\
+\sout{1001 1} & {\it equivalent to 1001 0}       & {\it reserved} \\
+      1010 0  & {\tt i[4] -> i[3], i[2] -> i[1]} & --- \\
+\sout{1010 1} & {\it equivalent to 1010 0}       & {\it reserved} \\
+      1011 0  & {\tt i[4] -> i[3], i[2] -> i[0]} & --- \\
+      1011 1  & {\tt i[4] <- i[3], i[2] <- i[0]} & --- \\
 
+\hline
+
+      1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4} \\
+      1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4} \\
+      1101 0  & {\tt i[4] -> i[2], i[1] -> i[0]} & --- \\
+      1101 1  & {\tt i[4] <- i[2], i[1] <- i[0]} & --- \\
+      1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2} \\
+      1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2} \\
+      1111 0  & {\tt i[4] -> i[0]}               & {\tt zip} \\
+      1111 1  & {\tt i[4] <- i[0]}               & {\tt unzip} \\
 \end{tabular}
 \end{center}
 \end{small}
 \caption{RV32 modes for {\tt zip} instruction}
 \label{zip-modes}
 \end{table}
-
