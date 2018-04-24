@@ -63,49 +63,6 @@ However, one solution here would be to still reserve the opcode for 64-bit
 BEXT/BDEP and leave it to the implementation to decide whether to implement the
 function in hardware or emulating it using a software trap.
 
-\subsubsection{SHUFFLE looks like a really expensive operation. Do we really need it?}
-
-Even though this instruction looks expensive, it is actually quite simple to
-implement.  The butterfly operation can just reuse the butterfly circuit that
-is already present to support the {\tt grev} instruction, and zip and unzip are
-very cheap to implement (just one additional word-wide mux each). The ``return
-0'' part for nonzero commands and reserved modes is also very cheap.
-
-Considering that SHUFFLE is very cheap to implement on top an existing GREV
-implementation, and considering that it only requires a single R-type
-instruction, and that software emulation of similar functionality requires tens
-of instructions (and/or multiplications with large ``magic constants''), it is a
-relatively good option.
-
-With dedicated unary ZIP/UNZIP instructions it would be possible to emulate
-a single SHUFFLE instruction in under 10 instructions. For example,
-emulating a single OMEGA instruction (input in a0 and mask in a1):
-
-\begin{verbatim}
-  grevi t0, a0, 0
-  zip a1, a1
-  and t0, t0, a1
-  andc a0, a0, a1
-  or a0, a0, t0
-  unzip a0, a0
-\end{verbatim}
-
-Or emulating a single BFLY(2) instruction:
-
-\begin{verbatim}
-  grevi t0, a0, 0
-  zip a1, a1
-  zip a1, a1
-  zip a1, a1
-  and t0, t0, a1
-  andc a0, a0, a1
-  or a0, a0, t0
-\end{verbatim}
-
-This is not too bad, but considering that a single 32-bit permutation takes up to
-9 of those, it is probably not a viable option for many bit permutations found
-in real-world applications.
-
 \section{Analysis of used encoding space}
 
 So how much encoding space is used by the XBitmanip extension?
@@ -120,10 +77,10 @@ So how much encoding space is used by the XBitmanip extension?
 \multicolumn{2}{c}{RV32} & \multicolumn{2}{c}{RV64} & Instruction\tabularnewline
 \midrule
 \endhead
-3x & 10 & 6x & 10 & CLZ, CLZW, CTZ, CTZW, PCNT, PCNTW\tabularnewline
+3x &  0 & 6x &  0 & CLZ, CLZW, CTZ, CTZW, PCNT, PCNTW\tabularnewline
 \midrule
-1x & 15 & 3x & 15 & GREV, GREVW, GREVIW\tabularnewline
-1x & 15 & 1x & 16 & GREVI\tabularnewline
+2x & 15 & 4x & 15 & GREV, GREVW, GREVIW, ZIPW\tabularnewline
+2x & 15 & 2x & 16 & GREVI, ZIP\tabularnewline
 \midrule
 2x & 15 & 6x & 15 & SLO, SRO, SLOW, SROW, SLOIW, SROIW\tabularnewline
 2x & 15 & 2x & 16 & SLOI, SROI\tabularnewline
@@ -131,12 +88,16 @@ So how much encoding space is used by the XBitmanip extension?
 2x & 15 & 5x & 15 & ROR, ROL, RORW, ROLW, RORIW\tabularnewline
 1x & 15 & 1x & 16 & RORI\tabularnewline
 \midrule
-4x & 15 & 4x & 15 & ANDC, BEXT, BDEP, SHUFFLE\tabularnewline
-   &    & 4x & 15 & ANDCW, BEXTW, BDEPW, SHUFFLEW\tabularnewline
+3x & 15 & 3x & 15 & ANDC, BEXT, BDEP\tabularnewline
+   &    & 3x & 15 & ANDCW, BEXTW, BDEPW\tabularnewline
 \midrule
 3x &  4 & 3x &  4 & C.NEG, C.NOT, C.BREV\tabularnewline
 \bottomrule
 \end{longtable}
+
+We do not count any encoding space for the unary instructions {\tt clz}, {\tt
+clzw}, {\tt ctz}, {\tt ctzw}, {\tt pcnt}, and {\tt pcntw} because they can
+be implemented in the reserved modes in {\tt zip}.
 
 The compressed encoding space is $\approx 15.6$ bits wide.
 
@@ -148,18 +109,17 @@ encoding space, or $\approx 0.1\%$ of the total $\approx 15.6$ bits available.
 $$ log_2(3 \cdot 2^4) \approx 5.585 $$
 $$ 100 / (2^{15.585-5.585}) \approx 0.098 $$
 
-On RV32, XBitmanip requires the equivalent of a $\approx 18.7$ bit encoding space in
+On RV32, XBitmanip requires the equivalent of a $\approx 18.8$ bit encoding space in
 the uncompressed encoding space. For comparison: A single standard I-type
 instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
 encoding space. I.e. the entire RV32 XBitmanip extension needs less than
 one-eighth of the encoding space of the \texttt{SLTIU} instruction.
 
-$$ log_2(3\cdot2^{10} + 13\cdot2^{15}) \approx 18.711 $$
+$$ log_2(14\cdot2^{15}) \approx 18.807 $$
 
-On RV64, XBitmanip requires the equivalent of a $\approx 19.9$ bit encoding
+On RV64, XBitmanip requires the equivalent of a $\approx 20.0$ bit encoding
 space in the uncompressed encoding space. I.e. the entire RV64 XBitmanip
-extension needs less than one-quarter of the encoding space of the
-\texttt{SLTIU} instruction.
+extension needs about one-quarter of the encoding space of the \texttt{SLTIU}
+instruction.
 
-$$ log_2(6\cdot2^{10} + 22\cdot2^{15} + 4\cdot2^{16}) \approx 19.911 $$
-
+$$ log_2(21\cdot2^{15} + 5\cdot2^{16}) \approx 19.954 $$

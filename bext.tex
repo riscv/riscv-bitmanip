@@ -91,11 +91,7 @@ occurs frequently enough to warrant a dedicated instruction.
 \section{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
 
 These instructions are similar to shift-logical operations from the base
-spec, except instead of shifting in zeros, it shifts in ones. This can
-be used in mask creation or bit-field insertions, for example.
-
-These instructions are exactly the same as the equivalent logical shift
-operations, except the shift shifts in ones values.
+spec, except instead of shifting in zeros, they shifts in ones.
 
 \input{bextcref-sxo}
 
@@ -116,58 +112,6 @@ a 1-bit register value that has been forwarded from the high bit of the
 instruction decode. This creates the desired behavior on both logical
 zero-shifts and logical ones-shifts.
 
-% \subsection{Extensions: \texttt{s(l/r)o(i).w} (R64I+), \texttt{s(l/r)o(i).d} (R128I+)}
-%
-% On RV64B+, the appropriate versions of shift-ones that operate on
-% sub-portions of the register are defined. On these platforms, the input
-% source is set to zero for the high portions of the register, and the
-% shift only occurs on the lower portions of the register. See
-% \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
-% See \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I
-% specifications.
-%
-% \subsection{Related Pseudo-Instructions}
-%
-% \begin{verbatim}
-% // builds a mask in the low-order bits up to a certain point
-% maski rOut,iWidth:
-%     sloi rOut,r0,iWidth
-%
-% // builds a mask in the low-order bits up to a certain point
-% mask rOut,rIn:
-%     slo rOut,r0,rIn
-%
-% // extracts a bitfield of length width from offset and moves it down to the bottom
-% bfextracti rOut,rIn,iWidth,iOffset:
-%     slli rTop,rIn,XLEN-iWidth-iOffset
-%     srli rOut,rTop,XLEN-iWidth
-%
-% // updates a bitfield of length width at offset in rCurrent with the value from rIn
-% bfupdatei rOut,rCurrent,rIn,iWidth,iOffset:
-%     sloi rTop,rIn,<XLEN-iWidth>
-%     sroi rField,rTop,<XLEN-iWidth-iOffset>
-%     and rOut,rCurrent,rField
-%
-% // sets a bitfield of length-width at offset to 1
-% bfseti rOut,rCurrent,iWidth,iOffset:
-%     sloi rMask,r0,iWidth
-%     slli rMask,rMask,iOffset
-%     or rOut,rCurrent,rMask
-%
-% // sets a bitfield of length-width at offset to 0
-% bfcleari rOut,rCurrent,iWidth,iOffset:
-%     sloi rMask,r0,iWidth
-%     slli rMask,rMask,iOffset
-%     andc rOut,rCurrent,rMask
-% \end{verbatim}
-%
-% \subsection{Justification}
-%
-% This instruction can be used to create masks, which is an incredibly
-% common operation for modifying the bitfield structures.
-%
-% \subsection{References}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
@@ -186,9 +130,11 @@ bit 30 in the instruction encoding selects `arithmetic shift' when bit
 31 is zero (signalling a logical-zero shift). We can re-use this so that
 when bit 31 is set (signalling a logical-ones shift), if bit 31 is also
 set, then we are doing a rotate. The following table summarizes the
-behavior. The generalized reverse opcodes can be encoded using the
+behavior. The generalized reverse instructions can be encoded using the
 bit pattern that would otherwise encode an ``Arithmetic Left Shift''
-(which is an operation that does not exist).
+(which is an operation that does not exist). Likewise, the generalized zip
+instruction can be encoded using the bit pattern that would otherwise
+encode an ``Rotate left immediate''.
 
 \begin{longtable}[c]{@{}lll@{}}
 \caption{Rotate Encodings}\tabularnewline
