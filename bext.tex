@@ -268,6 +268,121 @@ use the instruction encoding for ``arithmetic shift left''.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Generalized zip/unzip (\texttt{gzip})}
+\label{gzip}
+
+{\tt gzip} is the third bit permutation instruction in XBitmanip, after {\tt rori}
+and {\tt grevi}.
+
+The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}.
+There are XLEN different generalized zip operations, some of which are reserved
+because they are no-ops, or equivalent to other modes, or encode for obscure
+combinations of other modes. The bit pattern for the non-reserved modes
+match the regular expression {\tt /\^{}0*(10+|11+0*[01])\$/}.
+See Table~\ref{gzip-modes}.
+
+Reserving modes that encode for ``obscure combinations of other modes'' can help
+implementations that use different base permutations (or completely different
+mechanisms) to implement the {\tt gzip} instruction. The reserved modes can be
+used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{c l l}
+      mode   & Bit index rotations               & Instruction \\ \hline
+
+\sout{0000 0} & no-op                            & {\it reserved} \\
+\sout{0000 1} & no-op                            & {\it reserved} \\
+      0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n} \\
+\sout{0001 1} & {\it equivalent to 0001 0}       & {\it reserved} \\
+      0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
+\sout{0010 1} & {\it equivalent to 0010 0}       & {\it reserved} \\
+      0011 0  & {\tt i[2] -> i[0]}               & {\tt zip.b} \\
+      0011 1  & {\tt i[2] <- i[0]}               & {\tt unzip.b} \\
+
+\hline
+
+      0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
+\sout{0100 1} & {\it equivalent to 0100 0}       & {\it reserved} \\
+\sout{0101 0} & {\tt i[3] -> i[2], i[1] -> i[0]} & {\it reserved} \\
+\sout{0101 1} & {\it equivalent to 0101 0}       & {\it reserved} \\
+      0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h} \\
+      0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h} \\
+      0111 0  & {\tt i[3] -> i[0]}               & {\tt zip.h} \\
+      0111 1  & {\tt i[3] <- i[0]}               & {\tt unzip.h} \\
+
+\hline
+
+      1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8} \\
+\sout{1000 1} & {\it equivalent to 1000 0}       & {\it reserved} \\
+\sout{1001 0} & {\tt i[4] -> i[3], i[1] -> i[0]} & {\it reserved} \\
+\sout{1001 1} & {\it equivalent to 1001 0}       & {\it reserved} \\
+\sout{1010 0} & {\tt i[4] -> i[3], i[2] -> i[1]} & {\it reserved} \\
+\sout{1010 1} & {\it equivalent to 1010 0}       & {\it reserved} \\
+\sout{1011 0} & {\tt i[4] -> i[3], i[2] -> i[0]} & {\it reserved} \\
+\sout{1011 1} & {\tt i[4] <- i[3], i[2] <- i[0]} & {\it reserved} \\
+
+\hline
+
+      1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4} \\
+      1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4} \\
+\sout{1101 0} & {\tt i[4] -> i[2], i[1] -> i[0]} & {\it reserved} \\
+\sout{1101 1} & {\tt i[4] <- i[2], i[1] <- i[0]} & {\it reserved} \\
+      1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2} \\
+      1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2} \\
+      1111 0  & {\tt i[4] -> i[0]}               & {\tt zip} \\
+      1111 1  & {\tt i[4] <- i[0]}               & {\tt unzip} \\
+\end{tabular}
+\end{center}
+\end{small}
+\caption{RV32 modes for {\tt gzip} instruction}
+\label{gzip-modes}
+\end{table}
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-gzip-noflip}
+\end{center}
+\caption{\texttt{gzip} permutation network without ``flip'' stages}
+\label{permnet-gzip-noflip}
+\end{figure}
+
+Like GREV and rotate shift, the {\tt gzip} instruction can be implemented using a short
+sequence of atomic permutations, that are enabled or disabled by the mode (shamt)
+bits. But zip has one stage fewer than GREV and the LSB bit of mode controls the order
+in which the stages are applied:
+
+\input{bextcref-gzip32}
+
+Alternatively {\tt gzip} can be implemented in a single network with one more
+stage than GREV, with the additional first and last stage executing a
+permutation that effectively reverses the order of the inner stages. However,
+since the inner stages only mux half of the bits in the word each, a hardware
+implementation using this additional ``flip'' stages might actually be more
+expensive than simply creating two networks.
+
+\input{bextcref-gzip32-alt}
+
+Figure~\ref{permnet-gzip-flip} shows the {\tt gzip} permutation network with
+``flip'' stages and Figure~\ref{permnet-gzip-noflip} shows the {\tt gzip}
+permutation network without ``flip'' stages.
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-gzip-flip}
+\end{center}
+\caption{\texttt{gzip} permutation network with ``flip'' stages}
+\label{permnet-gzip-flip}
+\end{figure}
+
+\input{bextgzip}
+
+There is no R-type instruction for {\tt gzip}. It is an I-type only instruction.
+\texttt{gzip} can use the instruction encoding for ``rotate left immediate''.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
 This instructions implement the generic bit extract and bit deposit functions.
@@ -295,8 +410,7 @@ set bit in {\tt a0} using \texttt{bdep}:
 \begin{verbatim}
   li a1, 0x00000200
   bdep a0, a1, a0
-  brev a0, a0
-  clz a0, a0
+  ctz a0, a0
 \end{verbatim}
 
 For cases with a constant mask an optimizing compiler would decide when to use
@@ -322,151 +436,6 @@ using a longer sequence of much simpler operations.
 % http://hackersdelight.org/
 %
 % https://github.com/cliffordwolf/bextdep
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{\hsout{Generalized Bit Permutations (\texttt{shuffle})}}
-
-{\it This instruction is going to be replaced by the generalized zip/unzip ({\tt
-gzip}) instruction soon. See Chapter~\ref{gzip}.}
-
-This instruction performs a bit permutation on the value in rs1. Which bit permutation
-is performed is defined by the control word in rs2 (Table~\ref{shuffle-ctrl}).
-
-\begin{table}[h]
-\begin{small}
-\begin{center}
-\begin{tabular}{p{0.1in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.5in}p{0.2in}p{0.2in}p{0.05in}p{0.05in}l}
-& & & & & & & & & & & \\
-\multicolumn{1}{r}{\instbit{64}} &
-\multicolumn{1}{l}{\instbit{63}} &
-\multicolumn{1}{r}{\instbit{48}} &
-\multicolumn{1}{l}{\instbit{47}} &
-\multicolumn{1}{r}{\instbit{32}} &
-\multicolumn{1}{l}{\instbit{31}} &
-\multicolumn{1}{r}{\instbit{16}} &
-\multicolumn{1}{l}{\instbit{15}} &
-\multicolumn{1}{r}{\instbit{12}} &
-\multicolumn{1}{l}{\instbit{11}} &
-\multicolumn{1}{r}{\instbit{0}} & \\
-\cline{1-11}
-
-\multicolumn{1}{c}{} &
-\multicolumn{4}{c}{mask} &
-\multicolumn{2}{c|}{} &
-\multicolumn{2}{c|}{mode} &
-\multicolumn{2}{c|}{command} & RV128 \\
-\cline{1-11}
-
-& \multicolumn{2}{|c|}{unused} &
-\multicolumn{4}{c|}{mask} &
-\multicolumn{2}{c|}{mode} &
-\multicolumn{2}{c|}{command} & RV64 \\
-\cline{2-11}
-
-& & & & &
-\multicolumn{2}{|c|}{mask} &
-\multicolumn{2}{c|}{mode} &
-\multicolumn{2}{c|}{command} & RV32 \\
-\cline{6-11}
-
-\end{tabular}
-\end{center}
-\end{small}
-\caption{\texttt{shuffle} control word}
-\label{shuffle-ctrl}
-\end{table}
-
-This spec only defines command $=$ 0. Non-zero command values are reserved for
-future use.  An implementation that does not support a given command must
-return 0 in rd. Support for command 0 is mandatory. Command values 1-7 are
-reserved for non-standard extensions (NSE).
-
-Command 0 implements functions that are required for computing zip and unzip
-operations, butterfly stages or entire butterfly networks, omega stages or networks, flip
-stages or network, and similar operations. Table~\ref{shuffle-modes} lists the
-operations performed by command 0. Note that these functions can all use the
-existing butterfly network that implements the GREV instructions.
-
-\begin{table}[h]
-\begin{small}
-\begin{center}
-\begin{tabular}{l l l}
-Mode & Description & Pseudo instructions \\ \hline
-
-0000 & zip + butterfly(mask, 0)                    & {\tt omega, zip} \\
-0001 & zip4 + butterfly(mask, 0)                   & {\tt omega, zip} \\
-0010 & zip8 + butterfly(mask, 0)                   & {\tt omega, zip} \\
-0011 & zip16 + butterfly(mask, 0)                  & {\tt omega, zip} \\
-0100 & butterfly(mask, 0) + unzip                  & {\tt flip, unzip} \\
-0101 & butterfly(mask, 0) + unzip4                 & {\tt flip, unzip} \\
-0110 & butterfly(mask, 0) + unzip8                 & {\tt flip, unzip} \\
-0111 & butterfly(mask, 0) + unzip16                & {\tt flip, unzip} \\
-
-\hline
-
-1000 & butterfly(mask, 0)                          & {\tt bfly} \\
-1001 & butterfly(mask, 1)                          & {\tt bfly} \\
-1010 & butterfly(mask, 2)                          & {\tt bfly} \\
-1011 & butterfly(mask, 3)                          & {\tt bfly} \\
-1100 & butterfly(mask, 4)                          & {\tt bfly} \\
-1101 & butterfly(mask, 5) (RV64/128; NSE)          & {\tt bfly} \\
-1110 & butterfly(mask, 6) (RV128; NSE)             & {\tt bfly} \\
-1111 & reserved for future standard extensions     & --- \\
-
-\end{tabular}
-\end{center}
-\end{small}
-\caption{Modes for shuffle command 0}
-\label{shuffle-modes}
-\end{table}
-
-Modes that are reserved for future standard or non-standard extensions must return
-0 in rd on implementations that do not support those future extensions.
-
-\texttt{shuffle} with rs2$=$0 (x0) implements just a zip operation (butterfly is
-disabled because mask$=$0).
-
-The \texttt{zip} (aka ``shuffle'') operation interleaves the bits of the lower and upper
-half of its argument. The \texttt{unzip} (aka ``unshuffle'') operation performs the inverse.
-
-In other words, \texttt{zip} performs a rotate left shift on the bit indices,
-and \texttt{unzip} performs a rotate right shift on the bit indices.
-Performing \texttt{zip} $log_2(\textrm{XLEN})$ times is the identity. Performing it
-$log_2(\textrm{XLEN})-1$ times is equivalent to one execution of \texttt{unzip}.
-
-\input{bextcref-zip}
-
-The operations \texttt{zip4}, \texttt{zip8}, and \texttt{zip16} perform a zip on each nibble,
-byte, and half-word of the argument and \texttt{unzip4}, \texttt{unzip8}, and \texttt{unzip16}
-perform the unzip operation on each nibble, byte, and half-word of the argument. (A zip or
-unzip on a 2-bit unit is just a zero-order butterfly. On RV64 the SHUFFLEW command can be used
-to perform a zip or unzip on the lower 32 bits of a register.)
-
-\input{bextcref-zipN}
-
-The butterfly operation performs a single butterfly stage N (i.e. the {\tt grev} operation
-with argument $2^N$), which performs $\textrm{XLEN}/2$ pairwise bit swaps. But unlike
-{\tt grev} the individual bit swaps are conditional and the $\textrm{XLEN}/2$
-bits in mask determine which bit swaps are taken.
-
-\input{bextcref-bfly}
-
-Putting it all together:
-
-\input{bextcref-shuffle}
-
-On RV32, a control word for command 0 can be loaded using a single \texttt{lui} instruction.
-At most $2\cdot{}log_2(\textrm{XLEN})-1$ shuffle operations are required to
-perform an arbitrary bit permutation. Most bit permutations that arise from
-real-world applications can be implemented in shorter sequences.
-
-Commands in the range 1-2047 with the upper bits (mask/mode) set to zero can be
-loaded with a single \texttt{li} instruction. Note that there is no
-requirement for future non-zero commands to perform bit-permutations or even
-reversible operations.
-
-\input{bextshuffle.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
