@@ -795,8 +795,8 @@ any arbitrary bit permutation.
 
 The Sheep-and-goats (SAG) operation is a common operation for bit permutations.
 It moves all the bits selected by a mask (goats) to the LSB end of the word
-and all the remaining bits (sheeps) to the MSB end of the word, without changing
-the order of sheeps or goats.
+and all the remaining bits (sheep) to the MSB end of the word, without changing
+the order of sheep or goats.
 
 The SAG operation can easily be performed using {\tt bext} (data in {\tt a0} and
 mask in {\tt a1}):
@@ -810,7 +810,7 @@ mask in {\tt a1}):
   or a0, a0, t0
 \end{verbatim}
 
-Any arbitrary bit permutation can be implement in $log_2(\textrm{XLEN})$ SAG
+Any arbitrary bit permutation can be implemented in $log_2(\textrm{XLEN})$ SAG
 operations.
 
 {\it The Hacker's Delight} describes an optimized standard C implementation of
