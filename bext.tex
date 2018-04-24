@@ -48,10 +48,6 @@ This operation counts the total number of set bits in the register.
 One possible encoding for \texttt{pcnt} is as a standard I-type opcode somewhere
 in the brownfield surrounding the shift-immediate instructions.
 
-% Implementation Commentary
-%
-% \texttt{pcnt} can be implemented in parallel, similarly to an adder.
-%
 % \subsection{Related Pseudo-Instructions}
 %
 % \begin{verbatim}
@@ -290,7 +286,7 @@ used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
 \begin{small}
 \begin{center}
 \begin{tabular}{c l l}
-      mode   & Bit index rotations               & Instruction \\ \hline
+      mode   & Bit index rotations               & Pseudo-Instruction \\ \hline
 
 \sout{0000 0} & no-op                            & {\it reserved} \\
 \sout{0000 1} & no-op                            & {\it reserved} \\
@@ -458,6 +454,8 @@ using a longer sequence of much simpler operations.
 % http://hackersdelight.org/
 %
 % https://github.com/cliffordwolf/bextdep
+%
+% http://palms.ee.princeton.edu/system/files/Hilewitz_JSPS_08.pdf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -507,7 +505,7 @@ are titled ``pseudo instruction'', whereas sections that just informally describ
 sequences are titles ``macro''.
 
 Many of the code snippets below can utilize compressed instructions. But for simplicity
-we use uncompressed instructions in the assembler listings. Some of the macros
+we use uncompressed instruction mnemonics in the assembler listings. Some of the macros
 spill to temporary registers. {\tt t0, t1, t2, \dots} is used for spilling in the
 assembler listings. The input register are referred to by {\tt rs1, rs2, \dots} and
 the output register is {\tt rd}.
@@ -583,6 +581,42 @@ instruction using at the same mask that is also used to mask {\tt rs1}:
   or rd, t0, t1
 \end{verbatim}
 
+\subsection{Pseudo instructions for bit scanning and counting}
+
+\subsubsection{Pseudo instructions for counting leading/trailing ones}
+
+\begin{verbatim}
+  clo rd, rs   ->   not rd, rs
+                    clz rd, rd
+
+  cto rd, rs   ->   not rd, rs
+                    ctz rd, rd
+\end{verbatim}
+
+\subsubsection{Pseudo instruction for counting bits cleared}
+
+\begin{verbatim}
+  pcntn rd, rs   ->   not rd, rs
+                      pcnt rd, rd
+\end{verbatim}
+
+\subsubsection{Pseudo instructions for parity}
+
+Odd parity:
+
+\begin{verbatim}
+  oparity rd, rs   ->   pcnt rd, rs
+                        andi rd, rd, 1
+\end{verbatim}
+
+Even parity:
+
+\begin{verbatim}
+  eparity rd, rs   ->   pcnt rd, rs
+                        addi rd, rd, 1
+                        andi rd, rd, 1
+\end{verbatim}
+
 \subsection{Pseudo instructions using {\tt grevi}}
 
 On RV32:
@@ -633,7 +667,7 @@ The following macro performs a stage-{\tt N} butterfly operation on the word in
 The bitmask in {\tt a1} must be preformatted correctly for the selected butterfly
 stage. A butterfly operation only has a XLEN/2 wide control word. The following
 macros format the mask assuming those XLEN/2 bits in the lower half of {\tt a1}
-on entry (preformatted mask on exit):
+on entry (preformatted mask in {\tt a1} on exit):
 
 \begin{verbatim}
 bfly_msk_0:
@@ -654,7 +688,7 @@ bfly_msk_2:
 ...
 \end{verbatim}
 
-A sequence of $2 log_2(\textrm{XLEN})-1$ butterfly operations can perform any
+A sequence of $2\cdot{}log_2(\textrm{XLEN})-1$ butterfly operations can perform any
 arbitrary bit permutation (Bene{\v s} network):
 
 \begin{verbatim}
@@ -668,13 +702,18 @@ arbitrary bit permutation (Bene{\v s} network):
 \end{verbatim}
 
 
-But many permutations arising from real-world applications can be implemented
-using shorted sequences. For example, any sheeps-and-goats operation with either
-the sheeps or the goats bit reversed can be implemented in $log_2(\textrm{XLEN})$
+Many permutations arising from real-world applications can be implemented
+using shorter sequences. For example, any sheep-and-goats operation with either
+the sheep or the goats bit reversed can be implemented in $log_2(\textrm{XLEN})$
 butterfly operations.
 
 Reversing a permutation implemented using butterfly operations is as simple as
 reversing the order of butterfly operations.
+
+% References
+% http://www.princeton.edu/~rblee/PUpapers/xiao_spie00.pdf
+% https://www.lirmm.fr/arith18/papers/hilewitz-PerformingBitManipulations.pdf
+% https://pdfs.semanticscholar.org/bcd0/8fdccf3d5ab959fd81162bd811706ba1676a.pdf
 
 \subsubsection{Omega-Flip Networks}
 
@@ -703,7 +742,11 @@ $log_2(\textrm{XLEN})$ flip operations can implement any arbitrary 32 bit
 permutation.
 
 As for butterfly networks, permutations arising from real-world applications
-can often be implemented using a much shorter sequence.
+can often be implemented using a shorter sequence.
+
+% References
+% https://ieeexplore.ieee.org/document/878264/
+% https://www.princeton.edu/~rblee/ELE572Papers/lee_slideshotchips2002.pdf
 
 \subsubsection{Baseline Networks}
 
@@ -745,3 +788,35 @@ order in a baseline network. For example, a 32-bit inverse baseline network:
 A baseline network followed by an inverse baseline network can implement
 any arbitrary bit permutation.
 
+% References
+% https://dl.acm.org/citation.cfm?id=1311797
+
+\subsubsection{Sheep-and-goats operation}
+
+The Sheep-and-goats (SAG) operation is a common operation for bit permutations.
+It moves all the bits selected by a mask (goats) to the LSB end of the word
+and all the remaining bits (sheeps) to the MSB end of the word, without changing
+the order of sheeps or goats.
+
+The SAG operation can easily be performed using {\tt bext} (data in {\tt a0} and
+mask in {\tt a1}):
+
+\begin{verbatim}
+  bext t0, a0, a1
+  not a1, a1
+  bext a0, a0, a1
+  pcnt a1, a1
+  ror a0, a0, a1
+  or a0, a0, t0
+\end{verbatim}
+
+Any arbitrary bit permutation can be implement in $log_2(\textrm{XLEN})$ SAG
+operations.
+
+{\it The Hacker's Delight} describes an optimized standard C implementation of
+the SAG operation. Their algorithm takes 254 instructions (for 32 bit) or 340
+instructions (for 64 bit) on their reference RISC instruction set.
+
+% References
+% Knuth
+% Hackers Delight, Chapter 7-7
