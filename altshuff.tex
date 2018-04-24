@@ -28,10 +28,17 @@ This chapter proposes to replace the {\tt shuffle} instruction with a generalize
 {\tt gzip} is the third bit permutation instruction in XBitmanip, after {\tt rori}
 and {\tt grevi}.
 
-The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}. There
-are XLEN different generalized zip operations, some of which are reserved because
-they are no-ops or equivalent to other modes. See Table~\ref{gzip-modes}. The
-reserved modes can be used to encode unary functions such as {\tt ctz} and {\tt clz}.
+The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}.
+There are XLEN different generalized zip operations, some of which are reserved
+because they are no-ops, or equivalent to other modes, or encode for obscure
+combinations of other modes. The bit pattern for the non-reserved modes
+match the regular expression {\tt /\^{}0*(10+|11+0*[01])\$/}.
+See Table~\ref{gzip-modes}.
+
+Reserving modes that encode for ``obscure combinations of other modes'' can help
+implementations that use different base permutations (or completely different
+mechanisms) to implement the {\tt gzip} instruction. The reserved modes can be
+used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
 
 \begin{table}[h]
 \begin{small}
@@ -52,7 +59,7 @@ reserved modes can be used to encode unary functions such as {\tt ctz} and {\tt 
 
       0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
 \sout{0100 1} & {\it equivalent to 0100 0}       & {\it reserved} \\
-      0101 0  & {\tt i[3] -> i[2], i[1] -> i[0]} & --- \\
+\sout{0101 0} & {\tt i[3] -> i[2], i[1] -> i[0]} & {\it reserved} \\
 \sout{0101 1} & {\it equivalent to 0101 0}       & {\it reserved} \\
       0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h} \\
       0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h} \\
@@ -63,19 +70,19 @@ reserved modes can be used to encode unary functions such as {\tt ctz} and {\tt 
 
       1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8} \\
 \sout{1000 1} & {\it equivalent to 1000 0}       & {\it reserved} \\
-      1001 0  & {\tt i[4] -> i[3], i[1] -> i[0]} & --- \\
+\sout{1001 0} & {\tt i[4] -> i[3], i[1] -> i[0]} & {\it reserved} \\
 \sout{1001 1} & {\it equivalent to 1001 0}       & {\it reserved} \\
-      1010 0  & {\tt i[4] -> i[3], i[2] -> i[1]} & --- \\
+\sout{1010 0} & {\tt i[4] -> i[3], i[2] -> i[1]} & {\it reserved} \\
 \sout{1010 1} & {\it equivalent to 1010 0}       & {\it reserved} \\
-      1011 0  & {\tt i[4] -> i[3], i[2] -> i[0]} & --- \\
-      1011 1  & {\tt i[4] <- i[3], i[2] <- i[0]} & --- \\
+\sout{1011 0} & {\tt i[4] -> i[3], i[2] -> i[0]} & {\it reserved} \\
+\sout{1011 1} & {\tt i[4] <- i[3], i[2] <- i[0]} & {\it reserved} \\
 
 \hline
 
       1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4} \\
       1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4} \\
-      1101 0  & {\tt i[4] -> i[2], i[1] -> i[0]} & --- \\
-      1101 1  & {\tt i[4] <- i[2], i[1] <- i[0]} & --- \\
+\sout{1101 0} & {\tt i[4] -> i[2], i[1] -> i[0]} & {\it reserved} \\
+\sout{1101 1} & {\tt i[4] <- i[2], i[1] <- i[0]} & {\it reserved} \\
       1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2} \\
       1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2} \\
       1111 0  & {\tt i[4] -> i[0]}               & {\tt zip} \\
@@ -86,6 +93,14 @@ reserved modes can be used to encode unary functions such as {\tt ctz} and {\tt 
 \caption{RV32 modes for {\tt gzip} instruction}
 \label{gzip-modes}
 \end{table}
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-gzip-noflip}
+\end{center}
+\caption{\texttt{gzip} permutation network without ``flip'' stages}
+\label{permnet-gzip-noflip}
+\end{figure}
 
 Like GREV and rotate shift, the {\tt gzip} instruction can be implemented using a short
 sequence of atomic permutations, that are enabled or disabled by the mode (shamt)
@@ -103,10 +118,19 @@ expensive than simply creating two networks.
 
 \input{bextcref-gzip32-alt}
 
+Figure~\ref{permnet-gzip-flip} shows the {\tt gzip} permutation network with
+``flip'' stages and Figure~\ref{permnet-gzip-noflip} shows the {\tt gzip}
+permutation network without ``flip'' stages.
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-gzip-flip}
+\end{center}
+\caption{\texttt{gzip} permutation network with ``flip'' stages}
+\label{permnet-gzip-flip}
+\end{figure}
+
+\input{bextgzip}
+
 There is no R-type instruction for {\tt gzip}. It is an I-type only instruction.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Visualizations of permutation operators}
-
-\input{bextcref-printperm}
+\texttt{gzip} can use the instruction encoding for ``rotate left immediate''.

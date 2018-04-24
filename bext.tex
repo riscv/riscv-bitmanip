@@ -12,13 +12,12 @@ The sections on encodings are mere placeholders.
 
 The {\tt clz} operation counts the number of 0 bits before the first 1 bit
 (counting from the most significant bit) in the source register. This is
-related to the ``integer logarithm''. It takes a single register as
-input and operates on the entire register. If the input is 0, the output is
-XLEN. If the input is \textasciitilde{}0, the output is 0.
+related to the ``integer logarithm''. It takes a single register as input and
+operates on the entire register. If the input is 0, the output is XLEN. If the
+input is -1, the output is 0.
 
-The {\tt ctz} operation counts the number of 0 bits after the last 1 bit.
-If the input is 0, the output is XLEN. If the input is \textasciitilde{}0,
-the output is 0.
+The {\tt ctz} operation counts the number of 0 bits after the last 1 bit.  If
+the input is 0, the output is XLEN. If the input is -1, the output is 0.
 
 \input{bextcref-clz-ctz}
 
@@ -27,50 +26,6 @@ the output is 0.
 One possible encoding for \texttt{clz} and \texttt{ctz} is as standard I-type opcodes
 somewhere in the brownfield surrounding the shift-immediate instructions.
 
-% \subsection{Related Pseudo-instructions}
-%
-% The common operation of `finding the index of the highest bit set' (also called
-% \texttt{ilog2} or \texttt{bsr} or \texttt{find\ last\ set}) is computed as
-% \texttt{XLEN-clz(rs1)}.
-%
-% Counting trailing zeros is easily implemented by combining \texttt{clz} with
-% the \texttt{grevi} instruction.
-%
-% \subsection{Criteria}
-%
-% The criteria evaluation is shown below:
-%
-% \begin{itemize}
-% \item
-%   These operations all fit easily into the RISCV instruction encoding
-%   and philosophy.
-% \item
-%   The hardware to implement them is fairly simple, and can be done in a
-%   logarithmic number of stages in parallel.
-% \item
-%   They all have current compiler and standard library support, and are
-%   standardized intrinsics in many of those.
-% \item
-%   The threshold criteria gets a little complicated: Every one of these
-%   operations can be implemented in 2-3 instructions in terms of
-%   each-other, so we only need one of them in hardware, and the rest can
-%   be pseudo-instructions.
-% \end{itemize}
-%
-% However, implementing any of these instructions can also be done with a
-% combination of \texttt{ctz} and a bitwise reverse (\texttt{brev}) in 1-2
-% instructions. Similarly, \texttt{ctz} can be implemented in terms of
-% these functions with a \texttt{brev} in 1-2 instructions.
-%
-% Without \texttt{brev} AND \texttt{ctz}, however, there is no simple way
-% to construct this without a lot of instructions. The algorithm above in
-% C is a nearly asymptotically optimal implementation. It seems to pass
-% the threshold criteria in this case.
-%
-% \paragraph{Benchmarks and Applications}
-%
-% TBD
-%
 % \subsection{References}
 %
 % https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
@@ -81,9 +36,8 @@ somewhere in the brownfield surrounding the shift-immediate instructions.
 
 \section{Count Bits Set (\texttt{pcnt})}
 
-The purpose of this instruction is to compute the number of 1 bits in a
-register. It takes a single register as input and operates on the entire
-register.
+This instruction computes the number of 1 bits in a register. It takes a single
+register as input and operates on the entire register.
 
 This operation counts the total number of set bits in the register.
 
@@ -107,19 +61,6 @@ in the brownfield surrounding the shift-immediate instructions.
 %     andi rOut,rPopulation,0x1
 % \end{verbatim}
 %
-% \subsection{Extensions: \texttt{pcnt.w} (R64I+), \texttt{pcnt.d} (R128I+)}
-%
-% On RV64B+, the appropriate versions of pcnt that operate on sub-portions
-% of the register are defined. On these platforms, the input source is set
-% to zero for the high portions of the register. See \texttt{addi.w} and
-% \texttt{addi.d} in the R64I/R128I specifications.
-%
-% \subsection{Justification}
-%
-% This operation is one of the `core' bitwise instructions that is nearly
-% universal on other ISAs. It is supported as an intrinsic on GCC, LLVM,
-% and MSVC, and is supported in hardware on a plethora of platforms.
-%
 % \subsection{References}
 %
 % https://en.wikipedia.org/wiki/Hamming\_weight
@@ -128,133 +69,26 @@ in the brownfield surrounding the shift-immediate instructions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized Reverse (\texttt{grev,\ grevi})}
+\section{And-with-complement (\texttt{andc})}
 
-The purpose of this instruction is to provide a single hardware
-instruction that can implement all of byte-order swap, bitwise reversal,
-short-order-swap, word-order-swap (RV64I), nibble-order swap, bitwise
-reversal in a byte, etc, all from a single hardware instruction. It
-takes in a single register value and an immediate that controls which
-function occurs, through controlling the levels in the recursive tree at
-which reversals occur.
+This instruction implements the and-with-complement operation.
 
-This operation iteratively checks each bit immed\_i from i=0 to XLEN-1,
-in XLEN stages, and if the corresponding bit of the `function\_select'
-immediate is true for the current stage, swaps each adjacent pair of
-2\^{}i bits in the register.
+\input{bextcref-andc}
 
-\texttt{grevi} `butterfly' implementation in C on various architectures:
+Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
+by combining {\tt not} ({\tt c.not}) with the base ALU operation. (Which can
+fit in 32 bit when using two compressed instructions.) Only and-with-complement
+occurs frequently enough to warrant a dedicated instruction.
 
-\input{bextcref-grev}
+\input{bextandc.tex}
 
-The above pattern should be intuitive to understand in order to extend
-this definition in an obvious manner for RV128+.
-
-\input{bextgrev.tex}
-
-\texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
-encoded as standard I-type opcode.
-
-% \subsection{Related Pseudo-Instructions}
-%
-% Related Pseudoinstruction List
-%
-% \begin{verbatim}
-% // reverse the bits in a register (this works on all platforms)
-% rev rOut,rIn:
-%     grevi rOut,rIn,-1
-%
-% // reverse the bits in each byte, but leave the bytes in the same order.
-% rev.b rOut,rIn:
-%     grevi rOut,rIn,7
-%
-% // reverse the bits in each halfword, but leave the halfwords in the same order
-% rev.h rOut,rIn:
-%     grevi rOut,rIn,15
-%
-% // reverse the bits in each word, but leave the words in the same order (e.g. RV64IB+)
-% rev.w rOut,rIn:
-%     grevi rOut,rIn,31
-%
-% // reverse the bits in each dword, but leave the dwords in the same order (e.g. RV128IB+)
-% rev.d rOut,rIn:
-%     grevi rOut,rIn,63
-%
-% // reverse the byte order of an entire register
-% bswap rOut,rIn:
-%     grevi rOut,rIn,-8
-%
-% // reverse the byte order of each halfword in the register, but leave them in the same
-% // order (e.g, on RV32IB, this reverses the byte order of the high and lo halfwords)
-% bswap.h rOut,rIn:
-%     grevi rOut,rIn,8
-%
-% // reverse the byte order each word in the register (e.g, on RV64IB/RV128IB, this
-% // reverses the byte order of each of the 2/4 words)
-% bswap.w rOut,rIn:
-%     grevi rOut,rIn,24
-%
-% // reverse the byte order of each dword in the register (e.g, on RV128IB, reverse the
-% // byte order of the high and lo words)
-% bswap.d rOut,rIn:
-%     grevi rOut,rIn,56
-%
-% // reverse the halfword order of an entire register
-% hswap rOut,rIn:
-%     grevi rOut,rIn,-16
-%
-% // reverse the halfword order of each word in the register
-% hswap.w rOut,rIn:
-%     grevi rOut,rIn,16
-%
-% // reverse the halfword order of each dword in the register (e.g. RV128IB+, there are 2
-% // dwords)
-% hswap.d rOut,rIn:
-%     grevi rOut,rIn,48
-%
-% // reverse the word order of an entire register (only meaningful on RV64IB+)
-% wswap rOut,rIn:
-%     grevi rOut,rIn,-32
-%
-% // reverse the word order of each dword in the register (e.g. RV128IB+, there are 2 dwords)
-% wswap.d rOut,rIn:
-%     grevi rOut,rIn,32
-%
-% // swap the nibbles of each byte in the whole register (useful for converting to/from
-% // bigendian hex)
-% nswap.b rOut,rIn:
-%     grevi rOut,rIn,4
-%
-% // Etc.  A total of XLEN different possible operations can be constructed.
-% \end{verbatim}
-%
 % \subsection{Justification}
 %
-% Quoted from page 102 of Hacker's Delight:
-%
-% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
-%
-% \begin{quote}
-% For k=31, this operation reverses the bits in a word. For k=24, it
-% reverses the bytes in a word. For k=7, it reverses the bits in each
-% byte, without changing the positions of the bytes. For k=16, it swaps
-% the left and right halfwords of a word, and so on. In general, it moves
-% the bit at positing m to position m XOR k. It can be implemented in
-% hardware very similarly to the way a rotate shifter is usually
-% implemented (five stages of MUX, with each stage controlled by a bit of
-% the shift amount k)
-%
-% This strongly suggests that this generic instruction could allow us to
-% use a great deal of other bitwise operations as pseudo-instructions.
-% \end{quote}
+% http://svn.clifford.at/handicraft/2017/bitcode/
 %
 % \subsection{References}
 %
-% Hackers Delight, Chapter 7.1, ``Generalized Bit Reversal'' in
-%
-% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
-%
-% http://hackersdelight.org/
+% http://www.hackersdelight.org/basics2.pdf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -377,66 +211,60 @@ Bit 31 & Bit 30 & Meaning\tabularnewline
 \bottomrule
 \end{longtable}
 
-% Implementation Commentary
-%
-% \subsection{Extensions: \texttt{ro(r/l)(i).w} (R64I+),\texttt{ro(r/l)(i).d} (R128I+)}
-%
-% On RV64B+, the appropriate versions of rotate that operate on
-% sub-portions of the register are defined. On these platforms, the input
-% source is set to zero for the high portions of the register, and the
-% shift only occurs on the lower portions of the register. See
-% \texttt{slli.w} and \texttt{slli.d} in the R64I/R128I specifications.
-%
-% \subsection{Justification}
-%
-% This instruction is very useful for cryptography, hashing, and other
-% operations.
-%
-% \subsection{References}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{And-with-complement (\texttt{andc})}
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-rot}
+\end{center}
+\caption{\texttt{rot} permutation network}
+\label{permnet-rot}
+\end{figure}
 
-This instruction implements the and-with-complement operation.
+\section{Generalized Reverse (\texttt{grev,\ grevi})}
 
-\input{bextcref-andc}
+This instruction provides a single hardware instruction that can implement all
+of byte-order swap, bitwise reversal, short-order-swap, word-order-swap
+(RV64), nibble-order swap, bitwise reversal in a byte, etc, all from a single
+hardware instruction. It takes in a single register value and an immediate that
+controls which function occurs, through controlling the levels in the recursive
+tree at which reversals occur.
 
-Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
-by combining {\tt not} ({\tt c.not}) with the base ALU operation. (Which can
-fit in 32 bit when using two compressed instructions.) Only and-with-complement
-occurs frequently enough to warrant a dedicated instruction.
+This operation iteratively checks each bit $i$ in rs2 from $i=0$ to
+$\textrm{XLEN}-1$, and if the corresponding bit is set, swaps each adjacent
+pair of $2^i$ bits.
 
-\input{bextandc.tex}
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-grev}
+\end{center}
+\caption{\texttt{grev} permutation network}
+\label{permnet-grev}
+\end{figure}
 
-% \subsection{Related Pseudo-Instructions}
-%
-% \begin{verbatim}
-% // this selects the corresponding bit from the two arguments A and B, based on
-% // whether or not Control is high.
-% // out[i] = Control[i] ? A[i] : B[i]
-% mix rOut,rControl,rA,rB:
-%     and rTmp,rA,rControl
-%     andc rTmp2,rB,rControl
-%     or rOut,rTmp,rTmp2
-%
-% // same as MIX but only use if the first bit of C is true (as in from a comparator)
-% // C can only be zero or 1, so if you need a SGT to implement nonzero comparator
-% // its 5 instructions in total.
-% mux rOut,rControl,rA,rB:
-%     neg rC2,rControl
-%     and rTmp,rA,rC2
-%     andc rTmp2,rB,rC2
-%     or rOut,rTmp,rTmp2
-% \end{verbatim}
-%
-% \subsection{Justification}
-%
-% http://svn.clifford.at/handicraft/2017/bitcode/
-%
+\input{bextcref-grev}
+
+The above pattern should be intuitive to understand in order to extend
+this definition in an obvious manner for RV128.
+
+The {\tt grev} operation can easily be implemented using a permutation
+network with $log_2(\textrm{XLEN})$ stages. Figure~\ref{permnet-rot}
+shows the permutation network for {\tt rot} for reference.
+Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
+
+\input{bextgrev.tex}
+
+\texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
+encoded as standard I-type opcode. \texttt{grev} and \texttt{grevi} can
+use the instruction encoding for ``arithmetic shift left''.
+
 % \subsection{References}
 %
-% http://www.hackersdelight.org/basics2.pdf
+% Hackers Delight, Chapter 7.1, ``Generalized Bit Reversal'' in
+%
+% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
+%
+% http://hackersdelight.org/
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -479,10 +307,6 @@ using a longer sequence of much simpler operations.
 
 \input{bextscagat.tex}
 
-% \subsection{Related Pseudo-Instructions}
-%
-% TBD
-%
 % \subsection{Justification}
 %
 % http://svn.clifford.at/handicraft/2017/permsyn/
