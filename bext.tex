@@ -36,10 +36,8 @@ somewhere in the brownfield surrounding the shift-immediate instructions.
 
 \section{Count Bits Set (\texttt{pcnt})}
 
-This instruction computes the number of 1 bits in a register. It takes a single
-register as input and operates on the entire register.
-
-This operation counts the total number of set bits in the register.
+This instruction counts the number of 1 bits in a register. This operations is known as
+population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
 
 \input{bextcref-pcnt}
 
@@ -47,21 +45,6 @@ This operation counts the total number of set bits in the register.
 
 One possible encoding for \texttt{pcnt} is as a standard I-type opcode somewhere
 in the brownfield surrounding the shift-immediate instructions.
-
-% \subsection{Related Pseudo-Instructions}
-%
-% \begin{verbatim}
-% //odd parity
-% parity rOut,rIn:
-%     pcnt rPopulation,rIn
-%     andi rOut,rPopulation,0x1
-% \end{verbatim}
-%
-% \subsection{References}
-%
-% https://en.wikipedia.org/wiki/Hamming\_weight
-%
-% https://graphics.stanford.edu/\textasciitilde{}seander/bithacks.html
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -448,7 +431,13 @@ The assembler should provide pseudo-instructions for some of the sequences that
 are implemented using dedicated instructions in some CISC bit-maniuplation instruction
 sets. The sections describing sequences where the assembler should provide pseudo-instructions
 are titled ``pseudo instruction'', whereas sections that just informally describe useful
-sequences are titles ``macro''.
+instruction sequences are titles ``macro''.
+
+Pseudo-instructions that map to a sequence of more than one instruction are designed
+so that they do not spill registers and, if possible, only read one or two registers
+and only modify one register. They are also designed to prefer instructions for which
+compressed encodings exist. This properties makes the pseudo-instructions defined in
+this section prime candidates for macro-op fusion.
 
 Many of the code snippets below can utilize compressed instructions. But for simplicity
 we use uncompressed instruction mnemonics in the assembler listings. Some of the macros
@@ -456,9 +445,9 @@ spill to temporary registers. {\tt t0, t1, t2, \dots} is used for spilling in th
 assembler listings. The input register are referred to by {\tt rs1, rs2, \dots} and
 the output register is {\tt rd}.
 
-\subsection{MIX/MUX Macros}
+\subsection{MIX/MUX Pattern}
 
-\subsubsection{MIX Operation}
+\subsubsection{MIX Macro}
 
 A MIX operation selects bits from {\tt rs1} and {\tt rs2} based on the bits in
 the control word {\tt rs3}.
@@ -469,7 +458,7 @@ the control word {\tt rs3}.
   or rd, t0, t1
 \end{verbatim}
 
-\subsubsection{MUX Operation}
+\subsubsection{MUX Macro}
 
 A MUX operation selects word {\tt rs1} or {\tt rs2} based on if the control
 word {\tt rs3} is zero or nonzero, without branching.
@@ -527,7 +516,7 @@ instruction using at the same mask that is also used to mask {\tt rs1}:
   or rd, t0, t1
 \end{verbatim}
 
-\subsection{Pseudo instructions for bit scanning and counting}
+\subsection{Bit scanning and counting}
 
 \subsubsection{Pseudo instructions for counting leading/trailing ones}
 
@@ -596,9 +585,24 @@ On RV64:
   wswap   rd, rs   ->    grevi rd, rs, 32    ; swap the two 32 bit words
 \end{verbatim}
 
-\subsection{Macros for bit permutations}
+\subsection{Bit permutations}
 
-\subsubsection{Butterfly operations}
+\subsubsection{Permute-mask pseudo-instructions}
+
+We define the following pseudo instructions for {\tt rd} $\ne$ {\tt rs2}.
+
+\begin{verbatim}
+  rorm rd, rs1, rs2, N     ->     rori rd, rs1, N
+                                  and rd, rd, rs2
+
+  grevm rd, rs1, rs2, N    ->     grevi rd, rs1, N
+                                  and rd, rd, rs2
+
+  gzipm rd, rs1, rs2, N    ->     gzip rd, rs1, N
+                                  and rd, rd, rs2
+\end{verbatim}
+
+\subsubsection{Macros for butterfly operations}
 
 The following macro performs a stage-{\tt N} butterfly operation on the word in
 {\tt a0} using the mask in {\tt a1}.
@@ -661,7 +665,7 @@ reversing the order of butterfly operations.
 % https://www.lirmm.fr/arith18/papers/hilewitz-PerformingBitManipulations.pdf
 % https://pdfs.semanticscholar.org/bcd0/8fdccf3d5ab959fd81162bd811706ba1676a.pdf
 
-\subsubsection{Omega-Flip Networks}
+\subsubsection{Macros for omega-flip networks}
 
 The omega operation is a stage-0 butterfly preceeded by a zip operation:
 
@@ -694,7 +698,7 @@ can often be implemented using a shorter sequence.
 % https://ieeexplore.ieee.org/document/878264/
 % https://www.princeton.edu/~rblee/ELE572Papers/lee_slideshotchips2002.pdf
 
-\subsubsection{Baseline Networks}
+\subsubsection{Macros for baseline networks}
 
 Another way of implementing arbitrary 32 bit permutations is using a
 baseline network followed by an inverse baseline network.
@@ -737,7 +741,7 @@ any arbitrary bit permutation.
 % References
 % https://dl.acm.org/citation.cfm?id=1311797
 
-\subsubsection{Sheep-and-goats operation}
+\subsubsection{Macros for sheep-and-goats}
 
 The Sheep-and-goats (SAG) operation is a common operation for bit permutations.
 It moves all the bits selected by a mask (goats) to the LSB end of the word
@@ -761,7 +765,8 @@ operations.
 
 {\it The Hacker's Delight} describes an optimized standard C implementation of
 the SAG operation. Their algorithm takes 254 instructions (for 32 bit) or 340
-instructions (for 64 bit) on their reference RISC instruction set.
+instructions (for 64 bit) on their reference RISC instruction
+set.~\cite[p.~152f,~162f]{Seander05}
 
 % References
 % Knuth
