@@ -139,9 +139,9 @@ void check_b_imm(insn_t insn)
 	uint32_t t0;
 
 	a0 = ror(a0, 8);
-	t0 = 0x804eb000;
-	a0 = shuffle(a0, t0);
-	t0 = 0x80fe0e01;
+	a0 = grev(a0, 8);
+	a0 = gzip(a0, 14);
+	t0 = 0xeaa800aa;
 	a0 = bext(a0, t0);
 	a0 = sll(a0, 20);
 	a0 = sra(a0, 19);

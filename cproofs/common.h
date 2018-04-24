@@ -232,6 +232,12 @@ uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
 }
 // --REF-END--
 
+#if XLEN == 32
+#  define gzip gzip32
+#else
+#  define gzip gzip64
+#endif
+
 // --REF-BEGIN-- zip
 uint_xlen_t bitmove(uint_xlen_t x, int p, int q)
 {
