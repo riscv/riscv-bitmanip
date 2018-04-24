@@ -376,6 +376,28 @@ permutation network without ``flip'' stages.
 \label{permnet-gzip-flip}
 \end{figure}
 
+The \texttt{zip} instruction with the upper half of its input cleared performs
+the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
+0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits
+in the lower quarter of the input word by a spacing of 4 bits.
+
+For example, the following code calculates the bitwise prefix sum of the bits
+in the lower byte of a 32 bit word on RV32:
+
+\begin{verbatim}
+  andi a0, a0, 0xff
+  zip a0, a0
+  zip a0, a0
+  slli a1, a0, 4
+  add a0, a1
+  slli a1, a0, 8
+  add a0, a1
+  slli a1, a0, 16
+  add a0, a1
+\end{verbatim}
+
+The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.
+
 \input{bextgzip}
 
 There is no R-type instruction for {\tt gzip}. It is an I-type only instruction.
@@ -594,177 +616,132 @@ On RV64:
   wswap   rd, rs   ->    grevi rd, rs, 32    ; swap the two 32 bit words
 \end{verbatim}
 
-\subsection{Pseudo instructions using {\tt shuffle}}
+\subsection{Macros for bit permutations}
 
-\subsubsection{Pseudo instruction {\tt bfly}}
+\subsubsection{Butterfly operations}
 
-{\tt shuffle} with mode[3]$=$1 (and mode[2:0] $<$ $log_2(\textrm{XLEN})$) performs
-a butterfly operation. The assembler should provide a {\tt bfly} pseudo-instruction
-for rd $\neq$ rs and constant {\tt mask} and {\tt N} (if {\tt N} is omitted then
-{\tt N}$=$0 is assumed):
+The following macro performs a stage-{\tt N} butterfly operation on the word in
+{\tt a0} using the mask in {\tt a1}.
 
 \begin{verbatim}
-  bfly rd, rs, mask[, N]     ->     lui rd, ((mask << 4) | 8 | N)
-                                    shuffle rd, rs, rd
+  grevi t0, a0, (1 << N)
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
 \end{verbatim}
 
-(On RV64, longer sequences are required instead of {\tt lui} to load the full
-32 bit mask into {\tt rd}.)
-
-For example, an arbitrary 32 bit permutation using a butterfly network followed
-by an inverse butterfly network (Bene{\v s} network):
+The bitmask in {\tt a1} must be preformatted correctly for the selected butterfly
+stage. A butterfly operation only has a XLEN/2 wide control word. The following
+macros format the mask assuming those XLEN/2 bits in the lower half of {\tt a1}
+on entry (preformatted mask on exit):
 
 \begin{verbatim}
-  bfly a1, a0, <maskA>, 4
-  bfly a2, a1, <maskB>, 3
-  bfly a0, a2, <maskC>, 2
-  bfly a1, a0, <maskD>, 1
-  bfly a2, a1, <maskE>, 0
-  bfly a0, a2, <maskF>, 1
-  bfly a1, a0, <maskG>, 2
-  bfly a2, a1, <maskH>, 3
-  bfly a0, a2, <maskI>, 4
+bfly_msk_0:
+  zip a1, a1
+  slli t0, a1, 1
+  or a1, a1, t0
+
+bfly_msk_1:
+  zip2 a1, a1
+  slli t0, a1, 2
+  or a1, a1, t0
+
+bfly_msk_2:
+  zip4 a1, a1
+  slli t0, a1, 4
+  or a1, a1, t0
+
+...
 \end{verbatim}
 
-Permutations arising from real-world applications can often be implemented using
-shorter sequences.
-
-\subsubsection{Pseudo instructions {\tt omega} and {\tt flip}}
-
-A zip operation followed by a butterfly(0) is commonly known as an {\it omega stage}.
-
-An unzip operation followed by butterfly($\log_2(\textrm{XLEN})-1$))
-(alternatively: butterfly(0) followed by unzip) is commonly known as a {\it flip
-stage}. The assember should provide appropriate pseudo-instructions for rd
-$\neq$ rs and constant {\tt mask}:
+A sequence of $2 log_2(\textrm{XLEN})-1$ butterfly operations can perform any
+arbitrary bit permutation (Bene{\v s} network):
 
 \begin{verbatim}
-  omega rd, rs, mask[, XLEN]  ->     lui rd, (mask << 4)
-                                     shuffle rd, rs, rd
-
-  omega rd, rs, mask, 4       ->     lui rd, ((mask << 4) | 1)
-                                     shuffle rd, rs, rd
-
-  omega rd, rs, mask, 8       ->     lui rd, ((mask << 4) | 2)
-                                     shuffle rd, rs, rd
-
-  omega rd, rs, mask, 16      ->     lui rd, ((mask << 4) | 3)
-                                     shuffle rd, rs, rd
-
-  flip  rd, rs, mask[, XLEN]  ->     lui rd, ((mask << 4) | 4)
-                                     shuffle rd, rs, rd
-
-  flip  rd, rs, mask, 4       ->     lui rd, ((mask << 4) | 5)
-                                     shuffle rd, rs, rd
-
-  flip  rd, rs, mask, 8       ->     lui rd, ((mask << 4) | 6)
-                                     shuffle rd, rs, rd
-
-  flip  rd, rs, mask, 16      ->     lui rd, ((mask << 4) | 7)
-                                     shuffle rd, rs, rd
+  butterfly(LOG2_XLEN-1)
+  butterfly(LOG2_XLEN-2)
+  ...
+  butterfly(0)
+  ...
+  butterfly(LOG2_XLEN-2)
+  butterfly(LOG2_XLEN-1)
 \end{verbatim}
 
-For example, an arbitrary 32 bit permutation using a complete omega-flip network:
+
+But many permutations arising from real-world applications can be implemented
+using shorted sequences. For example, any sheeps-and-goats operation with either
+the sheeps or the goats bit reversed can be implemented in $log_2(\textrm{XLEN})$
+butterfly operations.
+
+Reversing a permutation implemented using butterfly operations is as simple as
+reversing the order of butterfly operations.
+
+\subsubsection{Omega-Flip Networks}
+
+The omega operation is a stage-0 butterfly preceeded by a zip operation:
 
 \begin{verbatim}
-  omega a1, a0, <maskA>
-  omega a0, a1, <maskB>
-  omega a1, a0, <maskC>
-  omega a0, a1, <maskD>
-  omega a1, a0, <maskE>
-  flip  a0, a1, <maskF>
-  flip  a1, a0, <maskG>
-  flip  a0, a1, <maskH>
-  flip  a1, a0, <maskI>
-  flip  a0, a1, <maskJ>
+  zip a0, a0
+  grevi t0, a0, 1
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
 \end{verbatim}
 
-Or one instruction shorter by merging the center omega+flip pair into a
-butterfly operation:
+The flip operation is a stage-0 butterfly followed by an unzip operation:
 
 \begin{verbatim}
-  omega a1, a0, <maskA>
-  omega a2, a1, <maskB>
-  omega a0, a2, <maskC>
-  omega a1, a0, <maskD>
-  bfly  a2, a1, <maskE> ^ <maskF>, 4
-  flip  a0, a2, <maskG>
-  flip  a1, a0, <maskH>
-  flip  a2, a1, <maskI>
-  flip  a0, a2, <maskJ>
+  grevi t0, a0, 1
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
+  unzip a0, a0
 \end{verbatim}
+
+A sequence of $log_2(\textrm{XLEN})$ omega operations followed by
+$log_2(\textrm{XLEN})$ flip operations can implement any arbitrary 32 bit
+permutation.
 
 As for butterfly networks, permutations arising from real-world applications
-can often be implemented using a much shorter sequence. Especially if {\tt bfly},
-{\tt omega} and {\tt flip} can be mixed arbitrarily.
+can often be implemented using a much shorter sequence.
 
-It's also possible to implement an arbitrary 32 bit permutation using a
-baseline network followed by an inverse baseline network:
+\subsubsection{Baseline Networks}
 
-\begin{verbatim}
-  flip  a1, a0, <maskA>, 32
-  flip  a2, a1, <maskB>, 16
-  flip  a0, a2, <maskC>,  8
-  flip  a1, a0, <maskD>,  4
-  bfly  a2, a1, <maskE>
-  omega a0, a2, <maskF>,  4
-  omega a1, a0, <maskG>,  8
-  omega a2, a1, <maskH>, 16
-  omega a0, a2, <maskI>, 32
-\end{verbatim}
+Another way of implementing arbitrary 32 bit permutations is using a
+baseline network followed by an inverse baseline network.
 
-\subsubsection{Pseudo instructions {\tt zip} and {\tt unzip}}
-
-With a zero value as control word, {\tt shuffle} performs a simple zip
-operation. The assembler should provide an according pseudo-instruction:
+A baseline network is a sequence of $log_2(\textrm{XLEN})$ butterfly(0)
+operations interleaved with unzip operations. For example, a 32-bit
+baseline network:
 
 \begin{verbatim}
-  zip rd, rs[, XLEN]      ->   shuffle rd, rs, zero
+  butterfly(0)
+  unzip
+  butterfly(0)
+  unzip.h
+  butterfly(0)
+  unzip.b
+  butterfly(0)
+  unzip.n
+  butterfly(0)
 \end{verbatim}
 
-And for rd $\neq$ rs:
+An inverse baseline network is a sequence of $log_2(\textrm{XLEN})$ butterfly(0)
+operations interleaved with zip operations. The order is opposite to the
+order in a baseline network. For example, a 32-bit inverse baseline network:
 
 \begin{verbatim}
-  zip   rd, rs, 4         ->   lui rd, 1
-                               shuffle rd, rs, rd
-
-  zip   rd, rs, 8         ->   lui rd, 2
-                               shuffle rd, rs, rd
-
-  zip   rd, rs, 16        ->   lui rd, 3
-                               shuffle rd, rs, rd
-
-  unzip rd, rs[, XLEN]    ->   lui rd, 4
-                               shuffle rd, rs, rd
-
-  unzip rd, rs, 4         ->   lui rd, 5
-                               shuffle rd, rs, rd
-
-  unzip rd, rs, 8         ->   lui rd, 6
-                               shuffle rd, rs, rd
-
-  unzip rd, rs, 16        ->   lui rd, 7
-                               shuffle rd, rs, rd
+  butterfly(0)
+  zip.n
+  butterfly(0)
+  zip.b
+  butterfly(0)
+  zip.h
+  butterfly(0)
+  zip
+  butterfly(0)
 \end{verbatim}
 
-The \texttt{zip} instruction with the upper half of its input cleared performs
-the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
-0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits
-in the lower quarter of the input word by a spacing of 4 bits.
+A baseline network followed by an inverse baseline network can implement
+any arbitrary bit permutation.
 
-For example, the following code calculates the bitwise prefix sum of the bits
-in the lower byte of a 32 bit word on RV32:
-
-\begin{verbatim}
-  andi a0, a0, 0xff
-  zip a0, a0
-  zip a0, a0
-  slli a1, a0, 4
-  add a0, a1
-  slli a1, a0, 8
-  add a0, a1
-  slli a1, a0, 16
-  add a0, a1
-\end{verbatim}
-
-The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.

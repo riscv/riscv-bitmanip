@@ -9,5 +9,5 @@ fi
 python3 bextcref.py
 # pdflatex xbitmanip
 # bibtex xbitmanip
-pdflatex xbitmanip
+# pdflatex xbitmanip
 pdflatex xbitmanip
