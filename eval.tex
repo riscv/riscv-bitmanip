@@ -51,40 +51,40 @@ instruction with that instruction to form a fused conditional macro-op.
 Counting leading ones:
 
 \begin{verbatim}
-  not a0, a0
+  c.not a0
   clz a0, a0
 \end{verbatim}
 
 Counting trailing ones:
 
 \begin{verbatim}
-  not a0, a0
+  c.not a0
   ctz a0, a0
 \end{verbatim}
 
 Counting bits cleared:
 
 \begin{verbatim}
-  not a0, a0
+  c.not a0
   pcnt a0, a0
 \end{verbatim}
 
-(This is better than XLEN-pcnt because RISC-V has no ``reverse-subtract-immediate'' operation, but not
-can even be implemented in a compressed instruction if {\tt rd} $=$ {\tt rs}.)
+(This is better than XLEN-pcnt because RISC-V has no ``reverse-subtract-immediate'' operation, but
+the {\tt not} instruction can even utilize compressed instructions if {\tt rd} $=$ {\tt rs}.)
 
 Odd parity:
 
 \begin{verbatim}
   pcnt a0, a0
-  andi a0, a0, 1
+  c.andi a0, 1
 \end{verbatim}
 
 Even parity:
 
 \begin{verbatim}
   pcnt a0, a0
-  addi a0, a0, 1
-  andi a0, a0, 1
+  c.addi a0, 1
+  c.andi a0, 1
 \end{verbatim}
 
 (Using {\tt addi} here is better than using {\tt xori}, because there is
@@ -103,10 +103,10 @@ The following macro performs a stage-{\tt N} butterfly operation on the word in
 {\tt a0} using the mask in {\tt a1}.
 
 \begin{verbatim}
-  grevi t0, a0, (1 << N)
-  and t0, t0, a1
+  grevi a2, a0, (1 << N)
+  c.and a2, a1
   andc a0, a0, a1
-  or a0, a0, t0
+  c.or a0, a2
 \end{verbatim}
 
 The bitmask in {\tt a1} must be preformatted correctly for the selected butterfly
@@ -117,18 +117,18 @@ on entry (preformatted mask in {\tt a1} on exit):
 \begin{verbatim}
 bfly_msk_0:
   zip a1, a1
-  slli t0, a1, 1
-  or a1, a1, t0
+  slli a2, a1, 1
+  c.or a1, a2
 
 bfly_msk_1:
   zip2 a1, a1
-  slli t0, a1, 2
-  or a1, a1, t0
+  slli a2, a1, 2
+  c.or a1, a2
 
 bfly_msk_2:
   zip4 a1, a1
-  slli t0, a1, 4
-  or a1, a1, t0
+  slli a2, a1, 4
+  c.or a1, a2
 
 ...
 \end{verbatim}
@@ -166,19 +166,19 @@ The omega operation is a stage-0 butterfly preceeded by a zip operation:
 
 \begin{verbatim}
   zip a0, a0
-  grevi t0, a0, 1
-  and t0, t0, a1
+  grevi a2, a0, 1
+  c.and a2, a1
   andc a0, a0, a1
-  or a0, a0, t0
+  c.or a0, a2
 \end{verbatim}
 
 The flip operation is a stage-0 butterfly followed by an unzip operation:
 
 \begin{verbatim}
-  grevi t0, a0, 1
-  and t0, t0, a1
+  grevi a2, a0, 1
+  c.and a2, a1
   andc a0, a0, a1
-  or a0, a0, t0
+  c.or a0, a2
   unzip a0, a0
 \end{verbatim}
 
@@ -247,12 +247,12 @@ The SAG operation can easily be performed using {\tt bext} (data in {\tt a0} and
 mask in {\tt a1}):
 
 \begin{verbatim}
-  bext t0, a0, a1
-  not a1, a1
+  bext a2, a0, a1
+  c.not a1
   bext a0, a0, a1
   pcnt a1, a1
   ror a0, a0, a1
-  or a0, a0, t0
+  c.or a0, a2
 \end{verbatim}
 
 Any arbitrary bit permutation can be implemented in $log_2(\textrm{XLEN})$ SAG
