@@ -16,67 +16,6 @@
  */
 
 #include "common.h"
-using namespace rv32b;
-
-uint32_t bext32(uint32_t rs1, uint32_t rs2)
-{
-	uint32_t c = 0, m = 1, mask = rs2;
-	for (int iter = 0; mask; iter++) {
-		assert(iter != 32);
-		if (iter == 32) break;
-		uint32_t b = mask & -mask;
-		if (rs1 & b)
-			c |= m;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint32_t bdep32(uint32_t rs1, uint32_t rs2)
-{
-	uint32_t c = 0, m = 1, mask = rs2;
-	for (int iter = 0; mask; iter++) {
-		assert(iter != 32);
-		if (iter == 32) break;
-		uint32_t b = mask & -mask;
-		if (rs1 & m)
-			c |= b;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint64_t bext64(uint64_t rs1, uint64_t rs2)
-{
-	uint64_t c = 0, m = 1, mask = rs2;
-	for (int iter = 0; mask; iter++) {
-		assert(iter != 64);
-		if (iter == 64) break;
-		uint64_t b = mask & -mask;
-		if (rs1 & b)
-			c |= m;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
-
-uint64_t bdep64(uint64_t rs1, uint64_t rs2)
-{
-	uint64_t c = 0, m = 1, mask = rs2;
-	for (int iter = 0; mask; iter++) {
-		assert(iter != 64);
-		if (iter == 64) break;
-		uint64_t b = mask & -mask;
-		if (rs1 & m)
-			c |= b;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
-}
 
 // ---------------------------------------------------------
 
@@ -88,11 +27,11 @@ void bext32_bext64(uint64_t src, uint64_t mask)
 	uint32_t mask_lo = mask;
 	uint32_t mask_hi = mask >> 32;
 
-	uint32_t result_lo = bext32(src_lo, mask_lo);
-	uint32_t result_hi = bext32(src_hi, mask_hi);
-	uint64_t result = result_lo | (uint64_t(result_hi) << pcnt(mask_lo));
+	uint32_t result_lo = rv32b::bext(src_lo, mask_lo);
+	uint32_t result_hi = rv32b::bext(src_hi, mask_hi);
+	uint64_t result = result_lo | (uint64_t(result_hi) << rv32b::pcnt(mask_lo));
 
-	uint64_t reference = bext64(src, mask);
+	uint64_t reference = rv64b::bext(src, mask);
 	assert(result == reference);
 }
 
@@ -104,15 +43,15 @@ void bdep32_bdep64(uint64_t src, uint64_t mask)
 	uint32_t mask_lo = mask;
 	uint32_t mask_hi = mask >> 32;
 
-	uint32_t result_lo = bdep32(src_lo, mask_lo);
+	uint32_t result_lo = rv32b::bdep(src_lo, mask_lo);
 
-	int p = pcnt(mask_lo), q = 32 - p;
+	int p = rv32b::pcnt(mask_lo), q = 32 - p;
 	src_hi = (uint64_t(src_hi) << q) | (uint64_t(src_lo) >> p);
 
-	uint32_t result_hi = bdep32(src_hi, mask_hi);
+	uint32_t result_hi = rv32b::bdep(src_hi, mask_hi);
 	uint64_t result = result_lo | (uint64_t(result_hi) << 32);
 
-	uint64_t reference = bdep64(src, mask);
+	uint64_t reference = rv64b::bdep(src, mask);
 	assert(result == reference);
 }
 
