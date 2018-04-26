@@ -153,18 +153,18 @@ void check_j_imm(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
-	uint32_t a0 = insn.b;
-	uint32_t t0;
+	uint32_t a0 = insn.b, a1;
+	uint32_t t0, t1;
 
-	t0 = 0x0fffb000;
-	a0 = shuffle(a0, t0);
-	t0 = 0x0f40a000;
-	a0 = shuffle(a0, t0);
-	t0 = 0x70fec000;
-	a0 = shuffle(a0, t0);
-	t0 = 0x8ff170fe;
+	t0 = 0x800003ff;
+	t1 = 0x800ff000;
+
+	a1 = bext(a0, t1);
+	a1 = sll(a1, 23);
+	a0 = ror(a0, 21);
 	a0 = bext(a0, t0);
 	a0 = sll(a0, 12);
+	a0 = a0 | a1;
 	a0 = sra(a0, 11);
 
 	assert(ref == a0);
@@ -197,17 +197,21 @@ void check_cj_imm(insn_t insn)
 {
 	uint32_t ref = insn.rvc_j_imm();
 
-	uint32_t a0 = insn.b;
-	uint32_t t0;
+	uint32_t a0 = insn.b, a1;
+	uint32_t t0, t1, t2, t3;
 
-	a0 = grev(a0, 1);
-	t0 = 0xebcac000;
-	a0 = shuffle(a0, t0);
-	t0 = 0xe3469000;
-	a0 = shuffle(a0, t0);
-	t0 = 0x8bc20464;
+	t0 = 0x28800001;
+	t1 = 0x000016b8;
+	t2 = 0xb4e00000;
+	t3 = 0x4b000000;
+
+	a1 = bext(a0, t1);
+	a1 = bdep(a1, t2);
+
+	a0 = ror(a0, 11);
 	a0 = bext(a0, t0);
-	a0 = sll(a0, 21);
+	a0 = bdep(a0, t3);
+	a0 = a0 | a1;
 	a0 = sra(a0, 20);
 
 	assert(ref == a0);

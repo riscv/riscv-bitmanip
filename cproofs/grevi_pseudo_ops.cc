@@ -17,6 +17,16 @@
 
 #include "common.h"
 
+uint32_t bitmove32(uint32_t x, int p, int q)
+{
+	return ((x >> p) & 1) << q;
+}
+
+uint64_t bitmove64(uint64_t x, int p, int q)
+{
+	return ((x >> p) & 1) << q;
+}
+
 // ---------------------------------------------------------
 
 void rv32_brev(uint32_t x)

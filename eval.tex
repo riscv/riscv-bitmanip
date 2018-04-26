@@ -246,59 +246,43 @@ sleeve''-examples for real-world bit permutations.
     ret
 
   decode_b:
+    li t0, 0xeaa800aa
     rori a0, a0, 8
     grevi a0, a0, 8
     gzip a0, a0, 14
-    li t0, 0xeaa800aa
     bext a0, a0, t0
     c.slli a0, 20
     c.srai a0, 19
     ret
 
-  // variant 1 (with shuffle/bext)
   decode_j:
-    lui t0, 0x0fffb
-    shuffle a0, a0, t0
-    lui t0, 0x0f40a
-    shuffle a0, a0, t0
-    lui t0, 0x70fec
-    shuffle a0, a0, t0
-    li t0, 0x8ff170fe
+    li t0, 0x800003ff
+    li t1, 0x800ff000
+    bext a1, a0, t1
+    c.slli a1, 23
+    rori a0, a0, 21
     bext a0, a0, t0
     c.slli a0, 12
-    c.srai a0, 11
-    ret
-
-  // variant 2 (with bext but without shuffle)
-  decode_j:
-    li t0, 0x800ff000
-    li a1, 0x00100000
-    bext a2, a0, t0
-    c.and a1, a0
-    c.slli a0, a0, 1
-    c.srli a0, a0, 22
-    c.slli a2, 23
-    c.slli a1, 2
-    c.slli a0, 12
-    c.or a0, a2
     c.or a0, a1
     c.srai a0, 11
     ret
 
-  // variant 1 (with shuffle/bext)
+  // variant 1 (with XBitmanip)
   decode_cj:
-    grevi a0, a0, 1
-    lui t0, 0xebcac
-    shuffle a0, a0, t0
-    lui t0, 0xe3469
-    shuffle a0, a0, t0
-    li t0, 0x8bc20464
+    li t0, 0x28800001
+    li t1, 0x000016b8
+    li t2, 0xb4e00000
+    li t3, 0x4b000000
+    bext a1, a0, t1
+    bdep a1, a1, t2
+    rori a0, a0, 11
     bext a0, a0, t0
-    c.slli a0, 21
+    bdep a0, a0, t3
+    c.or a0, a1
     c.srai a0, 20
     ret
 
-  // variant 2 (without shuffle/bext)
+  // variant 2 (without XBitmanip)
   decode_cj:
     srli a5, a0, 2
     srli a4, a0, 7
