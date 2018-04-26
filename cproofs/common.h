@@ -20,27 +20,24 @@
 #include <stdlib.h>
 #include <assert.h>
 
+namespace rv32b {
 #define XLEN 32
 #define LOG2_XLEN 5
 typedef uint32_t uint_xlen_t;
 typedef int32_t int_xlen_t;
 #include "insns.h"
-
-uint_xlen_t sll(uint_xlen_t x, int k)
-{
-	return x << k;
+#undef XLEN
+#undef LOG2_XLEN
 }
 
-uint_xlen_t srl(uint_xlen_t x, int k)
-{
-	return x >> k;
-}
-
-uint_xlen_t sra(uint_xlen_t x, int k)
-{
-	if (x >> (XLEN-1))
-		return ~(~x >> k);
-	return x >> k;
+namespace rv64b {
+#define XLEN 64
+#define LOG2_XLEN 6
+typedef uint64_t uint_xlen_t;
+typedef int64_t int_xlen_t;
+#include "insns.h"
+#undef XLEN
+#undef LOG2_XLEN
 }
 
 uint32_t xs32(uint32_t x)

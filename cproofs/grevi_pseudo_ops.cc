@@ -16,6 +16,7 @@
  */
 
 #include "common.h"
+using namespace rv32b;
 
 uint32_t bitmove32(uint32_t x, int p, int q)
 {

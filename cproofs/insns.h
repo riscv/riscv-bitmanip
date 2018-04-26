@@ -132,11 +132,14 @@ uint64_t grev64(uint64_t rs1, uint64_t rs2)
 }
 // --REF-END--
 
+uint_xlen_t grev(uint_xlen_t rs1, uint_xlen_t rs2)
+{
 #if XLEN == 32
-#  define grev grev32
+	return grev32(rs1, rs2);
 #else
-#  define grev grev64
+	return grev64(rs1, rs2);
 #endif
+}
 
 // --REF-BEGIN-- gzip32
 uint32_t gzip32_stage(uint32_t src, uint32_t maskL, uint32_t maskR, int N)
@@ -205,11 +208,15 @@ uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
 }
 // --REF-END--
 
+uint_xlen_t gzip(uint_xlen_t rs1, uint_xlen_t rs2)
+{
 #if XLEN == 32
-#  define gzip gzip32
+	return gzip32(rs1, rs2);
 #else
-#  define gzip gzip64
+	assert(0);
+	// return gzip64(rs1, rs2);
 #endif
+}
 
 // --REF-BEGIN-- bfxp
 uint_xlen_t bfxp(uint_xlen_t rs1, unsigned start, unsigned len, unsigned dest)
@@ -230,3 +237,20 @@ uint_xlen_t bfxp(uint_xlen_t rs1, unsigned start, unsigned len, unsigned dest)
 	return x;
 }
 // --REF-END--
+
+uint_xlen_t sll(uint_xlen_t x, int k)
+{
+	return x << k;
+}
+
+uint_xlen_t srl(uint_xlen_t x, int k)
+{
+	return x >> k;
+}
+
+uint_xlen_t sra(uint_xlen_t x, int k)
+{
+	if (x >> (XLEN-1))
+		return ~(~x >> k);
+	return x >> k;
+}

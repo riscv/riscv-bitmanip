@@ -16,6 +16,7 @@
  */
 
 #include "common.h"
+using namespace rv32b;
 
 uint32_t bext32(uint32_t rs1, uint32_t rs2)
 {

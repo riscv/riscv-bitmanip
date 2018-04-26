@@ -16,6 +16,8 @@
  */
 
 #include "common.h"
+using namespace rv32b;
+#define XLEN 32
 
 uint_xlen_t bitmove(uint_xlen_t x, int p, int q)
 {
