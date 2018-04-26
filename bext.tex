@@ -270,8 +270,17 @@ use the instruction encoding for ``arithmetic shift left''.
 \section{Generalized zip/unzip (\texttt{gzip})}
 \label{gzip}
 
-{\tt gzip} is the third bit permutation instruction in XBitmanip, after {\tt rori}
-and {\tt grevi}.
+{\tt gzip} is the third bit permutation instruction in XBitmanip, after {\tt
+rori} and {\tt grevi}. It implements a generalization of the operation commonly
+known as perfect outer shuffle and its inverse (shuffle/unshuffle), also known
+as zip/unzip or interlace/uninterlace.
+
+This set of operation is best understood as operation on the bit indices. For
+reference, rotate shift adds {\tt shamt} to the bit index (modulo XLEN), and
+generalized reversed performs an XOR between the bit index and the {\tt shamt}.
+Generalized zip/unzip performs a roate left shift (zip) or right shift (unzip)
+on a continous rage of bits in the bit index. Every arbitrary permutation
+of the bit index bits can be achieved by applying {\tt gzip} repeatedly.
 
 The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}.
 There are XLEN different generalized zip operations, some of which are reserved
