@@ -5,45 +5,267 @@ the XBitmanip extension for evaluation purposes. For the sake of simplicity we
 assume RV32 for most examples in this chapter.
 
 Most assembler routines in this chapter are written as if they were ABI functions,
-i.e. arguments are passed in a0, a1, \dots\ and results are returned in a0. Registers
-t0, t1, \dots\ are used for spilling.
+i.e. arguments are passed in a0, a1,~\dots~and results are returned in a0. Registers
+t0, t1,~\dots~and a0, a1,~\dots~are used for spilling.
 
 Some of the assembler routines below can not or should not overwrite their
 first argument. In those cases the arguments are passed in a1, a2, \dots\ and
 results are returned in a0.
 
-% \section{Bit Scanning Operations}
-%
-% \subsubsection{Count Leading Zeros}
-%
-% This is trivially just the \texttt{clz} instruction:
-%
-% \begin{verbatim}
-%   clz a0, a0
-% \end{verbatim}
-%
-% \subsubsection{Count Leading Ones}
-%
-% Simply invert before executing the \texttt{clz} instruction:
-%
-% \begin{verbatim}
-%   not a0, a0
-%   clz a0, a0
-% \end{verbatim}
-%
-% \subsubsection{Find index of highest bit set (aka \texttt{ilog2})}
-%
-% \begin{verbatim}
-%   clz a0, a0
-%   neg a0, a0
-%   addi a0, a0, 32
-% \end{verbatim}
-%
-% \subsubsection{Find index of lowest bit set}
-%
-% \begin{verbatim}
-%   ctz a0, a0
-% \end{verbatim}
+\section{MIX/MUX pattern}
+
+A MIX pattern selects bits from {\tt a0} and {\tt a1} based on the bits in
+the control word {\tt a2}.
+
+\begin{verbatim}
+  c.and a0, a2
+  andc a1, a1, a2
+  c.or a0, a1
+\end{verbatim}
+
+A MUX operation selects word {\tt a0} or {\tt a1} based on if the control
+word {\tt a2} is zero or nonzero, without branching.
+
+\begin{verbatim}
+  snez a2, a2
+  c.neg a2
+  c.and a0, a2
+  andc a1, a1, a2
+  c.or a0, a1
+\end{verbatim}
+
+Or when {\tt a2} is already either 0 or 1:
+
+\begin{verbatim}
+  c.neg a2
+  c.and a0, a2
+  andc a1, a1, a2
+  c.or a0, a1
+\end{verbatim}
+
+Alternatively, a core might fuse a conditional branch that just skips one
+instruction with that instruction to form a fused conditional macro-op.
+
+\section{Bit scanning and counting}
+
+Counting leading ones:
+
+\begin{verbatim}
+  not a0, a0
+  clz a0, a0
+\end{verbatim}
+
+Counting trailing ones:
+
+\begin{verbatim}
+  not a0, a0
+  ctz a0, a0
+\end{verbatim}
+
+Counting bits cleared:
+
+\begin{verbatim}
+  not a0, a0
+  pcnt a0, a0
+\end{verbatim}
+
+(This is better than XLEN-pcnt because RISC-V has no ``reverse-subtract-immediate'' operation, but not
+can even be implemented in a compressed instruction if {\tt rd} $=$ {\tt rs}.)
+
+Odd parity:
+
+\begin{verbatim}
+  pcnt a0, a0
+  andi a0, a0, 1
+\end{verbatim}
+
+Even parity:
+
+\begin{verbatim}
+  pcnt a0, a0
+  addi a0, a0, 1
+  andi a0, a0, 1
+\end{verbatim}
+
+(Using {\tt addi} here is better than using {\tt xori}, because there is
+a compressed opcode for {\tt addi} but none for {\tt xori}.)
+
+\section{Arbitrary (data-defined) bit permutations}
+
+This section lists code snippets for computing arbitrary bit permutations that
+are defined by data (as opposed to bit permutations that are known at compile
+time and can likely be compiled into shift-and-mask operations and/or a few
+instances of bext/bdep).
+
+\subsection{Using butterfly operations}
+
+The following macro performs a stage-{\tt N} butterfly operation on the word in
+{\tt a0} using the mask in {\tt a1}.
+
+\begin{verbatim}
+  grevi t0, a0, (1 << N)
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
+\end{verbatim}
+
+The bitmask in {\tt a1} must be preformatted correctly for the selected butterfly
+stage. A butterfly operation only has a XLEN/2 wide control word. The following
+macros format the mask assuming those XLEN/2 bits in the lower half of {\tt a1}
+on entry (preformatted mask in {\tt a1} on exit):
+
+\begin{verbatim}
+bfly_msk_0:
+  zip a1, a1
+  slli t0, a1, 1
+  or a1, a1, t0
+
+bfly_msk_1:
+  zip2 a1, a1
+  slli t0, a1, 2
+  or a1, a1, t0
+
+bfly_msk_2:
+  zip4 a1, a1
+  slli t0, a1, 4
+  or a1, a1, t0
+
+...
+\end{verbatim}
+
+A sequence of $2\cdot{}log_2(\textrm{XLEN})-1$ butterfly operations can perform any
+arbitrary bit permutation (Bene{\v s} network):
+
+\begin{verbatim}
+  butterfly(LOG2_XLEN-1)
+  butterfly(LOG2_XLEN-2)
+  ...
+  butterfly(0)
+  ...
+  butterfly(LOG2_XLEN-2)
+  butterfly(LOG2_XLEN-1)
+\end{verbatim}
+
+
+Many permutations arising from real-world applications can be implemented
+using shorter sequences. For example, any sheep-and-goats operation with either
+the sheep or the goats bit reversed can be implemented in $log_2(\textrm{XLEN})$
+butterfly operations.
+
+Reversing a permutation implemented using butterfly operations is as simple as
+reversing the order of butterfly operations.
+
+% References
+% http://www.princeton.edu/~rblee/PUpapers/xiao_spie00.pdf
+% https://www.lirmm.fr/arith18/papers/hilewitz-PerformingBitManipulations.pdf
+% https://pdfs.semanticscholar.org/bcd0/8fdccf3d5ab959fd81162bd811706ba1676a.pdf
+
+\subsection{Using omega-flip networks}
+
+The omega operation is a stage-0 butterfly preceeded by a zip operation:
+
+\begin{verbatim}
+  zip a0, a0
+  grevi t0, a0, 1
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
+\end{verbatim}
+
+The flip operation is a stage-0 butterfly followed by an unzip operation:
+
+\begin{verbatim}
+  grevi t0, a0, 1
+  and t0, t0, a1
+  andc a0, a0, a1
+  or a0, a0, t0
+  unzip a0, a0
+\end{verbatim}
+
+A sequence of $log_2(\textrm{XLEN})$ omega operations followed by
+$log_2(\textrm{XLEN})$ flip operations can implement any arbitrary 32 bit
+permutation.
+
+As for butterfly networks, permutations arising from real-world applications
+can often be implemented using a shorter sequence.
+
+% References
+% https://ieeexplore.ieee.org/document/878264/
+% https://www.princeton.edu/~rblee/ELE572Papers/lee_slideshotchips2002.pdf
+
+\subsection{Using baseline networks}
+
+Another way of implementing arbitrary 32 bit permutations is using a
+baseline network followed by an inverse baseline network.
+
+A baseline network is a sequence of $log_2(\textrm{XLEN})$ butterfly(0)
+operations interleaved with unzip operations. For example, a 32-bit
+baseline network:
+
+\begin{verbatim}
+  butterfly(0)
+  unzip
+  butterfly(0)
+  unzip.h
+  butterfly(0)
+  unzip.b
+  butterfly(0)
+  unzip.n
+  butterfly(0)
+\end{verbatim}
+
+An inverse baseline network is a sequence of $log_2(\textrm{XLEN})$ butterfly(0)
+operations interleaved with zip operations. The order is opposite to the
+order in a baseline network. For example, a 32-bit inverse baseline network:
+
+\begin{verbatim}
+  butterfly(0)
+  zip.n
+  butterfly(0)
+  zip.b
+  butterfly(0)
+  zip.h
+  butterfly(0)
+  zip
+  butterfly(0)
+\end{verbatim}
+
+A baseline network followed by an inverse baseline network can implement
+any arbitrary bit permutation.
+
+% References
+% https://dl.acm.org/citation.cfm?id=1311797
+
+\subsection{Using sheep-and-goats}
+
+The Sheep-and-goats (SAG) operation is a common operation for bit permutations.
+It moves all the bits selected by a mask (goats) to the LSB end of the word
+and all the remaining bits (sheep) to the MSB end of the word, without changing
+the order of sheep or goats.
+
+The SAG operation can easily be performed using {\tt bext} (data in {\tt a0} and
+mask in {\tt a1}):
+
+\begin{verbatim}
+  bext t0, a0, a1
+  not a1, a1
+  bext a0, a0, a1
+  pcnt a1, a1
+  ror a0, a0, a1
+  or a0, a0, t0
+\end{verbatim}
+
+Any arbitrary bit permutation can be implemented in $log_2(\textrm{XLEN})$ SAG
+operations.
+
+{\it The Hacker's Delight} describes an optimized standard C implementation of
+the SAG operation. Their algorithm takes 254 instructions (for 32 bit) or 340
+instructions (for 64 bit) on their reference RISC instruction
+set.~\cite[p.~152f,~162f]{Seander05}
+
+% References
+% Knuth
+% Hackers Delight, Chapter 7-7
 
 \section{Emulating x86 Bit Manipulation ISAs}
 
