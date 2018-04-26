@@ -277,9 +277,9 @@ as zip/unzip or interlace/uninterlace.
 
 This set of operation is best understood as operation on the bit indices. For
 reference, rotate shift adds {\tt shamt} to the bit index (modulo XLEN), and
-generalized reversed performs an XOR between the bit index and the {\tt shamt}.
-Generalized zip/unzip performs a roate left shift (zip) or right shift (unzip)
-on a continous rage of bits in the bit index. Every arbitrary permutation
+generalized reversed performs an XOR between the bit index and {\tt shamt}.
+Generalized zip/unzip performs a roate left shift (zip) or rotate right shift (unzip)
+on a continous range of bits in the bit index. Every arbitrary permutation
 of the bit index bits can be achieved by applying {\tt gzip} repeatedly.
 
 The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}.
