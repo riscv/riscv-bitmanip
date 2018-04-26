@@ -170,17 +170,17 @@ sleeve''-examples for real-world bit permutations.
 \begin{multicols}{2}
 \begin{verbatim}
   decode_s:
-    bxfp a1, a0, 7, 5, 20
-    bxfp a0, a0, 25, 5, 25
+    bfxp a1, a0, 7, 5, 20
+    bfxp a0, a0, 25, 5, 25
     c.or a0, a1
     c.srai a0, 20
     ret
 
   decode_b:
-    bxfp a1, a0, 7, 1, 30
-    bxfp a2, a0, 25, 4, 24
-    bxfp a3, a0, 8, 4, 20
-    bxfp a0, a0, 31, 1, 31
+    bfxp a1, a0, 7, 1, 30
+    bfxp a2, a0, 25, 4, 24
+    bfxp a3, a0, 8, 4, 20
+    bfxp a0, a0, 31, 1, 31
     c.or a0, a1
     c.or a0, a2
     c.or a0, a3
@@ -188,10 +188,10 @@ sleeve''-examples for real-world bit permutations.
     ret
 
   decode_j:
-    bxfp a1, a0, 21, 12, 11
-    bxfp a2, a0, 20, 1, 22
-    bxfp a3, a0, 12, 8, 23
-    bxfp a0, a0, 31, 1, 31
+    bfxp a1, a0, 21, 12, 11
+    bfxp a2, a0, 20, 1, 22
+    bfxp a3, a0, 12, 8, 23
+    bfxp a0, a0, 31, 1, 31
     c.or a0, a1
     c.or a0, a2
     c.or a0, a3
@@ -199,16 +199,16 @@ sleeve''-examples for real-world bit permutations.
     ret
 
   decode_cj:
-    bxfp a1, a0, 11, 1, 24
-    bxfp a2, a0, 9, 2, 28
-    bxfp a3, a0, 8, 1, 30
+    bfxp a1, a0, 11, 1, 24
+    bfxp a2, a0, 9, 2, 28
+    bfxp a3, a0, 8, 1, 30
     c.or a1, a2
     c.or a1, a3
-    bxfp a2, a0, 7, 1, 26
-    bxfp a3, a0, 6, 1, 27
-    bxfp a4, a0, 3, 3, 21
-    bxfp a5, a0, 2, 1, 25
-    bxfp a0, a0, 12, 1, 31
+    bfxp a2, a0, 7, 1, 26
+    bfxp a3, a0, 6, 1, 27
+    bfxp a4, a0, 3, 3, 21
+    bfxp a5, a0, 2, 1, 25
+    bfxp a0, a0, 12, 1, 31
     c.or a0, a1
     c.or a0, a2
     c.or a0, a3
