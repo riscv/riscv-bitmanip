@@ -362,7 +362,7 @@ uint_xlen_t bfxp(uint_xlen_t rs1, unsigned start, unsigned len, unsigned dest)
 	if (XLEN > 32 && len == 0)
 		len = 32;
 
-	if (start + len > XLEN || dest + len > XLEN)
+	if (start + len > XLEN || dest + len > XLEN || len == 0)
 		return 0;
 
 	uint_xlen_t x = rs1;

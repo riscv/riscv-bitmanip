@@ -1,11 +1,10 @@
-/grevshuffle.log
-/grevshuffle_grev.log
-/grevshuffle_nozip.log
-/grevshuffle_shuffle.log
-/grevshuffle_shift.log
 /testdata
 /testdata_grev.hex
-/testdata_shuffle.hex
+/testdata_gzip.hex
+/testdata_bfxp.hex
 /tinygrev.log
 /tinygrev_tb
 /tinygrev_tb.vcd
+/simplebfxp.log
+/simplebfxp_tb
+/simplebfxp_tb.vcd
