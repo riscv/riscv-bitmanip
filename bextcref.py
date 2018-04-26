@@ -42,7 +42,7 @@ with open("bextcref-printperm.dat", "r") as infile:
         gzip_permdata[int(line[0])][int(line[1])] = int(line[4])
         gzipflip_permdata[int(line[0])] = int(line[5])
 
-with open("bextcref-printperm-rot.tex", "w") as outfile:
+with open("bextcref-printperm-ror.tex", "w") as outfile:
     print("\\begin{tikzpicture}", file=outfile)
 
     for i in range(5):

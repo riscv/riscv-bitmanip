@@ -140,10 +140,10 @@ Bit 31 & Bit 30 & Meaning\tabularnewline
 
 \begin{figure}[t]
 \begin{center}
-\input{bextcref-printperm-rot}
+\input{bextcref-printperm-ror}
 \end{center}
-\caption{\texttt{rot} permutation network}
-\label{permnet-rot}
+\caption{\texttt{ror} permutation network}
+\label{permnet-ror}
 \end{figure}
 
 \section{Generalized Reverse (\texttt{grev,\ grevi})}
@@ -247,8 +247,8 @@ this definition in an obvious manner for RV128.
 \end{table}
 
 The {\tt grev} operation can easily be implemented using a permutation
-network with $log_2(\textrm{XLEN})$ stages. Figure~\ref{permnet-rot}
-shows the permutation network for {\tt rot} for reference.
+network with $log_2(\textrm{XLEN})$ stages. Figure~\ref{permnet-ror}
+shows the permutation network for {\tt ror} for reference.
 Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
 
 \input{bextgrev.tex}
