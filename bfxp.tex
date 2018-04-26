@@ -1,0 +1,217 @@
+\chapter{RISC-V XBitfield Extension}
+
+The most asked-for feature in XBitmanip is an instruction for bit field
+extract. XBitmanip recommends the usage of {\tt slli} followed by {\tt slri}
+for this operation and asks implementors to fuse this sequence into a macro-op.
+However, there are valid concerns regarding this approach:
+
+\begin{itemize}
+\item Not all processors that might want to implement a fast bitfield extract
+can fuse macro-ops.
+\item In some architectures it might be hard to fuse the two shift instructions
+if one of them is using a 32-bit instruction encoding. Therefore the instruction
+can not be fused if {\tt rd} $\ne$ {\tt rs1}.
+\end{itemize}
+
+Therefore this chapter proposes the RISC-V XBitfield extension. Note that, unlike
+XBitmanip, {\bf we do \underline{not} propose XBitfield for adoption as official RISC-V ISA extension}.
+
+The encoding for a proper 32-bit bitfield extract instruction, if it is encoded
+in a clean and future-safe way that scales all the way to RV128, would require
+a 14 bit immediate (7 bits for start and 7 bits for length), or the equivalent
+of 4 I-type instruction with full immegate length, or half of a major opcode,
+way too wasteful for an official RISC-V ISA extension, especially for something
+that can be encoded in the same space with two compressed instructions.
+
+However, there is a tendency for implementors to fill the unused instruction
+encoding space with a myriad of instructions with large immediates.~\cite{Ri5cy}
+
+So we propose XBitfield, a custom, non-standard extension that uses the entire
+major opcode 1111011 ({\it custom-3}) for a single bit-field extract and place
+({\tt bfxp}) instruction.
+
+The goal here is that individual implementors can easily share patches for
+compiler toolchains. By standardising one powerful (but easy to implement)
+instruction instead of a whole range of simpler instructions we keep the
+complexity of the extension low. This extension might be of interest to
+every implementor who is not otherwise using the {\it custom-3} encoding
+space and does not want to spend a lot of hardware resources on making
+use of that instruction encoding space.
+
+\section{Bit-field extract and place ({\tt bfxp})}
+
+The bit-field extract and place instruction extracts a bitfield of length
+{\tt len} starting at bit position {\tt start}, and places it at the new
+offset {\tt dest}. The other bits of the result are set to zero.
+
+The immediate arguments {\tt start}, {\tt len}, and {\tt dest} are unsigned
+5 bit immediates. On RV64 and RV128 {\tt len} $=$ 0 encodes for {\tt len} $=$ 32.
+
+The instruction returns 0 if $\texttt{start}+\texttt{len}>\textrm{XLEN}$ or
+$\texttt{dest}+\texttt{len}>\textrm{XLEN}$.
+
+\input{bextcref-bfxp}
+
+The assembler mnemonic for {\tt bfxp} is as follows. ({\tt dest} $=$ 0 is assumed when {\tt dest} is omitted.)
+
+\begin{verbatim}
+  bfxp rd, rs, start, len[, dest]
+\end{verbatim}
+
+{\tt bfxp} occupies the {\it custom-3} major opcode:
+
+\vspace{-0.3in}
+\begin{center}
+\begin{tabular}{R@{}R@{}F@{}R@{}F@{}R@{}O}
+\\
+\instbitrange{31}{27} &
+\instbitrange{26}{22} &
+\instbitrange{21}{20} &
+\instbitrange{19}{15} &
+\instbitrange{14}{12} &
+\instbitrange{11}{7} &
+\instbitrange{6}{0} \\
+\hline
+\multicolumn{1}{|c|}{start} &
+\multicolumn{1}{c|}{len} &
+\multicolumn{1}{c|}{dest[4:3]} &
+\multicolumn{1}{c|}{rs1} &
+\multicolumn{1}{c|}{dest[2:0]} &
+\multicolumn{1}{c|}{rd} &
+\multicolumn{1}{c|}{1111011} \\
+\hline
+5 & 5 & 2 & 5 & 3 & 5 & 7 \\
+\end{tabular}
+\end{center}
+
+\section{Evaluation: Decoding RISC-V Immediates}
+
+The following code snippets decode and sign-extend the immedate from RISC-V
+S-type, B-type, J-type, and CJ-type instructions. They are nice ``nothing up my
+sleeve''-examples for real-world bit permutations.
+
+\begin{small}
+\begin{center}
+\begin{tabular}{p{0in}p{0.4in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.4in}p{0.6in}p{0.4in}p{0.6in}p{0.7in}l}
+& & & & & & & & & & \\
+                      &
+\multicolumn{1}{l}{\instbit{31}} &
+\multicolumn{1}{r}{\instbit{27}} &
+\instbit{26} &
+\instbit{25} &
+\multicolumn{1}{l}{\instbit{24}} &
+\multicolumn{1}{r}{\instbit{20}} &
+\instbitrange{19}{15} &
+\instbitrange{14}{12} &
+\instbitrange{11}{7} &
+\instbitrange{6}{0} \\
+\cline{2-11}
+
+&
+\multicolumn{4}{|c|}{imm[11:5]} &
+\multicolumn{2}{c|}{} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{imm[4:0]} &
+\multicolumn{1}{c|}{} & S-type \\
+\cline{2-11}
+
+&
+\multicolumn{4}{|c|}{imm[12$\vert$10:5]} &
+\multicolumn{2}{c|}{} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{imm[4:1$\vert$11]} &
+\multicolumn{1}{c|}{} & B-type \\
+\cline{2-11}
+
+&
+\multicolumn{8}{|c|}{imm[20$\vert$10:1$\vert$11$\vert$19:12]} &
+\multicolumn{1}{c|}{} &
+\multicolumn{1}{c|}{} & J-type \\
+\cline{2-11}
+
+\end{tabular}
+
+\begin{tabular}{p{0in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}l}
+& & & & & & & & & & \\
+                      &
+\instbit{15} &
+\instbit{14} &
+\instbit{13} &
+\multicolumn{1}{c}{\instbit{12}} &
+\instbit{11} &
+\instbit{10} &
+\instbit{9} &
+\instbit{8} &
+\instbit{7} &
+\instbit{6} &
+\multicolumn{1}{c}{\instbit{5}} &
+\instbit{4} &
+\instbit{3} &
+\instbit{2} &
+\instbit{1} &
+\instbit{0} \\
+\cline{2-17}
+
+&
+\multicolumn{3}{|c|}{} &
+\multicolumn{11}{c|}{imm[11$\vert$4$\vert$9:8$\vert$10$\vert$6$\vert$7$\vert$3:1$\vert$5]} &
+\multicolumn{2}{c|}{} & CJ-type \\
+\cline{2-17}
+
+\end{tabular}
+\end{center}
+\end{small}
+
+\begin{multicols}{2}
+\begin{verbatim}
+  decode_s:
+    bxfp a1, a0, 7, 5, 20
+    bxfp a0, a0, 25, 5, 25
+    c.or a0, a1
+    c.srai a0, 20
+    ret
+
+  decode_b:
+    bxfp a1, a0, 7, 1, 30
+    bxfp a2, a0, 25, 4, 24
+    bxfp a3, a0, 8, 4, 20
+    bxfp a0, a0, 31, 1, 31
+    c.or a0, a1
+    c.or a0, a2
+    c.or a0, a3
+    c.srai a0, 19
+    ret
+
+  decode_j:
+    bxfp a1, a0, 21, 12, 11
+    bxfp a2, a0, 20, 1, 22
+    bxfp a3, a0, 12, 8, 23
+    bxfp a0, a0, 31, 1, 31
+    c.or a0, a1
+    c.or a0, a2
+    c.or a0, a3
+    c.srai a0, 11
+    ret
+
+  decode_cj:
+    bxfp a1, a0, 11, 1, 24
+    bxfp a2, a0, 9, 2, 28
+    bxfp a3, a0, 8, 1, 30
+    c.or a1, a2
+    c.or a1, a3
+    bxfp a2, a0, 7, 1, 26
+    bxfp a3, a0, 6, 1, 27
+    bxfp a4, a0, 3, 3, 21
+    bxfp a5, a0, 2, 1, 25
+    bxfp a0, a0, 12, 1, 31
+    c.or a0, a1
+    c.or a0, a2
+    c.or a0, a3
+    c.or a0, a4
+    c.or a0, a5
+    c.srai a0, 20
+    ret
+\end{verbatim}
+\end{multicols}

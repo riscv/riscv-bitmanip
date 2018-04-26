@@ -1,8 +1,10 @@
 \documentclass[twoside,11pt]{book}
 
 \input{preamble}
+\usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage{longtable,booktabs}
 \usepackage[normalem]{ulem}
+\usepackage{multicol}
 \usepackage{tikz}
 
 \DeclareRobustCommand{\hsout}[1]{\texorpdfstring{\sout{#1}}{#1}}
@@ -57,6 +59,7 @@ International License.
 \input{bext}
 \input{discuss}
 \input{eval}
+\input{bfxp}
 
 \chapter{Change History}\label{change-history}
 
@@ -88,9 +91,11 @@ Date & Rev & Changes\tabularnewline
            &      & Add Pseudo-Ops, Macros, Algorithms\tabularnewline
            &      & Add Generalized Bit Permutations (shuffle)\tabularnewline
 ????-??-?? & 0.35 & Replace {\tt shuffle} with generalized zip ({\tt gzip})\tabularnewline
+           &      & Add additional XBitfield Extension\tabularnewline
 \bottomrule
 \end{longtable}
 
+\nocite{*} % get all entries from the bib data file
 \bibliographystyle{plain}
 \bibliography{xbitmanip}
 

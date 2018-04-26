@@ -354,6 +354,25 @@ uint_xlen_t bxchg(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- bfxp
+uint_xlen_t bfxp(uint_xlen_t rs1, unsigned start, unsigned len, unsigned dest)
+{
+	assert(start < 32 && len < 32 && dest < 32);
+
+	if (XLEN > 32 && len == 0)
+		len = 32;
+
+	if (start + len > XLEN || dest + len > XLEN)
+		return 0;
+
+	uint_xlen_t x = rs1;
+	x <<= XLEN-start-len;
+	x >>= XLEN-len;
+	x <<= dest;
+
+	return x;
+}
+// --REF-END--
 
 uint_xlen_t omega(uint_xlen_t x, uint_xlen_t mask)
 {

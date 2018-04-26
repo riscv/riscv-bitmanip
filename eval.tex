@@ -1,4 +1,4 @@
-\chapter{Evaluation, Algorithms}
+\chapter{Evaluation}
 
 This chapter contains a collection of short code snippets and algorithms using
 the XBitmanip extension for evaluation purposes. For the sake of simplicity we
@@ -158,9 +158,9 @@ TBD
 
 \section{Decoding RISC-V Immediates}
 
-The following code snippets decode the immedate from RISC-V S-type, B-type, J-type,
-and CJ-type instructions. They are nice ``nothing up my sleeve''-examples for
-real-world bit permutations.
+The following code snippets decode and sign-extend the immedate from RISC-V
+S-type, B-type, J-type, and CJ-type instructions. They are nice ``nothing up my
+sleeve''-examples for real-world bit permutations.
 
 \begin{small}
 \begin{center}
@@ -236,6 +236,7 @@ real-world bit permutations.
 \end{center}
 \end{small}
 
+\begin{multicols}{2}
 \begin{verbatim}
   decode_s:
     li t0, 0xfe000f80
@@ -325,3 +326,4 @@ real-world bit permutations.
     c.add a0, a5
     ret
 \end{verbatim}
+\end{multicols}
