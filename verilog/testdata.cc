@@ -1,6 +1,6 @@
-// clang++ -Wall -Os -std=c++11 -o testdata testdata.cc && ./testdata
 #include <stdio.h>
 #include "../cproofs/common.h"
+using namespace rv32b;
 
 int main()
 {

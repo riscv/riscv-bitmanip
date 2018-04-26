@@ -16,6 +16,7 @@
  */
 
 #include "common.h"
+using namespace rv32b;
 
 int main()
 {
