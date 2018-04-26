@@ -7,5 +7,7 @@ if [ ! -f bextcref-printperm.dat ] || [ bextcref-printperm -ot cproofs/common.h 
 fi
 
 python3 bextcref.py
-pdflatex xbitmanip
-bibtex xbitmanip
+for ((i=0; i<${1:-1}; i++)); do
+	pdflatex xbitmanip
+	bibtex xbitmanip
+done

@@ -21,5 +21,4 @@ There is also a [riscv-xbitmanip google group](https://groups.google.com/forum/#
 
 Building this document from the LaTeX source:
 
-    bash xbitmanip.sh
-    bash xbitmanip.sh
+    bash xbitmanip.sh 5
