@@ -16,7 +16,6 @@
  */
 
 #include "common.h"
-using namespace rv32b;
 
 // ---------------------------------------------------------
 
@@ -39,16 +38,16 @@ uint32_t prefix_byte_nibbles_impl(uint32_t src)
 	uint32_t a0, a1;
 
 	a0 = src & 0xff;
-	a0 = gzip(a0, 30);
-	a0 = gzip(a0, 30);
+	a0 = rv32b::gzip(a0, 30);
+	a0 = rv32b::gzip(a0, 30);
 
-	a1 = sll(a0, 4);
+	a1 = rv32b::sll(a0, 4);
 	a0 += a1;
 
-	a1 = sll(a0, 8);
+	a1 = rv32b::sll(a0, 8);
 	a0 += a1;
 
-	a1 = sll(a0, 16);
+	a1 = rv32b::sll(a0, 16);
 	a0 += a1;
 
 	return a0;
@@ -58,5 +57,35 @@ void prefix_byte_nibbles_check(uint32_t src)
 {
 	uint32_t a = prefix_byte_nibbles_reference(src);
 	uint32_t b = prefix_byte_nibbles_impl(src);
+	assert(a == b);
+}
+
+// ---------------------------------------------------------
+
+int tenth_bit_reference(uint32_t src)
+{
+	int k = 0;
+	for (int i = 0; i < 32; i++) {
+		if ((src >> i) & 1)
+			k++;
+		if (k == 10)
+			return i;
+	}
+	return 32;
+}
+
+int tenth_bit_impl(uint32_t src)
+{
+	uint32_t a0 = src;
+	uint32_t a1 = 0x00000200;
+	a0 = rv32b::bdep(a1, a0);
+	a0 = rv32b::ctz(a0);
+	return a0;
+}
+
+void tenth_bit_check(uint32_t src)
+{
+	uint32_t a = tenth_bit_reference(src);
+	uint32_t b = tenth_bit_impl(src);
 	assert(a == b);
 }
