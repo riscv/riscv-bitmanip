@@ -37,17 +37,13 @@ void bext32_bext64(uint64_t src, uint64_t mask)
 
 void bdep32_bdep64(uint64_t src, uint64_t mask)
 {
-	uint32_t src_lo = src;
-	uint32_t src_hi = src >> 32;
-
 	uint32_t mask_lo = mask;
 	uint32_t mask_hi = mask >> 32;
 
+	uint32_t src_lo = src;
+	uint32_t src_hi = src >> rv32b::pcnt(mask_lo);
+
 	uint32_t result_lo = rv32b::bdep(src_lo, mask_lo);
-
-	int p = rv32b::pcnt(mask_lo), q = 32 - p;
-	src_hi = (uint64_t(src_hi) << q) | (uint64_t(src_lo) >> p);
-
 	uint32_t result_hi = rv32b::bdep(src_hi, mask_hi);
 	uint64_t result = result_lo | (uint64_t(result_hi) << 32);
 

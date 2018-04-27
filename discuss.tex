@@ -57,7 +57,44 @@ extremely expensive compared to other implementations.\footnote{https://github.c
 \subsubsection{But do we really need 64-bit BEXT/BDEP?}
 
 Good question. A 64-bit BEXT/BDEP unit certainly is more than 2x the size of a
-32-bit unit and in most cases 32-bit would be sufficient.
+32-bit unit and in most cases 32-bit would be sufficient. It is also not very difficult
+to emulate 64-bit BEXT/BDEP using 32-bit BEXT/BDEP. On RV64 (with data in {\tt a0} and
+mask in {\tt a1}):
+
+\begin{multicols}{2}
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  bext64:
+    pcntw a2, a1
+    bextw a3, a0, a1
+    c.srli a0, 32
+    c.srli a1, 32
+    bextw a0, a0, a1
+    sloi a1, zero, 32
+    c.and a3, a1
+    c.and a0, a1
+    sll a0, a2
+    c.or a0, a3
+    ret
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  bdep64:
+    pcntw a2, a1
+    bdepw a3, a0, a1
+    srl a0, a0, a2
+    c.srli a1, 32
+    bdepw a0, a0, a1
+    c.slli a0, 32
+    c.slli a3, 32
+    c.srli a3, 32
+    c.or a0, a3
+    ret
+\end{verbatim}
+\end{minipage}
+\end{multicols}
 
 However, one solution here would be to still reserve the opcode for 64-bit
 BEXT/BDEP and leave it to the implementation to decide whether to implement the
