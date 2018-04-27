@@ -99,6 +99,30 @@ uint_xlen_t bdep(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+uint_xlen_t fast_bext(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t c = 0, i = 0, mask = rs2;
+	while (mask) {
+		uint_xlen_t b = mask & ~(mask + (mask & -mask));
+		c |= (rs1 & b) >> (ctz(b) - i);
+		i += pcnt(b);
+		mask -= b;
+	}
+	return c;
+}
+
+uint_xlen_t fast_bdep(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t c = 0, i = 0, mask = rs2;
+	while (mask) {
+		uint_xlen_t b = mask & ~(mask + (mask & -mask));
+		c |= (rs1 << (ctz(b) - i)) & b;
+		i += pcnt(b);
+		mask -= b;
+	}
+	return c;
+}
+
 // --REF-BEGIN-- grev
 uint32_t grev32(uint32_t rs1, uint32_t rs2)
 {

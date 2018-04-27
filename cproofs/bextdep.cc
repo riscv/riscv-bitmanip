@@ -55,24 +55,31 @@ void bdep32_bdep64(uint64_t src, uint64_t mask)
 
 // cbmc is a bit overwhelmed with proving the above functions. So we just
 // run some traditional tests instead.
+
+void runtest(uint64_t src, uint64_t mask)
+{
+	bext32_bext64(src, mask);
+	bdep32_bdep64(src, mask);
+
+	assert(rv64b::fast_bext(src, mask) == rv64b::bext(src, mask));
+	assert(rv64b::fast_bdep(src, mask) == rv64b::bdep(src, mask));
+}
+
 int main()
 {
 	for (int i = 0; i < 1000; i++) {
 		uint64_t src = xorshift64();
 		uint64_t mask = xorshift64();
 		// printf("%016llx %016llx\n", (long long)src, (long long)mask);
-		bext32_bext64(src, mask);
-		bext32_bext64(src, mask & 0xffffffff00000000LL);
-		bdep32_bdep64(src, mask);
-		bdep32_bdep64(src, mask & 0xffffffff00000000LL);
+		runtest(src, mask);
+		runtest(src, mask & 0xffffffff00000000LL);
 	}
 	for (int i = 0; i < 64; i++)
 	for (int j = 0; j < 64; j++) {
 		uint64_t src = 1LL << i;
 		uint64_t mask = 1LL << j;
 		// printf("%016llx %016llx\n", (long long)src, (long long)mask);
-		bext32_bext64(src, mask);
-		bdep32_bdep64(src, mask);
+		runtest(src, mask);
 	}
 	printf("passed.\n");
 	return 0;
