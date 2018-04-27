@@ -429,6 +429,13 @@ in which the stages are applied:
 
 \input{bextcref-gzip32}
 
+Or for RV64:
+
+\input{bextcref-gzip64}
+
+The above pattern should be intuitive to understand in order to extend
+this definition in an obvious manner for RV128.
+
 Alternatively {\tt gzip} can be implemented in a single network with one more
 stage than GREV, with the additional first and last stage executing a
 permutation that effectively reverses the order of the inner stages. However,
@@ -471,6 +478,20 @@ in the lower byte of a 32 bit word on RV32:
 \end{verbatim}
 
 The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.
+
+Other {\tt gzip} modes can be used to ``fan-out'' in blocks of 2, 4, 8, or 16 bit.
+{\tt gzip} can be combined with {\tt grevi} to perform inner shuffles. For example
+on RV64:
+
+\begin{verbatim}
+  li a0, 0x0000000012345678
+  zip4 t0, a0    ; <- 0x0102030405060708
+  nswap.b t1, t0 ; <- 0x1020304050607080
+  zip8 t2, a0    ; <- 0x0012003400560078
+  bswap.h t3, t2 ; <- 0x1200340056007800
+  zip16 t4, a0   ; <- 0x0000123400005678
+  hswap.w t5, t4 ; <- 0x1234000056780000
+\end{verbatim}
 
 \input{bextgzip}
 

@@ -184,17 +184,27 @@ uint64_t gzip64(uint64_t rs1, uint64_t rs2)
 	int mode = rs2 & 63;
 
 	if (mode & 1) {
-		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL, 0x2222222222222222LL, 1);
-		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL, 0x0c0c0c0c0c0c0c0cLL, 2);
-		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL, 0x00f000f000f000f0LL, 4);
-		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL, 0x0000ff000000ff00LL, 8);
-		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL, 0x00000000ffff0000LL, 16);
+		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL,
+		                                   0x2222222222222222LL, 1);
+		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL,
+		                                   0x0c0c0c0c0c0c0c0cLL, 2);
+		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL,
+		                                   0x00f000f000f000f0LL, 4);
+		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL,
+		                                   0x0000ff000000ff00LL, 8);
+		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL,
+		                                   0x00000000ffff0000LL, 16);
 	} else {
-		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL, 0x00000000ffff0000LL, 16);
-		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL, 0x0000ff000000ff00LL, 8);
-		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL, 0x00f000f000f000f0LL, 4);
-		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL, 0x0c0c0c0c0c0c0c0cLL, 2);
-		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL, 0x2222222222222222LL, 1);
+		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL,
+		                                   0x00000000ffff0000LL, 16);
+		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL,
+		                                   0x0000ff000000ff00LL, 8);
+		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL,
+		                                   0x00f000f000f000f0LL, 4);
+		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL,
+		                                   0x0c0c0c0c0c0c0c0cLL, 2);
+		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL,
+		                                   0x2222222222222222LL, 1);
 	}
 
 	return x;
