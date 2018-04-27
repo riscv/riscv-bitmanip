@@ -36,10 +36,12 @@ to the operation.
 
 Yes, a shift-ones instruction can easily be implemented using the logical shift
 instructions, with a bitwise invert before and after it. (This is literally the
-code we are using in the reference C implementation of rotate shift.)
+code we are using in the reference C implementation of shift-ones.)
 
-We have decided to include it for now so that we can collect benchmark data before
-making a final decision on the inclusion or exclusion of those instructions.
+We have decided to include it for now so that we can collect benchmark data
+before making a final decision on the inclusion or exclusion of those
+instructions. The main objection here is instruction encoding space. The
+hardware overhead of adding this functionality to a shifter is relatively low.
 
 \subsubsection{BEXT/BDEP look like really expensive operations. Do we really need them?}
 
