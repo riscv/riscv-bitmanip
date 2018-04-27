@@ -116,18 +116,18 @@ uint64_t grev64(uint64_t rs1, uint64_t rs2)
 {
 	uint64_t x = rs1;
 	int shamt = rs2 & 63;
-	if (shamt &  1) x = ((x & 0x5555555555555555ull) <<  1) |
-	                    ((x & 0xAAAAAAAAAAAAAAAAull) >>  1);
-	if (shamt &  2) x = ((x & 0x3333333333333333ull) <<  2) |
-	                    ((x & 0xCCCCCCCCCCCCCCCCull) >>  2);
-	if (shamt &  4) x = ((x & 0x0F0F0F0F0F0F0F0Full) <<  4) |
-	                    ((x & 0xF0F0F0F0F0F0F0F0ull) >>  4);
-	if (shamt &  8) x = ((x & 0x00FF00FF00FF00FFull) <<  8) |
-	                    ((x & 0xFF00FF00FF00FF00ull) >>  8);
-	if (shamt & 16) x = ((x & 0x0000FFFF0000FFFFull) << 16) |
-	                    ((x & 0xFFFF0000FFFF0000ull) >> 16);
-	if (shamt & 32) x = ((x & 0x00000000FFFFFFFFull) << 32) |
-	                    ((x & 0xFFFFFFFF00000000ull) >> 32);
+	if (shamt &  1) x = ((x & 0x5555555555555555LL) <<  1) |
+	                    ((x & 0xAAAAAAAAAAAAAAAALL) >>  1);
+	if (shamt &  2) x = ((x & 0x3333333333333333LL) <<  2) |
+	                    ((x & 0xCCCCCCCCCCCCCCCCLL) >>  2);
+	if (shamt &  4) x = ((x & 0x0F0F0F0F0F0F0F0FLL) <<  4) |
+	                    ((x & 0xF0F0F0F0F0F0F0F0LL) >>  4);
+	if (shamt &  8) x = ((x & 0x00FF00FF00FF00FFLL) <<  8) |
+	                    ((x & 0xFF00FF00FF00FF00LL) >>  8);
+	if (shamt & 16) x = ((x & 0x0000FFFF0000FFFFLL) << 16) |
+	                    ((x & 0xFFFF0000FFFF0000LL) >> 16);
+	if (shamt & 32) x = ((x & 0x00000000FFFFFFFFLL) << 32) |
+	                    ((x & 0xFFFFFFFF00000000LL) >> 32);
 	return x;
 }
 // --REF-END--
@@ -170,6 +170,46 @@ uint32_t gzip32(uint32_t rs1, uint32_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- gzip64
+uint64_t gzip64_stage(uint64_t src, uint64_t maskL, uint64_t maskR, int N)
+{
+	uint64_t x = src & ~(maskL | maskR);
+	x |= ((src <<  N) & maskL) | ((src >>  N) & maskR);
+	return x;
+}
+
+uint64_t gzip64(uint64_t rs1, uint64_t rs2)
+{
+	uint64_t x = rs1;
+	int mode = rs2 & 63;
+
+	if (mode & 1) {
+		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL, 0x2222222222222222LL, 1);
+		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL, 0x0c0c0c0c0c0c0c0cLL, 2);
+		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL, 0x00f000f000f000f0LL, 4);
+		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL, 0x0000ff000000ff00LL, 8);
+		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL, 0x00000000ffff0000LL, 16);
+	} else {
+		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL, 0x00000000ffff0000LL, 16);
+		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL, 0x0000ff000000ff00LL, 8);
+		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL, 0x00f000f000f000f0LL, 4);
+		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL, 0x0c0c0c0c0c0c0c0cLL, 2);
+		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL, 0x2222222222222222LL, 1);
+	}
+
+	return x;
+}
+// --REF-END--
+
+uint_xlen_t gzip(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+#if XLEN == 32
+	return gzip32(rs1, rs2);
+#else
+	return gzip64(rs1, rs2);
+#endif
+}
+
 // --REF-BEGIN-- gzip32-alt
 uint32_t gzip32_flip(uint32_t src)
 {
@@ -207,16 +247,6 @@ uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
 	return x;
 }
 // --REF-END--
-
-uint_xlen_t gzip(uint_xlen_t rs1, uint_xlen_t rs2)
-{
-#if XLEN == 32
-	return gzip32(rs1, rs2);
-#else
-	assert(0);
-	// return gzip64(rs1, rs2);
-#endif
-}
 
 // --REF-BEGIN-- bfxp
 uint_xlen_t bfxp(uint_xlen_t rs1, unsigned start, unsigned len, unsigned dest)

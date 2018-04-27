@@ -89,3 +89,17 @@ void tenth_bit_check(uint32_t src)
 	uint32_t b = tenth_bit_impl(src);
 	assert(a == b);
 }
+
+// ---------------------------------------------------------
+
+void zip_fanout()
+{
+	uint64_t x = 0x0000000012345678LL;
+
+	uint64_t debug_a = x;
+	uint64_t debug_b = rv64b::gzip(x, 56);
+
+	assert(rv64b::gzip(x, 56) == 0x0102030405060708);
+	assert(rv64b::gzip(x, 48) == 0x0012003400560078);
+	assert(rv64b::gzip(x, 32) == 0x0000123400005678);
+}

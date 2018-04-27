@@ -66,14 +66,14 @@ int main()
 		uint64_t mask = xorshift64();
 		// printf("%016llx %016llx\n", (long long)src, (long long)mask);
 		bext32_bext64(src, mask);
-		bext32_bext64(src, mask & 0xffffffff00000000ull);
+		bext32_bext64(src, mask & 0xffffffff00000000LL);
 		bdep32_bdep64(src, mask);
-		bdep32_bdep64(src, mask & 0xffffffff00000000ull);
+		bdep32_bdep64(src, mask & 0xffffffff00000000LL);
 	}
 	for (int i = 0; i < 64; i++)
 	for (int j = 0; j < 64; j++) {
-		uint64_t src = 1ull << i;
-		uint64_t mask = 1ull << j;
+		uint64_t src = 1LL << i;
+		uint64_t mask = 1LL << j;
 		// printf("%016llx %016llx\n", (long long)src, (long long)mask);
 		bext32_bext64(src, mask);
 		bdep32_bdep64(src, mask);
