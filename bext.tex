@@ -176,7 +176,7 @@ this definition in an obvious manner for RV128.
 \begin{table}[h]
 \begin{small}
 \begin{center}
-\begin{tabular}{l l p{0.5in} l l p{0.3in} l l}
+\begin{tabular}{r l p{0.5in} r l p{0.3in} r l}
 
 \multicolumn{2}{c}{RV32} & &
 \multicolumn{5}{c}{RV64} \\
@@ -192,53 +192,53 @@ this definition in an obvious manner for RV128.
 \cline{4-5}
 \cline{7-8}
 
-00000 & ---           &   &   000000 & ---           &   &   100000 & {\tt wswap} \\
-00001 & {\tt brev.p}  &   &   000001 & {\tt brev.p}  &   &   100001 & ---         \\
-00010 & {\tt pswap.n} &   &   000010 & {\tt pswap.n} &   &   100010 & ---         \\
-00011 & {\tt brev.n}  &   &   000011 & {\tt brev.n}  &   &   100011 & ---         \\
-00100 & {\tt nswap.b} &   &   000100 & {\tt nswap.b} &   &   100100 & ---         \\
-00101 & ---           &   &   000101 & ---           &   &   100101 & ---         \\
-00110 & {\tt pswap.b} &   &   000110 & {\tt pswap.b} &   &   100110 & ---         \\
-00111 & {\tt brev.b}  &   &   000111 & {\tt brev.b}  &   &   100111 & ---         \\
+ 0: 00000 & ---           &   &  0: 000000 & ---           &   & 32: 100000 & {\tt wswap} \\
+ 1: 00001 & {\tt brev.p}  &   &  1: 000001 & {\tt brev.p}  &   & 33: 100001 & ---         \\
+ 2: 00010 & {\tt pswap.n} &   &  2: 000010 & {\tt pswap.n} &   & 34: 100010 & ---         \\
+ 3: 00011 & {\tt brev.n}  &   &  3: 000011 & {\tt brev.n}  &   & 35: 100011 & ---         \\
+ 4: 00100 & {\tt nswap.b} &   &  4: 000100 & {\tt nswap.b} &   & 36: 100100 & ---         \\
+ 5: 00101 & ---           &   &  5: 000101 & ---           &   & 37: 100101 & ---         \\
+ 6: 00110 & {\tt pswap.b} &   &  6: 000110 & {\tt pswap.b} &   & 38: 100110 & ---         \\
+ 7: 00111 & {\tt brev.b}  &   &  7: 000111 & {\tt brev.b}  &   & 39: 100111 & ---         \\
 
 \cline{1-2}
 \cline{4-5}
 \cline{7-8}
 
-01000 & {\tt bswap.h} &   &   001000 & {\tt bswap.h} &   &   101000 & ---         \\
-01001 & ---           &   &   001001 & ---           &   &   101001 & ---         \\
-01010 & ---           &   &   001010 & ---           &   &   101010 & ---         \\
-01011 & ---           &   &   001011 & ---           &   &   101011 & ---         \\
-01100 & {\tt nswap.h} &   &   001100 & {\tt nswap.h} &   &   101100 & ---         \\
-01101 & ---           &   &   001101 & ---           &   &   101101 & ---         \\
-01110 & {\tt pswap.h} &   &   001110 & {\tt pswap.h} &   &   101110 & ---         \\
-01111 & {\tt brev.h}  &   &   001111 & {\tt brev.h}  &   &   101111 & ---         \\
+ 8: 01000 & {\tt bswap.h} &   &  8: 001000 & {\tt bswap.h} &   & 40: 101000 & ---         \\
+ 9: 01001 & ---           &   &  9: 001001 & ---           &   & 41: 101001 & ---         \\
+10: 01010 & ---           &   & 10: 001010 & ---           &   & 42: 101010 & ---         \\
+11: 01011 & ---           &   & 11: 001011 & ---           &   & 43: 101011 & ---         \\
+12: 01100 & {\tt nswap.h} &   & 12: 001100 & {\tt nswap.h} &   & 44: 101100 & ---         \\
+13: 01101 & ---           &   & 13: 001101 & ---           &   & 45: 101101 & ---         \\
+14: 01110 & {\tt pswap.h} &   & 14: 001110 & {\tt pswap.h} &   & 46: 101110 & ---         \\
+15: 01111 & {\tt brev.h}  &   & 15: 001111 & {\tt brev.h}  &   & 47: 101111 & ---         \\
 
 \cline{1-2}
 \cline{4-5}
 \cline{7-8}
 
-10000 & {\tt hswap}   &   &   010000 & {\tt hswap.w} &   &   110000 & {\tt hswap} \\
-10001 & ---           &   &   010001 & ---           &   &   110001 & ---         \\
-10010 & ---           &   &   010010 & ---           &   &   110010 & ---         \\
-10011 & ---           &   &   010011 & ---           &   &   110011 & ---         \\
-10100 & ---           &   &   010100 & ---           &   &   110100 & ---         \\
-10101 & ---           &   &   010101 & ---           &   &   110101 & ---         \\
-10110 & ---           &   &   010110 & ---           &   &   110110 & ---         \\
-10111 & ---           &   &   010111 & ---           &   &   110111 & ---         \\
+16: 10000 & {\tt hswap}   &   & 16: 010000 & {\tt hswap.w} &   & 48: 110000 & {\tt hswap} \\
+17: 10001 & ---           &   & 17: 010001 & ---           &   & 49: 110001 & ---         \\
+18: 10010 & ---           &   & 18: 010010 & ---           &   & 50: 110010 & ---         \\
+19: 10011 & ---           &   & 19: 010011 & ---           &   & 51: 110011 & ---         \\
+20: 10100 & ---           &   & 20: 010100 & ---           &   & 52: 110100 & ---         \\
+21: 10101 & ---           &   & 21: 010101 & ---           &   & 53: 110101 & ---         \\
+22: 10110 & ---           &   & 22: 010110 & ---           &   & 54: 110110 & ---         \\
+23: 10111 & ---           &   & 23: 010111 & ---           &   & 55: 110111 & ---         \\
 
 \cline{1-2}
 \cline{4-5}
 \cline{7-8}
 
-11000 & {\tt bswap}   &   &   011000 & {\tt bswap.w} &   &   111000 & {\tt bswap} \\
-11001 & ---           &   &   011001 & ---           &   &   111001 & ---         \\
-11010 & ---           &   &   011010 & ---           &   &   111010 & ---         \\
-11011 & ---           &   &   011011 & ---           &   &   111011 & ---         \\
-11100 & {\tt nswap}   &   &   011100 & {\tt nswap.w} &   &   111100 & {\tt nswap} \\
-11101 & ---           &   &   011101 & ---           &   &   111101 & ---         \\
-11110 & {\tt pswap}   &   &   011110 & {\tt pswap.w} &   &   111110 & {\tt pswap} \\
-11111 & {\tt brev}    &   &   011111 & {\tt brev.w}  &   &   111111 & {\tt brev}  \\
+24: 11000 & {\tt bswap}   &   & 24: 011000 & {\tt bswap.w} &   & 56: 111000 & {\tt bswap} \\
+25: 11001 & ---           &   & 25: 011001 & ---           &   & 57: 111001 & ---         \\
+26: 11010 & ---           &   & 26: 011010 & ---           &   & 58: 111010 & ---         \\
+27: 11011 & ---           &   & 27: 011011 & ---           &   & 59: 111011 & ---         \\
+28: 11100 & {\tt nswap}   &   & 28: 011100 & {\tt nswap.w} &   & 60: 111100 & {\tt nswap} \\
+29: 11101 & ---           &   & 29: 011101 & ---           &   & 61: 111101 & ---         \\
+30: 11110 & {\tt pswap}   &   & 30: 011110 & {\tt pswap.w} &   & 62: 111110 & {\tt pswap} \\
+31: 11111 & {\tt brev}    &   & 31: 011111 & {\tt brev.w}  &   & 63: 111111 & {\tt brev}  \\
 \end{tabular}
 \end{center}
 \end{small}
@@ -299,52 +299,54 @@ used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
 \begin{table}[h]
 \begin{small}
 \begin{center}
-\begin{tabular}{c l l}
-      mode    & Bit index rotations              & Pseudo-Instruction     \\
+\begin{tabular}{r l l}
+\multicolumn{1}{c}{mode} &
+Bit index rotations &
+Pseudo-Instruction \\
 
 \hline
 
-\sout{0000 0} & no-op                            & {\it reserved}         \\
-\sout{0000 1} & no-op                            & {\it reserved}         \\
-      0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
-\sout{0001 1} & {\it equivalent to 0001 0}       & {\it reserved}         \\
-      0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
-\sout{0010 1} & {\it equivalent to 0010 0}       & {\it reserved}         \\
-      0011 0  & {\tt i[2] -> i[0]}               & {\tt zip.b}            \\
-      0011 1  & {\tt i[2] <- i[0]}               & {\tt unzip.b}          \\
+\sout{ 0: 0000 0} & no-op                            & {\it reserved}         \\
+\sout{ 1: 0000 1} & no-op                            & {\it reserved}         \\
+       2: 0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
+\sout{ 3: 0001 1} & {\it equivalent to 0001 0}       & {\it reserved}         \\
+       4: 0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
+\sout{ 5: 0010 1} & {\it equivalent to 0010 0}       & {\it reserved}         \\
+       6: 0011 0  & {\tt i[2] -> i[0]}               & {\tt zip.b}            \\
+       7: 0011 1  & {\tt i[2] <- i[0]}               & {\tt unzip.b}          \\
 
 \hline
 
-      0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
-\sout{0100 1} & {\it equivalent to 0100 0}       & {\it reserved}         \\
-\sout{0101 0} & {\tt i[3] -> i[2], i[1] -> i[0]} & {\it reserved}         \\
-\sout{0101 1} & {\it equivalent to 0101 0}       & {\it reserved}         \\
-      0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
-      0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
-      0111 0  & {\tt i[3] -> i[0]}               & {\tt zip.h}            \\
-      0111 1  & {\tt i[3] <- i[0]}               & {\tt unzip.h}          \\
+       8: 0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
+\sout{ 9: 0100 1} & {\it equivalent to 0100 0}       & {\it reserved}         \\
+\sout{10: 0101 0} & {\tt i[3] -> i[2], i[1] -> i[0]} & {\it reserved}         \\
+\sout{11: 0101 1} & {\it equivalent to 0101 0}       & {\it reserved}         \\
+      12: 0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
+      13: 0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
+      14: 0111 0  & {\tt i[3] -> i[0]}               & {\tt zip.h}            \\
+      15: 0111 1  & {\tt i[3] <- i[0]}               & {\tt unzip.h}          \\
 
 \hline
 
-      1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
-\sout{1000 1} & {\it equivalent to 1000 0}       & {\it reserved}         \\
-\sout{1001 0} & {\tt i[4] -> i[3], i[1] -> i[0]} & {\it reserved}         \\
-\sout{1001 1} & {\it equivalent to 1001 0}       & {\it reserved}         \\
-\sout{1010 0} & {\tt i[4] -> i[3], i[2] -> i[1]} & {\it reserved}         \\
-\sout{1010 1} & {\it equivalent to 1010 0}       & {\it reserved}         \\
-\sout{1011 0} & {\tt i[4] -> i[3], i[2] -> i[0]} & {\it reserved}         \\
-\sout{1011 1} & {\tt i[4] <- i[3], i[2] <- i[0]} & {\it reserved}         \\
+      16: 1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
+\sout{17: 1000 1} & {\it equivalent to 1000 0}       & {\it reserved}         \\
+\sout{18: 1001 0} & {\tt i[4] -> i[3], i[1] -> i[0]} & {\it reserved}         \\
+\sout{19: 1001 1} & {\it equivalent to 1001 0}       & {\it reserved}         \\
+\sout{20: 1010 0} & {\tt i[4] -> i[3], i[2] -> i[1]} & {\it reserved}         \\
+\sout{21: 1010 1} & {\it equivalent to 1010 0}       & {\it reserved}         \\
+\sout{22: 1011 0} & {\tt i[4] -> i[3], i[2] -> i[0]} & {\it reserved}         \\
+\sout{23: 1011 1} & {\tt i[4] <- i[3], i[2] <- i[0]} & {\it reserved}         \\
 
 \hline
 
-      1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4}             \\
-      1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4}           \\
-\sout{1101 0} & {\tt i[4] -> i[2], i[1] -> i[0]} & {\it reserved}         \\
-\sout{1101 1} & {\tt i[4] <- i[2], i[1] <- i[0]} & {\it reserved}         \\
-      1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2}             \\
-      1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2}           \\
-      1111 0  & {\tt i[4] -> i[0]}               & {\tt zip}              \\
-      1111 1  & {\tt i[4] <- i[0]}               & {\tt unzip}            \\
+      24: 1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4}             \\
+      25: 1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4}           \\
+\sout{26: 1101 0} & {\tt i[4] -> i[2], i[1] -> i[0]} & {\it reserved}         \\
+\sout{27: 1101 1} & {\tt i[4] <- i[2], i[1] <- i[0]} & {\it reserved}         \\
+      28: 1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2}             \\
+      29: 1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2}           \\
+      30: 1111 0  & {\tt i[4] -> i[0]}               & {\tt zip}              \\
+      31: 1111 1  & {\tt i[4] <- i[0]}               & {\tt unzip}            \\
 \end{tabular}
 \end{center}
 \end{small}
@@ -361,50 +363,50 @@ used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
 \cline{1-2}
 \cline{4-5}
 
-\sout{00000 0} & {\it reserved}           &   &   \sout{10000 0} & {\tt zip16, unzip16}    \\
-\sout{00000 1} & {\it reserved}           &   &   \sout{10000 1} & {\it reserved}          \\
-      00001 0  & {\tt zip.n, unzip.n}     &   &   \sout{10001 0} & {\it reserved}          \\
-\sout{00001 1} & {\it reserved}           &   &   \sout{10001 1} & {\it reserved}          \\
-      00010 0  & {\tt zip2.b, unzip2.b}   &   &   \sout{10010 0} & {\it reserved}          \\
-\sout{00010 1} & {\it reserved}           &   &   \sout{10010 1} & {\it reserved}          \\
-      00011 0  & {\tt zip.b}              &   &   \sout{10011 0} & {\it reserved}          \\
-      00011 1  & {\tt unzip.b}            &   &   \sout{10011 1} & {\it reserved}          \\
+\sout{ 0: 00000 0} & {\it reserved}           &   &         32: 10000 0  & {\tt zip16, unzip16}    \\
+\sout{ 1: 00000 1} & {\it reserved}           &   &   \sout{33: 10000 1} & {\it reserved}          \\
+       2: 00001 0  & {\tt zip.n, unzip.n}     &   &   \sout{34: 10001 0} & {\it reserved}          \\
+\sout{ 3: 00001 1} & {\it reserved}           &   &   \sout{35: 10001 1} & {\it reserved}          \\
+       4: 00010 0  & {\tt zip2.b, unzip2.b}   &   &   \sout{36: 10010 0} & {\it reserved}          \\
+\sout{ 5: 00010 1} & {\it reserved}           &   &   \sout{37: 10010 1} & {\it reserved}          \\
+       6: 00011 0  & {\tt zip.b}              &   &   \sout{38: 10011 0} & {\it reserved}          \\
+       7: 00011 1  & {\tt unzip.b}            &   &   \sout{39: 10011 1} & {\it reserved}          \\
 
 \cline{1-2}
 \cline{4-5}
 
-      00100 0  & {\tt zip4.h, unzip4.h}   &   &   \sout{10100 0} & {\it reserved}          \\
-\sout{00100 1} & {\it reserved}           &   &   \sout{10100 1} & {\it reserved}          \\
-\sout{00101 0} & {\it reserved}           &   &   \sout{10101 0} & {\it reserved}          \\
-\sout{00101 1} & {\it reserved}           &   &   \sout{10101 1} & {\it reserved}          \\
-      00110 0  & {\tt zip2.h}             &   &   \sout{10110 0} & {\it reserved}          \\
-      00110 1  & {\tt unzip2.h}           &   &   \sout{10110 1} & {\it reserved}          \\
-      00111 0  & {\tt zip.h}              &   &   \sout{10111 0} & {\it reserved}          \\
-      00111 1  & {\tt unzip.h}            &   &   \sout{10111 1} & {\it reserved}          \\
+       8: 00100 0  & {\tt zip4.h, unzip4.h}   &   &   \sout{40: 10100 0} & {\it reserved}          \\
+\sout{ 9: 00100 1} & {\it reserved}           &   &   \sout{41: 10100 1} & {\it reserved}          \\
+\sout{10: 00101 0} & {\it reserved}           &   &   \sout{42: 10101 0} & {\it reserved}          \\
+\sout{11: 00101 1} & {\it reserved}           &   &   \sout{43: 10101 1} & {\it reserved}          \\
+      12: 00110 0  & {\tt zip2.h}             &   &   \sout{44: 10110 0} & {\it reserved}          \\
+      13: 00110 1  & {\tt unzip2.h}           &   &   \sout{45: 10110 1} & {\it reserved}          \\
+      14: 00111 0  & {\tt zip.h}              &   &   \sout{46: 10111 0} & {\it reserved}          \\
+      15: 00111 1  & {\tt unzip.h}            &   &   \sout{47: 10111 1} & {\it reserved}          \\
 
 \cline{1-2}
 \cline{4-5}
 
-      01000 0  & {\tt zip8.w, unzip8.w}   &   &         11000 0  & {\tt zip8, unzip8}      \\
-\sout{01000 1} & {\it reserved}           &   &   \sout{11000 1} & {\it reserved}          \\
-\sout{01001 0} & {\it reserved}           &   &   \sout{11001 0} & {\it reserved}          \\
-\sout{01001 1} & {\it reserved}           &   &   \sout{11001 1} & {\it reserved}          \\
-\sout{01010 0} & {\it reserved}           &   &   \sout{11010 0} & {\it reserved}          \\
-\sout{01010 1} & {\it reserved}           &   &   \sout{11010 1} & {\it reserved}          \\
-\sout{01011 0} & {\it reserved}           &   &   \sout{11011 0} & {\it reserved}          \\
-\sout{01011 1} & {\it reserved}           &   &   \sout{11011 1} & {\it reserved}          \\
+      16: 01000 0  & {\tt zip8.w, unzip8.w}   &   &         48: 11000 0  & {\tt zip8, unzip8}      \\
+\sout{17: 01000 1} & {\it reserved}           &   &   \sout{49: 11000 1} & {\it reserved}          \\
+\sout{18: 01001 0} & {\it reserved}           &   &   \sout{50: 11001 0} & {\it reserved}          \\
+\sout{19: 01001 1} & {\it reserved}           &   &   \sout{51: 11001 1} & {\it reserved}          \\
+\sout{20: 01010 0} & {\it reserved}           &   &   \sout{52: 11010 0} & {\it reserved}          \\
+\sout{21: 01010 1} & {\it reserved}           &   &   \sout{53: 11010 1} & {\it reserved}          \\
+\sout{22: 01011 0} & {\it reserved}           &   &   \sout{54: 11011 0} & {\it reserved}          \\
+\sout{23: 01011 1} & {\it reserved}           &   &   \sout{55: 11011 1} & {\it reserved}          \\
 
 \cline{1-2}
 \cline{4-5}
 
-      01100 0  & {\tt zip4.w}             &   &         11100 0  & {\tt zip4}              \\
-      01100 1  & {\tt unzip4.w}           &   &         11100 1  & {\tt unzip4}            \\
-\sout{01101 0} & {\it reserved}           &   &   \sout{11101 0} & {\it reserved}          \\
-\sout{01101 1} & {\it reserved}           &   &   \sout{11101 1} & {\it reserved}          \\
-      01110 0  & {\tt zip2.w}             &   &         11110 0  & {\tt zip2}              \\
-      01110 1  & {\tt unzip2.w}           &   &         11110 1  & {\tt unzip2}            \\
-      01111 0  & {\tt zip.w}              &   &         11111 0  & {\tt zip}               \\
-      01111 1  & {\tt unzip.w}            &   &         11111 1  & {\tt unzip}             \\
+      24: 01100 0  & {\tt zip4.w}             &   &         56: 11100 0  & {\tt zip4}              \\
+      25: 01100 1  & {\tt unzip4.w}           &   &         57: 11100 1  & {\tt unzip4}            \\
+\sout{26: 01101 0} & {\it reserved}           &   &   \sout{58: 11101 0} & {\it reserved}          \\
+\sout{27: 01101 1} & {\it reserved}           &   &   \sout{59: 11101 1} & {\it reserved}          \\
+      28: 01110 0  & {\tt zip2.w}             &   &         60: 11110 0  & {\tt zip2}              \\
+      29: 01110 1  & {\tt unzip2.w}           &   &         61: 11110 1  & {\tt unzip2}            \\
+      30: 01111 0  & {\tt zip.w}              &   &         62: 11111 0  & {\tt zip}               \\
+      31: 01111 1  & {\tt unzip.w}            &   &         63: 11111 1  & {\tt unzip}             \\
 \end{tabular}
 \end{center}
 \end{small}
