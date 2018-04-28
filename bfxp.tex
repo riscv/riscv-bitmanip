@@ -25,67 +25,93 @@ way too wasteful for an official RISC-V ISA extension, especially for something
 that can be encoded in the same space with two compressed instructions.
 
 However, there is a tendency for implementors to fill the unused instruction
-encoding space with a myriad of instructions with large immediates.~\cite{Ri5cy}
+encoding space with a myriad of complex instructions with large immediates.~\cite{Ri5cy}
 
 So we propose XBitfield, a custom, non-standard extension that uses the entire
 major opcode 1111011 ({\it custom-3}) for a single bit-field extract and place
-({\tt bfxp}) instruction, effectively packing 3 shift operations in one single
-instruction.
+({\tt bfxp}) instruction, effectively packing 3 shift-immediate operations and
+one OR in one single instruction.
 
 The goal here is that individual implementors can easily share patches for
-compiler toolchains. By standardising one powerful (but easy to implement)
+compiler toolchains. By standardising one powerful but easy to implement
 instruction instead of a whole range of simpler instructions we keep the
-complexity of the extension low. This extension might be of interest to
-every implementor who is building a product with focus on bit manipulation
-code and is not otherwise using the {\it custom-3} encoding space and does not
-want to spend a lot of hardware resources on making use of that instruction
-encoding space.
+complexity of the extension low.
 
 \section{Bit-field extract and place ({\tt bfxp})}
 
 The bit-field extract and place instruction extracts a bitfield of length
-{\tt len} starting at bit position {\tt start}, and places it at the new
-offset {\tt dest}. The other bits of the result are set to zero.
+{\tt len} starting at bit position {\tt start}, creates a new value with
+the extraced bitfield at offset {\tt dest}, and OR's that with {\tt rs2}.
 
-The immediate arguments {\tt start}, {\tt len}, and {\tt dest} are unsigned
-5 bit immediates. On RV64 and RV128 {\tt len} $=$ 0 encodes for {\tt len} $=$ 32.
+The immediate argument {\tt start} is a 5 bit immediate on RV32 and a 6 bit
+immediate on RV64.
 
-The instruction returns 0 if $\texttt{start}+\texttt{len}>\textrm{XLEN}$ or
-$\texttt{dest}+\texttt{len}>\textrm{XLEN}$.
+The immediate arguments {\tt len} and {\tt dest} are unsigned
+5 bit immediates. On RV64 {\tt len} $=$ 0 encodes for {\tt len} $=$ 32.
+
+Instruction words with $\texttt{start}+\texttt{len}>\textrm{XLEN}$ or
+$\texttt{dest}+\texttt{len}>\textrm{XLEN}$ are reserved for other instructions.
 
 \input{bextcref-bfxp}
 
-The assembler mnemonic for {\tt bfxp} is as follows. ({\tt dest} $=$ 0 is assumed when {\tt dest} is omitted.)
+The assembler mnemonic for {\tt bfxp} is as follows.
 
 \begin{verbatim}
-  bfxp rd, rs, start, len[, dest]
+  bfxp rd, rs1, rs2, start, len, dest
 \end{verbatim}
 
 {\tt bfxp} occupies the {\it custom-3} major opcode:
 
-\vspace{-0.3in}
 \begin{center}
-\begin{tabular}{R@{}R@{}F@{}R@{}F@{}R@{}O}
-\\
-\instbitrange{31}{27} &
-\instbitrange{26}{22} &
-\instbitrange{21}{20} &
-\instbitrange{19}{15} &
-\instbitrange{14}{12} &
-\instbitrange{11}{7} &
+\begin{tabular}{T@{}F@{}W@{}F@{}R@{}F@{}O}
+\instbitrange{31}{23} &
+\instbitrange{22}{20} &
+\instbitrange{19}{18} &
+\instbitrange{17}{15} &
+\instbitrange{14}{10} &
+\instbitrange{9}{7} &
 \instbitrange{6}{0} \\
 \hline
-\multicolumn{1}{|c|}{start} &
-\multicolumn{1}{c|}{len} &
-\multicolumn{1}{c|}{dest[4:3]} &
-\multicolumn{1}{c|}{rs1} &
-\multicolumn{1}{c|}{dest[2:0]} &
-\multicolumn{1}{c|}{rd} &
+\multicolumn{1}{|c|}{F9} &
+\multicolumn{1}{c|}{rs2$^*$} &
+\multicolumn{1}{c|}{F2} &
+\multicolumn{1}{c|}{rs1$'$} &
+\multicolumn{1}{c|}{F5} &
+\multicolumn{1}{c|}{rd$'$} &
 \multicolumn{1}{c|}{1111011} \\
 \hline
-5 & 5 & 2 & 5 & 3 & 5 & 7 \\
+9 & 3 & 2 & 3 & 5 & 3 & 7 \\
 \end{tabular}
 \end{center}
+
+With rs1$'$ and rd$'$ interpreted as in ``C'' opcodes
+($\textrm{rs1} = \textrm{rs1$'$}+8$, $\textrm{rd} = \textrm{rd$'$}+8$),
+and rs2$^*$ being interpreted the same way, except that $\textrm{rs2} = 0$
+when $\textrm{rs2$^*$} = 0$.
+
+The bits from {\tt start}, {\tt len}, and {\tt dest} are placed in
+F9, F5, and F7 in an order that tries the maximize the usefulness of the
+remaining brownfield in the {\it custom-3} opcode:
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c|l}
+\cline{1-6}
+\multicolumn{1}{|c|}{F5[4]} & F5[3] & F9[8] & F9[6] & F5[1] & F5[0] & {\tt start} \\
+\cline{1-6}
+                            & F5[2] & F9[7] & F9[5] & F2[1] & F2[0] & {\tt len} \\
+\cline{2-6}
+                            & F9[4] & F9[3] & F9[2] & F9[1] & F9[0] & {\tt dest} \\
+\cline{2-6}
+\end{tabular}
+\end{center}
+
+Or the inverse mapping:
+
+\begin{verbatim}
+  F9 := {start[3], len[3], start[2], len[2], dest[4:0]}
+  F5 := {start[5:4], len[4], start[1:0]}
+  F2 := len[1:0]
+\end{verbatim}
 
 \section{Evaluation: Decoding RISC-V Immediates}
 
@@ -170,50 +196,36 @@ sleeve''-examples for real-world bit permutations.
 \begin{multicols}{2}
 \begin{verbatim}
   decode_s:
-    bfxp a1, a0, 7, 5, 20
-    bfxp a0, a0, 25, 5, 25
-    c.or a0, a1
+    bfxp a1, a0, zero, 7, 5, 20
+    bfxp a0, a0, a1, 25, 5, 25
     c.srai a0, 20
     ret
 
   decode_b:
-    bfxp a1, a0, 7, 1, 30
-    bfxp a2, a0, 25, 4, 24
-    bfxp a3, a0, 8, 4, 20
-    bfxp a0, a0, 31, 1, 31
-    c.or a0, a1
-    c.or a0, a2
-    c.or a0, a3
+    bfxp a1, a0, zero, 7, 1, 30
+    bfxp a1, a0, a1, 25, 4, 24
+    bfxp a1, a0, a1, 8, 4, 20
+    bfxp a0, a0, a1, 31, 1, 31
     c.srai a0, 19
     ret
 
   decode_j:
-    bfxp a1, a0, 21, 12, 11
-    bfxp a2, a0, 20, 1, 22
-    bfxp a3, a0, 12, 8, 23
-    bfxp a0, a0, 31, 1, 31
-    c.or a0, a1
-    c.or a0, a2
-    c.or a0, a3
+    bfxp a1, a0, zero, 21, 12, 11
+    bfxp a1, a0, a1, 20, 1, 22
+    bfxp a1, a0, a1, 12, 8, 23
+    bfxp a0, a0, a1, 31, 1, 31
     c.srai a0, 11
     ret
 
   decode_cj:
-    bfxp a1, a0, 11, 1, 24
-    bfxp a2, a0, 9, 2, 28
-    bfxp a3, a0, 8, 1, 30
-    c.or a1, a2
-    c.or a1, a3
-    bfxp a2, a0, 7, 1, 26
-    bfxp a3, a0, 6, 1, 27
-    bfxp a4, a0, 3, 3, 21
-    bfxp a5, a0, 2, 1, 25
-    bfxp a0, a0, 12, 1, 31
-    c.or a0, a1
-    c.or a0, a2
-    c.or a0, a3
-    c.or a0, a4
-    c.or a0, a5
+    bfxp a1, a0, zero, 11, 1, 24
+    bfxp a1, a0, a1, 9, 2, 28
+    bfxp a1, a0, a1, 8, 1, 30
+    bfxp a1, a0, a1, 7, 1, 26
+    bfxp a1, a0, a1, 6, 1, 27
+    bfxp a1, a0, a1, 3, 3, 21
+    bfxp a1, a0, a1, 2, 1, 25
+    bfxp a0, a0, a1, 12, 1, 31
     c.srai a0, 20
     ret
 \end{verbatim}

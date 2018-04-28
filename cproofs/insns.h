@@ -283,22 +283,24 @@ uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
 // --REF-END--
 
 // --REF-BEGIN-- bfxp
-uint_xlen_t bfxp(uint_xlen_t rs1, unsigned start, unsigned len, unsigned dest)
+uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
+		unsigned start, unsigned len, unsigned dest)
 {
-	assert(start < 32 && len < 32 && dest < 32);
+	assert(start < XLEN && len < 32 && dest < 32);
 
 	if (XLEN > 32 && len == 0)
 		len = 32;
 
-	if (start + len > XLEN || dest + len > XLEN || len == 0)
-		return 0;
+	assert(start + len <= XLEN);
+	assert(dest + len <= XLEN);
+	assert(len != 0);
 
 	uint_xlen_t x = rs1;
 	x <<= XLEN-start-len;
 	x >>= XLEN-len;
 	x <<= dest;
 
-	return x;
+	return x | rs2;
 }
 // --REF-END--
 
