@@ -197,20 +197,20 @@ sleeve''-examples for real-world bit permutations.
 \begin{verbatim}
   decode_s:
     bfxp a1, a0, zero, 7, 5, 20
-    bfxp a0, a0, a1, 25, 5, 25
+    bfxp a0, a0, a1, 25, 7, 25
     c.srai a0, 20
     ret
 
   decode_b:
     bfxp a1, a0, zero, 7, 1, 30
-    bfxp a1, a0, a1, 25, 4, 24
+    bfxp a1, a0, a1, 25, 6, 24
     bfxp a1, a0, a1, 8, 4, 20
     bfxp a0, a0, a1, 31, 1, 31
     c.srai a0, 19
     ret
 
   decode_j:
-    bfxp a1, a0, zero, 21, 12, 11
+    bfxp a1, a0, zero, 21, 10, 12
     bfxp a1, a0, a1, 20, 1, 22
     bfxp a1, a0, a1, 12, 8, 23
     bfxp a0, a0, a1, 31, 1, 31

@@ -273,3 +273,71 @@ int main()
 	return 0;
 }
 #endif
+
+// ---------------------------------------------------------
+
+void check_bfxp_s_imm(insn_t insn)
+{
+	uint32_t ref = insn.s_imm();
+
+	uint32_t a0 = insn.b;
+	uint32_t a1;
+
+	a1 = bfxp(a0, 0, 7, 5, 20);
+	a0 = bfxp(a0, a1, 25, 7, 25);
+	a0 = sra(a0, 20);
+
+	assert(ref == a0);
+}
+
+void check_bfxp_b_imm(insn_t insn)
+{
+	uint32_t ref = insn.sb_imm();
+
+	uint32_t a0 = insn.b;
+	uint32_t a1;
+
+	a1 = bfxp(a0, 0, 7, 1, 30);
+	a1 = bfxp(a0, a1, 25, 6, 24);
+	a1 = bfxp(a0, a1, 8, 4, 20);
+	a0 = bfxp(a0, a1, 31, 1, 31);
+	a0 = sra(a0, 19);
+
+	assert(ref == a0);
+}
+
+void check_bfxp_j_imm(insn_t insn)
+{
+	uint32_t ref = insn.uj_imm();
+
+	uint32_t a0 = insn.b;
+	uint32_t a1;
+
+	a1 = bfxp(a0, 0, 21, 10, 12);
+	a1 = bfxp(a0, a1, 20, 1, 22);
+	a1 = bfxp(a0, a1, 12, 8, 23);
+	a0 = bfxp(a0, a1, 31, 1, 31);
+	a0 = sra(a0, 11);
+
+	assert(ref == a0);
+}
+
+void check_bfxp_cj_imm(insn_t insn)
+{
+	uint32_t ref = insn.rvc_j_imm();
+
+	uint32_t a0 = insn.b;
+	uint32_t a1;
+
+	a1 = bfxp(a0, 0, 11, 1, 24);
+	a1 = bfxp(a0, a1, 9, 2, 28);
+	a1 = bfxp(a0, a1, 8, 1, 30);
+	a1 = bfxp(a0, a1, 7, 1, 26);
+	a1 = bfxp(a0, a1, 6, 1, 27);
+	a1 = bfxp(a0, a1, 3, 3, 21);
+	a1 = bfxp(a0, a1, 2, 1, 25);
+	a0 = bfxp(a0, a1, 12, 1, 31);
+	a0 = sra(a0, 20);
+
+	assert(ref == a0);
+}
