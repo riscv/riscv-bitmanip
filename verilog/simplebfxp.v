@@ -17,6 +17,7 @@ module simplebfxp (
 	end
 endmodule
 
+(* keep_hierarchy *)
 module ror (
 	input  [31:0] din,
 	input  [ 4:0] shamt,

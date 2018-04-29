@@ -36,12 +36,3 @@ module tinygrev (
 	assign rd = buffer;
 	assign done = state[5];
 endmodule
-
-// for size comparison
-module ror (
-	input [31:0] din,
-	input [4:0] shamt,
-	output [31:0] dout
-);
-	assign dout = {din, din} >> shamt;
-endmodule

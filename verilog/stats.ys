@@ -1,0 +1,60 @@
+#############################
+## reference_ror - ASIC
+
+design -reset
+read_verilog reference_ror.v
+synth -top reference_ror
+abc -g cmos4
+tee -o stats_ror_asic.txt stat
+
+
+#############################
+## reference_ror - FPGA
+
+design -reset
+read_verilog reference_ror.v
+synth -top reference_ror
+abc -lut 4
+tee -o stats_ror_fpga.txt stat
+
+
+#############################
+## simplebfxp - ASIC
+
+design -reset
+read_verilog simplebfxp.v
+synth -top simplebfxp
+abc -g cmos4
+delete ror
+tee -o stats_simplebfxp_asic.txt stat
+
+
+#############################
+## simplebfxp - FPGA
+
+design -reset
+read_verilog simplebfxp.v
+synth -top simplebfxp
+abc -lut 4
+delete ror
+tee -o stats_simplebfxp_fpga.txt stat
+
+
+#############################
+## simplebfxp - ASIC
+
+design -reset
+read_verilog tinygrev.v
+synth -top tinygrev
+abc -g cmos4
+tee -o stats_tinygrev_asic.txt stat
+
+
+#############################
+## simplebfxp - FPGA
+
+design -reset
+read_verilog tinygrev.v
+synth -top tinygrev
+abc -lut 4
+tee -o stats_tinygrev_fpga.txt stat
