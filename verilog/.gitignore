@@ -18,6 +18,8 @@
 /simplebextdep_tb.vcd
 /smartbextdep_tb
 /smartbextdep_tb.vcd
+/rocketmuldiv_check_bmc/
+/rocketmuldiv_check_cover/
 /stats_*_asic.txt
 /stats_*_fpga.txt
 /stats.aux
