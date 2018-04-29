@@ -39,12 +39,16 @@ int main()
 
 	f = fopen("testdata_bfxp.hex", "w");
 	for (int i = 0; i < 1000; i++) {
-		uint32_t din = xorshift32();
+		uint32_t din1 = xorshift32();
+		uint32_t din2 = xorshift32();
 		uint32_t start = xorshift32() & 31;
 		uint32_t len = xorshift32() & 31;
 		uint32_t dest = xorshift32() & 31;
-		uint32_t dout = bfxp(din, start, len, dest);
-		fprintf(f, "%08x%02x%02x%02x%08x\n", din, start, len, dest, dout);
+		if (len == 0 || start+len > 32 || dest+len > 32) {
+			i--; continue;
+		}
+		uint32_t dout = bfxp(din1, din2, start, len, dest);
+		fprintf(f, "%08x%08x%02x%02x%02x%08x\n", din1, din2, start, len, dest, dout);
 	}
 	fclose(f);
 

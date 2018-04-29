@@ -1,6 +1,6 @@
 module simplebfxp (
 	input             clock,
-	input      [31:0] rs1,
+	input      [31:0] rs1, rs2,
 	input      [ 4:0] start, len, dest,
 	output reg [31:0] rd
 );
@@ -13,11 +13,7 @@ module simplebfxp (
 	ror ror_inst (.din(rs1), .shamt(ror_shamt), .dout(ror_dout));
 
 	always @(posedge clock) begin
-		if (start+len > 32 || dest+len > 32) begin
-			rd <= 0;
-		end else begin
-			rd <= ror_dout & lmask & rmask;
-		end
+		rd <= (ror_dout & lmask & rmask) | rs2;
 	end
 endmodule
 
