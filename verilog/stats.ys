@@ -113,19 +113,19 @@ tee -o stats_simplebextdep_fpga.txt stat
 
 
 #############################
-## largebextdep
+## smartbextdep
 
 design -reset
-read_verilog largebextdep.v
-synth -flatten -top largebextdep
+read_verilog smartbextdep.v
+synth -flatten -top smartbextdep
 abc -g cmos4
-tee -o stats_largebextdep_asic.txt stat
+tee -o stats_smartbextdep_asic.txt stat
 
 design -reset
-read_verilog largebextdep.v
-synth -flatten -top largebextdep
+read_verilog smartbextdep.v
+synth -flatten -top smartbextdep
 abc -lut 4
-tee -o stats_largebextdep_fpga.txt stat
+tee -o stats_smartbextdep_fpga.txt stat
 
 
 #############################

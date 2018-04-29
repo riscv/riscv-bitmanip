@@ -1,11 +1,11 @@
-module largebextdep_tb;
+module smartbextdep_tb;
 	reg         clock;
 	reg         bdep;
 	reg  [31:0] rs1;
 	reg  [31:0] rs2;
 	wire [31:0] rd;
 
-	largebextdep uut (
+	smartbextdep uut (
 		.clock (clock),
 		.bdep  (bdep ),
 		.rs1   (rs1  ),
@@ -17,8 +17,8 @@ module largebextdep_tb;
 	reg [95:0] testdata_bdep [0:999];
 
 	initial begin
-		$dumpfile("largebextdep_tb.vcd");
-		$dumpvars(0, largebextdep_tb);
+		$dumpfile("smartbextdep_tb.vcd");
+		$dumpvars(0, smartbextdep_tb);
 
 		$readmemh("testdata_bext.hex", testdata_bext);
 		$readmemh("testdata_bdep.hex", testdata_bdep);

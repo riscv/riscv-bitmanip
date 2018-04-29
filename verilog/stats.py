@@ -12,7 +12,7 @@ core_list = [
     "simplegzip",
     "simplebfxp",
     "simplebextdep",
-    "largebextdep",
+    "smartbextdep",
     "rocketmuldiv",
 ]
 

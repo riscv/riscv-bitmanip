@@ -1,4 +1,4 @@
-all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebextdep largebextdep
+all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebextdep smartbextdep
 
 # ------------------------------------------------------------------------
 
@@ -50,11 +50,11 @@ simplebextdep: simplebextdep_tb testdata_bext.hex testdata_bdep.hex
 
 # ------------------------------------------------------------------------
 
-largebextdep_tb: largebextdep_tb.v largebextdep.v
+smartbextdep_tb: smartbextdep_tb.v smartbextdep.v
 	iverilog -o $@ $^
 
-largebextdep: largebextdep_tb testdata_bext.hex testdata_bdep.hex
-	vvp -N largebextdep_tb
+smartbextdep: smartbextdep_tb testdata_bext.hex testdata_bdep.hex
+	vvp -N smartbextdep_tb
 
 # ------------------------------------------------------------------------
 

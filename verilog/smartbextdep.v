@@ -15,7 +15,7 @@
  *
  */
 
-module largebextdep (
+module smartbextdep (
 	input clock,
 	input bdep,
 	input [31:0] rs1,
