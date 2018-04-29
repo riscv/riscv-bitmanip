@@ -23,19 +23,19 @@ XBitmanip, {\bf we do \underline{not} propose XBitfield for adoption as official
 The encoding for a proper 32-bit bitfield extract instruction, if encoded
 in a clean and future-safe way that scales all the way to RV128, would require
 a 14 bit immediate (7 bits for start and 7 bits for length), or the equivalent
-of 4 I-type instruction with full immediate length, or half of a major opcode,
+of 4 I-type instructions with full immediate length, or half of a major opcode,
 way too wasteful for an official RISC-V ISA extension, especially for something
 that can be encoded in the same space with two compressed instructions.
 
 However, there is a tendency for implementors to fill the unused instruction
 encoding space with a myriad of complex instructions with large immediates.~\cite{Ri5cy}
 
-So we propose XBitfield, a custom, non-standard extension that uses almost the
-entire major opcode 1111011 ({\it custom-3}) for a single bit-field extract and
-place ({\tt bfxp}) instruction, effectively packing 3 shift-immediate
-operations and one OR in one single instruction.
+So might as well propose XBitfield, a custom, non-standard extension that uses
+almost the entire major opcode 1111011 ({\it custom-3}) for a single bit-field
+extract and place ({\tt bfxp}) instruction, effectively packing 3
+shift-immediate operations and one OR in one single instruction.
 
-The goal here is that individual implementors can easily share patches for
+The main goal here is that individual implementors can use the same patches for
 compiler toolchains. By standardising one powerful but easy to implement
 instruction instead of a whole range of simpler instructions we keep the
 complexity of the extension low and ease adoption.
