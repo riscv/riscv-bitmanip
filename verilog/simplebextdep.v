@@ -1,50 +1,36 @@
 module simplebextdep (
-	input             clock,
-	input             reset,
-
-	input             din_valid,
-	output            din_ready,
-	input             din_bdep,
-	input      [31:0] din_value,
-	input      [31:0] din_mask,
-
-	output            dout_valid,
-	input             dout_ready,
-	output     [31:0] dout_result
+	input clock,
+	input reset, start, bdep,
+	input [31:0] rs1, rs2,
+	output [31:0] rd,
+	output busy, done
 );
-	reg bdep, running, ready;
+	reg mode, running, ready;
 	reg [31:0] c, m, msk, val;
 	wire [31:0] b = msk & -msk;
 
-	assign din_ready = !running || (dout_valid && dout_ready);
-	assign dout_valid = running && ready;
-	assign dout_result = c;
-
 	always @(posedge clock) begin
-		if (dout_valid && dout_ready) begin
-			running <= 0;
-			ready <= 0;
-		end
-
-		if (reset) begin
-			running <= 0;
-			ready <= 0;
-		end else
-		if (din_valid && din_ready) begin
+		if (reset || start) begin
 			c <= 0;
 			m <= 1;
-			running <= 1;
+			running <= !reset;
 			ready <= 0;
-			bdep <= din_bdep;
-			val <= din_value;
-			msk <= din_mask;
+			mode <= bdep;
+			val <= rs1;
+			msk <= rs2;
 		end else
 		if (running && !ready) begin
-			if (val & (bdep ? m : b))
-				c <= c | (bdep ? b : m);
+			if (val & (mode ? m : b))
+				c <= c | (mode ? b : m);
 			msk <= msk & ~b;
 			ready <= !(msk & ~b);
 			m <= m << 1;
+		end else begin
+			running <= 0;
 		end
 	end
+
+	assign busy = running && !ready;
+	assign done = running && ready;
+	assign rd = c;
 endmodule

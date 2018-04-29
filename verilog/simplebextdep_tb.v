@@ -1,27 +1,24 @@
 module simplebextdep_tb;
-	reg         clock, reset;
-
-	reg         din_valid;
-	wire        din_ready;
-	reg         din_bdep;
-	reg  [31:0] din_value;
-	reg  [31:0] din_mask;
-
-	wire        dout_valid;
-	reg         dout_ready;
-	wire [31:0] dout_result;
+	reg         clock;
+	reg         reset;
+	reg         start;
+	reg         bdep;
+	reg  [31:0] rs1;
+	reg  [31:0] rs2;
+	wire [31:0] rd;
+	wire        busy;
+	wire        done;
 
 	simplebextdep uut (
-		.clock       (clock      ),
-		.reset       (reset      ),
-		.din_valid   (din_valid  ),
-		.din_ready   (din_ready  ),
-		.din_bdep    (din_bdep   ),
-		.din_value   (din_value  ),
-		.din_mask    (din_mask   ),
-		.dout_valid  (dout_valid ),
-		.dout_ready  (dout_ready ),
-		.dout_result (dout_result)
+		.clock (clock),
+		.reset (reset),
+		.start (start),
+		.bdep  (bdep ),
+		.rs1   (rs1  ),
+		.rs2   (rs2  ),
+		.rd    (rd   ),
+		.busy  (busy ),
+		.done  (done )
 	);
 
 	reg [95:0] testdata_bext [0:999];
@@ -48,52 +45,49 @@ module simplebextdep_tb;
 		if (reset) begin
 			cycle_cnt <= 0;
 			job_cnt <= 0;
-		end else if (din_valid) begin
+		end else if (busy || done) begin
 			cycle_cnt <= cycle_cnt + 1;
-			job_cnt <= job_cnt + (din_valid && din_ready);
+			job_cnt <= job_cnt + done;
 		end
 	end
 
 	initial begin
 		reset <= 1;
-		din_valid <= 0;
-		din_bdep <= 0;
-		din_value <= 0;
-		din_mask <= 0;
+		start <= 0;
 		repeat (5) @(posedge clock);
 
 		reset <= 0;
-		din_valid <= 1;
 
-		din_bdep <= 0;
+		bdep <= 0;
 		for (icnt = 0; icnt < 1000; icnt = icnt+1) begin
-			din_value <= testdata_bext[icnt][95:64];
-			din_mask <= testdata_bext[icnt][63:32];
+			start <= 1;
+			rs1 <= testdata_bext[icnt][95:64];
+			rs2 <= testdata_bext[icnt][63:32];
 			@(posedge clock);
-			while (!din_ready) @(posedge clock);
+			start <= 0;
+			while (!done) @(posedge clock);
 		end
 
-		din_bdep <= 1;
+		bdep <= 1;
 		for (icnt = 0; icnt < 1000; icnt = icnt+1) begin
-			din_value <= testdata_bdep[icnt][95:64];
-			din_mask <= testdata_bdep[icnt][63:32];
+			start <= 1;
+			rs1 <= testdata_bdep[icnt][95:64];
+			rs2 <= testdata_bdep[icnt][63:32];
 			@(posedge clock);
-			while (!din_ready) @(posedge clock);
+			start <= 0;
+			while (!done) @(posedge clock);
 		end
-
-		din_valid <= 0;
 	end
 
 	initial begin
-		dout_ready <= 1;
 		repeat (5) @(posedge clock);
 
 		for (ocnt = 0; ocnt < 1000; ocnt = ocnt+1) begin
-			while (!dout_valid) @(posedge clock);
+			while (!done) @(posedge clock);
 			$display("%8d: rs1=0x%08h rs2=0x%08h rd=0x%08h",
 					ocnt, testdata_bext[ocnt][95:64],
-					testdata_bext[ocnt][63:32], dout_result);
-			if (dout_result != testdata_bext[ocnt][31:0]) begin
+					testdata_bext[ocnt][63:32], rd);
+			if (rd != testdata_bext[ocnt][31:0]) begin
 				$display("Expected rd=0x%08h  =>  ERROR", testdata_bext[ocnt][31:0]);
 				$stop;
 			end
@@ -101,11 +95,11 @@ module simplebextdep_tb;
 		end
 
 		for (ocnt = 0; ocnt < 1000; ocnt = ocnt+1) begin
-			while (!dout_valid) @(posedge clock);
+			while (!done) @(posedge clock);
 			$display("%8d: rs1=0x%08h rs2=0x%08h rd=0x%08h",
 					ocnt, testdata_bdep[ocnt][95:64],
-					testdata_bdep[ocnt][63:32], dout_result);
-			if (dout_result != testdata_bdep[ocnt][31:0]) begin
+					testdata_bdep[ocnt][63:32], rd);
+			if (rd != testdata_bdep[ocnt][31:0]) begin
 				$display("Expected rd=0x%08h  =>  ERROR", testdata_bdep[ocnt][31:0]);
 				$stop;
 			end
