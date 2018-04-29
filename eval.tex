@@ -266,7 +266,7 @@ set.~\cite[p.~152f,~162f]{Seander05}
 % Knuth
 % Hackers Delight, Chapter 7-7
 
-\section{Emulating x86 Bit Manipulation ISAs}
+\section{Comparison with x86 Bit Manipulation ISAs}
 
 The following code snippets implement all instructions from the x86 bit manipulation
 ISA extensions ABM, BMI1, BMI2, and TBM using RISC-V code that does not spill any
@@ -276,7 +276,7 @@ macro-op fusion is needed.) Note that shorter RISC-V code sequences are possible
 we allow spilling to temporary registers.
 
 \begin{longtable}[c]{@{}llrrl@{}}
-\caption{Emulating other Bit Manipulation ISAs using macro-op fusion}\tabularnewline
+\caption{Emulating x86 Bit Manipulation ISAs using macro-op fusion}\tabularnewline
 \toprule
 x86 Ext & x86 Instruction & \multicolumn{2}{c}{Bytes} & RISC-V Code\tabularnewline
         &                 & x86 & RV            &\tabularnewline
@@ -373,7 +373,7 @@ The macros listed here are merely for demonstrating that suitable sequences exis
 do not advocate for any of those sequences to become ``standard sequences'' for macro-op
 fusion.
 
-\section{Emulating RI5CY Bit Manipulation ISA}
+\section{Comparison with RI5CY Bit Manipulation ISA}
 
 TBD
 
