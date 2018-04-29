@@ -1,15 +1,11 @@
 #############################
-## reference_ror - ASIC
+## reference_ror
 
 design -reset
 read_verilog reference_ror.v
 synth -top reference_ror
 abc -g cmos4
 tee -o stats_ror_asic.txt stat
-
-
-#############################
-## reference_ror - FPGA
 
 design -reset
 read_verilog reference_ror.v
@@ -19,7 +15,7 @@ tee -o stats_ror_fpga.txt stat
 
 
 #############################
-## simplebfxp - ASIC
+## simplebfxp
 
 design -reset
 read_verilog simplebfxp.v
@@ -27,10 +23,6 @@ synth -top simplebfxp
 abc -g cmos4
 delete ror
 tee -o stats_simplebfxp_asic.txt stat
-
-
-#############################
-## simplebfxp - FPGA
 
 design -reset
 read_verilog simplebfxp.v
@@ -41,7 +33,7 @@ tee -o stats_simplebfxp_fpga.txt stat
 
 
 #############################
-## simplebfxp - ASIC
+## tinygrev
 
 design -reset
 read_verilog tinygrev.v
@@ -49,12 +41,24 @@ synth -top tinygrev
 abc -g cmos4
 tee -o stats_tinygrev_asic.txt stat
 
-
-#############################
-## simplebfxp - FPGA
-
 design -reset
 read_verilog tinygrev.v
 synth -top tinygrev
 abc -lut 4
 tee -o stats_tinygrev_fpga.txt stat
+
+
+#############################
+## simplebextdep
+
+design -reset
+read_verilog simplebextdep.v
+synth -top simplebextdep
+abc -g cmos4
+tee -o stats_simplebextdep_asic.txt stat
+
+design -reset
+read_verilog simplebextdep.v
+synth -top simplebextdep
+abc -lut 4
+tee -o stats_simplebextdep_fpga.txt stat
