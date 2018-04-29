@@ -16,6 +16,8 @@
 /simplebfxp_tb.vcd
 /simplebextdep_tb
 /simplebextdep_tb.vcd
+/largebextdep_tb
+/largebextdep_tb.vcd
 /stats_*_asic.txt
 /stats_*_fpga.txt
 /stats.aux

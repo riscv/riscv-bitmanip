@@ -110,3 +110,35 @@ read_verilog simplebextdep.v
 synth -top simplebextdep
 abc -lut 4
 tee -o stats_simplebextdep_fpga.txt stat
+
+
+#############################
+## largebextdep
+
+design -reset
+read_verilog largebextdep.v
+synth -flatten -top largebextdep
+abc -g cmos4
+tee -o stats_largebextdep_asic.txt stat
+
+design -reset
+read_verilog largebextdep.v
+synth -flatten -top largebextdep
+abc -lut 4
+tee -o stats_largebextdep_fpga.txt stat
+
+
+#############################
+## rocketmuldiv
+
+design -reset
+read_verilog rocketmuldiv.v
+synth -top rocketmuldiv
+abc -g cmos4
+tee -o stats_rocketmuldiv_asic.txt stat
+
+design -reset
+read_verilog rocketmuldiv.v
+synth -top rocketmuldiv
+abc -lut 4
+tee -o stats_rocketmuldiv_fpga.txt stat
