@@ -87,7 +87,7 @@ def maketikzpicture(scale):
         y += luts_scale*core_data["ror"][1]
 
     print(r"""
-\fill[white] (0,2.5) rectangle (3.6,4);
+\fill[white] (0,2.5) rectangle (4,4);
 
 \draw[-latex] (0,0) -- (0,4);
 \draw (-0.2,4) node[left,rotate=90] {\tiny Logic (LUTs or Gates)};
@@ -141,13 +141,9 @@ Module & \# of Gates & \# of 4-LUTs & \# of FFs \\
 
 for core in core_list:
     ffs, luts, gates = core_data[core]
-    if core in ["ror", "tinygrev", "tinygzip", "simplebfxp", "simplebextdep", "XBitmanip"]:
+    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebextdep", "XBitmanip"]:
         print(r"\hline")
-    footnote = ""
-    if core == "XBitmanip":
-        footnote = r"\footnote{{\tt simplegrev} $+$ {\tt simplegzip} $+$ {\tt simplebitcnt} $+$ {\tt smartbextdep}. " + \
-                   r"Not included is the cost for adding shift-ones and rotate shift support to the existing ALU shifter.}"
-    print(r"{\tt %s}%s & %d & %d & %d \\" % (core, footnote, gates, luts, ffs))
+    print(r"{\tt %s} & %d & %d & %d \\" % (core, gates, luts, ffs))
 
 print(r"""
 \end{tabular}
