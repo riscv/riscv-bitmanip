@@ -1,5 +1,13 @@
 all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebextdep smartbextdep
 
+stats: stats.ysok
+	python3 stats.py | grep . > stats.tex
+	pdflatex stats.tex
+
+stats.ysok: stats.ys *.v
+	yosys stats.ys
+	touch stats.ysok
+
 # ------------------------------------------------------------------------
 
 tinygrev_tb: tinygrev_tb.v tinygrev.v

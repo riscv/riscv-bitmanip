@@ -22,6 +22,7 @@
 /rocketmuldiv_check_cover/
 /stats_*_asic.txt
 /stats_*_fpga.txt
+/stats.ysok
 /stats.aux
 /stats.log
 /stats.nav
