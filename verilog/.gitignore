@@ -10,6 +10,8 @@
 /tinygzip_tb.vcd
 /simplegrev_tb
 /simplegrev_tb.vcd
+/simplegzip_tb
+/simplegzip_tb.vcd
 /simplebfxp_tb
 /simplebfxp_tb.vcd
 /simplebextdep_tb

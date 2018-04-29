@@ -81,6 +81,22 @@ tee -o stats_simplegrev_fpga.txt stat
 
 
 #############################
+## simplegzip
+
+design -reset
+read_verilog simplegzip.v
+synth -top simplegzip
+abc -g cmos4
+tee -o stats_simplegzip_asic.txt stat
+
+design -reset
+read_verilog simplegzip.v
+synth -top simplegzip
+abc -lut 4
+tee -o stats_simplegzip_fpga.txt stat
+
+
+#############################
 ## simplebextdep
 
 design -reset

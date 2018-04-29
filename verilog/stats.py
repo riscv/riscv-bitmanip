@@ -9,6 +9,7 @@ core_list = [
     "tinygrev",
     "tinygzip",
     "simplegrev",
+    "simplegzip",
     "simplebfxp",
     "simplebextdep",
 ]
@@ -72,9 +73,9 @@ print(r"""
     \fill[color=green] (0.25,3.0) rectangle (0.5,3.25);
     \fill[color=magenta] (0.25,2.5) rectangle (0.5,2.75);
 
-    \draw (0.5,3.5 + 0.125) node[right] {\tiny ASIC Gates (ror=%d)};
-    \draw (0.5,3.0 + 0.125) node[right] {\tiny FPGA 4-LUTs (ror=%d)};
-    \draw (0.5,2.5 + 0.125) node[right] {\tiny D-FFs (ror=%d)};
+    \draw (0.5,3.5 + 0.125) node[right] {\tiny ASIC Gates (ror $=$ %d)};
+    \draw (0.5,3.0 + 0.125) node[right] {\tiny FPGA 4-LUTs (ror $=$ %d)};
+    \draw (0.5,2.5 + 0.125) node[right] {\tiny D-FFs (ror $=$ %d)};
 """ % (core_data["ror"][2], core_data["ror"][1], core_data["ror"][0]))
 
 for idx, core in enumerate(core_list):
