@@ -1,4 +1,4 @@
-all: tinygrev simplebfxp simplebextdep
+all: tinygrev tinygzip simplebfxp simplebextdep
 
 # ------------------------------------------------------------------------
 
@@ -7,6 +7,14 @@ tinygrev_tb: tinygrev_tb.v tinygrev.v
 
 tinygrev: tinygrev_tb testdata_grev.hex
 	vvp -N tinygrev_tb
+
+# ------------------------------------------------------------------------
+
+tinygzip_tb: tinygzip_tb.v tinygzip.v
+	iverilog -o $@ $^
+
+tinygzip: tinygzip_tb testdata_gzip.hex
+	vvp -N tinygzip_tb
 
 # ------------------------------------------------------------------------
 

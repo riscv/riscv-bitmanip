@@ -1,10 +1,10 @@
 module tinygrev (
 	input clock,
-	input start,
+	input reset, start,
 	input [31:0] rs1,
 	input [4:0] rs2,
 	output [31:0] rd,
-	output done
+	output busy, done
 );
 	reg [5:0] state;
 	reg [4:0] mask;
@@ -23,10 +23,10 @@ module tinygrev (
 	end endgenerate
 
 	always @(posedge clock) begin
-		if (start) begin
+		if (reset || start) begin
 			buffer <= rs1;
 			mask <= rs2;
-			state <= 1;
+			state <= !reset;
 		end else begin
 			buffer <= buffer_bfly_unzip;
 			state <= state << 1;
@@ -34,5 +34,6 @@ module tinygrev (
 	end
 
 	assign rd = buffer;
+	assign busy = |state[4:0];
 	assign done = state[5];
 endmodule

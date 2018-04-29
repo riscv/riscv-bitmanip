@@ -7,6 +7,7 @@
 core_list = [
     "ror",
     "tinygrev",
+    "tinygzip",
     "simplebfxp",
     "simplebextdep",
 ]

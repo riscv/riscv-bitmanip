@@ -49,6 +49,22 @@ tee -o stats_tinygrev_fpga.txt stat
 
 
 #############################
+## tinygzip
+
+design -reset
+read_verilog tinygzip.v
+synth -top tinygzip
+abc -g cmos4
+tee -o stats_tinygzip_asic.txt stat
+
+design -reset
+read_verilog tinygzip.v
+synth -top tinygzip
+abc -lut 4
+tee -o stats_tinygzip_fpga.txt stat
+
+
+#############################
 ## simplebextdep
 
 design -reset
