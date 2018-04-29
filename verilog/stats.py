@@ -74,11 +74,13 @@ def maketikzpicture(scale):
         y += luts_scale*core_data["ror"][1]
 
     print(r"""
+        \fill[white] (0,2.5) rectangle (3.6,4);
+
         \draw[-latex] (0,0) -- (0,4);
-        \draw (-0.3,4) node[left,rotate=90] {\tiny Logic (LUTs or Gates)};
+        \draw (-0.2,4) node[left,rotate=90] {\tiny Logic (LUTs or Gates)};
 
         \draw[-latex] (0,0) -- (0,-1);
-        \draw (-0.3,-1) node[right,rotate=90] {\tiny FFs};
+        \draw (-0.2,-1) node[right,rotate=90] {\tiny FFs};
 
         \draw[pattern=north west lines, pattern color=blue] (0.25,3.5) rectangle (0.5,3.75);
         \draw[pattern=crosshatch dots, pattern color=green] (0.25,3.0) rectangle (0.5,3.25);
@@ -113,6 +115,23 @@ print(r"""
 """)
 
 maketikzpicture(0.17)
+
+print(r"""
+\begin{center}
+\begin{tabular}{lrrr}
+Module & \# of Gates & \# of 4-LUTs & \# of FFs \\
+""")
+
+for core in core_list:
+    ffs, luts, gates = core_data[core]
+    if core in ["ror", "tinygrev", "simplegrev", "smartbextdep", "rocketmuldiv"]:
+        print(r"\hline")
+    print(r"{\tt %s} & %d & %d & %d \\" % (core, gates, luts, ffs))
+
+print(r"""
+\end{tabular}
+\end{center}
+""")
 
 # core_list = [core for core in core_list if core != "rocketmuldiv"]
 # maketikzpicture(1.0)
