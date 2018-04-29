@@ -2,10 +2,14 @@
 /testdata_grev.hex
 /testdata_gzip.hex
 /testdata_bfxp.hex
+/testdata_bdep.hex
+/testdata_bext.hex
 /tinygrev_tb
 /tinygrev_tb.vcd
 /simplebfxp_tb
 /simplebfxp_tb.vcd
+/simplebextdep_tb
+/simplebextdep_tb.vcd
 /stats_*_asic.txt
 /stats_*_fpga.txt
 /stats.aux

@@ -1,4 +1,4 @@
-all: tinygrev simplebfxp
+all: tinygrev simplebfxp simplebextdep
 
 # ------------------------------------------------------------------------
 
@@ -18,8 +18,18 @@ simplebfxp: simplebfxp_tb testdata_bfxp.hex
 
 # ------------------------------------------------------------------------
 
+simplebextdep_tb: simplebextdep_tb.v simplebextdep.v
+	iverilog -o $@ $^
+
+simplebextdep: simplebextdep_tb testdata_bext.hex testdata_bdep.hex
+	vvp -N simplebextdep_tb
+
+# ------------------------------------------------------------------------
+
 testdata_gzip.hex: testdata_grev.hex
 testdata_bfxp.hex: testdata_grev.hex
+testdata_bext.hex: testdata_grev.hex
+testdata_bdep.hex: testdata_grev.hex
 
 testdata_grev.hex: testdata.cc
 	clang++ -Wall -Os -std=c++11 -o testdata testdata.cc

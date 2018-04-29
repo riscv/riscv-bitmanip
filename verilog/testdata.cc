@@ -52,5 +52,23 @@ int main()
 	}
 	fclose(f);
 
+	f = fopen("testdata_bext.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint32_t din1 = xorshift32();
+		uint32_t din2 = xorshift32();
+		uint32_t dout = bext(din1, din2);
+		fprintf(f, "%08x%08x%08x\n", din1, din2, dout);
+	}
+	fclose(f);
+
+	f = fopen("testdata_bdep.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint32_t din1 = xorshift32();
+		uint32_t din2 = xorshift32();
+		uint32_t dout = bdep(din1, din2);
+		fprintf(f, "%08x%08x%08x\n", din1, din2, dout);
+	}
+	fclose(f);
+
 	return 0;
 }
