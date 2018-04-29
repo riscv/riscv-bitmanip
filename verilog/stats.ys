@@ -15,6 +15,22 @@ tee -o stats_ror_fpga.txt stat
 
 
 #############################
+## simplebitcnt
+
+design -reset
+read_verilog simplebitcnt.v
+synth -top simplebitcnt
+abc -g cmos4
+tee -o stats_simplebitcnt_asic.txt stat
+
+design -reset
+read_verilog simplebitcnt.v
+synth -top simplebitcnt
+abc -lut 4
+tee -o stats_simplebitcnt_fpga.txt stat
+
+
+#############################
 ## simplebfxp
 
 design -reset

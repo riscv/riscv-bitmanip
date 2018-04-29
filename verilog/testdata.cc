@@ -6,6 +6,30 @@ int main()
 {
 	FILE *f;
 
+	f = fopen("testdata_clz.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint32_t din = xorshift32();
+		uint32_t dout = clz(din);
+		fprintf(f, "%08x%08x\n", din, dout);
+	}
+	fclose(f);
+
+	f = fopen("testdata_ctz.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint32_t din = xorshift32();
+		uint32_t dout = ctz(din);
+		fprintf(f, "%08x%08x\n", din, dout);
+	}
+	fclose(f);
+
+	f = fopen("testdata_pcnt.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint32_t din = xorshift32();
+		uint32_t dout = pcnt(din);
+		fprintf(f, "%08x%08x\n", din, dout);
+	}
+	fclose(f);
+
 	f = fopen("testdata_grev.hex", "w");
 	for (int i = 0; i < 1000; i++) {
 		uint32_t din = xorshift32();

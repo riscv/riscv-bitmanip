@@ -1,4 +1,4 @@
-all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebextdep smartbextdep
+all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebitcnt simplebextdep smartbextdep
 
 stats: stats.ysok
 	python3 stats.py | grep . > stats.tex
@@ -23,6 +23,14 @@ tinygzip_tb: tinygzip_tb.v tinygzip.v
 
 tinygzip: tinygzip_tb testdata_gzip.hex
 	vvp -N tinygzip_tb
+
+# ------------------------------------------------------------------------
+
+simplebitcnt_tb: simplebitcnt_tb.v simplebitcnt.v
+	iverilog -o $@ $^
+
+simplebitcnt: simplebitcnt_tb testdata_clz.hex testdata_ctz.hex testdata_pcnt.hex
+	vvp -N simplebitcnt_tb
 
 # ------------------------------------------------------------------------
 
@@ -66,6 +74,9 @@ smartbextdep: smartbextdep_tb testdata_bext.hex testdata_bdep.hex
 
 # ------------------------------------------------------------------------
 
+testdata_clz.hex: testdata_grev.hex
+testdata_ctz.hex: testdata_grev.hex
+testdata_pcnt.hex: testdata_grev.hex
 testdata_gzip.hex: testdata_grev.hex
 testdata_bfxp.hex: testdata_grev.hex
 testdata_bext.hex: testdata_grev.hex

@@ -6,6 +6,7 @@ core_list = [
     "simplegrev",
     "tinygzip",
     "simplegzip",
+    "simplebitcnt",
     "simplebfxp",
     "simplebextdep",
     "smartbextdep",
@@ -56,7 +57,7 @@ ff_count = 0
 lut_count = 0
 gates_count = 0
 
-for core in ["simplegrev", "simplegzip", "smartbextdep"]:
+for core in ["simplegrev", "simplegzip", "smartbextdep", "simplebitcnt"]:
     ff_count += core_data[core][0]
     lut_count += core_data[core][1]
     gates_count += core_data[core][2]
@@ -144,7 +145,8 @@ for core in core_list:
         print(r"\hline")
     footnote = ""
     if core == "XBitmanip":
-        footnote = r"\footnote{{\tt simplegrev} $+$ {\tt simplegzip} $+$ {\tt smartbextdep}}"
+        footnote = r"\footnote{{\tt simplegrev} $+$ {\tt simplegzip} $+$ {\tt simplebitcnt} $+$ {\tt smartbextdep}. " + \
+                   r"Not included is the cost for adding shift-ones and rotate shift support to the existing ALU shifter.}"
     print(r"{\tt %s}%s & %d & %d & %d \\" % (core, footnote, gates, luts, ffs))
 
 print(r"""
