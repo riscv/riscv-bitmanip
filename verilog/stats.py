@@ -59,6 +59,7 @@ gates_scale = 2.0 / core_data["ror"][2]
 print(r"""
 \documentclass{report}
 \usepackage{tikz}
+\usetikzlibrary{patterns}
 \begin{document}
 
 \begin{center}
@@ -69,9 +70,9 @@ print(r"""
 	\draw[-latex] (0,0) -- (0,-2);
     \draw (-0.3,-2) node[right,rotate=90] {\tiny Flip-Flops};
 
-    \fill[color=blue] (0.25,3.5) rectangle (0.5,3.75);
-    \fill[color=green] (0.25,3.0) rectangle (0.5,3.25);
-    \fill[color=magenta] (0.25,2.5) rectangle (0.5,2.75);
+    \draw[pattern=north west lines, pattern color=blue] (0.25,3.5) rectangle (0.5,3.75);
+    \draw[pattern=crosshatch dots, pattern color=green] (0.25,3.0) rectangle (0.5,3.25);
+    \draw[pattern=crosshatch, pattern color=magenta] (0.25,2.5) rectangle (0.5,2.75);
 
     \draw (0.5,3.5 + 0.125) node[right] {\tiny ASIC Gates (ror $=$ %d)};
     \draw (0.5,3.0 + 0.125) node[right] {\tiny FPGA 4-LUTs (ror $=$ %d)};
@@ -81,9 +82,9 @@ print(r"""
 for idx, core in enumerate(core_list):
     ffs, luts, gates = core_data[core]
     print(r"\draw (%.3f,0) node[above right,rotate=90] {\tiny\tt %s};" % (0.55+idx, core))
-    print(r"\fill[color=blue] (%.3f,0) rectangle (%.3f,%.3f);" % (0.5+idx, 0.75+idx, gates_scale*gates))
-    print(r"\fill[color=green] (%.3f,0) rectangle (%.3f,%.3f);" % (0.75+idx, 1.00+idx, luts_scale*luts))
-    print(r"\fill[color=magenta] (%.3f,0) rectangle (%.3f,%.3f);" % (0.5+idx, 1.0+idx, -ffs_scale*ffs))
+    print(r"\draw[pattern=north west lines, pattern color=blue] (%.3f,0) rectangle (%.3f,%.3f);" % (0.5+idx, 0.75+idx, gates_scale*gates))
+    print(r"\draw[pattern=crosshatch dots, pattern color=green] (%.3f,0) rectangle (%.3f,%.3f);" % (0.75+idx, 1.00+idx, luts_scale*luts))
+    print(r"\draw[pattern=crosshatch, pattern color=magenta] (%.3f,0) rectangle (%.3f,%.3f);" % (0.5+idx, 1.0+idx, -ffs_scale*ffs))
 
 print(r"""
 	\draw (0,0) -- (%.3f,0);
