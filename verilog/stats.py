@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import re
+
 core_list = [
     "ror",
     "tinygrev",
@@ -22,8 +24,14 @@ for core in core_list:
     ff_count = 0
     lut_count = 0
     gates_count = 0
+    lut_depth = None
+    gate_depth = None
     with open("stats_%s_asic.txt" % core, "r") as f:
         for line in f:
+            if line.startswith("Longest topological path"):
+                m = re.search("length=(\d+)", line)
+                gate_depth = int(m.group(1))
+                continue
             line = line.split()
             if len(line) != 2: continue
             if line[0] == "$_NOT_":
@@ -41,6 +49,10 @@ for core in core_list:
                 assert 0
     with open("stats_%s_fpga.txt" % core, "r") as f:
         for line in f:
+            if line.startswith("Longest topological path"):
+                m = re.search("length=(\d+)", line)
+                lut_depth = int(m.group(1))
+                continue
             line = line.split()
             if len(line) != 2: continue
             if line[0] == "$lut":
@@ -51,18 +63,22 @@ for core in core_list:
                 continue
             else:
                 assert 0
-    core_data[core] = (ff_count, lut_count, int(gates_count))
+    core_data[core] = (ff_count, lut_count, int(gates_count), lut_depth, gate_depth)
 
 ff_count = 0
 lut_count = 0
 gates_count = 0
+lut_depth = 0
+gate_depth = 0
 
 for core in ["simplegrev", "simplegzip", "smartbextdep", "simplebitcnt"]:
     ff_count += core_data[core][0]
     lut_count += core_data[core][1]
     gates_count += core_data[core][2]
+    lut_depth = max(lut_depth, core_data[core][3])
+    gate_depth = max(gate_depth, core_data[core][4])
 
-core_data["XBitmanip"] = (ff_count, lut_count, gates_count)
+core_data["XBitmanip"] = (ff_count, lut_count, gates_count, lut_depth, gate_depth)
 
 def maketikzpicture(scale):
     ffs_scale = scale * 0.8 / core_data["ror"][0]
@@ -105,8 +121,9 @@ def maketikzpicture(scale):
 """ % (core_data["ror"][2], core_data["ror"][1], core_data["ror"][0]))
 
     for idx, core in enumerate(core_list):
-        ffs, luts, gates = core_data[core]
-        print(r"\draw (%.3f,0) node[above right,rotate=90] {\tiny\tt %s};" % (0.55+idx, core))
+        ffs, luts, gates, ldep, gdep = core_data[core]
+        corename = core if core != "rocketmuldiv" else "Rocket MulDiv"
+        print(r"\draw (%.3f,0) node[above right,rotate=90] {\tiny\tt %s};" % (0.55+idx, corename))
         print(r"\fill[white] (%.3f,0) rectangle (%.3f,%.3f);" % (0.5+idx, 0.75+idx, gates_scale*gates))
         print(r"\fill[white] (%.3f,0) rectangle (%.3f,%.3f);" % (0.75+idx, 1.00+idx, luts_scale*luts))
         print(r"\fill[white] (%.3f,0) rectangle (%.3f,%.3f);" % (0.5+idx, 1.0+idx, -ffs_scale*ffs))
@@ -135,15 +152,16 @@ print(r"""
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 \begin{center}
-\begin{tabular}{lrrr}
-Module & \# of Gates & \# of 4-LUTs & \# of FFs \\
+\begin{tabular}{l|rr|rr|r}
+Module & Gates & Depth & 4-LUTs & Depth & FFs \\
 """)
 
 for core in core_list:
-    ffs, luts, gates = core_data[core]
-    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebextdep", "XBitmanip"]:
+    ffs, luts, gates, ldep, gdep = core_data[core]
+    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebfxp", "simplebextdep", "XBitmanip"]:
         print(r"\hline")
-    print(r"{\tt %s} & %d & %d & %d \\" % (core, gates, luts, ffs))
+    corename = core if core != "rocketmuldiv" else "Rocket MulDiv"
+    print(r"{\tt %s} & %d & %d & %d & %d & %d \\" % (corename, gates, gdep, luts, ldep, ffs))
 
 print(r"""
 \end{tabular}

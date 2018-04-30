@@ -165,89 +165,7 @@ $$ log_2(21\cdot2^{15} + 5\cdot2^{16}) \approx 19.954 $$
 
 \section{Area usage of reference implementations}
 
-We created RV32 implementations for the different compute cores necessary to
-implement XBitmanip (and XBitfield). We are comparing the area of those cores
-with the following two references:
-
-\begin{itemize}
-\item A very basic right-rotate shift core ({\tt ror}):
-\begin{verbatim}
-    module reference_ror (
-        input clock,
-        input [31:0] din,
-        input [4:0] shamt,
-        output reg [31:0] dout
-    );
-        always @(posedge clock)
-            dout <= {din, din} >> shamt;
-    endmodule
-\end{verbatim}
-\item A version of the Rocket RV32 {\tt MulDiv} core that performs multiplication
-in 5 cycles and division/modulo in 32+ cycles ({\tt rocketmuldiv}). This is the
-{\tt MulDiv} default configuration used in Rocket for small cores.
-\end{itemize}
-
-The implementations of cores performing XBitmanip (and XBitfield) operations are:
-
-\begin{itemize}
-\item {\tt tinygrev} --- A small multi-cycle implementation of {\tt grev}/{\tt grevi}.
-It takes 6 cycles for one operation.
-\item {\tt tinygzip} --- A small multi-cycle implementation of {\tt gzip}.
-It takes 5 cycles for one operation.
-\item {\tt simplegrev} --- A simple single-cycle implementation of {\tt grev}/{\tt grevi}.
-\item {\tt simplegzip} --- A simple single-cycle implementation of {\tt gzip}.
-\item {\tt simplebitcnt} --- A simple single-cycle implementation of {\tt clz}, {\tt ctz}, and {\tt pcnt}.
-\item {\tt simplebfxp} --- A simple single-cycle implementation of the XBitfield {\tt bfxp}
-instruction (see Chapter~\ref{bfxp}). It requires an external rotate-shift implementation.
-\item {\tt simplebextdep} --- A straight-forward multi-cycle implementation of {\tt bext}/{\tt bdep}.
-It takes up to 32 cycles for one operation.
-\item {\tt smartbextdep} --- A single-cycle implementation of {\tt bext}/{\tt bdep}
-using the method described in~\cite{Hilewitz06}.
-\end{itemize}
-
-We implemented those cores with an ASIC cell library containing NOT, NAND, NOR,
-AOI3, OAI3, AOI4, and OAI4 gates. For the gate counts below we count NAND and NOR
-as 1 gate, NOT as 0.5 gates, AOI3 and OAI3 as 1.5 gates, and AOI4 and OAI4 as 2 gates.
-
-We also implemented the cores using a simple FPGA architecture with 4-LUTs (and no
-dedicated CARRY or MUX resources).
-
-%%%%%%% BEGIN: verilog/stats.tex %%%%%%%
-\begin{center}
-\begin{tabular}{lrrr}
-Module & \# of Gates & \# of 4-LUTs & \# of FFs \\
-\hline
-{\tt ror} & 458 & 160 & 32 \\
-\hline
-{\tt tinygrev} & 215 & 113 & 43 \\
-{\tt simplegrev} & 458 & 160 & 32 \\
-\hline
-{\tt tinygzip} & 295 & 123 & 42 \\
-{\tt simplegzip} & 373 & 158 & 32 \\
-\hline
-{\tt simplebitcnt} & 616 & 149 & 6 \\
-{\tt simplebfxp} & 321 & 123 & 32 \\
-\hline
-{\tt simplebextdep} & 787 & 310 & 131 \\
-{\tt smartbextdep} & 1542 & 521 & 32 \\
-\hline
-{\tt XBitmanip} & 2989 & 988 & 102 \\
-{\tt rocketmuldiv} & 5050 & 1432 & 120 \\
-\end{tabular}
-\end{center}
-%%%%%%% END: verilog/stats.tex %%%%%%%
-
-The entry {\tt XBitmanip} is just the total of {\tt simplegrev} $+$ {\tt
-simplegzip} $+$ {\tt simplebitcnt} $+$ {\tt smartbextdep}. Not included is the
-cost for adding shift-ones and rotate shift support to the existing ALU
-shifter.
-
-{\tt smartbextdep} could share resources with {\tt simplegrev} (it contains
-a butterfly circuit) and {\tt simplebitcnt} (it contains a prefix adder network).
-We have not explored those resource sharing options in our reference cores.
-
-In the following graph the height of 1 LUT $\hat{=}$ 2.86 Gates, 1 FF $\hat{=}$ 5.00 Gates.
-
+\begin{figure}[b]
 %%%%%%% BEGIN: verilog/stats.tex %%%%%%%
 \begin{center}
 \begin{tikzpicture}
@@ -299,11 +217,11 @@ In the following graph the height of 1 LUT $\hat{=}$ 2.86 Gates, 1 FF $\hat{=}$ 
 \draw[pattern=crosshatch dots, pattern color=green] (2.750,0) rectangle (3.000,0.340);
 \draw[pattern=crosshatch, pattern color=magenta] (2.500,0) rectangle (3.000,-0.119);
 \draw (3.550,0) node[above right,rotate=90] {\tiny\tt tinygzip};
-\fill[white] (3.500,0) rectangle (3.750,0.219);
-\fill[white] (3.750,0) rectangle (4.000,0.261);
+\fill[white] (3.500,0) rectangle (3.750,0.217);
+\fill[white] (3.750,0) rectangle (4.000,0.266);
 \fill[white] (3.500,0) rectangle (4.000,-0.156);
-\draw[pattern=north west lines, pattern color=blue] (3.500,0) rectangle (3.750,0.219);
-\draw[pattern=crosshatch dots, pattern color=green] (3.750,0) rectangle (4.000,0.261);
+\draw[pattern=north west lines, pattern color=blue] (3.500,0) rectangle (3.750,0.217);
+\draw[pattern=crosshatch dots, pattern color=green] (3.750,0) rectangle (4.000,0.266);
 \draw[pattern=crosshatch, pattern color=magenta] (3.500,0) rectangle (4.000,-0.156);
 \draw (4.550,0) node[above right,rotate=90] {\tiny\tt simplegzip};
 \fill[white] (4.500,0) rectangle (4.750,0.277);
@@ -313,48 +231,141 @@ In the following graph the height of 1 LUT $\hat{=}$ 2.86 Gates, 1 FF $\hat{=}$ 
 \draw[pattern=crosshatch dots, pattern color=green] (4.750,0) rectangle (5.000,0.336);
 \draw[pattern=crosshatch, pattern color=magenta] (4.500,0) rectangle (5.000,-0.119);
 \draw (5.550,0) node[above right,rotate=90] {\tiny\tt simplebitcnt};
-\fill[white] (5.500,0) rectangle (5.750,0.457);
+\fill[white] (5.500,0) rectangle (5.750,0.460);
 \fill[white] (5.750,0) rectangle (6.000,0.317);
 \fill[white] (5.500,0) rectangle (6.000,-0.022);
-\draw[pattern=north west lines, pattern color=blue] (5.500,0) rectangle (5.750,0.457);
+\draw[pattern=north west lines, pattern color=blue] (5.500,0) rectangle (5.750,0.460);
 \draw[pattern=crosshatch dots, pattern color=green] (5.750,0) rectangle (6.000,0.317);
 \draw[pattern=crosshatch, pattern color=magenta] (5.500,0) rectangle (6.000,-0.022);
 \draw (6.550,0) node[above right,rotate=90] {\tiny\tt simplebfxp};
-\fill[white] (6.500,0) rectangle (6.750,0.238);
+\fill[white] (6.500,0) rectangle (6.750,0.237);
 \fill[white] (6.750,0) rectangle (7.000,0.261);
 \fill[white] (6.500,0) rectangle (7.000,-0.119);
-\draw[pattern=north west lines, pattern color=blue] (6.500,0) rectangle (6.750,0.238);
+\draw[pattern=north west lines, pattern color=blue] (6.500,0) rectangle (6.750,0.237);
 \draw[pattern=crosshatch dots, pattern color=green] (6.750,0) rectangle (7.000,0.261);
 \draw[pattern=crosshatch, pattern color=magenta] (6.500,0) rectangle (7.000,-0.119);
 \draw (7.550,0) node[above right,rotate=90] {\tiny\tt simplebextdep};
-\fill[white] (7.500,0) rectangle (7.750,0.584);
-\fill[white] (7.750,0) rectangle (8.000,0.659);
+\fill[white] (7.500,0) rectangle (7.750,0.586);
+\fill[white] (7.750,0) rectangle (8.000,0.663);
 \fill[white] (7.500,0) rectangle (8.000,-0.486);
-\draw[pattern=north west lines, pattern color=blue] (7.500,0) rectangle (7.750,0.584);
-\draw[pattern=crosshatch dots, pattern color=green] (7.750,0) rectangle (8.000,0.659);
+\draw[pattern=north west lines, pattern color=blue] (7.500,0) rectangle (7.750,0.586);
+\draw[pattern=crosshatch dots, pattern color=green] (7.750,0) rectangle (8.000,0.663);
 \draw[pattern=crosshatch, pattern color=magenta] (7.500,0) rectangle (8.000,-0.486);
 \draw (8.550,0) node[above right,rotate=90] {\tiny\tt smartbextdep};
 \fill[white] (8.500,0) rectangle (8.750,1.145);
-\fill[white] (8.750,0) rectangle (9.000,1.107);
+\fill[white] (8.750,0) rectangle (9.000,1.118);
 \fill[white] (8.500,0) rectangle (9.000,-0.119);
 \draw[pattern=north west lines, pattern color=blue] (8.500,0) rectangle (8.750,1.145);
-\draw[pattern=crosshatch dots, pattern color=green] (8.750,0) rectangle (9.000,1.107);
+\draw[pattern=crosshatch dots, pattern color=green] (8.750,0) rectangle (9.000,1.118);
 \draw[pattern=crosshatch, pattern color=magenta] (8.500,0) rectangle (9.000,-0.119);
 \draw (9.550,0) node[above right,rotate=90] {\tiny\tt XBitmanip};
-\fill[white] (9.500,0) rectangle (9.750,2.219);
-\fill[white] (9.750,0) rectangle (10.000,2.100);
+\fill[white] (9.500,0) rectangle (9.750,2.221);
+\fill[white] (9.750,0) rectangle (10.000,2.110);
 \fill[white] (9.500,0) rectangle (10.000,-0.379);
-\draw[pattern=north west lines, pattern color=blue] (9.500,0) rectangle (9.750,2.219);
-\draw[pattern=crosshatch dots, pattern color=green] (9.750,0) rectangle (10.000,2.100);
+\draw[pattern=north west lines, pattern color=blue] (9.500,0) rectangle (9.750,2.221);
+\draw[pattern=crosshatch dots, pattern color=green] (9.750,0) rectangle (10.000,2.110);
 \draw[pattern=crosshatch, pattern color=magenta] (9.500,0) rectangle (10.000,-0.379);
-\draw (10.550,0) node[above right,rotate=90] {\tiny\tt rocketmuldiv};
-\fill[white] (10.500,0) rectangle (10.750,3.749);
-\fill[white] (10.750,0) rectangle (11.000,3.043);
+\draw (10.550,0) node[above right,rotate=90] {\tiny\tt Rocket MulDiv};
+\fill[white] (10.500,0) rectangle (10.750,3.697);
+\fill[white] (10.750,0) rectangle (11.000,3.066);
 \fill[white] (10.500,0) rectangle (11.000,-0.445);
-\draw[pattern=north west lines, pattern color=blue] (10.500,0) rectangle (10.750,3.749);
-\draw[pattern=crosshatch dots, pattern color=green] (10.750,0) rectangle (11.000,3.043);
+\draw[pattern=north west lines, pattern color=blue] (10.500,0) rectangle (10.750,3.697);
+\draw[pattern=crosshatch dots, pattern color=green] (10.750,0) rectangle (11.000,3.066);
 \draw[pattern=crosshatch, pattern color=magenta] (10.500,0) rectangle (11.000,-0.445);
 \draw (0,0) -- (11.500,0);
 \end{tikzpicture}
 \end{center}
 %%%%%%% END: verilog/stats.tex %%%%%%%
+\caption{Relative area of XBitmanip reference cores compared to simple 32-bit rotate
+shift and Rocket MulDiv. The height of 1 LUT $\hat{=}$ 2.86 Gates, 1 FF $\hat{=}$ 5.00 Gates.}
+\label{area-fig}
+\end{figure}
+
+We created RV32 implementations for the different compute cores necessary to
+implement XBitmanip (and XBitfield). We are comparing the area of those cores
+with the following two references:
+
+\begin{itemize}
+\item A very basic right-rotate shift core ({\tt ror}):
+\begin{verbatim}
+    module reference_ror (
+        input clock,
+        input [31:0] din,
+        input [4:0] shamt,
+        output reg [31:0] dout
+    );
+        always @(posedge clock)
+            dout <= {din, din} >> shamt;
+    endmodule
+\end{verbatim}
+\item A version of the Rocket RV32 {\tt MulDiv} core that performs multiplication
+in 5 cycles and division/modulo in 32+ cycles. This is the {\tt MulDiv} default
+configuration used in Rocket for small cores.
+\end{itemize}
+
+The implementations of cores performing XBitmanip (and XBitfield) operations are:
+
+\begin{itemize}
+\item {\tt tinygrev} --- A small multi-cycle implementation of {\tt grev}/{\tt grevi}.
+It takes 6 cycles for one operation.
+\item {\tt tinygzip} --- A small multi-cycle implementation of {\tt gzip}.
+It takes 5 cycles for one operation.
+\item {\tt simplegrev} --- A simple single-cycle implementation of {\tt grev}/{\tt grevi}.
+\item {\tt simplegzip} --- A simple single-cycle implementation of {\tt gzip}.
+\item {\tt simplebitcnt} --- A simple single-cycle implementation of {\tt clz}, {\tt ctz}, and {\tt pcnt}.
+\item {\tt simplebfxp} --- A simple single-cycle implementation of the XBitfield {\tt bfxp}
+instruction (see Chapter~\ref{bfxp}). It requires an external rotate-shift implementation.
+\item {\tt simplebextdep} --- A straight-forward multi-cycle implementation of {\tt bext}/{\tt bdep}.
+It takes up to 32 cycles for one operation (number of set mask bits).
+\item {\tt smartbextdep} --- A single-cycle implementation of {\tt bext}/{\tt bdep}
+using the method described in~\cite{Hilewitz06}.
+\end{itemize}
+
+We implemented those cores with an ASIC cell library containing NOT, NAND, NOR,
+AOI3, OAI3, AOI4, and OAI4 gates. For the gate counts below we count NAND and NOR
+as 1 gate, NOT as 0.5 gates, AOI3 and OAI3 as 1.5 gates, and AOI4 and OAI4 as 2 gates.
+
+We also implemented the cores using a simple FPGA architecture with 4-LUTs (and no
+dedicated CARRY or MUX resources).
+
+\begin{table}[h]
+%%%%%%% BEGIN: verilog/stats.tex %%%%%%%
+\begin{center}
+\begin{tabular}{l|rr|rr|r}
+Module & Gates & Depth & 4-LUTs & Depth & FFs \\
+\hline
+{\tt ror} & 458 & 7 & 160 & 5 & 32 \\
+\hline
+{\tt tinygrev} & 215 & 5 & 113 & 3 & 43 \\
+{\tt simplegrev} & 458 & 7 & 160 & 5 & 32 \\
+\hline
+{\tt tinygzip} & 292 & 6 & 125 & 4 & 42 \\
+{\tt simplegzip} & 373 & 6 & 158 & 4 & 32 \\
+\hline
+{\tt simplebitcnt} & 619 & 42 & 149 & 13 & 6 \\
+\hline
+{\tt simplebfxp} & 319 & 13 & 123 & 6 & 32 \\
+\hline
+{\tt simplebextdep} & 790 & 35 & 312 & 13 & 131 \\
+{\tt smartbextdep} & 1542 & 28 & 526 & 10 & 32 \\
+\hline
+{\tt XBitmanip} & 2992 & 42 & 993 & 13 & 102 \\
+{\tt Rocket MulDiv} & 4980 & 53 & 1443 & 24 & 120 \\
+\end{tabular}
+\end{center}
+%%%%%%% END: verilog/stats.tex %%%%%%%
+\caption{Area and logic depth of XBitmanip reference cores compared to simple 32-bit rotate
+shift and Rocket MulDiv. The entry {\tt XBitmanip} is just the total of {\tt simplegrev} $+$ {\tt
+simplegzip} $+$ {\tt simplebitcnt} $+$ {\tt smartbextdep}. Not included in {\tt XBitmanip} is the
+cost for adding shift-ones and rotate shift support to the existing ALU
+shifter and the cost for addition decode and control logic.}
+\label{area-tab}
+\end{table}
+
+Table~\ref{area-tab} and Figure~\ref{area-fig} show the area and logic depth of
+our reference cores (and the simple 32-bit rotate shift and Rocket MulDiv for
+comparison).
+
+{\tt smartbextdep} could share resources with {\tt simplegrev} (it contains
+a butterfly circuit) and {\tt simplebitcnt} (it contains a prefix adder network).
+We have not explored those resource sharing options in our reference cores.
