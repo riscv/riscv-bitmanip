@@ -26,6 +26,79 @@ uint_xlen_t pcnt(uint_xlen_t rs1)
 }
 // --REF-END--
 
+// --REF-BEGIN-- fast-bitcnt
+uint32_t fast_clz32(uint32_t rs1)
+{
+	if (rs1 == 0)
+		return XLEN;
+	assert(sizeof(int) == 4);
+	return __builtin_clz(rs1);
+}
+
+uint64_t fast_clz64(uint64_t rs1)
+{
+	if (rs1 == 0)
+		return XLEN;
+	assert(sizeof(long long) == 8);
+	return __builtin_clzll(rs1);
+}
+
+uint32_t fast_ctz32(uint32_t rs1)
+{
+	if (rs1 == 0)
+		return XLEN;
+	assert(sizeof(int) == 4);
+	return __builtin_ctz(rs1);
+}
+
+uint64_t fast_ctz64(uint64_t rs1)
+{
+	if (rs1 == 0)
+		return XLEN;
+	assert(sizeof(long long) == 8);
+	return __builtin_ctzll(rs1);
+}
+
+uint32_t fast_pcnt32(uint32_t rs1)
+{
+	assert(sizeof(int) == 4);
+	return __builtin_popcount(rs1);
+}
+
+uint64_t fast_pcnt64(uint64_t rs1)
+{
+	assert(sizeof(long long) == 8);
+	return __builtin_popcountll(rs1);
+}
+// --REF-END--
+
+uint_xlen_t fast_clz(uint_xlen_t rs1)
+{
+#if XLEN == 32
+	return fast_clz32(rs1);
+#else
+	return fast_clz64(rs1);
+#endif
+}
+
+uint_xlen_t fast_ctz(uint_xlen_t rs1)
+{
+#if XLEN == 32
+	return fast_ctz32(rs1);
+#else
+	return fast_ctz64(rs1);
+#endif
+}
+
+uint_xlen_t fast_pcnt(uint_xlen_t rs1)
+{
+#if XLEN == 32
+	return fast_pcnt32(rs1);
+#else
+	return fast_pcnt64(rs1);
+#endif
+}
+
 // --REF-BEGIN-- sxo
 uint_xlen_t slo(uint_xlen_t rs1, uint_xlen_t rs2)
 {
@@ -64,48 +137,39 @@ uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 // --REF-BEGIN-- bext
 uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	uint_xlen_t c = 0, m = 1, mask = rs2;
-#if 1                                                       // NOREF
-	for (int iter = 0; mask && iter <= XLEN; iter++) {  // NOREF
-		assert(iter < XLEN);                        // NOREF
-#else                                                       // NOREF
-	while (mask) {
-#endif                                                      // NOREF
-		uint_xlen_t b = mask & -mask;
-		if (rs1 & b)
-			c |= m;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
+	uint_xlen_t r = 0;
+	for (int i = 0, j = 0; i < XLEN; i++)
+		if ((rs2 >> i) & 1) {
+			if ((rs1 >> i) & 1)
+				r |= uint_xlen_t(1) << j;
+			j++;
+		}
+	return r;
 }
 
 uint_xlen_t bdep(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	uint_xlen_t c = 0, m = 1, mask = rs2;
-#if 1                                                       // NOREF
-	for (int iter = 0; mask && iter <= XLEN; iter++) {  // NOREF
-		assert(iter < XLEN);                        // NOREF
-#else                                                       // NOREF
-	while (mask) {
-#endif                                                      // NOREF
-		uint_xlen_t b = mask & -mask;
-		if (rs1 & m)
-			c |= b;
-		mask -= b;
-		m <<= 1;
-	}
-	return c;
+	uint_xlen_t r = 0;
+	for (int i = 0, j = 0; i < XLEN; i++)
+		if ((rs2 >> i) & 1) {
+			if ((rs1 >> j) & 1)
+				r |= uint_xlen_t(1) << i;
+			j++;
+		}
+	return r;
 }
 // --REF-END--
 
+// --REF-BEGIN-- fast-bext
 uint_xlen_t fast_bext(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t c = 0, i = 0, mask = rs2;
+	int iter = 0; // NOREF
 	while (mask) {
-		uint_xlen_t b = mask & ~(mask + (mask & -mask));
-		c |= (rs1 & b) >> (ctz(b) - i);
-		i += pcnt(b);
+		if (iter >= XLEN) { assert(0); return 0; } iter++; // NOREF
+		uint_xlen_t b = mask & ~((mask | (mask-1)) + 1);
+		c |= (rs1 & b) >> (fast_ctz(b) - i);
+		i += fast_pcnt(b);
 		mask -= b;
 	}
 	return c;
@@ -114,14 +178,41 @@ uint_xlen_t fast_bext(uint_xlen_t rs1, uint_xlen_t rs2)
 uint_xlen_t fast_bdep(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t c = 0, i = 0, mask = rs2;
+	int iter = 0; // NOREF
 	while (mask) {
-		uint_xlen_t b = mask & ~(mask + (mask & -mask));
-		c |= (rs1 << (ctz(b) - i)) & b;
-		i += pcnt(b);
+		if (iter >= XLEN) { assert(0); return 0; } iter++; // NOREF
+		uint_xlen_t b = mask & ~((mask | (mask-1)) + 1);
+		c |= (rs1 << (fast_ctz(b) - i)) & b;
+		i += fast_pcnt(b);
 		mask -= b;
 	}
 	return c;
 }
+// --REF-END--
+
+#if 0
+// --REF-BEGIN-- fast-bext-bmi2
+uint32_t fast_bext32(uint32_t rs1, uint32_t rs2)
+{
+	return _pext_u32(rs1, rs2);
+}
+
+uint64_t fast_bext64(uint64_t rs1, uint64_t rs2)
+{
+	return _pext_u64(rs1, rs2);
+}
+
+uint32_t fast_bdep32(uint32_t rs1, uint32_t rs2)
+{
+	return _pdep_u32(rs1, rs2);
+}
+
+uint64_t fast_bdep64(uint64_t rs1, uint64_t rs2)
+{
+	return _pdep_u64(rs1, rs2);
+}
+// --REF-END--
+#endif
 
 // --REF-BEGIN-- grev
 uint32_t grev32(uint32_t rs1, uint32_t rs2)
