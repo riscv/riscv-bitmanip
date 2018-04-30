@@ -118,9 +118,11 @@ With rs1$'$ and rd$'$ interpreted as in ``C'' opcodes
 and rs2$^*$ being interpreted the same way, except that $\textrm{rs2} = 0$
 when $\textrm{rs2$^*$} = 0$.
 
-The bits from {\tt start}, {\tt len}, and {\tt dest} are placed in
-the three immediate fields in a manner that tries the maximize the usefulness
-of the remaining brownfield in the {\it custom-3} opcode.
+The bits from {\tt start}, {\tt len}, and {\tt dest} are placed in the three
+immediate fields in a manner that aims at maximizing the usefulness of the
+remaining brownfield in the {\it custom-3} opcode: On RV64, if instruction bits
+14:12 are all set (funct3 = 111), then the instruction is reserved if any of
+the bits 31:24 are set.
 
 \section{Evaluation: Decoding RISC-V Immediates}
 
