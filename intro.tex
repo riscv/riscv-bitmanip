@@ -25,7 +25,7 @@ criteria.
   savings in terms of clocks or instructions. As a heuristic, any
   proposal should replace at least four instructions. An instruction
   that only replaces three may be considered, but only if the frequency
-  of use is very high.
+  of use is very high and/or the implementation very cheap.
 \item
   Data-Driven Value: Usage in real world applications, and corresponding
   benchmarks showing a performance increase, will contribute to the
@@ -47,11 +47,11 @@ criteria.
 \section{B Extension Adoption Strategy}
 
 The overall goal of this extension is pervasive adoption by minimizing
-potential barriers and ensuring the instructions can mapped to the
+potential barriers and ensuring the instructions can be mapped to the
 largest number of ops, either direct or pseudo, that are supported by
 the most popular processors and compilers. By adding generic
-instructions and taking advantage of the RISC-V base instruction that
-already operate on bits, the minimal set of instructions need to added
+instructions and taking advantage of the RISC-V base instructions that
+already operate on bits, the minimal set of instructions need to be added
 while at the same time enabling a rich of operations.
 
 The instructions cover the four major categories of bit manipulation: Count,
@@ -64,6 +64,9 @@ architecturally consistent.
 \section{Next steps}
 
 \begin{itemize}
+\item
+  Assign concrete instruction encodings so that we can start
+  implementing the extension in processor cores and compilers.
 \item
   Add support for this extension to processor cores and compilers
   so we can run quantitative evaluations on the instructions.
