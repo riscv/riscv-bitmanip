@@ -312,10 +312,7 @@ value in a2. See Table~\ref{bmi1-comp}.
 \hline
 ANDN    & 5 &  4 & {\tt andc a0, a2, a1} \\
 \hline
-BEXTR (regs)\footnote{
-The BMI1 {\tt bextr} instruction expects the length and start position packed in one
-register operand. Our version expects the length in a0, start position in a1, and source
-value in a2.} & 5 & 12 & {\tt c.add a0, a1} \\
+BEXTR (regs)  & 5 & 12 & {\tt c.add a0, a1} \\
               &   &    & {\tt slo a0, zero, a0} \\
               &   &    & {\tt c.and a0, a2} \\
               &   &    & {\tt srl a0, a0, a1} \\
@@ -421,7 +418,134 @@ fusion.
 
 \section{Comparison with RI5CY Bit Manipulation ISA}
 
-TBD
+The following section compares XBitmanip with the RI5CY bit manipulation
+instructions as documented in~\cite{Ri5cy}. All RI5CY bit manipulation
+instructions can be emulated with XBitmanip using 3 instructions or less.
+
+\subsubsection{RI5CY Instructions {\tt p.extract}, {\tt p.extractu}, {\tt p.extractr}, and {\tt p.extractur}}
+
+These four RI5CY instructions extract bit-fields. The non-{\tt u}-versions sign-extend
+the extracted bit-field. This operations can be performed with two shift-immediate
+operations. It even fits in a 32-bit word when using compressed instructions (requires
+{\tt rd} $=$ {\tt rs}).
+
+\begin{verbatim}
+  p.extract rd, rs, len, pos:
+    slli rd, rs, (XLEN-pos-len)
+    srai rd, rd, (XLEN-len)
+
+  p.extractu rd, rs, len, pos:
+    slli rd, rs, (XLEN-pos-len)
+    srli rd, rd, (XLEN-len)
+\end{verbatim}
+
+The {\tt r}-versions expect the bit-field size in bits 9:5 of the second source
+register and the bit-field start in bits 4:0. Instead we use two registers,
+$\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
+
+\begin{verbatim}
+  p.extractr:
+    sll rd, rs, rx
+    sra rd, rd, ry
+
+  p.extractu:
+    sll rd, rs, rx
+    srl rd, rd, ry
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.insert} and {\tt p.insertr}}
+
+These instructions OR the destination register with the {\tt len} LSB bits
+from the source register, shifted up by {\tt pos} bits. This can easily
+be achieved using three instructions and a temporary register {\tt rt}:
+
+\begin{verbatim}
+  p.insert rd, rs, len, pos, rt:
+    slli rt, rs, (XLEN-len)
+    srli rt, rt, (XLEN-len-pos)
+    or rd, rd, rt
+\end{verbatim}
+
+The {\tt r}-version of the instruction expects {\tt len} in bits 9:5 of the
+second source register and {\tt pos} in bits 4:0. Instead we use two registers,
+$\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
+
+\begin{verbatim}
+  p.insertr:
+    slli rt, rs, ry
+    srli rt, rt, rx
+    or rd, rd, rt
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.bclr} and {\tt p.bclrr}}
+
+These instructions clear {\tt len} bits starting with bit {\tt pos}. Using a
+temporary register {\tt rt}:
+
+\begin{verbatim}
+  p.bclr rd, rs, len, pos, rt:
+    sloi rt, zero, len
+    slli rt, rt, pos
+    andc rd, rs, rt
+\end{verbatim}
+
+Or using two registers {\tt rLen} and {\tt rPos}:
+
+\begin{verbatim}
+  p.bclr rd, rs, rLen, rPos, rt:
+    slo rt, zero, rLen
+    sll rt, rt, rPos
+    andc rd, rs, rt
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.bset} and {\tt p.bsetr}}
+
+These instructions set {\tt len} bits starting with bit {\tt pos}. They can be
+implemented similar to {\tt p.bclr} and {\tt p.bclrr} by replacing {\tt andc}
+with {\tt or}:
+
+\begin{verbatim}
+  p.bset rd, rs, len, pos, rt:
+    sloi rt, zero, len
+    slli rt, rt, pos
+    or rd, rs, rt
+
+  p.bset rd, rs, rLen, rPos, rt:
+    slo rt, zero, rLen
+    sll rt, rt, rPos
+    or rd, rs, rt
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.ff1}, {\tt p.cnt}, and {\tt p.ror}}
+
+These instructions map directly to the XBitmanip instructions {\tt ctz}, {\tt pcnt}, and {\tt ror}.
+
+\subsubsection{RI5CY Instructions {\tt p.fl1}}
+
+This instruction returns the index of the last set bit in {\tt rs}.
+
+\begin{verbatim}
+  p.fl1 rd, rs:
+    clz rd, rs
+    neg rd, rd
+    addi rd, rd, 31
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.clb}}
+
+This instruction counts the number of consecutive 1’s or 0’s from MSB. If rs1 is 0, rD will be 0.
+
+Using the arguably more consistent definition that the instruction should return XLEN when rs1 is 0,
+and assuming {\tt rd} $\ne$ {\tt rs1}:
+
+\begin{verbatim}
+  p.clb:
+    srai rd, rs1, XLEN-1
+    xor rd, rd, rs1
+    clz rd, rd
+\end{verbatim}
+
+Simply add {\tt andi rd, rd, XLEN-1} if rd should be zero when rs1 is 0.
 
 \section{Decoding RISC-V Immediates}
 
