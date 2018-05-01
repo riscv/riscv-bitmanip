@@ -121,22 +121,16 @@ bit pattern that would otherwise encode an ``Arithmetic Left Shift''
 instruction can be encoded using the bit pattern that would otherwise
 encode an ``Rotate left immediate''.
 
-\begin{longtable}[c]{@{}lll@{}}
-\caption{Rotate Encodings}\tabularnewline
-\toprule
-Bit 31 & Bit 30 & Meaning\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-Bit 31 & Bit 30 & Meaning\tabularnewline
-\midrule
-\endhead
-0 & 0 & Logical Shift-Zeros\tabularnewline
-0 & 1 & Arithmetic Shift\tabularnewline
-1 & 0 & Logical Shift-Ones\tabularnewline
-1 & 1 & Rotate\tabularnewline
-\bottomrule
-\end{longtable}
+\begin{center}
+\begin{tabular}{lll}
+Bit 31 & Bit 30 & Meaning \\
+\hline
+0 & 0 & Logical Shift-Zeros \\
+0 & 1 & Arithmetic Shift \\
+1 & 0 & Logical Shift-Ones \\
+1 & 1 & Rotate \\
+\end{tabular}
+\end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -2,7 +2,6 @@
 
 \input{preamble}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
-\usepackage{longtable,booktabs}
 \usepackage[normalem]{ulem}
 \usepackage{multicol}
 \usepackage{tikz}
@@ -66,42 +65,36 @@ International License.
 \chapter*{Change History}\label{change-history}
 \addcontentsline{toc}{chapter}{Change History}
 
-\begin{longtable}[c]{@{}lll@{}}
-\caption{Summary of Changes}\tabularnewline
-\toprule
-Date & Rev & Changes\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-Date & Rev & Changes\tabularnewline
-\midrule
-\endhead
-2017-07-17 & 0.10 & Initial Draft\tabularnewline
-2017-11-02 & 0.11 & Removed roli, assembler can convert it to use a rori\tabularnewline
-           &      & Removed bitwise subset and replaced with \texttt{andc}\tabularnewline
-           &      & Doc source text same base for study and spec.\tabularnewline
-           &      & Fixed typos\tabularnewline
-2017-11-30 & 0.32 & Jump rev number to be on par with associated Study\tabularnewline
-           &      & Moved pdep/pext into spec draft and called it scattergather\tabularnewline
-2018-04-07 & 0.33 & Move to github, throw out study, convert from .md to .tex\tabularnewline
-           &      & Fixed typos and fixed some reference C implementations\tabularnewline
-           &      & Rename bgat/bsca to bext/bdep\tabularnewline
-           &      & Remove post-add immediate from clz\tabularnewline
-           &      & Clean up encoding tables and code sections\tabularnewline
-2018-04-20 & 0.34 & Add GREV, CTZ, and compressed instructions\tabularnewline
-           &      & Restructure document: Move discussions to extra sections\tabularnewline
-           &      & Add FAQ, add analysis of used encoding space\tabularnewline
-           &      & Add Pseudo-Ops, Macros, Algorithms\tabularnewline
-           &      & Add Generalized Bit Permutations (shuffle)\tabularnewline
-????-??-?? & 0.35 & Replace {\tt shuffle} with generalized zip ({\tt gzip})\tabularnewline
-           &      & Add additional XBitfield ISA Extension\tabularnewline
-           &      & Add figures and tables, Clean up document\tabularnewline
-           &      & Add Verilog reference implementations\tabularnewline
-           &      & Add fast C reference implementations\tabularnewline
-\bottomrule
-\end{longtable}
+\begin{center}
+\begin{tabular}{lll}
+Date & Rev & Changes \\
+\hline
+2017-07-17 & 0.10 & Initial Draft \\
+2017-11-02 & 0.11 & Removed roli, assembler can convert it to use a rori \\
+           &      & Removed bitwise subset and replaced with \texttt{andc} \\
+           &      & Doc source text same base for study and spec. \\
+           &      & Fixed typos \\
+2017-11-30 & 0.32 & Jump rev number to be on par with associated Study \\
+           &      & Moved pdep/pext into spec draft and called it scattergather \\
+2018-04-07 & 0.33 & Move to github, throw out study, convert from .md to .tex \\
+           &      & Fixed typos and fixed some reference C implementations \\
+           &      & Rename bgat/bsca to bext/bdep \\
+           &      & Remove post-add immediate from clz \\
+           &      & Clean up encoding tables and code sections \\
+2018-04-20 & 0.34 & Add GREV, CTZ, and compressed instructions \\
+           &      & Restructure document: Move discussions to extra sections \\
+           &      & Add FAQ, add analysis of used encoding space \\
+           &      & Add Pseudo-Ops, Macros, Algorithms \\
+           &      & Add Generalized Bit Permutations (shuffle) \\
+????-??-?? & 0.35 & Replace {\tt shuffle} with generalized zip ({\tt gzip}) \\
+           &      & Add additional XBitfield ISA Extension \\
+           &      & Add figures and tables, Clean up document \\
+           &      & Add Verilog reference implementations \\
+           &      & Add fast C reference implementations \\
+\end{tabular}
+\end{center}
 
-\nocite{*} % get all entries from the bib data file
+% \nocite{*} % get all entries from the bib data file
 \bibliographystyle{plain}
 \bibliography{xbitmanip}
 

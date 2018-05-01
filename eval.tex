@@ -272,103 +272,147 @@ The following code snippets implement all instructions from the x86 bit manipula
 ISA extensions ABM, BMI1, BMI2, and TBM using RISC-V code that does not spill any
 registers and thus could easily be implemented in a single instruction using macro-op
 fusion. (Some of them simply map directly to instructions in this spec and so no
-macro-op fusion is needed.) Note that shorter RISC-V code sequences are possible if
-we allow spilling to temporary registers.
+macro-op fusion is needed.) Note that shorter RISC-V code sequences are
+sometimes possible if we allow spilling to temporary registers.
 
-\begin{longtable}[c]{@{}llrrl@{}}
-\caption{Emulating x86 Bit Manipulation ISAs using macro-op fusion}\tabularnewline
-\toprule
-x86 Ext & x86 Instruction & \multicolumn{2}{c}{Bytes} & RISC-V Code\tabularnewline
-        &                 & x86 & RV            &\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-x86 Ext & x86 Instruction & \multicolumn{2}{c}{Bytes} & RISC-V Code\tabularnewline
-        &                 & x86 & RV            &\tabularnewline
-\midrule
-\endhead
-ABM  & {\tt popcnt}           & 5 &  4 & {\tt pcnt a0, a0}\tabularnewline
-\cline{2-5}
-     & {\tt lzcnt}            & 5 &  4 & {\tt clz a0, a0}\tabularnewline
-\cline{2-5}
-     & {\tt tzcnt}            & 5 &  4 & {\tt ctz a0, a0}\tabularnewline
-\midrule
-BMI1 & {\tt andn}             & 5 &  4 & {\tt andc a0, a2, a1}\tabularnewline
-\cline{2-5}
-     & {\tt bextr} (regs)\footnote{
-         The BMI1 {\tt bextr} instruction expects the length and start position packed in one
-	 register operand. Our version expects the length in a0, start position in a1, and source
-	 value in a2.
-                            } & 5 & 12 & {\tt c.add a0, a1}\tabularnewline
-     &                        &   &    & {\tt slo a0, zero, a0}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a2}\tabularnewline
-     &                        &   &    & {\tt srl a0, a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blsi}             & 5 &  6 & {\tt neg a0, a1}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blsmsk}           & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt c.xor a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blsr}             & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
-\midrule
-BMI2 & {\tt bzhi}             & 5 &  6 & {\tt slo a0, zero, a2}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt mulx}\footnote{
-         The \texttt{*x} BMI2 isnstructions just perform the indicated operation without
-	 changing any flags. RISC-V does not use flags, so this instructions trivially
-	 just map to their regular RISC-V counterparts.
-                \label{bmix}} & 5 &  4 & {\tt mul}\tabularnewline
-\cline{2-5}
-     & {\tt pdep}             & 5 &  4 & {\tt bdep}\tabularnewline
-\cline{2-5}
-     & {\tt pext}             & 5 &  4 & {\tt bext}\tabularnewline
-\cline{2-5}
-     & {\tt rorx}$^{\ref{bmix}}$ & 6 &  4 & {\tt rori}\tabularnewline
-\cline{2-5}
-     & {\tt sarx}$^{\ref{bmix}}$ & 5 &  4 & {\tt sra}\tabularnewline
-\cline{2-5}
-     & {\tt shrx}$^{\ref{bmix}}$ & 5 &  4 & {\tt srl}\tabularnewline
-\cline{2-5}
-     & {\tt shlx}$^{\ref{bmix}}$ & 5 &  4 & {\tt sll}\tabularnewline
-\midrule
-TBM  & {\tt bextr} (imm)      & 7 &  4 & {\tt c.slli a0, (32-START-LEN)}\tabularnewline
-     &                        &   &    & {\tt c.srli a0, (32-LEN)}\tabularnewline
-\cline{2-5}
-     & {\tt blcfill}          & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.and a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blci}             & 5 &  8 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.not a0}\tabularnewline
-     &                        &   &    & {\tt c.or a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blcic}            & 5 & 10 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
-     &                        &   &    & {\tt c.not a0}\tabularnewline
-\cline{2-5}
-     & {\tt blcmsk}           & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.xor a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blcs}             & 5 &  6 & {\tt addi a0, a1, 1}\tabularnewline
-     &                        &   &    & {\tt c.or a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blsfill}          & 5 &  6 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt c.or a0, a1}\tabularnewline
-\cline{2-5}
-     & {\tt blsic}            & 5 & 10 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
-     &                        &   &    & {\tt c.not a0}\tabularnewline
-\cline{2-5}
-     & {\tt t1mskc}           & 5 & 10 & {\tt addi a0, a1, +1}\tabularnewline
-     &                        &   &    & {\tt andc a0, a1, a0}\tabularnewline
-     &                        &   &    & {\tt c.not a0}\tabularnewline
-\cline{2-5}
-     & {\tt t1msk}            & 5 &  8 & {\tt addi a0, a1, -1}\tabularnewline
-     &                        &   &    & {\tt andc a0, a0, a1}\tabularnewline
-\bottomrule
-\end{longtable}
+ABM added x86 encodings for POPCNT, LZCNT, and TZCNT.\footnote{Depending on if
+you ask Intel or AMD you will get different opinion regarding whether LZCNT
+and/or TZCNT are part of ABM or BMI1.} The difference between LZCNT and the
+80386 instruction BSR, and between TZCNT and the 80386 instruction BSF, is that
+the new instructions return the operand size when the input operand is zero,
+while BSR and BSF were undefined in that case. The ABM instructions map 1:1 to
+XBitmanip instructions.  See Table~\ref{abm-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+POPCNT  & 5 &  4 & {\tt pcnt a0, a0} \\
+\hline
+LZCNT   & 5 &  4 & {\tt clz a0, a0} \\
+\hline
+TZCNT   & 5 &  4 & {\tt ctz a0, a0} \\
+\end{tabular}
+\caption{Comparison of x86 ABM with XBitmanip}
+\label{abm-comp}
+\end{table}
+
+BMI1 adds some instructions for trailing bit manipulations, an add-complement instruction,
+and a bit field extract instruction that expects the length and start position packed in one
+register operand. Our version expects the length in a0, start position in a1, and source
+value in a2. See Table~\ref{bmi1-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+ANDN    & 5 &  4 & {\tt andc a0, a2, a1} \\
+\hline
+BEXTR (regs)\footnote{
+The BMI1 {\tt bextr} instruction expects the length and start position packed in one
+register operand. Our version expects the length in a0, start position in a1, and source
+value in a2.} & 5 & 12 & {\tt c.add a0, a1} \\
+              &   &    & {\tt slo a0, zero, a0} \\
+              &   &    & {\tt c.and a0, a2} \\
+              &   &    & {\tt srl a0, a0, a1} \\
+\hline
+BLSI          & 5 &  6 & {\tt neg a0, a1} \\
+              &   &    & {\tt c.and a0, a1} \\
+\hline
+BLSMSK        & 5 &  6 & {\tt addi a0, a1, -1} \\
+              &   &    & {\tt c.xor a0, a1} \\
+\hline
+BLSR          & 5 &  6 & {\tt addi a0, a1, -1} \\
+              &   &    & {\tt c.and a0, a1} \\
+\end{tabular}
+\caption{Comparison of x86 BMI1 with XBitmanip}
+\label{bmi1-comp}
+\end{table}
+
+BMI2 adds a few \texttt{*X} isnstructions that just perform the indicated
+operation without changing any flags. RISC-V does not use flags, so this
+instructions trivially just map to their regular RISC-V counterparts. In
+addition to those instructions, BMI2 adds bit extract and deposit instructions
+and an instruction to clear high bits above a given bit index. See Table~\ref{bmi2-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+BZHI     & 5 &  6 & {\tt slo a0, zero, a2} \\
+         &   &    & {\tt c.and a0, a1} \\
+\hline
+PDEP     & 5 &  4 & {\tt bdep} \\
+\hline
+PEXT     & 5 &  4 & {\tt bext} \\
+\hline
+MULX     & 5 &  4 & {\tt mul} \\
+\hline
+RORX     & 6 &  4 & {\tt rori} \\
+\hline
+SARX     & 5 &  4 & {\tt sra} \\
+\hline
+SHRX     & 5 &  4 & {\tt srl} \\
+\hline
+SHLX     & 5 &  4 & {\tt sll} \\
+\end{tabular}
+\caption{Comparison of x86 BMI2 with XBitmanip}
+\label{bmi2-comp}
+\end{table}
+
+Finally, TBM was a short-lived x86 ISA extension introduced by AMD in
+Piledriver processors, complementing the trailing bit manipulation instructions
+from BMI1. See Table~\ref{tbm-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+BEXTR (imm)  & 7 &  4 & {\tt c.slli a0, (32-START-LEN)} \\
+             &   &    & {\tt c.srli a0, (32-LEN)} \\
+\hline
+BLCFILL      & 5 &  6 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.and a0, a1} \\
+\hline
+BLCI         & 5 &  8 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.not a0} \\
+             &   &    & {\tt c.or a0, a1} \\
+\hline
+BLCIC        & 5 & 10 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt c.not a0} \\
+\hline
+BLCMSK       & 5 &  6 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.xor a0, a1} \\
+\hline
+BLCS         & 5 &  6 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.or a0, a1} \\
+\hline
+BLSFILL      & 5 &  6 & {\tt addi a0, a1, -1} \\
+             &   &    & {\tt c.or a0, a1} \\
+\hline
+BLSIC        & 5 & 10 & {\tt addi a0, a1, -1} \\
+             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt c.not a0} \\
+\hline
+T1MSKC       & 5 & 10 & {\tt addi a0, a1, +1} \\
+             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt c.not a0} \\
+\hline
+T1MSK        & 5 &  8 & {\tt addi a0, a1, -1} \\
+             &   &    & {\tt andc a0, a0, a1} \\
+\end{tabular}
+\caption{Comparison of x86 TBM with XBitmanip}
+\label{tbm-comp}
+\end{table}
 
 There will be a separate RISC-V standard for recommended sequences for macro-op fusion.
 The macros listed here are merely for demonstrating that suitable sequences exist. We
