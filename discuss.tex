@@ -146,6 +146,84 @@ encoding space, or $\approx 0.1\%$ of the total $\approx 15.6$ bits available.
 $$ log_2(3 \cdot 2^4) \approx 5.585 $$
 $$ 100 / (2^{15.585-5.585}) \approx 0.098 $$
 
+The reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level
+ISA sim summarized in Table~\ref{resctab}. According to this information
+the reserved space is $\approx 11.2$ bits wide. Therefore the compressed
+XBitmanip instructions would use $\approx 2.1\%$ of the remaining
+reserved ``C'' encoding space.
+
+$$ log_2(2^3-1 + 2^{11} + 2^5 + 2^7 + 2^6 + 1) \approx 11.155 $$
+$$ 100 / (2^{11.155-5.585}) \approx 2.105 $$
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{p{0in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}p{0.05in}l}
+& & & & & & & & & & \\ &
+\instbit{15} &
+\instbit{14} &
+\instbit{13} &
+\multicolumn{1}{c}{\instbit{12}} &
+\instbit{11} &
+\instbit{10} &
+\instbit{9} &
+\instbit{8} &
+\instbit{7} &
+\instbit{6} &
+\multicolumn{1}{c}{\instbit{5}} &
+\instbit{4} &
+\instbit{3} &
+\instbit{2} &
+\instbit{1} &
+\instbit{0} \\
+\cline{2-17}
+&
+\multicolumn{3}{|c|}{000} &
+\multicolumn{8}{c|}{0} &
+\multicolumn{3}{c|}{nz} &
+\multicolumn{2}{c|}{00} & $2^3-1$ \\
+\cline{2-17}
+&
+\multicolumn{3}{|c|}{100} &
+\multicolumn{11}{c|}{---} &
+\multicolumn{2}{c|}{00} & $2^{11}$ \\
+\cline{2-17}
+&
+\multicolumn{3}{|c|}{011} &
+\multicolumn{1}{c|}{0} &
+\multicolumn{5}{c|}{---} &
+\multicolumn{5}{c|}{0} &
+\multicolumn{2}{c|}{01} & $2^5$ \\
+\cline{2-17}
+&
+\multicolumn{3}{|c|}{100} &
+\multicolumn{3}{c|}{111} &
+\multicolumn{3}{c|}{---} &
+\multicolumn{1}{c|}{1} &
+\multicolumn{4}{c|}{---} &
+\multicolumn{2}{c|}{01} & $2^7$ \\
+\cline{2-17}
+&
+\multicolumn{3}{|c|}{010} &
+\multicolumn{1}{c|}{---} &
+\multicolumn{5}{c|}{0} &
+\multicolumn{5}{c|}{---} &
+\multicolumn{2}{c|}{10} & $2^6$ \\
+\cline{2-17}
+&
+\multicolumn{3}{|c|}{100} &
+\multicolumn{1}{c|}{0} &
+\multicolumn{5}{c|}{0} &
+\multicolumn{5}{c|}{0} &
+\multicolumn{2}{c|}{10} & $1$ \\
+\cline{2-17}
+\end{tabular}
+\end{center}
+\end{small}
+\caption{Reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level ISA}
+\label{resctab}
+\end{table}
+
 On RV32, XBitmanip requires the equivalent of a $\approx 18.7$ bit encoding space in
 the uncompressed encoding space. For comparison: A single standard I-type
 instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
