@@ -104,37 +104,37 @@ function in hardware or emulating it using a software trap.
 
 \section{Analysis of used encoding space}
 
-So how much encoding space is used by the XBitmanip extension?
-
 \begin{table}
 \begin{center}
 \begin{tabular}{rr|rr|l}
 \multicolumn{2}{c|}{RV32} & \multicolumn{2}{c|}{RV64} & Instruction \\
 \hline
-3x &  0 & 6x &  0 & CLZ, CLZW, CTZ, CTZW, PCNT, PCNTW \\
+3x &  0 & 6x &  0 & {\tt clz, clzw, ctz, ctzw, pcnt, pcntw} \\
 \hline
-1x & 15 & 1x & 15 & GREV \\
-2x & 15 & 2x & 16 & GREVI, ZIP \\
+1x & 15 & 1x & 15 & {\tt grev} \\
+2x & 15 & 2x & 16 & {\tt grevi, gzip} \\
 \hline
-2x & 15 & 6x & 15 & SLO, SRO, SLOW, SROW, SLOIW, SROIW \\
-2x & 15 & 2x & 16 & SLOI, SROI \\
+2x & 15 & 6x & 15 & {\tt slo, sro, slow, srow, sloiw, sroiw} \\
+2x & 15 & 2x & 16 & {\tt sloi, sroi} \\
 \hline
-2x & 15 & 5x & 15 & ROR, ROL, RORW, ROLW, RORIW \\
-1x & 15 & 1x & 16 & RORI \\
+2x & 15 & 5x & 15 & {\tt ror, rol, rorw, rolw, roriw} \\
+1x & 15 & 1x & 16 & {\tt rori} \\
 \hline
-3x & 15 & 3x & 15 & ANDC, BEXT, BDEP \\
-   &    & 2x & 15 & BEXTW, BDEPW \\
+3x & 15 & 3x & 15 & {\tt andc, bext, bdep} \\
+   &    & 2x & 15 & {\tt bextw, bdepw} \\
 \hline
-3x &  4 & 3x &  4 & C.NEG, C.NOT, C.BREV \\
+3x &  4 & 3x &  4 & {\tt c.neg, c.not, c.brev} \\
 \end{tabular}
 \end{center}
 \caption{XBitmanip encoding space ($log2$, i.e. in equivalent number of bits)}
 \label{encspace-tab}
 \end{table}
 
-We do not count any encoding space for the unary instructions {\tt clz}, {\tt
-clzw}, {\tt ctz}, {\tt ctzw}, {\tt pcnt}, and {\tt pcntw} because they can
-be implemented in the reserved modes in {\tt zip}.
+Table~\ref{encspace-tab} lists all XBitmanip instructions and the encoding
+space needed to implement them.  We do not count any encoding space for the
+unary instructions {\tt clz}, {\tt clzw}, {\tt ctz}, {\tt ctzw}, {\tt pcnt},
+and {\tt pcntw} because they can be implemented in the reserved modes in {\tt
+gzip}.
 
 The compressed encoding space is $\approx 15.6$ bits wide.
 
