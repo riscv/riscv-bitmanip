@@ -118,7 +118,7 @@ So how much encoding space is used by the XBitmanip extension?
 \endhead
 3x &  0 & 6x &  0 & CLZ, CLZW, CTZ, CTZW, PCNT, PCNTW\tabularnewline
 \midrule
-2x & 15 & 4x & 15 & GREV, GREVW, GREVIW, ZIPW\tabularnewline
+1x & 15 & 1x & 15 & GREV\tabularnewline
 2x & 15 & 2x & 16 & GREVI, ZIP\tabularnewline
 \midrule
 2x & 15 & 6x & 15 & SLO, SRO, SLOW, SROW, SLOIW, SROIW\tabularnewline
@@ -128,7 +128,7 @@ So how much encoding space is used by the XBitmanip extension?
 1x & 15 & 1x & 16 & RORI\tabularnewline
 \midrule
 3x & 15 & 3x & 15 & ANDC, BEXT, BDEP\tabularnewline
-   &    & 3x & 15 & ANDCW, BEXTW, BDEPW\tabularnewline
+   &    & 2x & 15 & BEXTW, BDEPW\tabularnewline
 \midrule
 3x &  4 & 3x &  4 & C.NEG, C.NOT, C.BREV\tabularnewline
 \bottomrule
@@ -148,20 +148,20 @@ encoding space, or $\approx 0.1\%$ of the total $\approx 15.6$ bits available.
 $$ log_2(3 \cdot 2^4) \approx 5.585 $$
 $$ 100 / (2^{15.585-5.585}) \approx 0.098 $$
 
-On RV32, XBitmanip requires the equivalent of a $\approx 18.8$ bit encoding space in
+On RV32, XBitmanip requires the equivalent of a $\approx 18.7$ bit encoding space in
 the uncompressed encoding space. For comparison: A single standard I-type
 instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
 encoding space. I.e. the entire RV32 XBitmanip extension needs less than
 one-eighth of the encoding space of the \texttt{SLTIU} instruction.
 
-$$ log_2(14\cdot2^{15}) \approx 18.807 $$
+$$ log_2(13\cdot2^{15}) \approx 18.700 $$
 
-On RV64, XBitmanip requires the equivalent of a $\approx 20.0$ bit encoding
+On RV64, XBitmanip requires the equivalent of a $\approx 19.8$ bit encoding
 space in the uncompressed encoding space. I.e. the entire RV64 XBitmanip
 extension needs about one-quarter of the encoding space of the \texttt{SLTIU}
 instruction.
 
-$$ log_2(21\cdot2^{15} + 5\cdot2^{16}) \approx 19.954 $$
+$$ log_2(17\cdot2^{15} + 5\cdot2^{16}) \approx 19.755 $$
 
 \section{Area usage of reference implementations}
 
