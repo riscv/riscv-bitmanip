@@ -420,7 +420,8 @@ fusion.
 
 The following section compares XBitmanip with the RI5CY bit manipulation
 instructions as documented in~\cite{Ri5cy}. All RI5CY bit manipulation
-instructions can be emulated with XBitmanip using 3 instructions or less.
+instructions (or something very close to their behavior) can be emulated with
+XBitmanip using 3 instructions or less.
 
 \subsubsection{RI5CY Instructions {\tt p.extract}, {\tt p.extractu}, {\tt p.extractr}, and {\tt p.extractur}}
 
@@ -448,9 +449,30 @@ $\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
     sll rd, rs, rx
     sra rd, rd, ry
 
-  p.extractu:
+  p.extractur:
     sll rd, rs, rx
     srl rd, rd, ry
+\end{verbatim}
+
+Alternatively, instead of packing length and position into a register, we
+can create a mask in a register and then use this mask with {\tt bext}. This
+has the advantage over the {\tt sll}+{\tt srl} sequence that the mask only needs
+to be generated once and can then be re-used many times, effectively implementing
+{\tt p.extractur} in a single instruction.
+
+\begin{verbatim}
+  p.extractur:
+    slo rMask, zero, rLen
+    sll rMask, rMask, rPos
+    bext rd, rs, rMask
+\end{verbatim}
+
+{\tt p.extractu} can be efficiently emulated with a single XBitfield {\tt bfxp}
+instruction (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.extract rd, rs, len, pos:
+    bfxp rd, rs, zero, pos, len, 0
 \end{verbatim}
 
 \subsubsection{RI5CY Instructions {\tt p.insert} and {\tt p.insertr}}
@@ -477,6 +499,27 @@ $\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
     or rd, rd, rt
 \end{verbatim}
 
+Alternatively, instead of packing length and position into a register, we
+can create a mask in a register and then use this mask with {\tt bext}. This
+has the advantage over the {\tt sll}+{\tt srl} sequence that the mask only needs
+to be generated once and can then be re-used many times.
+
+\begin{verbatim}
+  p.extractur:
+    slo rMask, zero, rLen
+    sll rMask, rMask, rPos
+    bdep rt, rs, rMask
+    or rd, rd, rt
+\end{verbatim}
+
+{\tt p.insert} can be efficiently emulated with a single XBitfield {\tt bfxp}
+instruction (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.insert rd, rs, len, pos:
+    bfxp rd, rs, rd, 0, len, pos
+\end{verbatim}
+
 \subsubsection{RI5CY Instructions {\tt p.bclr} and {\tt p.bclrr}}
 
 These instructions clear {\tt len} bits starting with bit {\tt pos}. Using a
@@ -498,6 +541,10 @@ Or using two registers {\tt rLen} and {\tt rPos}:
     andc rd, rs, rt
 \end{verbatim}
 
+If the mask in {\tt rt} can be pre-computed then a single {\tt andc} instruction
+can emulate {\tt p.bclrr}, or a single {\tt and}/{\tt c.and} instruction if the
+mask is inverted.
+
 \subsubsection{RI5CY Instructions {\tt p.bset} and {\tt p.bsetr}}
 
 These instructions set {\tt len} bits starting with bit {\tt pos}. They can be
@@ -510,11 +557,14 @@ with {\tt or}:
     slli rt, rt, pos
     or rd, rs, rt
 
-  p.bset rd, rs, rLen, rPos, rt:
+  p.bsetr rd, rs, rLen, rPos, rt:
     slo rt, zero, rLen
     sll rt, rt, rPos
     or rd, rs, rt
 \end{verbatim}
+
+If the mask in {\tt rt} can be pre-computed then a single {\tt or}/{\tt c.or} instruction
+can emulate {\tt p.bsetr}.
 
 \subsubsection{RI5CY Instructions {\tt p.ff1}, {\tt p.cnt}, and {\tt p.ror}}
 
@@ -522,7 +572,9 @@ These instructions map directly to the XBitmanip instructions {\tt ctz}, {\tt pc
 
 \subsubsection{RI5CY Instructions {\tt p.fl1}}
 
-This instruction returns the index of the last set bit in {\tt rs}.
+This instruction returns the index of the last set bit in {\tt rs}. If {\tt rs} is 0, {\tt rd} will be 0.
+
+Using the arguably more useful definition that the operation should return -1 when {\tt rs} is 0:
 
 \begin{verbatim}
   p.fl1 rd, rs:
@@ -531,21 +583,28 @@ This instruction returns the index of the last set bit in {\tt rs}.
     addi rd, rd, 31
 \end{verbatim}
 
+Converting a -1 result to 0 to match the exact {\tt p.fl1} behavior:
+
+\begin{verbatim}
+    slt rt, rd, zero
+    add rd, rd, rt
+\end{verbatim}
+
 \subsubsection{RI5CY Instructions {\tt p.clb}}
 
-This instruction counts the number of consecutive 1’s or 0’s from MSB. If rs1 is 0, rD will be 0.
+This instruction counts the number of consecutive 1s or 0s from MSB. If {\tt rs} is 0, {\tt rd} will be 0.
 
-Using the arguably more consistent definition that the instruction should return XLEN when rs1 is 0,
+Using the arguably more useful definition that the operation should return XLEN when {\tt rs} is 0 or -1,
 and assuming {\tt rd} $\ne$ {\tt rs1}:
 
 \begin{verbatim}
   p.clb:
-    srai rd, rs1, XLEN-1
-    xor rd, rd, rs1
+    srai rd, rs, XLEN-1
+    xor rd, rd, rs
     clz rd, rd
 \end{verbatim}
 
-Simply add {\tt andi rd, rd, XLEN-1} if rd should be zero when rs1 is 0.
+Simply add {\tt andi rd, rd, XLEN-1} if {\tt rd} should be 0 when {\tt rs} is 0 or -1.
 
 \section{Decoding RISC-V Immediates}
 
