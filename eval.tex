@@ -500,7 +500,7 @@ $\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
 \end{verbatim}
 
 Alternatively, instead of packing length and position into a register, we
-can create a mask in a register and then use this mask with {\tt bext}. This
+can create a mask in a register and then use this mask with {\tt bdep}. This
 has the advantage over the {\tt sll}+{\tt srl} sequence that the mask only needs
 to be generated once and can then be re-used many times.
 
