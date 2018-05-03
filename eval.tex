@@ -6,13 +6,36 @@ assume RV32 for most examples in this chapter.
 
 Most assembler routines in this chapter are written as if they were ABI functions,
 i.e. arguments are passed in a0, a1,~\dots~and results are returned in a0. Registers
-t0, t1,~\dots~and a0, a1,~\dots~are used for spilling.
+a0, a1,~\dots~are also used for spilling Registers t0, t1,~\dots~are used for
+pre-computed masks to be used with {\tt bext}/{\tt bdep}.
 
 Some of the assembler routines below can not or should not overwrite their
-first argument. In those cases the arguments are passed in a1, a2, \dots\ and
+first argument. In those cases the arguments are passed in a1, a2,~\dots~and
 results are returned in a0.
 
+The main motivarion behind this chapter is to show that all the common bit
+manipulation tasks can be performed in few instructions using XBitmanip. (In
+many cases RV32I/RV64I instructions are already sufficient.) In most cases the
+sequences are short enough to allow large cores to macro-op-fuse them into a
+single instruction. For this reason we also focus on code snippets that do
+not spill any registers, as this further simplifies macro-op fusion.
+
+\section{Bitfield extract}
+
+Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
+two shift operations (or equivialently using the {\tt bfext} pseudo instruction, see
+Section~\ref{bfext}).
+
+\begin{verbatim}
+  c.slli a0, (XLEN-pos-len)
+  c.srli a0, (XLEN-len)
+\end{verbatim}
+
+The XBitfield {\tt bfxp} instruction (see Chapter~\ref{bfxp}) performs this operation
+plus one more left shift and an OR operation in a single instruction.
+
 \section{MIX/MUX pattern}
+\label{mixmux}
 
 A MIX pattern selects bits from {\tt a0} and {\tt a1} based on the bits in
 the control word {\tt a2}.
@@ -89,6 +112,113 @@ Even parity:
 (Using {\tt addi} here is better than using {\tt xori}, because there is
 a compressed opcode for {\tt addi} but none for {\tt xori}.)
 
+\section{Test, set, and clear individual bits}
+
+Extracting bit N:
+
+\begin{verbatim}
+  c.srli a0, N
+  c.andi a0, 1
+\end{verbatim}
+
+Branching on bit N set:
+
+\begin{verbatim}
+  c.slli a0, (XLEN-N-1)
+  bltz a0, <bit_n_set>
+\end{verbatim}
+
+Branching on bit N clear:
+
+\begin{verbatim}
+  c.slli a0, (XLEN-N-1)
+  bgez a0, <bit_n_clear>
+\end{verbatim}
+
+Setting bit N (note that this {\tt li} is guaranteed to be only one instruction on RV32):
+
+\begin{verbatim}
+  li a1, (1 << N)
+  c.or a0, a1
+\end{verbatim}
+
+Setting bit N without spilling:
+
+\begin{verbatim}
+  rori a0, a0, N
+  ori a0, 1
+  rori a0, a0, 32-N
+\end{verbatim}
+
+(Or simply ``{\tt ori a0, 1 << N}'' if N is sufficiently small.)
+
+Clearing bit N (note that this {\tt li} is guaranteed to be only one instruction on RV32):
+
+\begin{verbatim}
+  li a1, (1 << N)
+  andc a0, a1
+\end{verbatim}
+
+Clearing bit N without spilling:
+
+\begin{verbatim}
+  rori a0, a0, N
+  c.andi a0, -2
+  rori a0, a0, XLEN-N
+\end{verbatim}
+
+(Or simply ``{\tt andi a0, $\sim$(1 << N)}'' if N is sufficiently small.)
+
+Setting bit N to the value in {\tt a1} (assuming a1 already is either 0 or 1):
+
+\begin{verbatim}
+  rori a0, a0, N
+  c.andi a0, -2
+  c.or a0, a1
+  rori a0, a0, 32-N
+\end{verbatim}
+
+\section{Funnel shifts}
+
+A funnel shift takes two XLEN registers, concatenates them to a $2 \times \textrm{XLEN}$ word,
+shifts that by a certain amount, then returns the lower half of the result
+for a right shift and the upper half of the result for a left shift.
+
+This can be very useful for processing a stream of bit data that is not
+composed of units aligned to byte boundaries. (Especially when implemented
+in a single instruction, it can also be useful for misaligned memcopy when
+source and destination are not misaligned by the same offset.)
+
+Performing a funnel right shift of {\tt a0} (LSB) and {\tt a1} (MSB) by the
+shift amount specified in {\tt a2} (with $0 < \texttt{a2} < \textrm{XLEN}$):
+
+\begin{verbatim}
+  c.srl a0, a2
+  c.neg a2
+  addi a2, a2, XLEN
+  c.sll a1, a2
+  c.or a0, a1
+\end{verbatim}
+
+On RV32 this can be implemented using 5 compressed instructions (10 bytes)
+when the order of addi and c.neg is reversed:
+
+\begin{verbatim}
+  c.srl a0, a2
+  c.addi a2, -32
+  c.neg a2
+  c.sll a1, a2
+  c.or a0, a1
+\end{verbatim}
+
+When the shift amount is a compile-time constant, then a 32-bit funnel shift can be
+performed using two XBitfield {\tt bfxp} instructions (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  bfxp a0, a0, zero, N, 32-N, 0
+  bfxp a0, a1, a0, 0, N, 32-N
+\end{verbatim}
+
 \section{Arbitrary bit permutations}
 
 This section lists code snippets for computing arbitrary bit permutations that
@@ -97,6 +227,7 @@ time and can likely be compiled into shift-and-mask operations and/or a few
 instances of bext/bdep).
 
 \subsection{Using butterfly operations}
+\label{butterfly}
 
 The following macro performs a stage-{\tt N} butterfly operation on the word in
 {\tt a0} using the mask in {\tt a1}.
@@ -267,6 +398,7 @@ set.~\cite[p.~152f,~162f]{Seander05}
 % Hackers Delight, Chapter 7-7
 
 \section{Comparison with x86 Bit Manipulation ISAs}
+\label{x86comp}
 
 The following code snippets implement all instructions from the x86 bit manipulation
 ISA extensions ABM, BMI1, BMI2, and TBM using RISC-V code that does not spill any
@@ -687,6 +819,7 @@ sleeve''-examples for real-world bit permutations.
 \end{small}
 
 \begin{multicols}{2}
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   decode_s:
     li t0, 0xfe000f80
@@ -694,7 +827,11 @@ sleeve''-examples for real-world bit permutations.
     c.slli a0, 20
     c.srai a0, 20
     ret
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
   decode_b:
     li t0, 0xeaa800aa
     rori a0, a0, 8
@@ -704,7 +841,11 @@ sleeve''-examples for real-world bit permutations.
     c.slli a0, 20
     c.srai a0, 19
     ret
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
   decode_j:
     li t0, 0x800003ff
     li t1, 0x800ff000
@@ -716,7 +857,11 @@ sleeve''-examples for real-world bit permutations.
     c.or a0, a1
     c.srai a0, 11
     ret
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
   // variant 1 (with XBitmanip)
   decode_cj:
     li t0, 0x28800001
@@ -731,7 +876,11 @@ sleeve''-examples for real-world bit permutations.
     c.or a0, a1
     c.srai a0, 20
     ret
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
   // variant 2 (without XBitmanip)
   decode_cj:
     srli a5, a0, 2
@@ -760,4 +909,5 @@ sleeve''-examples for real-world bit permutations.
     c.add a0, a5
     ret
 \end{verbatim}
+\end{minipage}
 \end{multicols}

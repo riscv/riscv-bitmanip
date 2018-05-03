@@ -2,6 +2,55 @@
 
 \section{Frequently Asked Questions}
 
+\subsubsection{Which instructions were considered but not included?}
+
+\begin{itemize}
+\item A bit-field extract instruction. Unfortunately the encoding space required
+by such an instruction would be enourmous (for forward-looking support up to
+RV128 this would require a $2 \time 7 = 14$ bits immedate. This was deemed
+too expensive considering that the same functionality can already be implemented
+using only two shift instructions. However, see Chapter~\ref{bfxp} for an
+alternative.
+
+\item A ``butterfly'' instruction with an XLEN/2 immediate that would run one
+butterfly stage (see Section~\ref{butterfly}). The {\tt smartbextdep} implementation
+of {\tt bext}/{\tt bdep} (see Section~\ref{cores}) already includes the hardware
+for that, all that would be required is exposing a few internal control signals.
+However, the encoding cost of such an instruction would be enourmous, the
+instruction itself would only be useful in niche applications, and it would require
+implementors to implement {\tt bext}/{\tt bdep} in a certain way. So it's is
+not worth the effort considering that a butterfly stage can also be implemented in
+four instructions using {\tt grevi} and the MIX pattern (see Section~\ref{butterfly}).
+
+\item A reverse-subract-immediate operation that performs the calculation
+$\texttt{imm} - \texttt{rs}$.  This comes up often in calculating bit indices
+(for example $\texttt{XLEN} - i$ is a very common operation, and compressed
+instructions are only of some help here because compressed immediates are in
+the range $-32 \dots 31$). However, a reverse-subract-immediate operation is
+not very bit-manipulation specific.
+
+\item Conditional move and mix instructions. Those would be very helpful! However,
+they would require three source operands, and we did not want to add a register
+file with three read ports as requirement for XBitmanip. See Section~\ref{mixmux}
+for short sequences implementing conditional move (aka mux) and mix operations.
+
+\item Funnel shift instructions. Those are also super helpful! For example when
+processing input that is a bit-packed stream of words of arbitrary (variable)
+bit width. However, a funnel shift instruction would also require three source
+operands, therefore it was not considered for inclusion in XBitmanip.
+
+\item Instructions for testing, setting and clearing bits. This operations can
+be performed in few easily macro-op fusable instructions. So implementations
+might provide hardware support for them, but we do not reserve dedicated opcodes
+for those operations.
+
+\item Instructions for the usual patterns of ALU operations to fiddle with
+trailing bits, such as {\tt x \& -x} (extract lowest set bit), or
+{\tt x \^{} (x - 1)} (mask up to and including lowest set bit). But those
+operations all fit into short easily macro-op fusable instruction sequences
+(see Section~\ref{x86comp}).
+\end{itemize}
+
 \subsubsection{\texttt{grev} seems to be overly complicated? Do we really need it?}
 
 The \texttt{grev} instruction can be used to build a wide range of common
@@ -101,6 +150,27 @@ mask in {\tt a1}):
 However, one solution here would be to still reserve the opcode for 64-bit
 BEXT/BDEP and leave it to the implementation to decide whether to implement the
 function in hardware or emulating it using a software trap.
+
+\subsubsection{Compressed encoding space is expensive. Do we need {\tt c.neg}, {\tt c.not}, {\tt c.brev}?}
+
+Because they are unary operations and encoded with $\texttt{rd}' = \texttt{rs}'$, they only take
+up $\approx 0.1\%$ of the total ``C'' encoding space, and only $\approx 2.1\%$
+of the remaining reserved ``C'' encoding space.
+
+They are common building blocks of sequences that are candidates for macro-op fusion,
+and keeping these sequences short can help with decoding them efficiently.
+
+{\tt c.neg} can be emulated using {\tt c.not} if the next (or previous) operation
+is an {\tt addi}. But commonly {\tt c.neg} is simply used to turn the value 1
+into all-bits-set and leave the value 0 at 0. In those cases there might be
+no addition before or after the {\tt c.neg} instruction.
+
+Furthermore, the sequence ``{\tt c.addi rX, -32; c.neg rX}'' computes the commonly
+needed operation ``{\tt rX := 32 - rX}''. Replacing {\tt c.neg} with {\tt c.not}
+would require the {\tt c.addi} instruction to subtract $-33$. But the range for
+the {\tt c.addi} immediate is only $-32 \dots 31$. (A dedicated reverse-subtract-immediate
+instruction would help in this case, and provide a 32-bit encoding for the
+operation ``{\tt rX := \rm XLEN \tt - rX}'' on RV64.)
 
 \section{Analysis of used encoding space}
 
@@ -241,6 +311,7 @@ instruction.
 $$ log_2(17\cdot2^{15} + 5\cdot2^{16}) \approx 19.755 $$
 
 \section{Area usage of reference implementations}
+\label{cores}
 
 \begin{figure}[b]
 %%%%%%% BEGIN: verilog/stats.tex %%%%%%%
