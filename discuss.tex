@@ -217,15 +217,15 @@ encoding space, or $\approx 0.05\%$ of the total $\approx 15.6$ bits available.
 $$ log_2(3 \cdot 2^3) \approx 4.585 $$
 $$ 100 / (2^{15.585-4.585}) \approx 0.049 $$
 
-The reserved ``C'' encoding space as of Version 2.3 of the RISC-V User-Level
-ISA sim summarized in Table~\ref{resctab}. (This is not including RV32-only
+The reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level
+ISA is summarized in Table~\ref{resctab}. (This is not including RV32-only
 or RV64-only reserved encoding space.) According to this information
-the reserved space is $\approx 11.1$ bits wide. Therefore the compressed
+the reserved space is $\approx 11.2$ bits wide. Therefore the compressed
 XBitmanip instructions would use $\approx 1.1\%$ of the remaining
 reserved ``C'' encoding space.
 
-$$ log_2(2^3-1 + 2^{11} + 2^5 + 2^7 + 1) \approx 11.114 $$
-$$ 100 / (2^{11.114-4.585}) \approx 1.083 $$
+$$ log_2(2^3-1 + 2^{11} + 2^5 + 2^7 + 2^6 + 1) \approx 11.155 $$
+$$ 100 / (2^{11.155-4.585}) \approx 1.053 $$
 
 \begin{table}[h]
 \begin{small}
@@ -276,6 +276,13 @@ $$ 100 / (2^{11.114-4.585}) \approx 1.083 $$
 \multicolumn{2}{c|}{01} & $2^7$ \\
 \cline{2-17}
 &
+\multicolumn{3}{|c|}{010} &
+\multicolumn{1}{c|}{---} &
+\multicolumn{5}{c|}{0} &
+\multicolumn{5}{c|}{---} &
+\multicolumn{2}{c|}{10} & $2^6$ \\
+\cline{2-17}
+&
 \multicolumn{3}{|c|}{100} &
 \multicolumn{1}{c|}{0} &
 \multicolumn{5}{c|}{0} &
@@ -285,7 +292,7 @@ $$ 100 / (2^{11.114-4.585}) \approx 1.083 $$
 \end{tabular}
 \end{center}
 \end{small}
-\caption{Reserved ``C'' encoding space as of Version 2.3 of the RISC-V User-Level ISA}
+\caption{Reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level ISA}
 \label{resctab}
 \end{table}
 
