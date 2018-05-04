@@ -154,7 +154,7 @@ function in hardware or emulating it using a software trap.
 \subsubsection{Compressed encoding space is expensive. Do we need {\tt c.neg}, {\tt c.not}, {\tt c.brev}?}
 
 Because they are unary operations and encoded with $\texttt{rd}' = \texttt{rs}'$, they only take
-up $\approx 0.1\%$ of the total ``C'' encoding space, and only $\approx 2.1\%$
+up $\approx 0.05\%$ of the total ``C'' encoding space, and only $\approx 1.1\%$
 of the remaining reserved ``C'' encoding space.
 
 They are common building blocks of sequences that are candidates for macro-op fusion,
@@ -210,21 +210,21 @@ The compressed encoding space is $\approx 15.6$ bits wide.
 
 $$ log_2(3 \cdot 2^{14}) \approx 15.585 $$
 
-The compressed XBitmanip instructions need the equivalent of a 5.6 bit
-encoding space, or $\approx 0.1\%$ of the total $\approx 15.6$ bits available.
+The compressed XBitmanip instructions need the equivalent of a 4.6 bit
+encoding space, or $\approx 0.05\%$ of the total $\approx 15.6$ bits available.
 
-$$ log_2(3 \cdot 2^4) \approx 5.585 $$
-$$ 100 / (2^{15.585-5.585}) \approx 0.098 $$
+$$ log_2(3 \cdot 2^3) \approx 4.585 $$
+$$ 100 / (2^{15.585-4.585}) \approx 0.049 $$
 
-The reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level
+The reserved ``C'' encoding space as of Version 2.3 of the RISC-V User-Level
 ISA sim summarized in Table~\ref{resctab}. (This is not including RV32-only
 or RV64-only reserved encoding space.) According to this information
-the reserved space is $\approx 11.2$ bits wide. Therefore the compressed
-XBitmanip instructions would use $\approx 2.1\%$ of the remaining
+the reserved space is $\approx 11.1$ bits wide. Therefore the compressed
+XBitmanip instructions would use $\approx 1.1\%$ of the remaining
 reserved ``C'' encoding space.
 
-$$ log_2(2^3-1 + 2^{11} + 2^5 + 2^7 + 2^6 + 1) \approx 11.155 $$
-$$ 100 / (2^{11.155-5.585}) \approx 2.105 $$
+$$ log_2(2^3-1 + 2^{11} + 2^5 + 2^7 + 1) \approx 11.114 $$
+$$ 100 / (2^{11.114-4.585}) \approx 1.083 $$
 
 \begin{table}[h]
 \begin{small}
@@ -275,13 +275,6 @@ $$ 100 / (2^{11.155-5.585}) \approx 2.105 $$
 \multicolumn{2}{c|}{01} & $2^7$ \\
 \cline{2-17}
 &
-\multicolumn{3}{|c|}{010} &
-\multicolumn{1}{c|}{---} &
-\multicolumn{5}{c|}{0} &
-\multicolumn{5}{c|}{---} &
-\multicolumn{2}{c|}{10} & $2^6$ \\
-\cline{2-17}
-&
 \multicolumn{3}{|c|}{100} &
 \multicolumn{1}{c|}{0} &
 \multicolumn{5}{c|}{0} &
@@ -291,7 +284,7 @@ $$ 100 / (2^{11.155-5.585}) \approx 2.105 $$
 \end{tabular}
 \end{center}
 \end{small}
-\caption{Reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level ISA}
+\caption{Reserved ``C'' encoding space as of Version 2.3 of the RISC-V User-Level ISA}
 \label{resctab}
 \end{table}
 

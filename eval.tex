@@ -195,18 +195,6 @@ shift amount specified in {\tt a2} (with $0 < \texttt{a2} < \textrm{XLEN}$):
 \begin{verbatim}
   c.srl a0, a2
   c.neg a2
-  addi a2, a2, XLEN
-  c.sll a1, a2
-  c.or a0, a1
-\end{verbatim}
-
-On RV32 this can be implemented using 5 compressed instructions (10 bytes)
-when the order of addi and c.neg is reversed:
-
-\begin{verbatim}
-  c.srl a0, a2
-  c.addi a2, -32
-  c.neg a2
   c.sll a1, a2
   c.or a0, a1
 \end{verbatim}
