@@ -10,7 +10,8 @@ by such an instruction would be enourmous (for forward-looking support up to
 RV128 this would require a $2 \time 7 = 14$ bits immedate. This was deemed
 too expensive considering that the same functionality can already be implemented
 using only two shift instructions. However, see Chapter~\ref{bfxp} for an
-alternative.
+alternative. (The same encoding space argument applies to instructions for
+inserting bits in a bit field, or setting or clearing ranges of bits.)
 
 \item A ``butterfly'' instruction with an XLEN/2 immediate that would run one
 butterfly stage (see Section~\ref{butterfly}). The {\tt smartbextdep} implementation
@@ -27,7 +28,10 @@ $\texttt{imm} - \texttt{rs}$.  This comes up often in calculating bit indices
 (for example $\texttt{XLEN} - i$ is a very common operation, and compressed
 instructions are only of some help here because compressed immediates are in
 the range $-32 \dots 31$). However, a reverse-subract-immediate operation is
-not very bit-manipulation specific.
+not very bit-manipulation specific, would require a much larger encoding
+space than the rest of XBitmanip (it would have a 12 bit immediate), and
+does not add any functionality that can not be emulated easily with {\tt neg} and
+{\tt addi}: $\texttt{rsbi}(x, k) = \texttt{neg}(\texttt{addi}(x, -k)) = \texttt{addi}(\texttt{neg}(x), k)$
 
 \item Conditional move and mix instructions. Those would be very helpful! However,
 they would require three source operands, and we did not want to add a register
@@ -162,15 +166,12 @@ and keeping these sequences short can help with decoding them efficiently.
 
 {\tt c.neg} can be emulated using {\tt c.not} if the next (or previous) operation
 is an {\tt addi}. But commonly {\tt c.neg} is simply used to turn the value 1
-into all-bits-set and leave the value 0 at 0. In those cases there might be
-no addition before or after the {\tt c.neg} instruction.
-
-Furthermore, the sequence ``{\tt c.addi rX, -32; c.neg rX}'' computes the commonly
-needed operation ``{\tt rX := 32 - rX}''. Replacing {\tt c.neg} with {\tt c.not}
-would require the {\tt c.addi} instruction to subtract $-33$. But the range for
-the {\tt c.addi} immediate is only $-32 \dots 31$. (A dedicated reverse-subtract-immediate
-instruction would help in this case, and provide a 32-bit encoding for the
-operation ``{\tt rX := \rm XLEN \tt - rX}'' on RV64.)
+into all-bits-set and leave the value 0 at 0. Or it is used stand-alone to
+effectively perform the operation $\textrm{XLEN}-i$ to calulate the shift
+amount for the 2nd shift in a funnel shift (see Section~\ref{funnel}, XLEN does
+not actually need to be added because the shift operations only uses the lower
+$log_2(\textrm{XLEN})$ bits of their 2nd argument anyways). In those cases
+there is no addition before or after the {\tt c.neg} instruction.
 
 \section{Analysis of used encoding space}
 
