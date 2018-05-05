@@ -407,7 +407,8 @@ and/or TZCNT are part of ABM or BMI1.} The difference between LZCNT and the
 80386 instruction BSR, and between TZCNT and the 80386 instruction BSF, is that
 the new instructions return the operand size when the input operand is zero,
 while BSR and BSF were undefined in that case. The ABM instructions map 1:1 to
-XBitmanip instructions.  See Table~\ref{abm-comp}.
+XBitmanip instructions. Table~\ref{abm-comp} lists ABM instructions and regular
+x86 bit manipulation instructions.
 
 \begin{table}[h]
 \centering
@@ -415,13 +416,37 @@ XBitmanip instructions.  See Table~\ref{abm-comp}.
 \multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
 & x86 & RV & \\
 \hline
-POPCNT  & 5 &  4 & {\tt pcnt a0, a0} \\
+POPCNT       &   5 &  4 & {\tt pcnt a0, a0} \\
 \hline
-LZCNT   & 5 &  4 & {\tt clz a0, a0} \\
+LZCNT / BSR  &   5 &  4 & {\tt clz a0, a0} \\
 \hline
-TZCNT   & 5 &  4 & {\tt ctz a0, a0} \\
+TZCNT / BSF  &   5 &  4 & {\tt ctz a0, a0} \\
+\hline
+BSWAP        &   3 &  4 & {\tt bswap} \\
+\hline
+ROL          &   4 &  4 & {\tt roli} \\
+\hline
+ROR          &   4 &  4 & {\tt rori} \\
+\hline
+BT           &   5 &  4 & {\tt c.srl a0, N} \\
+             &     &    & {\tt c.andi a0, 1} \\
+\hline
+BTC          &   5 & 16 & {\tt rori a0, N} \\
+             &     &    & {\tt andi a1, a0, 1} \\
+             &     &    & {\tt xori a0, a0, 1} \\
+             &     &    & {\tt rori a0, XLEN-N} \\
+\hline
+BTR          &   5 & 16 & {\tt rori a0, N} \\
+             &     &    & {\tt andi a1, a0, 1} \\
+             &     &    & {\tt andi a0, a0, -2} \\
+             &     &    & {\tt rori a0, XLEN-N} \\
+\hline
+BTS          &   5 & 16 & {\tt rori a0, N} \\
+             &     &    & {\tt andi a1, a0, 1} \\
+             &     &    & {\tt ori a0, a0, 1} \\
+             &     &    & {\tt rori a0, XLEN-N} \\
 \end{tabular}
-\caption{Comparison of x86 ABM with XBitmanip}
+\caption{Comparison of x86+ABM with XBitmanip}
 \label{abm-comp}
 \end{table}
 
