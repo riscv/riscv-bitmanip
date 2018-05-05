@@ -20,6 +20,11 @@ sequences are short enough to allow large cores to macro-op-fuse them into a
 single instruction. For this reason we also focus on code snippets that do
 not spill any registers, as this further simplifies macro-op fusion.
 
+There likely will be a separate RISC-V standard for recommended sequences for
+macro-op fusion. The macros listed here are merely for demonstrating that
+suitable sequences exist. We do not advocate for any of those sequences to
+become ``standard sequences'' for macro-op fusion.
+
 \section{Bitfield extract}
 
 Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
@@ -532,11 +537,6 @@ T1MSK        & 5 &  8 & {\tt addi a0, a1, -1} \\
 \label{tbm-comp}
 \end{table}
 
-There will be a separate RISC-V standard for recommended sequences for macro-op fusion.
-The macros listed here are merely for demonstrating that suitable sequences exist. We
-do not advocate for any of those sequences to become ``standard sequences'' for macro-op
-fusion.
-
 \section{Comparison with RI5CY Bit Manipulation ISA}
 
 The following section compares XBitmanip with the RI5CY bit manipulation
@@ -656,7 +656,7 @@ temporary register {\tt rt}:
 Or using two registers {\tt rLen} and {\tt rPos}:
 
 \begin{verbatim}
-  p.bclr rd, rs, rLen, rPos, rt:
+  p.bclrr rd, rs, rLen, rPos, rt:
     slo rt, zero, rLen
     sll rt, rt, rPos
     andc rd, rs, rt
@@ -664,7 +664,7 @@ Or using two registers {\tt rLen} and {\tt rPos}:
 
 If the mask in {\tt rt} can be pre-computed then a single {\tt andc} instruction
 can emulate {\tt p.bclrr}, or a single {\tt and}/{\tt c.and} instruction if the
-mask is inverted.
+mask is already inverted.
 
 \subsubsection{RI5CY Instructions {\tt p.bset} and {\tt p.bsetr}}
 
