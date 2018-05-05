@@ -397,17 +397,20 @@ uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 
 uint_xlen_t sll(uint_xlen_t x, int k)
 {
-	return x << k;
+	int shamt = k & (XLEN - 1);
+	return x << shamt;
 }
 
 uint_xlen_t srl(uint_xlen_t x, int k)
 {
-	return x >> k;
+	int shamt = k & (XLEN - 1);
+	return x >> shamt;
 }
 
 uint_xlen_t sra(uint_xlen_t x, int k)
 {
+	int shamt = k & (XLEN - 1);
 	if (x >> (XLEN-1))
-		return ~(~x >> k);
-	return x >> k;
+		return ~(~x >> shamt);
+	return x >> shamt;
 }
