@@ -162,7 +162,8 @@ up $\approx 0.05\%$ of the total ``C'' encoding space, and only $\approx 1.1\%$
 of the remaining reserved ``C'' encoding space.
 
 They are common building blocks of sequences that are candidates for macro-op fusion,
-and keeping these sequences short can help with decoding them efficiently.
+and keeping these sequences short can help with decoding them efficiently, especially
+{\tt c.not}.
 
 {\tt c.neg} can be emulated using {\tt c.not} if the next (or previous) operation
 is an {\tt addi}. But commonly {\tt c.neg} is simply used to turn the value 1
@@ -172,6 +173,27 @@ amount for the 2nd shift in a funnel shift (see Section~\ref{funnel}, XLEN does
 not actually need to be added because the shift operations only uses the lower
 $log_2(\textrm{XLEN})$ bits of their 2nd argument anyways). In those cases
 there is no addition before or after the {\tt c.neg} instruction.
+
+Further evaluation will show which of those instructions are worth their cost
+in compressed encoding space and decoder logic.
+
+\subsubsection{The compressed instructions use weird encodings. Is this really neccessary?}
+
+This criticism is justified.
+
+\begin{enumerate}
+\item {\tt c.neg} contains {\tt rd$'$/rs2$'$} instead of {\tt rd$'$/rs1$'$}.
+
+\item All three instructions use an encoding that can not be determined by looking
+only at the bits 15:13, and 1:0. This complicates decoder logic and decoder
+logic depth.
+\end{enumerate}
+
+One possible solution would be to have only one compressed instruction ({\tt
+c.not} is the obvious candidate). This instruction would occupy the entire
+reserved encoding space in {\tt c.lui/c.addi16sp} adn would operate on {\tt rd/rs}
+instead of {\tt rd$'$/rs$'$}. This way the instruction format of {\tt c.not}
+would match that of {\tt c.addi16sp} and {\tt c.lui}.
 
 \section{Analysis of used encoding space}
 
