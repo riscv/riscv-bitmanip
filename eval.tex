@@ -752,7 +752,7 @@ and assuming {\tt rd} $\ne$ {\tt rs1}:
 
 Simply add {\tt andi rd, rd, XLEN-1} if {\tt rd} should be 0 when {\tt rs} is 0 or -1.
 
-\section{Rotating bitboards}
+\section{Mirroring and rotating bitboards}
 
 Bitboards are 64-bit bitmasks that are used to represent part of the game state
 in chess engines (and other board game AIs).
@@ -770,6 +770,8 @@ in chess engines (and other board game AIs).
 
 Many bitboards operations are simple straight-forward operations, but mirroring
 and rotating bitboards can take up to 20 instructions on x86.
+
+\subsection{Mirroring bitboards}
 
 Flipping horizontally or vertically can easily done with {\tt grevi}:
 
@@ -809,7 +811,9 @@ Rotate 180:
  63 62 61 60 59 58 57 56
 \end{verbatim}
 
-And finally transposing:
+\subsection{Rotating bitboards}
+
+Using {\tt gzip} a bitboard can be transposed easily:
 
 \begin{verbatim}
 Transpose:
@@ -823,9 +827,6 @@ Transpose:
   0  8 16 24 32 40 48 56
 \end{verbatim}
 
-Alternatively the sequence {\tt zip.h}, {\tt zip2.w}, {\tt zip4} also
-performs the transpose operation.
-
 A rotation is simply the composition of a flip operation and a transpose
 operation. This takes 19 operations on x86~\cite{ChessProg}. With XBitmanip
 the rotate operation only takes 4 operations:
@@ -833,10 +834,73 @@ the rotate operation only takes 4 operations:
 \begin{verbatim}
 rotate_bitboard:
   bswap a0, a0
-  zip.h a0, a0
-  zip2.w a0, a0
+  zip a0, a0
+  zip a0, a0
+  zip a0, a0
+\end{verbatim}
+
+\subsection{Explanation}
+
+The bit indices for a 64-bit word are 6 bits wide. Let $\texttt{i[5:0]}$ be the
+index of a bit in the input, and let $\texttt{i$'$[5:0]}$ be the index of the
+same bit after the permutation.
+
+As an example, a rotate left shift by $N$ can be expressed using this notation
+as $\texttt{i$'$[5:0]} = \texttt{i[5:0]} + N \,\,\, (\textrm{mod 64})$.
+
+The GREV operation with shamt $N$ is $\texttt{i$'$[5:0]} = \texttt{i[5:0]} \textrm{XOR} N$.
+
+And a GZIP operation corresponds to a rotate left shift by one position of any
+continous region of $\texttt{i[5:0]}$.
+
+In a bitboard, $\texttt{i[2:0]}$ corresponds to the X coordinate of a board position, and
+$\texttt{i[5:3]}$ corresponds to the Y coordinate.
+
+Therefore flipping the board horizontally is the same as negating bits $\texttt{i[2:0]}$,
+which is the operation performed by {\tt grevi rd, rs, 7} ({\tt brev.b}).
+
+Likewise flipping the board vertically is done by {\tt grevi rd, rs, 56} ({\tt bswap}).
+
+Finally, transposing corresponds by swapping the lower and upper half of $\texttt{i[5:0]}$,
+or rotate shifting it by 3 positions. This can easily done by rotate shifting the entire
+$\texttt{i[5:0]}$ by one bit position ({\tt zip}) three times.
+
+\subsection{Rotating Bitcubes}
+
+Let's define a bitcube as a $4 \times 4 \times 4$ cube with $x=\texttt{i[1:0]}$,
+$y=\texttt{i[3:2]}$, and $z=\texttt{i[5:4]}$. Using the same methods as described
+above we can easily rotate a bitcube by 90$^\circ$ around the X-, Y-, and Z-axis:
+
+\begin{multicols}{3}
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+rotate_x:
+  hswap a0, a0
+  zip4 a0, a0
   zip4 a0, a0
 \end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+rotate_y:
+  brev.n a0, a0
+  zip a0, a0
+  zip a0, a0
+  zip4 a0, a0
+  zip4 a0, a0
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+rotate_z:
+  nswap.h
+  zip.h a0, a0
+  zip.h a0, a0
+\end{verbatim}
+\end{minipage}
+\end{multicols}
 
 \section{Decoding RISC-V Immediates}
 
