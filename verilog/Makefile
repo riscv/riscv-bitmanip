@@ -79,6 +79,7 @@ testdata_ctz.hex: testdata_grev.hex
 testdata_pcnt.hex: testdata_grev.hex
 testdata_gzip.hex: testdata_grev.hex
 testdata_bfxp.hex: testdata_grev.hex
+testdata_bfxpc.hex: testdata_grev.hex
 testdata_bext.hex: testdata_grev.hex
 testdata_bdep.hex: testdata_grev.hex
 
