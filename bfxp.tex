@@ -132,15 +132,15 @@ The {\tt bfxp}/{\tt bfxpc} instructions can be cleanly encoded using a 48-bit
 instruction format. For example:
 
 \begin{center}
-\begin{tabular}{R@{}R@{}R@{}Y@{}Y@{}Y@{}S@{}F@{}}
+\begin{tabular}{F@{}F@{}F@{}F@{}F@{}F@{}S@{}F@{}}
 \instbitrange{47}{41} &
 \instbitrange{40}{34} &
 \instbitrange{33}{27} &
 \instbitrange{26}{22} &
 \instbitrange{21}{17} &
 \instbitrange{16}{12} &
-\instbitrange{11}{4} &
-\instbitrange{3}{0} \\
+\instbitrange{11}{6} &
+\instbitrange{5}{0} \\
 \hline
 \multicolumn{1}{|c|}{start} &
 \multicolumn{1}{c|}{len} &
@@ -149,7 +149,7 @@ instruction format. For example:
 \multicolumn{1}{c|}{rs1} &
 \multicolumn{1}{c|}{rd} &
 \multicolumn{1}{c|}{OP-BFXP} &
-\multicolumn{1}{c|}{0111} \\
+\multicolumn{1}{c|}{011111} \\
 \hline
 \multicolumn{1}{|c|}{start} &
 \multicolumn{1}{c|}{len} &
@@ -158,15 +158,16 @@ instruction format. For example:
 \multicolumn{1}{c|}{rs1} &
 \multicolumn{1}{c|}{rd} &
 \multicolumn{1}{c|}{OP-BFXPC} &
-\multicolumn{1}{c|}{0111} \\
+\multicolumn{1}{c|}{011111} \\
 \hline
-7 & 7 & 7 & 5 & 5 & 5 & 8 & 4 \\
+7 & 7 & 7 & 5 & 5 & 5 & 6 & 6 \\
 \end{tabular}
 \end{center}
 
 There are no standard instruction formats for 48-bit instructions yet, and no
 RISC-V processors that support instructions $>32$ bits. But when they become a
-thing, a ZBitfield extension using a 48-bit encoding should be considered.
+thing, a {\tt bfxp}/{\tt bfxpc} ZBitfield extension using a 48-bit encoding
+should be considered.
 
 \section{Evaluation: Decoding RISC-V Immediates}
 
