@@ -659,7 +659,8 @@ to be generated once and can then be re-used many times.
 \end{verbatim}
 
 {\tt p.insert} can be efficiently emulated with a single XBitfield {\tt bfxp}
-instruction (see Chapter~\ref{bfxp}):
+instruction (see Chapter~\ref{bfxp}), if target region in {\tt rd} contains
+only zeros ({\tt bfxp} clears the target region before performing the OR):
 
 \begin{verbatim}
   p.insert rd, rs, len, pos:
@@ -691,6 +692,13 @@ If the mask in {\tt rt} can be pre-computed then a single {\tt andc} instruction
 can emulate {\tt p.bclrr}, or a single {\tt and}/{\tt c.and} instruction if the
 mask is already inverted.
 
+Or using {\tt bfxp} with $\texttt{rd} = \texttt{rs}$ (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.bclr rd, len, pos:
+    bfxp rd, zero, rd, 0, len, pos
+\end{verbatim}
+
 \subsubsection{RI5CY Instructions {\tt p.bset} and {\tt p.bsetr}}
 
 These instructions set {\tt len} bits starting with bit {\tt pos}. They can be
@@ -711,6 +719,13 @@ with {\tt or}:
 
 If the mask in {\tt rt} can be pre-computed then a single {\tt or}/{\tt c.or} instruction
 can emulate {\tt p.bsetr}.
+
+Or using {\tt bfxpc} with $\texttt{rd} = \texttt{rs}$ (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.bset rd, len, pos:
+    bfxpc rd, zero, rd, 0, len, pos
+\end{verbatim}
 
 \subsubsection{RI5CY Instructions {\tt p.ff1}, {\tt p.cnt}, and {\tt p.ror}}
 
