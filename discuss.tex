@@ -53,6 +53,15 @@ trailing bits, such as {\tt x \& -x} (extract lowest set bit), or
 {\tt x \^{} (x - 1)} (mask up to and including lowest set bit). But those
 operations all fit into short easily macro-op fusable instruction sequences
 (see Section~\ref{x86comp}).
+
+\item Instructions for carry-less multiplication (similar to the x86 CLMUL
+instructions). They are useful for cryptographic applications, CRC
+calculations, and compression. But for cryptographic applications they need to
+be implemented in a way that executes them in constant time to avoid leaking
+secret information via a timing side-channel. Because of those considerations,
+and the area requirements for a core implementing the operations, I think
+it is better to leave these instructions for a RISC-V ISA extension for security
+instructions.
 \end{itemize}
 
 \subsubsection{\texttt{grev} seems to be overly complicated? Do we really need it?}
