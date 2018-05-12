@@ -204,6 +204,9 @@ reserved encoding space in {\tt c.lui/c.addi16sp} adn would operate on {\tt rd/r
 instead of {\tt rd$'$/rs$'$}. This way the instruction format of {\tt c.not}
 would match that of {\tt c.addi16sp} and {\tt c.lui}.
 
+Another solution would be to use the reserved {\tt c.addi4spn} $nzuimm=0$ encoding
+with rd$'$=0 still being an illegal instruction.
+
 \section{Analysis of used encoding space}
 
 \begin{table}
