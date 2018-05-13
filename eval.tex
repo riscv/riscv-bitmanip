@@ -770,7 +770,8 @@ Simply add {\tt andi rd, rd, XLEN-1} if {\tt rd} should be 0 when {\tt rs} is 0 
 \section{Mirroring and rotating bitboards}
 
 Bitboards are 64-bit bitmasks that are used to represent part of the game state
-in chess engines (and other board game AIs).
+in chess engines (and other board game AIs). The bits in the bitmask correspond
+to squares on a $8 \times 8$ chess board:
 
 \begin{verbatim}
  56 57 58 59 60 61 62 63
@@ -783,8 +784,9 @@ in chess engines (and other board game AIs).
   0  1  2  3  4  5  6  7
 \end{verbatim}
 
-Many bitboards operations are simple straight-forward operations, but mirroring
-and rotating bitboards can take up to 20 instructions on x86.
+Many bitboard operations are simple straight-forward operations such as
+bitwise-AND, but mirroring and rotating bitboards can take up to 20
+instructions on x86.
 
 \subsection{Mirroring bitboards}
 
@@ -863,10 +865,17 @@ same bit after the permutation.
 As an example, a rotate left shift by $N$ can be expressed using this notation
 as $\texttt{i$'$[5:0]} = \texttt{i[5:0]} + N \,\,\, (\textrm{mod 64})$.
 
-The GREV operation with shamt $N$ is $\texttt{i$'$[5:0]} = \texttt{i[5:0]} \textrm{XOR} N$.
+The GREV operation with shamt $N$ is $\texttt{i$'$[5:0]} = \texttt{i[5:0]} \textrm{ XOR } N$.
 
 And a GZIP operation corresponds to a rotate left shift by one position of any
-continous region of $\texttt{i[5:0]}$.
+continous region of $\texttt{i[5:0]}$. For example, {\tt zip} is a left rotate shift
+of the entire bit index:
+
+$$\texttt{i$'$[5:0]} = \{ \texttt{i[4:0]},\, \texttt{i[5]} \}$$
+
+And {\tt zip4} performs a left rotate shift on bits {\tt 5:2}:
+
+$$\texttt{i$'$[5:0]} = \{ \texttt{i[4:2]},\, \texttt{i[5]},\, \texttt{i[1:0]} \}$$
 
 In a bitboard, $\texttt{i[2:0]}$ corresponds to the X coordinate of a board position, and
 $\texttt{i[5:3]}$ corresponds to the Y coordinate.
@@ -877,7 +886,7 @@ which is the operation performed by {\tt grevi rd, rs, 7} ({\tt brev.b}).
 Likewise flipping the board vertically is done by {\tt grevi rd, rs, 56} ({\tt bswap}).
 
 Finally, transposing corresponds by swapping the lower and upper half of $\texttt{i[5:0]}$,
-or rotate shifting it by 3 positions. This can easily done by rotate shifting the entire
+or rotate shifting $\texttt{i[5:0]}$ by 3 positions. This can easily done by rotate shifting the entire
 $\texttt{i[5:0]}$ by one bit position ({\tt zip}) three times.
 
 \subsection{Rotating Bitcubes}
