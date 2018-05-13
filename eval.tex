@@ -1090,3 +1090,43 @@ sleeve''-examples for real-world bit permutations.
 \end{verbatim}
 \end{minipage}
 \end{multicols}
+
+Or using XBitfield:
+
+\begin{multicols}{2}
+\begin{verbatim}
+  decode_s:
+    bfxp a0, a1, zero, 7, 5, 20
+    bfxp a0, a1, a0, 25, 7, 25
+    c.srai a0, 20
+    ret
+
+  decode_b:
+    bfxp a0, a1, zero, 7, 1, 30
+    bfxp a0, a1, a0, 25, 6, 24
+    bfxp a0, a1, a0, 8, 4, 20
+    bfxp a0, a1, a0, 31, 1, 31
+    c.srai a0, 19
+    ret
+
+  decode_j:
+    bfxp a0, a1, zero, 21, 10, 12
+    bfxp a0, a1, a0, 20, 1, 22
+    bfxp a0, a1, a0, 12, 8, 23
+    bfxp a0, a1, a0, 31, 1, 31
+    c.srai a0, 11
+    ret
+
+  decode_cj:
+    bfxp a0, a1, zero, 11, 1, 24
+    bfxp a0, a1, a0, 9, 2, 28
+    bfxp a0, a1, a0, 8, 1, 30
+    bfxp a0, a1, a0, 7, 1, 26
+    bfxp a0, a1, a0, 6, 1, 27
+    bfxp a0, a1, a0, 3, 3, 21
+    bfxp a0, a1, a0, 2, 1, 25
+    bfxp a0, a1, a0, 12, 1, 31
+    c.srai a0, 20
+    ret
+\end{verbatim}
+\end{multicols}

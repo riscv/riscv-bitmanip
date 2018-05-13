@@ -377,10 +377,7 @@ uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
 uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 		unsigned start, unsigned len, unsigned dest)
 {
-	assert(start < XLEN && len < 32 && dest < XLEN);
-
-	if (XLEN > 32 && len == 0)
-		len = 32;
+	assert(start < XLEN && len < XLEN && dest < XLEN);
 
 	assert(start + len <= XLEN);
 	assert(dest + len <= XLEN);
