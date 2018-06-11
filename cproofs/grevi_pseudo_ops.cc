@@ -16,7 +16,8 @@
  */
 
 #include "common.h"
-using namespace rv32b;
+using rv32b::grev32;
+using rv64b::grev64;
 
 uint32_t bitmove32(uint32_t x, int p, int q)
 {
@@ -241,6 +242,32 @@ void rv64_wswap(uint64_t x)
 
 	b |= x >> 32;
 	b |= x << 32;
+
+	assert(a == b);
+}
+
+// ---------------------------------------------------------
+
+void rv32_bswaps_h(uint32_t x)
+{
+	uint32_t a = rv32b::bswaps_h(x);
+	uint32_t b = rv32b::sra(rv32b::sll(rv32b::grev(x, 8), 16), 16);
+
+	assert(a == b);
+}
+
+void rv64_bswaps_h(uint64_t x)
+{
+	uint64_t a = rv64b::bswaps_h(x);
+	uint64_t b = rv64b::sra(rv64b::sll(rv64b::grev(x, 8), 48), 48);
+
+	assert(a == b);
+}
+
+void rv64_bswaps_w(uint64_t x)
+{
+	uint64_t a = rv64b::bswaps_w(x);
+	uint64_t b = rv64b::sra(rv64b::sll(rv64b::grev(x, 24), 32), 32);
 
 	assert(a == b);
 }

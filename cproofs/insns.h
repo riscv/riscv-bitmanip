@@ -373,6 +373,27 @@ uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- bswaps
+uint_xlen_t bswaps_h(uint_xlen_t rs1)
+{
+	int_xlen_t x = 0;
+	x |= ((rs1 >> 0) & 0xff) << 8;
+	x |= ((rs1 >> 8) & 0xff) << 0;
+	return (x << (XLEN - 16)) >> (XLEN - 16);
+}
+
+uint_xlen_t bswaps_w(uint_xlen_t rs1)
+{
+	int_xlen_t x = 0;
+	assert(XLEN > 32);
+	x |= ((rs1 >>  0) & 0xff) << 24;
+	x |= ((rs1 >>  8) & 0xff) << 16;
+	x |= ((rs1 >> 16) & 0xff) <<  8;
+	x |= ((rs1 >> 24) & 0xff) <<  0;
+	return (x << (XLEN - 32)) >> (XLEN - 32);
+}
+// --REF-END--
+
 // --REF-BEGIN-- bfxp
 uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 		unsigned start, unsigned len, unsigned dest)
