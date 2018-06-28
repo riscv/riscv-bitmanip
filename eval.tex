@@ -140,7 +140,7 @@ Branching on bit N clear:
   bgez a0, <bit_n_clear>
 \end{verbatim}
 
-Setting bit N (note that this {\tt li} is guaranteed to be only one instruction on RV32):
+Setting bit N (note that this {\tt li} is only one instruction on RV32, except when N=11 which requires two instructions):
 
 \begin{verbatim}
   li a1, (1 << N)
@@ -157,7 +157,7 @@ Setting bit N without spilling:
 
 (Or simply ``{\tt ori a0, 1 << N}'' if N is sufficiently small.)
 
-Clearing bit N (note that this {\tt li} is guaranteed to be only one instruction on RV32):
+Clearing bit N (note that this {\tt li} is only one instruction on RV32, except when N=11 which requires two instructions):
 
 \begin{verbatim}
   li a1, (1 << N)
