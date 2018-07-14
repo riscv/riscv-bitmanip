@@ -1,0 +1,44 @@
+\chapter{RISC-V XTernarybits Extension}
+\label{tbits}
+
+This chapter describes four additional bit manipulation instructions {\tt cmix}, {\tt cmov},
+{\tt fsl}, and {\tt fsr} instructions that require three source operands. Those instruction
+are not included in XBitmanip because only instructions with one or two source operands are
+included in the base XBitmanip spec for increased compatibility with existing RISC-V integer
+pipelines.
+
+All four instructions can be encoded in the same single minor opcode, for example in the
+brownfield within the floating point fused-multiply-add instructions.
+
+\section{Conditional mix ({\tt cmix})}
+
+The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs2} based
+on the bits in the control word {\tt rs3}. It is equivalent to the following sequence.
+
+\begin{verbatim}
+  and rd, rs1, rs3
+  andc t0, r2, rs3
+  or rd, rd, t0
+\end{verbatim}
+
+Using {\tt cmix} a single butterfly or stage can be implemented in only two
+instructions. Thus, arbitrary bit-permutations can be implemented using only
+18 instruction (32 bit) or 22 instructions (64 bits).
+
+\section{Conditional move ({\tt cmov})}
+
+The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} or {\tt rs2} based
+on the LSB bit in the control word {\tt rs3}.
+
+\section{Funnel shift ({\tt fsl}, {\tt fsr})}
+
+The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
+by concatenating rs1 and rs2 (with rs1 in the MSB half), rotate-left-shifts that
+word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs3, and
+then writes the MSB half of the result to rd.
+
+The {\tt fsr rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
+by concatenating rs1 and rs2 (with rs1 in the LSB half), rotate-right-shifts that
+word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs3, and
+then writes the LSB half of the result to rd.
+
