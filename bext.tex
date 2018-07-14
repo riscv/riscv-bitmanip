@@ -263,34 +263,45 @@ use the instruction encoding for ``arithmetic shift left''.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized zip/unzip (\texttt{gzip})}
+\section{Generalized shuffle (\texttt{shfl}, \texttt{unshfl})}
 \label{gzip}
 
-{\tt gzip} is the third bit permutation instruction in XBitmanip, after {\tt
-rori} and {\tt grevi}. It implements a generalization of the operation commonly
-known as perfect outer shuffle and its inverse (shuffle/unshuffle), also known
-as zip/unzip or interlace/uninterlace.
+Shuffle is the third bit permutation instruction in XBitmanip, after rotary
+shift and generalized reverse.  It implements a generalization of the operation
+commonly known as perfect outer shuffle and its inverse (shuffle/unshuffle),
+also known as zip/unzip or interlace/uninterlace.
 
-This set of operation is best understood as operation on the bit indices. For
-reference, rotate shift adds {\tt shamt} to the bit index (modulo XLEN), and
-generalized reversed performs an XOR between the bit index and {\tt shamt}.
-Generalized zip/unzip performs a roate left shift (zip) or rotate right shift (unzip)
-on a continous range of bits in the bit index. Every arbitrary permutation
-of the bit index bits can be achieved by applying {\tt gzip} repeatedly.
+Bit permutations can be understood as reversible functions on bit indeces (i.e.
+5 bit functions on RV32 and 6 bit functions on RV64).
 
-The {\tt gzip} instruction uses an I-type encoding similar to {\tt grevi}.
-There are XLEN different generalized zip operations, some of which are reserved
-because they are no-ops, or equivalent to other modes, or encode for obscure
-combinations of other modes. The bit pattern for the non-reserved modes
-match the regular expression {\tt /\^{}0*(10+|11+0*[01])\$/}, or in words:
-Bits {\tt mode[LOG2\_XLEN-1:1]} must only contain one continous range of
-1 bits, and if only one bit in {\tt mode[LOG2\_XLEN-1:1]} is set then
-{\tt mode[0]} must be cleared. See Tables~\ref{gzip32-modes}~and~\ref{gzip64-modes}.
+\begin{center}
+\begin{tabular}{l l}
+Operation & Corresponding function on bit indices \\
+\hline
+Rotate shift & Addition modulo {\rm XLEN} \\
+Generalized reverse & XOR with bitmask \\
+Generalized shuffle & Bitpermutation \\
+\end{tabular}
+\end{center}
 
-Reserving modes that encode for ``obscure combinations of other modes'' can help
-implementations that use different base permutations (or completely different
-mechanisms) to implement the {\tt gzip} instruction. The reserved modes can be
-used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
+A generalized (un)shuffle operation has $log_2(\textrm{XLEN})-1$ control bits,
+one for each pair of neighbouring bits in a bit index. When the bit is set,
+generalized shuffle will swap the two index bits. The {\tt shfl} operation
+performs this swaps in MSB-to-LSB order (performing a rotate left shift on
+continous regions of set control bits), and the {\tt unshfl} operation performs
+the swaps in LSB-to-MSB order (performing a rotate right shift on continous
+regions of set control bits). Combining up to $log_2(\textrm{XLEN})$ of those
+{\tt shfl}/{\tt unshfl} operations can implement any bitpermutation on the
+bit indices.
+
+The most common type of shuffle/unshuffle operation is one on an immediate
+control value that only contains one continous region of set bits. We call
+those operations zip/unzip and provide pseudo-instructions for them.
+
+Shuffle/unshuffle operations that only have individual bits set (not a continous
+region of two or more bits) are their own inverse. This means that a few of the
+{\tt unshfli} opcodes are redundant with {\tt shfli} opcodes and therefore can
+be used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
 
 \begin{table}[h]
 \begin{small}
@@ -302,8 +313,8 @@ Pseudo-Instruction \\
 
 \hline
 
-\sout{ 0: 0000 0} & no-op                            & {\it reserved}         \\
-\sout{ 1: 0000 1} & no-op                            & {\it reserved}         \\
+       0: 0000 0  & no-op                            & ---                    \\
+       1: 0000 1  & no-op                            & {\it reserved}         \\
        2: 0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
 \sout{ 3: 0001 1} & {\it equivalent to 0001 0}       & {\it reserved}         \\
        4: 0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
@@ -315,7 +326,7 @@ Pseudo-Instruction \\
 
        8: 0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
 \sout{ 9: 0100 1} & {\it equivalent to 0100 0}       & {\it reserved}         \\
-\sout{10: 0101 0} & {\tt i[3] -> i[2], i[1] -> i[0]} & {\it reserved}         \\
+      10: 0101 0  & {\tt i[3] -> i[2], i[1] -> i[0]} & ---                    \\
 \sout{11: 0101 1} & {\it equivalent to 0101 0}       & {\it reserved}         \\
       12: 0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
       13: 0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
@@ -326,19 +337,19 @@ Pseudo-Instruction \\
 
       16: 1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
 \sout{17: 1000 1} & {\it equivalent to 1000 0}       & {\it reserved}         \\
-\sout{18: 1001 0} & {\tt i[4] -> i[3], i[1] -> i[0]} & {\it reserved}         \\
+      18: 1001 0  & {\tt i[4] -> i[3], i[1] -> i[0]} & ---                    \\
 \sout{19: 1001 1} & {\it equivalent to 1001 0}       & {\it reserved}         \\
-\sout{20: 1010 0} & {\tt i[4] -> i[3], i[2] -> i[1]} & {\it reserved}         \\
+      20: 1010 0  & {\tt i[4] -> i[3], i[2] -> i[1]} & ---                    \\
 \sout{21: 1010 1} & {\it equivalent to 1010 0}       & {\it reserved}         \\
-\sout{22: 1011 0} & {\tt i[4] -> i[3], i[2] -> i[0]} & {\it reserved}         \\
-\sout{23: 1011 1} & {\tt i[4] <- i[3], i[2] <- i[0]} & {\it reserved}         \\
+      22: 1011 0  & {\tt i[4] -> i[3], i[2] -> i[0]} & ---                    \\
+      23: 1011 1  & {\tt i[4] <- i[3], i[2] <- i[0]} & ---                    \\
 
 \hline
 
       24: 1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4}             \\
       25: 1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4}           \\
-\sout{26: 1101 0} & {\tt i[4] -> i[2], i[1] -> i[0]} & {\it reserved}         \\
-\sout{27: 1101 1} & {\tt i[4] <- i[2], i[1] <- i[0]} & {\it reserved}         \\
+      26: 1101 0  & {\tt i[4] -> i[2], i[1] -> i[0]} & ---                    \\
+      27: 1101 1  & {\tt i[4] <- i[2], i[1] <- i[0]} & ---                    \\
       28: 1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2}             \\
       29: 1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2}           \\
       30: 1111 0  & {\tt i[4] -> i[0]}               & {\tt zip}              \\
@@ -359,46 +370,46 @@ Pseudo-Instruction \\
 \cline{1-2}
 \cline{4-5}
 
-\sout{ 0: 00000 0} & {\it reserved}           &   &         32: 10000 0  & {\tt zip16, unzip16}    \\
+       0: 00000 0  & ---                      &   &         32: 10000 0  & {\tt zip16, unzip16}    \\
 \sout{ 1: 00000 1} & {\it reserved}           &   &   \sout{33: 10000 1} & {\it reserved}          \\
-       2: 00001 0  & {\tt zip.n, unzip.n}     &   &   \sout{34: 10001 0} & {\it reserved}          \\
+       2: 00001 0  & {\tt zip.n, unzip.n}     &   &         34: 10001 0  & ---                     \\
 \sout{ 3: 00001 1} & {\it reserved}           &   &   \sout{35: 10001 1} & {\it reserved}          \\
-       4: 00010 0  & {\tt zip2.b, unzip2.b}   &   &   \sout{36: 10010 0} & {\it reserved}          \\
+       4: 00010 0  & {\tt zip2.b, unzip2.b}   &   &         36: 10010 0  & ---                     \\
 \sout{ 5: 00010 1} & {\it reserved}           &   &   \sout{37: 10010 1} & {\it reserved}          \\
-       6: 00011 0  & {\tt zip.b}              &   &   \sout{38: 10011 0} & {\it reserved}          \\
-       7: 00011 1  & {\tt unzip.b}            &   &   \sout{39: 10011 1} & {\it reserved}          \\
+       6: 00011 0  & {\tt zip.b}              &   &         38: 10011 0  & ---                     \\
+       7: 00011 1  & {\tt unzip.b}            &   &         39: 10011 1  & ---                     \\
 
 \cline{1-2}
 \cline{4-5}
 
-       8: 00100 0  & {\tt zip4.h, unzip4.h}   &   &   \sout{40: 10100 0} & {\it reserved}          \\
+       8: 00100 0  & {\tt zip4.h, unzip4.h}   &   &         40: 10100 0  & ---                     \\
 \sout{ 9: 00100 1} & {\it reserved}           &   &   \sout{41: 10100 1} & {\it reserved}          \\
-\sout{10: 00101 0} & {\it reserved}           &   &   \sout{42: 10101 0} & {\it reserved}          \\
+      10: 00101 0  & ---                      &   &         42: 10101 0  & ---                     \\
 \sout{11: 00101 1} & {\it reserved}           &   &   \sout{43: 10101 1} & {\it reserved}          \\
-      12: 00110 0  & {\tt zip2.h}             &   &   \sout{44: 10110 0} & {\it reserved}          \\
-      13: 00110 1  & {\tt unzip2.h}           &   &   \sout{45: 10110 1} & {\it reserved}          \\
-      14: 00111 0  & {\tt zip.h}              &   &   \sout{46: 10111 0} & {\it reserved}          \\
-      15: 00111 1  & {\tt unzip.h}            &   &   \sout{47: 10111 1} & {\it reserved}          \\
+      12: 00110 0  & {\tt zip2.h}             &   &         44: 10110 0  & ---                     \\
+      13: 00110 1  & {\tt unzip2.h}           &   &         45: 10110 1  & ---                     \\
+      14: 00111 0  & {\tt zip.h}              &   &         46: 10111 0  & ---                     \\
+      15: 00111 1  & {\tt unzip.h}            &   &         47: 10111 1  & ---                     \\
 
 \cline{1-2}
 \cline{4-5}
 
       16: 01000 0  & {\tt zip8.w, unzip8.w}   &   &         48: 11000 0  & {\tt zip8}              \\
 \sout{17: 01000 1} & {\it reserved}           &   &         49: 11000 1  & {\tt unzip8}            \\
-\sout{18: 01001 0} & {\it reserved}           &   &   \sout{50: 11001 0} & {\it reserved}          \\
-\sout{19: 01001 1} & {\it reserved}           &   &   \sout{51: 11001 1} & {\it reserved}          \\
-\sout{20: 01010 0} & {\it reserved}           &   &   \sout{52: 11010 0} & {\it reserved}          \\
-\sout{21: 01010 1} & {\it reserved}           &   &   \sout{53: 11010 1} & {\it reserved}          \\
-\sout{22: 01011 0} & {\it reserved}           &   &   \sout{54: 11011 0} & {\it reserved}          \\
-\sout{23: 01011 1} & {\it reserved}           &   &   \sout{55: 11011 1} & {\it reserved}          \\
+      18: 01001 0  & ---                      &   &         50: 11001 0  & ---                     \\
+\sout{19: 01001 1} & {\it reserved}           &   &         51: 11001 1  & ---                     \\
+      20: 01010 0  & ---                      &   &         52: 11010 0  & ---                     \\
+\sout{21: 01010 1} & {\it reserved}           &   &         53: 11010 1  & ---                     \\
+      22: 01011 0  & ---                      &   &         54: 11011 0  & ---                     \\
+      23: 01011 1  & ---                      &   &         55: 11011 1  & ---                     \\
 
 \cline{1-2}
 \cline{4-5}
 
       24: 01100 0  & {\tt zip4.w}             &   &         56: 11100 0  & {\tt zip4}              \\
       25: 01100 1  & {\tt unzip4.w}           &   &         57: 11100 1  & {\tt unzip4}            \\
-\sout{26: 01101 0} & {\it reserved}           &   &   \sout{58: 11101 0} & {\it reserved}          \\
-\sout{27: 01101 1} & {\it reserved}           &   &   \sout{59: 11101 1} & {\it reserved}          \\
+      26: 01101 0  & ---                      &   &         58: 11101 0  & ---                     \\
+      27: 01101 1  & ---                      &   &         59: 11101 1  & ---                     \\
       28: 01110 0  & {\tt zip2.w}             &   &         60: 11110 0  & {\tt zip2}              \\
       29: 01110 1  & {\tt unzip2.w}           &   &         61: 11110 1  & {\tt unzip2}            \\
       30: 01111 0  & {\tt zip.w}              &   &         62: 11111 0  & {\tt zip}               \\
@@ -418,10 +429,10 @@ Pseudo-Instruction \\
 \label{permnet-gzip-noflip}
 \end{figure}
 
-Like GREV and rotate shift, the {\tt gzip} instruction can be implemented using a short
-sequence of atomic permutations, that are enabled or disabled by the mode (shamt)
-bits. But zip has one stage fewer than GREV and the LSB bit of mode controls the order
-in which the stages are applied:
+Like GREV and rotate shift, the (un)shuffle instruction can be implemented using a short
+sequence of elementry permutations, that are enabled or disabled by the mode (shamt)
+bits. But (un)shuffle has one stage fewer than GREV and the additional bit of the mode
+controls the order in which the stages are applied:
 
 \input{bextcref-gzip32}
 
@@ -432,7 +443,7 @@ Or for RV64:
 The above pattern should be intuitive to understand in order to extend
 this definition in an obvious manner for RV128.
 
-Alternatively {\tt gzip} can be implemented in a single network with one more
+Alternatively (un)shuffle) can be implemented in a single network with one more
 stage than GREV, with the additional first and last stage executing a
 permutation that effectively reverses the order of the inner stages. However,
 since the inner stages only mux half of the bits in the word each, a hardware
@@ -441,15 +452,15 @@ expensive than simply creating two networks.
 
 \input{bextcref-gzip32-alt}
 
-Figure~\ref{permnet-gzip-flip} shows the {\tt gzip} permutation network with
-``flip'' stages and Figure~\ref{permnet-gzip-noflip} shows the {\tt gzip}
+Figure~\ref{permnet-gzip-flip} shows the (un)shuffle permutation network with
+``flip'' stages and Figure~\ref{permnet-gzip-noflip} shows the (un)shuffle
 permutation network without ``flip'' stages.
 
 \begin{figure}[t]
 \begin{center}
 \input{bextcref-printperm-gzip-flip}
 \end{center}
-\caption{\texttt{gzip} permutation network with ``flip'' stages}
+\caption{(un)shuffle permutation network with ``flip'' stages}
 \label{permnet-gzip-flip}
 \end{figure}
 
@@ -475,8 +486,8 @@ in the lower byte of a 32 bit word on RV32:
 
 The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.
 
-Other {\tt gzip} modes can be used to ``fan-out'' in blocks of 2, 4, 8, or 16 bit.
-{\tt gzip} can be combined with {\tt grevi} to perform inner shuffles. For example
+Other {\tt zip} modes can be used to ``fan-out'' in blocks of 2, 4, 8, or 16 bit.
+{\tt zip} can be combined with {\tt grevi} to perform inner shuffles. For example
 on RV64:
 
 \begin{verbatim}
@@ -490,9 +501,6 @@ on RV64:
 \end{verbatim}
 
 \input{bextgzip}
-
-There is no R-type instruction for {\tt gzip}. It is an I-type only instruction.
-\texttt{gzip} can use the instruction encoding for ``rotate left immediate''.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
