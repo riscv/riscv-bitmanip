@@ -117,13 +117,13 @@ uint_xlen_t sro(uint_xlen_t rs1, uint_xlen_t rs2)
 uint_xlen_t rol(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
-	return (rs1 << shamt) | (rs1 >> (XLEN - shamt));
+	return (rs1 << shamt) | (rs1 >> ((-shamt) & (XLEN - 1)));
 }
 
 uint_xlen_t ror(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
-	return (rs1 >> shamt) | (rs1 << (XLEN - shamt));
+	return (rs1 >> shamt) | (rs1 << ((-shamt) & (XLEN - 1)));
 }
 // --REF-END--
 
