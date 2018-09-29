@@ -504,22 +504,6 @@ on RV64:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Byte-swap with sign extend (\texttt{bswaps.h, bswaps.w})}
-
-This instructions perform a byte-swap (endianness conversion) on the lower 16 bits
-(\texttt{bswaps.h}), 32 bits (\texttt{bswaps.w}, RV64), or 64 bits (\texttt{bswaps.d}, RV128)
-of the argument and then sign extend the result. (Byte-swap without sign extend can be
-performed using the \texttt{grevi} \texttt{bswap} pseudo-instructions.
-
-\input{bextcref-bswaps}
-
-The hardware for this operation can for the most part share resources from
-\texttt{grevi} and the instructions can be encoded in the reserved space in \texttt{gzip}.
-
-\input{bextbswaps}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
 This instructions implement the generic bit extract and bit deposit functions.

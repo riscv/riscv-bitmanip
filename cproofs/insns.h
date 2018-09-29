@@ -394,6 +394,60 @@ uint_xlen_t bswaps_w(uint_xlen_t rs1)
 }
 // --REF-END--
 
+// --REF-BEGIN-- minmax
+int_xlen_t min(int_xlen_t rs1, int_xlen_t rs2)
+{
+	return rs1 < rs2 ? rs1 : rs2;
+}
+
+int_xlen_t max(int_xlen_t rs1, int_xlen_t rs2)
+{
+	return rs1 > rs2 ? rs1 : rs2;
+}
+
+uint_xlen_t minu(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 < rs2 ? rs1 : rs2;
+}
+
+uint_xlen_t maxu(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 > rs2 ? rs1 : rs2;
+}
+// --REF-END--
+
+// --REF-BEGIN-- clri-maki
+uint_xlen_t clri(uint_xlen_t rs1, unsigned size, unsigned offset)
+{
+	return rs1 & ~(((1<<size)-1)<<offset);
+}
+
+uint_xlen_t maki(uint_xlen_t rs1, unsigned size, unsigned offset)
+{
+	return (((1<<size)-1)&rs1)<<offset;
+}
+// --REF-END--
+
+// --REF-BEGIN-- join
+uint_xlen_t join(uint_xlen_t rs1, uint_xlen_t rs2, unsigned size)
+{
+	uint_xlen_t mask = (1 << size)-1;
+	return (rs1 & ~mask) | (rs2 & mask);
+}
+// --REF-END--
+
+// --REF-BEGIN-- csel
+uint_xlen_t cseln(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs2 ? rs1 : 0;
+}
+
+uint_xlen_t cselz(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs2 ? 0 : rs1;
+}
+// --REF-END--
+
 // --REF-BEGIN-- bfxp
 uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 		unsigned start, unsigned len, unsigned dest)

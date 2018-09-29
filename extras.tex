@@ -1,0 +1,108 @@
+\chapter{Additional instructions}
+
+This chapter contains additional instructions that are being proposed and/or
+currently discussed within the Bitmanip task group.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Byte-swap with sign extend (\texttt{bswaps.h, bswaps.w})}
+
+This instructions perform a byte-swap (endianness conversion) on the lower 16 bits
+(\texttt{bswaps.h}), 32 bits (\texttt{bswaps.w}, RV64), or 64 bits (\texttt{bswaps.d}, RV128)
+of the argument and then sign extend the result. (Byte-swap without sign extend can be
+performed using the \texttt{grevi} \texttt{bswap} pseudo-instructions.)
+
+Note that \texttt{bswaps.h}, and \texttt{bswaps.w} can be emulated with
+\texttt{bswap} followed by \texttt{srai}. A separate extension with 48-bit big-endian
+load/store instructions probably would make more sense than this two instructions.
+
+\input{bextcref-bswaps}
+
+The hardware for this operation can for the most part share resources from
+\texttt{grevi} and the instructions can be encoded in the reserved space in \texttt{gzip}.
+
+\input{bextbswaps}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Min/max instructions (\texttt{min, max, minu, maxu})}
+
+We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
+following semantics:
+
+\input{bextcref-minmax}
+
+\input{bextminmax}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bitfield mask instructions (\texttt{clri, maki})}
+
+{\tt clri} and {\tt maki} both take a source register and two small immediates.
+The exact size of those immediates is undefined at the moment. (Max 7 bits each
+on RV128.) Together they can be used to implement a bitfield extract operation
+that extracts the {\tt size} LSB bits from {\tt rs2} and places them in the
+output, filling the remaining bits with the values from {\tt rs1}.
+
+\begin{verbatim}
+  clri rd, rs1, size, offset
+  maki tmp, rs2, size, offset
+  or rd, rd, tmp
+\end{verbatim}
+
+{\tt clri} returns the source register with the specified bitfield cleared to 0s.
+
+{\tt maki} returns the source register shifted left and ANDed with the mask.
+
+\input{bextcref-clri-maki}
+
+This instructions are inspiried by Motorola 88000 instructions with similar semantics.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bitfield join instruction (\texttt{join})}
+
+This is another approach to the bitfield extract problem. {\tt join} takes two
+source registers and one small immediate (max 7 bits on RV128). It takes as many
+LSB bits as indicated by the immediate argument from the second source register,
+and the remaining bits from the first source register.
+
+The following code is equivalent to the example code for {\tt clri} and {\tt maki}:
+
+\begin{verbatim}
+  rori rd, rs1, offset
+  join rd, rd, rs2, size
+  rori rd, rd, -offset
+\end{verbatim}
+
+\input{bextcref-join}
+
+Compared to {\tt clri} and {\tt maki}, the join approach scales better to RV128
+in terms of instruction encoding. The {\tt clri} and {\tt maki} approach can
+utilize a superscalar architecture because the first two instructions can be
+executed in parallel. The {\tt join} approach works better with
+macro-op-fusion because it does not spill a temporary register.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conditional move mask instructions (\texttt{cseln, cselz})}
+
+Those instructions either return their first source register or zero, depending on the
+value in the second source register. This allows for a conditional move in three instructions:
+
+\begin{verbatim}
+  cseln tmp, a, cond
+  cselz rd, b, cond
+  or rd, rd, tmp
+\end{verbatim}
+
+\input{bextcref-csel}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{In-place conditional move instructions (\texttt{mvnez, mveqz})}
+
+This two instructions copy their first source argument to the destination if the second
+argument is non-zero (zero), and otherwise leave the destination register untouched.
+This requires less encoding space than \texttt{cmov} and can be implemented more
+efficiently (on architectures without register renaming).
