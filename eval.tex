@@ -767,9 +767,88 @@ and assuming {\tt rd} $\ne$ {\tt rs1}:
 
 Simply add {\tt andi rd, rd, XLEN-1} if {\tt rd} should be 0 when {\tt rs} is 0 or -1.
 
-\section{Comparison with Cray/Tera MTA bit operations}
+\section{Comparison with Cray XMT bit operations}
 
-TBD
+Cray XMT is the 3rd generation of the Cray MTA architecture, a supercomputer
+using a barrel processor architecture. The Cray XMT instruction set contains
+a few bit manipulation instructions~\cite{CrayXMT}. In this section we compare
+the Cray XMT bit manipulation instructions with XBitmanip.
+
+\subsubsection{Bitwise boolean operations}
+
+Cray XMT provides the following instructions for bitwise boolean operations:
+{\tt BIT\_AND}, {\tt BIT\_IMP}, {\tt BIT\_NAND}, {\tt BIT\_NIMP}, {\tt
+BIT\_NOR}, {\tt BIT\_OR}, {\tt BIT\_XNOR}, and {\tt BIT\_XOR}.
+
+These can trivially emulated using basic RISC-V instrustructions. (Some of those
+XMT instructions have a direct RISC-V equivalent. The others can be emulated
+by cmbining the {\tt not} pseudoinstruction with {\tt and}, {\tt or}, or {\tt xor}.)
+
+\subsubsection{Count Leading/Trailing Zeros/Ones}
+
+The Cray XMT instructions {\tt BIT\_LEFT\_ZEORS} and {\tt BIT\_RIGHT\_ZEORS} are
+equivalent to the XBitmanip {\tt clz} and {\tt ctz} instructions.
+
+The {\tt BIT\_LEFT\_ONES} and {\tt BIT\_RIGHT\_ONES} instructions can be emulated
+by combining the {\tt not} pseudoinstruction with {\tt clz} and {\tt ctz}.
+
+\subsubsection{Mask generation}
+
+The Cray XMT instruction {\tt BIT\_MASK dest top bot} generates a bitmask
+that has the bits in the range $[\texttt{bot} \dots \texttt{top}]$ set
+and the rest cleared iff $\texttt{bot} \le \texttt{top}$, and those
+bits cleared and the rest set otherwise.
+
+Similar masks can be generated using two instructions in XBitmanip,
+using the regular shift instructions and the ``shift ones'' instructions.
+
+\subsubsection{Cmix equivalent}
+
+The Cray XMT {\tt BIT\_MERGE} instruction is equivalent to the XTernarybits
+{\tt cmix} instruction, or the {\tt and-andc-or} MIX pattern.
+
+\subsubsection{Population count}
+
+The Cray XMT {\tt BIT\_TALLY} instruction and the XBitmanip {\tt pcnt}
+instruction are equivalent.
+
+\subsubsection{Parity instructions}
+
+The Cray XMT {\tt BIT\_ODD\_AND}, {\tt BIT\_ODD\_NIMP}, {\tt BIT\_ODD\_OR},
+and {\tt BIT\_ODD\_XOR} instruction perform the indicated bitwise boolean
+operation and then compute the parity of the result.
+
+With XBitmanip the parity can be calculated with {\tt pcnt dst, src} followed
+by {\tt andi dst, dst, 1}.
+
+\subsubsection{Bit pack/unpack instruction}
+
+The Cray XMT {\tt BIT\_PACK} instruction and the XBitmanip {\tt bext}
+instruction are equivalent.
+
+The Cray XMT {\tt BIT\_UNPACK\_1}, {\tt BIT\_UNPACK\_2}, {\tt BIT\_UNPACK\_3},
+instruction sequence, when used as intended, is equivalent to the XBitmanip
+{\tt bdep} instruction.
+
+\subsubsection{Bit matrix instructions}
+
+The Cray XMT {\tt BIT\_MAT\_} instructions treat a 64-bit value as a 8x8 bit
+matrix.
+
+{\tt BIT\_MAT\_TRANSPOSE} is used to transpose such a bit matrix. With
+XBitmanip instructions on RV64 this bit permutation can be performed by
+applying the {\tt zip} operation three times to the register holding the
+matrix (see also~\ref{transposebitboard}).
+
+The Cray XMT instructions {\tt BIT\_MAT\_OR} and {\tt BIT\_MAT\_XOR} perform a
+matrix-matrix multiply between such bit matrices, where AND replaces scalar
+multiply and OR/XOR replaces scalar addition.
+
+XBitmanip does not provide a similar operation. However, the two example
+applications given in the Cray XMT documentation~\cite[p.~81]{CrayXMT}
+are reversing the byte order in a word and reversing the bit order in
+each byte. In XBitmanip those operations are performed by the {\tt bswap}
+and the {\tt brev.b} {\tt grevi}-pseudoinstructions.
 
 \section{Mirroring and rotating bitboards}
 
@@ -835,6 +914,7 @@ Rotate 180:
 \subsection{Rotating bitboards}
 
 Using {\tt gzip} a bitboard can be transposed easily:
+\label{transposebitboard}
 
 \begin{verbatim}
 Transpose:
