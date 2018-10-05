@@ -913,7 +913,7 @@ Rotate 180:
 
 \subsection{Rotating bitboards}
 
-Using {\tt gzip} a bitboard can be transposed easily:
+Using {\tt zip} a bitboard can be transposed easily:
 \label{transposebitboard}
 
 \begin{verbatim}
@@ -1108,7 +1108,7 @@ sleeve''-examples for real-world bit permutations.
     li t0, 0xeaa800aa
     rori a0, a0, 8
     grevi a0, a0, 8
-    gzip a0, a0, 14
+    shfli a0, a0, 7
     bext a0, a0, t0
     c.slli a0, 20
     c.srai a0, 19

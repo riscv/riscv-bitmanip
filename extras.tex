@@ -5,7 +5,7 @@ currently discussed within the Bitmanip task group.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Byte-swap with sign extend (\texttt{bswaps.h, bswaps.w})}
+\section{\hsout{Byte-swap with sign extend (\texttt{bswaps.h, bswaps.w})}}
 
 This instructions perform a byte-swap (endianness conversion) on the lower 16 bits
 (\texttt{bswaps.h}), 32 bits (\texttt{bswaps.w}, RV64), or 64 bits (\texttt{bswaps.d}, RV128)
@@ -19,7 +19,7 @@ load/store instructions probably would make more sense than this two instruction
 \input{bextcref-bswaps}
 
 The hardware for this operation can for the most part share resources from
-\texttt{grevi} and the instructions can be encoded in the reserved space in \texttt{gzip}.
+\texttt{grevi} and the instructions can be encoded in the reserved space in \texttt{shfli}/\texttt{unshfli}.
 
 \input{bextbswaps}
 
@@ -60,7 +60,7 @@ This instructions are inspiried by Motorola 88000 instructions with similar sema
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bitfield join instruction (\texttt{join})}
+\section{\hsout{Bitfield join instruction (\texttt{join})}}
 
 This is another approach to the bitfield extract problem. {\tt join} takes two
 source registers and one small immediate (max 7 bits on RV128). It takes as many

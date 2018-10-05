@@ -257,74 +257,96 @@ uint_xlen_t grev(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 
 // --REF-BEGIN-- gzip32
-uint32_t gzip32_stage(uint32_t src, uint32_t maskL, uint32_t maskR, int N)
+uint32_t shuffle32_stage(uint32_t src, uint32_t maskL, uint32_t maskR, int N)
 {
 	uint32_t x = src & ~(maskL | maskR);
 	x |= ((src <<  N) & maskL) | ((src >>  N) & maskR);
 	return x;
 }
 
-uint32_t gzip32(uint32_t rs1, uint32_t rs2)
+uint32_t shfl32(uint32_t rs1, uint32_t rs2)
 {
 	uint32_t x = rs1;
-	int mode = rs2 & 31;
 
-	if (mode & 1) {
-		if (mode &  2) x = gzip32_stage(x, 0x44444444, 0x22222222, 1);
-		if (mode &  4) x = gzip32_stage(x, 0x30303030, 0x0c0c0c0c, 2);
-		if (mode &  8) x = gzip32_stage(x, 0x0f000f00, 0x00f000f0, 4);
-		if (mode & 16) x = gzip32_stage(x, 0x00ff0000, 0x0000ff00, 8);
-	} else {
-		if (mode & 16) x = gzip32_stage(x, 0x00ff0000, 0x0000ff00, 8);
-		if (mode &  8) x = gzip32_stage(x, 0x0f000f00, 0x00f000f0, 4);
-		if (mode &  4) x = gzip32_stage(x, 0x30303030, 0x0c0c0c0c, 2);
-		if (mode &  2) x = gzip32_stage(x, 0x44444444, 0x22222222, 1);
-	}
+	if (rs2 & 8) x = shuffle32_stage(x, 0x00ff0000, 0x0000ff00, 8);
+	if (rs2 & 4) x = shuffle32_stage(x, 0x0f000f00, 0x00f000f0, 4);
+	if (rs2 & 2) x = shuffle32_stage(x, 0x30303030, 0x0c0c0c0c, 2);
+	if (rs2 & 1) x = shuffle32_stage(x, 0x44444444, 0x22222222, 1);
+
+	return x;
+}
+
+uint32_t unshfl32(uint32_t rs1, uint32_t rs2)
+{
+	uint32_t x = rs1;
+
+	if (rs2 & 1) x = shuffle32_stage(x, 0x44444444, 0x22222222, 1);
+	if (rs2 & 2) x = shuffle32_stage(x, 0x30303030, 0x0c0c0c0c, 2);
+	if (rs2 & 4) x = shuffle32_stage(x, 0x0f000f00, 0x00f000f0, 4);
+	if (rs2 & 8) x = shuffle32_stage(x, 0x00ff0000, 0x0000ff00, 8);
 
 	return x;
 }
 // --REF-END--
 
 // --REF-BEGIN-- gzip64
-uint64_t gzip64_stage(uint64_t src, uint64_t maskL, uint64_t maskR, int N)
+uint64_t shuffle64_stage(uint64_t src, uint64_t maskL, uint64_t maskR, int N)
 {
 	uint64_t x = src & ~(maskL | maskR);
 	x |= ((src <<  N) & maskL) | ((src >>  N) & maskR);
 	return x;
 }
 
-uint64_t gzip64(uint64_t rs1, uint64_t rs2)
+uint64_t shfl64(uint64_t rs1, uint64_t rs2)
 {
 	uint64_t x = rs1;
-	int mode = rs2 & 63;
 
-	if (mode & 1) {
-		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL,
-		                                   0x2222222222222222LL, 1);
-		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL,
-		                                   0x0c0c0c0c0c0c0c0cLL, 2);
-		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL,
-		                                   0x00f000f000f000f0LL, 4);
-		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL,
-		                                   0x0000ff000000ff00LL, 8);
-		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL,
-		                                   0x00000000ffff0000LL, 16);
-	} else {
-		if (mode & 32) x = gzip64_stage(x, 0x0000ffff00000000LL,
-		                                   0x00000000ffff0000LL, 16);
-		if (mode & 16) x = gzip64_stage(x, 0x00ff000000ff0000LL,
-		                                   0x0000ff000000ff00LL, 8);
-		if (mode &  8) x = gzip64_stage(x, 0x0f000f000f000f00LL,
-		                                   0x00f000f000f000f0LL, 4);
-		if (mode &  4) x = gzip64_stage(x, 0x3030303030303030LL,
-		                                   0x0c0c0c0c0c0c0c0cLL, 2);
-		if (mode &  2) x = gzip64_stage(x, 0x4444444444444444LL,
-		                                   0x2222222222222222LL, 1);
-	}
+	if (rs2 & 16) x = shuffle64_stage(x, 0x0000ffff00000000LL,
+	                                     0x00000000ffff0000LL, 16);
+	if (rs2 &  8) x = shuffle64_stage(x, 0x00ff000000ff0000LL,
+	                                     0x0000ff000000ff00LL, 8);
+	if (rs2 &  4) x = shuffle64_stage(x, 0x0f000f000f000f00LL,
+	                                     0x00f000f000f000f0LL, 4);
+	if (rs2 &  2) x = shuffle64_stage(x, 0x3030303030303030LL,
+	                                     0x0c0c0c0c0c0c0c0cLL, 2);
+	if (rs2 &  1) x = shuffle64_stage(x, 0x4444444444444444LL,
+	                                     0x2222222222222222LL, 1);
+
+	return x;
+}
+
+uint64_t unshfl64(uint64_t rs1, uint64_t rs2)
+{
+	uint64_t x = rs1;
+
+	if (rs2 &  1) x = shuffle64_stage(x, 0x4444444444444444LL,
+	                                     0x2222222222222222LL, 1);
+	if (rs2 &  2) x = shuffle64_stage(x, 0x3030303030303030LL,
+	                                     0x0c0c0c0c0c0c0c0cLL, 2);
+	if (rs2 &  4) x = shuffle64_stage(x, 0x0f000f000f000f00LL,
+	                                     0x00f000f000f000f0LL, 4);
+	if (rs2 &  8) x = shuffle64_stage(x, 0x00ff000000ff0000LL,
+	                                     0x0000ff000000ff00LL, 8);
+	if (rs2 & 16) x = shuffle64_stage(x, 0x0000ffff00000000LL,
+	                                     0x00000000ffff0000LL, 16);
 
 	return x;
 }
 // --REF-END--
+
+uint32_t gzip32(uint32_t rs1, uint32_t rs2)
+{
+	if (rs2 & 1)
+		return unshfl32(rs1, rs2 >> 1);
+	return shfl32(rs1, rs2 >> 1);
+}
+
+uint64_t gzip64(uint64_t rs1, uint64_t rs2)
+{
+	if (rs2 & 1)
+		return unshfl64(rs1, rs2 >> 1);
+	return shfl64(rs1, rs2 >> 1);
+}
 
 uint_xlen_t gzip(uint_xlen_t rs1, uint_xlen_t rs2)
 {
@@ -335,8 +357,26 @@ uint_xlen_t gzip(uint_xlen_t rs1, uint_xlen_t rs2)
 #endif
 }
 
+uint_xlen_t shfl(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+#if XLEN == 32
+	return shfl32(rs1, rs2);
+#else
+	return shfl64(rs1, rs2);
+#endif
+}
+
+uint_xlen_t unshfl(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+#if XLEN == 32
+	return unshfl32(rs1, rs2);
+#else
+	return unshfl64(rs1, rs2);
+#endif
+}
+
 // --REF-BEGIN-- gzip32-alt
-uint32_t gzip32_flip(uint32_t src)
+uint32_t shuffle32_flip(uint32_t src)
 {
 	uint32_t x = src & 0x88224411;
 	x |= ((src <<  6) & 0x22001100) | ((src >>  6) & 0x00880044);
@@ -346,28 +386,18 @@ uint32_t gzip32_flip(uint32_t src)
 	return x;
 }
 
-uint32_t gzip32alt(uint32_t rs1, uint32_t rs2)
+uint32_t unshfl32alt(uint32_t rs1, uint32_t rs2)
 {
+	uint32_t shfl_mode = 0;
+	if (rs2 & 1) shfl_mode |= 8;
+	if (rs2 & 2) shfl_mode |= 4;
+	if (rs2 & 4) shfl_mode |= 2;
+	if (rs2 & 8) shfl_mode |= 1;
+
 	uint32_t x = rs1;
-	int mode = rs2 & 31;
-
-	if (mode &  1)
-		x = gzip32_flip(x);
-
-	if ((mode & 17) == 16 || (mode &  3) ==  3)
-		x = gzip32_stage(x, 0x00ff0000, 0x0000ff00, 8);
-
-	if ((mode &  9) ==  8 || (mode &  5) ==  5)
-		x = gzip32_stage(x, 0x0f000f00, 0x00f000f0, 4);
-
-	if ((mode &  5) ==  4 || (mode &  9) ==  9)
-		x = gzip32_stage(x, 0x30303030, 0x0c0c0c0c, 2);
-
-	if ((mode &  3) ==  2 || (mode & 17) == 17)
-		x = gzip32_stage(x, 0x44444444, 0x22222222, 1);
-
-	if (mode &  1)
-		x = gzip32_flip(x);
+	x = shuffle32_flip(x);
+	x = shfl32(x, shfl_mode);
+	x = shuffle32_flip(x);
 
 	return x;
 }

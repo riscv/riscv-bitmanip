@@ -38,8 +38,8 @@ uint32_t prefix_byte_nibbles_impl(uint32_t src)
 	uint32_t a0, a1;
 
 	a0 = src & 0xff;
-	a0 = rv32b::gzip(a0, 30);
-	a0 = rv32b::gzip(a0, 30);
+	a0 = rv32b::shfl(a0, 15);
+	a0 = rv32b::shfl(a0, 15);
 
 	a1 = rv32b::sll(a0, 4);
 	a0 += a1;
@@ -96,10 +96,7 @@ void zip_fanout()
 {
 	uint64_t x = 0x0000000012345678LL;
 
-	uint64_t debug_a = x;
-	uint64_t debug_b = rv64b::gzip(x, 56);
-
-	assert(rv64b::gzip(x, 56) == 0x0102030405060708);
-	assert(rv64b::gzip(x, 48) == 0x0012003400560078);
-	assert(rv64b::gzip(x, 32) == 0x0000123400005678);
+	assert(rv64b::shfl(x, 28) == 0x0102030405060708);
+	assert(rv64b::shfl(x, 24) == 0x0012003400560078);
+	assert(rv64b::shfl(x, 16) == 0x0000123400005678);
 }

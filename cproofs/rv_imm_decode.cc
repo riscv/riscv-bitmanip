@@ -141,7 +141,7 @@ void check_b_imm(insn_t insn)
 
 	a0 = ror(a0, 8);
 	a0 = grev(a0, 8);
-	a0 = gzip(a0, 14);
+	a0 = shfl(a0, 7);
 	t0 = 0xeaa800aa;
 	a0 = bext(a0, t0);
 	a0 = sll(a0, 20);

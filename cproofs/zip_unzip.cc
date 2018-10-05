@@ -487,9 +487,10 @@ void check_zip(uint32_t src)
 
 void check_gzip32(uint32_t src, uint32_t mode)
 {
-	uint32_t a = gzip32(src, mode);
-	uint32_t b = gzip32alt(src, mode);
-	uint32_t c = genzip32(src, mode);
+	uint32_t a = unshfl32(src, mode);
+	uint32_t b = unshfl32alt(src, mode);
+	uint32_t c = genzip32(src, (mode << 1) | 1);
+
 	assert(a == b);
 	assert(a == c);
 }

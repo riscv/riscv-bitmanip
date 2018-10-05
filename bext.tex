@@ -263,7 +263,7 @@ use the instruction encoding for ``arithmetic shift left''.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized shuffle (\texttt{shfl}, \texttt{unshfl})}
+\section{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
 \label{gzip}
 
 Shuffle is the third bit permutation instruction in XBitmanip, after rotary
@@ -357,7 +357,7 @@ Pseudo-Instruction \\
 \end{tabular}
 \end{center}
 \end{small}
-\caption{RV32 modes and pseudo-instructions for {\tt gzip} instruction}
+\caption{RV32 modes and pseudo-instructions for {\tt shfli}/{\tt unshfli} instruction}
 \label{gzip32-modes}
 \end{table}
 
@@ -417,7 +417,7 @@ Pseudo-Instruction \\
 \end{tabular}
 \end{center}
 \end{small}
-\caption{RV64 modes and pseudo-instructions for {\tt gzip} instruction}
+\caption{RV64 modes and pseudo-instructions for {\tt shfli}/{\tt unshfli} instruction}
 \label{gzip64-modes}
 \end{table}
 
@@ -425,7 +425,7 @@ Pseudo-Instruction \\
 \begin{center}
 \input{bextcref-printperm-gzip-noflip}
 \end{center}
-\caption{\texttt{gzip} permutation network without ``flip'' stages}
+\caption{(un)shuffle permutation network without ``flip'' stages}
 \label{permnet-gzip-noflip}
 \end{figure}
 

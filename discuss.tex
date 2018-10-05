@@ -216,8 +216,8 @@ with rd$'$=0 still being an illegal instruction.
 \hline
 3x &  0 & 6x &  0 & {\tt clz, clzw, ctz, ctzw, pcnt, pcntw} \\
 \hline
-1x & 15 & 1x & 15 & {\tt grev} \\
-2x & 15 & 2x & 16 & {\tt grevi, gzip} \\
+3x & 15 & 3x & 15 & {\tt grev, shfl, unshfl} \\
+2x & 15 & 2x & 16 & {\tt grevi, shfli/unshfli} \\
 \hline
 2x & 15 & 6x & 15 & {\tt slo, sro, slow, srow, sloiw, sroiw} \\
 2x & 15 & 2x & 16 & {\tt sloi, sroi} \\
@@ -330,20 +330,20 @@ $$ 100 / (2^{11.155-4.585}) \approx 1.053 $$
 \label{resctab}
 \end{table}
 
-On RV32, XBitmanip requires the equivalent of a $\approx 18.7$ bit encoding space in
+On RV32, XBitmanip requires the equivalent of a $\approx 18.9$ bit encoding space in
 the uncompressed encoding space. For comparison: A single standard I-type
 instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
 encoding space. I.e. the entire RV32 XBitmanip extension needs less than
 one-eighth of the encoding space of the \texttt{SLTIU} instruction.
 
-$$ log_2(13\cdot2^{15}) \approx 18.700 $$
+$$ log_2(15\cdot2^{15}) \approx 18.907 $$
 
-On RV64, XBitmanip requires the equivalent of a $\approx 19.8$ bit encoding
+On RV64, XBitmanip requires the equivalent of a $\approx 19.9$ bit encoding
 space in the uncompressed encoding space. I.e. the entire RV64 XBitmanip
 extension needs about one-quarter of the encoding space of the \texttt{SLTIU}
 instruction.
 
-$$ log_2(17\cdot2^{15} + 5\cdot2^{16}) \approx 19.755 $$
+$$ log_2(19\cdot2^{15} + 5\cdot2^{16}) \approx 19.858 $$
 
 \section{Area usage of reference implementations}
 \label{cores}
@@ -492,10 +492,10 @@ The implementations of cores performing XBitmanip (and XBitfield) operations are
 \begin{itemize}
 \item {\tt tinygrev} --- A small multi-cycle implementation of {\tt grev}/{\tt grevi}.
 It takes 6 cycles for one operation.
-\item {\tt tinygzip} --- A small multi-cycle implementation of {\tt gzip}.
+\item {\tt tinygzip} --- A small multi-cycle implementation of {\tt shfl/unshfl/shfli/unshfli}.
 It takes 5 cycles for one operation.
 \item {\tt simplegrev} --- A simple single-cycle implementation of {\tt grev}/{\tt grevi}.
-\item {\tt simplegzip} --- A simple single-cycle implementation of {\tt gzip}.
+\item {\tt simplegzip} --- A simple single-cycle implementation of {\tt shfl/unshfl/shfli/unshfli}.
 \item {\tt simplebitcnt} --- A simple single-cycle implementation of {\tt clz}, {\tt ctz}, and {\tt pcnt}.
 \item {\tt simplebfxp} --- A simple single-cycle implementation of the XBitfield {\tt bfxp}
 instruction (see Chapter~\ref{bfxp}). It requires an external rotate-shift implementation.

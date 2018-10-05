@@ -87,7 +87,7 @@ with open("bextcref-printperm-gzip-flip.tex", "w") as outfile:
         for j in range(32):
             k = gzip_permdata[j][1 << (i+1)]
             print("\\draw (%.3f, %d) -- (%.3f, %d);" % (k * 0.375, i * 2 + 2, j * 0.375, i * 2 + 4), file=outfile)
-        print("\\node at (%.3f, %d) {gzip stage %d};" % (1.5 + 32 * 0.375, i * 2 + 3, i), file=outfile)
+        print("\\node at (%.3f, %d) {stage %d};" % (1.5 + 32 * 0.375, i * 2 + 3, i), file=outfile)
 
     for i in [0, 5]:
         for j in range(32):
@@ -97,7 +97,7 @@ with open("bextcref-printperm-gzip-flip.tex", "w") as outfile:
         for j in range(32):
             k = gzipflip_permdata[j]
             print("\\draw (%.3f, %d) -- (%.3f, %d);" % (k * 0.375, i * 2, j * 0.375, i * 2 + 2), file=outfile)
-        print("\\node at (%.3f, %d) {gzip flip};" % (1.5 + 32 * 0.375, i * 2 + 1), file=outfile)
+        print("\\node at (%.3f, %d) {flip};" % (1.5 + 32 * 0.375, i * 2 + 1), file=outfile)
 
     for i in range(7):
         for j in range(32):
