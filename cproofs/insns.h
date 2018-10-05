@@ -478,6 +478,61 @@ uint_xlen_t cselz(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- bmat
+uint64_t bmatflip(uint64_t rs1)
+{
+	uint64_t x = rs1;
+	x = shfl64(x, 31);
+	x = shfl64(x, 31);
+	x = shfl64(x, 31);
+	return x;
+}
+
+uint64_t bmatxor(uint64_t rs1, uint64_t rs2)
+{
+	// transpose of rs2
+	uint64_t rs2t = bmatflip(rs2);
+
+	uint8_t u[8]; // rows of rs1
+	uint8_t v[8]; // cols of rs2
+
+	for (int i = 0; i < 8; i++) {
+		u[i] = rs1 >> (i*8);
+		v[i] = rs2t >> (i*8);
+	}
+
+	uint64_t x = 0;
+	for (int i = 0; i < 64; i++) {
+		if (pcnt(u[i / 8] & v[i % 8]) & 1)
+			x |= 1LL << i;
+	}
+
+	return x;
+}
+
+uint64_t bmator(uint64_t rs1, uint64_t rs2)
+{
+	// transpose of rs2
+	uint64_t rs2t = bmatflip(rs2);
+
+	uint8_t u[8]; // rows of rs1
+	uint8_t v[8]; // cols of rs2
+
+	for (int i = 0; i < 8; i++) {
+		u[i] = rs1 >> (i*8);
+		v[i] = rs2t >> (i*8);
+	}
+
+	uint64_t x = 0;
+	for (int i = 0; i < 64; i++) {
+		if ((u[i / 8] & v[i % 8]) != 0)
+			x |= 1LL << i;
+	}
+
+	return x;
+}
+// --REF-END--
+
 // --REF-BEGIN-- bfxp
 uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 		unsigned start, unsigned len, unsigned dest)
