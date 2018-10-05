@@ -314,46 +314,46 @@ Pseudo-Instruction \\
 \hline
 
        0: 0000 0  & no-op                            & ---                    \\
-       1: 0000 1  & no-op                            & {\it reserved}         \\
-       2: 0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
-\sout{ 3: 0001 1} & {\it equivalent to 0001 0}       & {\it reserved}         \\
-       4: 0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
-\sout{ 5: 0010 1} & {\it equivalent to 0010 0}       & {\it reserved}         \\
-       6: 0011 0  & {\tt i[2] -> i[0]}               & {\tt zip.b}            \\
-       7: 0011 1  & {\tt i[2] <- i[0]}               & {\tt unzip.b}          \\
+          0000 1  & no-op                            & {\it reserved}         \\
+       1: 0001 0  & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
+\sout{    0001 1} & {\it equivalent to 0001 0}       & {\it reserved}         \\
+       2: 0010 0  & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
+\sout{    0010 1} & {\it equivalent to 0010 0}       & {\it reserved}         \\
+       3: 0011 0  & {\tt i[2] -> i[0]}               & {\tt zip.b}            \\
+          0011 1  & {\tt i[2] <- i[0]}               & {\tt unzip.b}          \\
 
 \hline
 
-       8: 0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
-\sout{ 9: 0100 1} & {\it equivalent to 0100 0}       & {\it reserved}         \\
-      10: 0101 0  & {\tt i[3] -> i[2], i[1] -> i[0]} & ---                    \\
-\sout{11: 0101 1} & {\it equivalent to 0101 0}       & {\it reserved}         \\
-      12: 0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
-      13: 0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
-      14: 0111 0  & {\tt i[3] -> i[0]}               & {\tt zip.h}            \\
-      15: 0111 1  & {\tt i[3] <- i[0]}               & {\tt unzip.h}          \\
+       4: 0100 0  & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
+\sout{    0100 1} & {\it equivalent to 0100 0}       & {\it reserved}         \\
+       5: 0101 0  & {\tt i[3] -> i[2], i[1] -> i[0]} & ---                    \\
+\sout{    0101 1} & {\it equivalent to 0101 0}       & {\it reserved}         \\
+       6: 0110 0  & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
+          0110 1  & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
+       7: 0111 0  & {\tt i[3] -> i[0]}               & {\tt zip.h}            \\
+          0111 1  & {\tt i[3] <- i[0]}               & {\tt unzip.h}          \\
 
 \hline
 
-      16: 1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
-\sout{17: 1000 1} & {\it equivalent to 1000 0}       & {\it reserved}         \\
-      18: 1001 0  & {\tt i[4] -> i[3], i[1] -> i[0]} & ---                    \\
-\sout{19: 1001 1} & {\it equivalent to 1001 0}       & {\it reserved}         \\
-      20: 1010 0  & {\tt i[4] -> i[3], i[2] -> i[1]} & ---                    \\
-\sout{21: 1010 1} & {\it equivalent to 1010 0}       & {\it reserved}         \\
-      22: 1011 0  & {\tt i[4] -> i[3], i[2] -> i[0]} & ---                    \\
-      23: 1011 1  & {\tt i[4] <- i[3], i[2] <- i[0]} & ---                    \\
+       8: 1000 0  & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
+\sout{    1000 1} & {\it equivalent to 1000 0}       & {\it reserved}         \\
+       9: 1001 0  & {\tt i[4] -> i[3], i[1] -> i[0]} & ---                    \\
+\sout{    1001 1} & {\it equivalent to 1001 0}       & {\it reserved}         \\
+      10: 1010 0  & {\tt i[4] -> i[3], i[2] -> i[1]} & ---                    \\
+\sout{    1010 1} & {\it equivalent to 1010 0}       & {\it reserved}         \\
+      11: 1011 0  & {\tt i[4] -> i[3], i[2] -> i[0]} & ---                    \\
+          1011 1  & {\tt i[4] <- i[3], i[2] <- i[0]} & ---                    \\
 
 \hline
 
-      24: 1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4}             \\
-      25: 1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4}           \\
-      26: 1101 0  & {\tt i[4] -> i[2], i[1] -> i[0]} & ---                    \\
-      27: 1101 1  & {\tt i[4] <- i[2], i[1] <- i[0]} & ---                    \\
-      28: 1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2}             \\
-      29: 1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2}           \\
-      30: 1111 0  & {\tt i[4] -> i[0]}               & {\tt zip}              \\
-      31: 1111 1  & {\tt i[4] <- i[0]}               & {\tt unzip}            \\
+      12: 1100 0  & {\tt i[4] -> i[2]}               & {\tt zip4}             \\
+          1100 1  & {\tt i[4] <- i[2]}               & {\tt unzip4}           \\
+      13: 1101 0  & {\tt i[4] -> i[2], i[1] -> i[0]} & ---                    \\
+          1101 1  & {\tt i[4] <- i[2], i[1] <- i[0]} & ---                    \\
+      14: 1110 0  & {\tt i[4] -> i[1]}               & {\tt zip2}             \\
+          1110 1  & {\tt i[4] <- i[1]}               & {\tt unzip2}           \\
+      15: 1111 0  & {\tt i[4] -> i[0]}               & {\tt zip}              \\
+          1111 1  & {\tt i[4] <- i[0]}               & {\tt unzip}            \\
 \end{tabular}
 \end{center}
 \end{small}
@@ -364,56 +364,59 @@ Pseudo-Instruction \\
 \begin{table}[h]
 \begin{small}
 \begin{center}
-\begin{tabular}{c l p{1in} c l}
-      mode     & Pseudo-Instruction       &   &         mode     & Pseudo-Instruction      \\
+\begin{tabular}{r l p{1in} r l}
+\multicolumn{1}{c}{mode} &
+Pseudo-Instruction & &
+\multicolumn{1}{c}{mode} &
+Pseudo-Instruction \\
 
 \cline{1-2}
 \cline{4-5}
 
-       0: 00000 0  & ---                      &   &         32: 10000 0  & {\tt zip16, unzip16}    \\
-\sout{ 1: 00000 1} & {\it reserved}           &   &   \sout{33: 10000 1} & {\it reserved}          \\
-       2: 00001 0  & {\tt zip.n, unzip.n}     &   &         34: 10001 0  & ---                     \\
-\sout{ 3: 00001 1} & {\it reserved}           &   &   \sout{35: 10001 1} & {\it reserved}          \\
-       4: 00010 0  & {\tt zip2.b, unzip2.b}   &   &         36: 10010 0  & ---                     \\
-\sout{ 5: 00010 1} & {\it reserved}           &   &   \sout{37: 10010 1} & {\it reserved}          \\
-       6: 00011 0  & {\tt zip.b}              &   &         38: 10011 0  & ---                     \\
-       7: 00011 1  & {\tt unzip.b}            &   &         39: 10011 1  & ---                     \\
+       0: 00000 0  & ---                      &   &         16: 10000 0  & {\tt zip16, unzip16}    \\
+\sout{    00000 1} & {\it reserved}           &   &   \sout{    10000 1} & {\it reserved}          \\
+       1: 00001 0  & {\tt zip.n, unzip.n}     &   &         17: 10001 0  & ---                     \\
+\sout{    00001 1} & {\it reserved}           &   &   \sout{    10001 1} & {\it reserved}          \\
+       2: 00010 0  & {\tt zip2.b, unzip2.b}   &   &         18: 10010 0  & ---                     \\
+\sout{    00010 1} & {\it reserved}           &   &   \sout{    10010 1} & {\it reserved}          \\
+       3: 00011 0  & {\tt zip.b}              &   &         19: 10011 0  & ---                     \\
+          00011 1  & {\tt unzip.b}            &   &             10011 1  & ---                     \\
 
 \cline{1-2}
 \cline{4-5}
 
-       8: 00100 0  & {\tt zip4.h, unzip4.h}   &   &         40: 10100 0  & ---                     \\
-\sout{ 9: 00100 1} & {\it reserved}           &   &   \sout{41: 10100 1} & {\it reserved}          \\
-      10: 00101 0  & ---                      &   &         42: 10101 0  & ---                     \\
-\sout{11: 00101 1} & {\it reserved}           &   &   \sout{43: 10101 1} & {\it reserved}          \\
-      12: 00110 0  & {\tt zip2.h}             &   &         44: 10110 0  & ---                     \\
-      13: 00110 1  & {\tt unzip2.h}           &   &         45: 10110 1  & ---                     \\
-      14: 00111 0  & {\tt zip.h}              &   &         46: 10111 0  & ---                     \\
-      15: 00111 1  & {\tt unzip.h}            &   &         47: 10111 1  & ---                     \\
+       4: 00100 0  & {\tt zip4.h, unzip4.h}   &   &         20: 10100 0  & ---                     \\
+\sout{    00100 1} & {\it reserved}           &   &   \sout{    10100 1} & {\it reserved}          \\
+       5: 00101 0  & ---                      &   &         21: 10101 0  & ---                     \\
+\sout{    00101 1} & {\it reserved}           &   &   \sout{    10101 1} & {\it reserved}          \\
+       6: 00110 0  & {\tt zip2.h}             &   &         22: 10110 0  & ---                     \\
+          00110 1  & {\tt unzip2.h}           &   &             10110 1  & ---                     \\
+       7: 00111 0  & {\tt zip.h}              &   &         23: 10111 0  & ---                     \\
+          00111 1  & {\tt unzip.h}            &   &             10111 1  & ---                     \\
 
 \cline{1-2}
 \cline{4-5}
 
-      16: 01000 0  & {\tt zip8.w, unzip8.w}   &   &         48: 11000 0  & {\tt zip8}              \\
-\sout{17: 01000 1} & {\it reserved}           &   &         49: 11000 1  & {\tt unzip8}            \\
-      18: 01001 0  & ---                      &   &         50: 11001 0  & ---                     \\
-\sout{19: 01001 1} & {\it reserved}           &   &         51: 11001 1  & ---                     \\
-      20: 01010 0  & ---                      &   &         52: 11010 0  & ---                     \\
-\sout{21: 01010 1} & {\it reserved}           &   &         53: 11010 1  & ---                     \\
-      22: 01011 0  & ---                      &   &         54: 11011 0  & ---                     \\
-      23: 01011 1  & ---                      &   &         55: 11011 1  & ---                     \\
+       8: 01000 0  & {\tt zip8.w, unzip8.w}   &   &         24: 11000 0  & {\tt zip8}              \\
+\sout{    01000 1} & {\it reserved}           &   &             11000 1  & {\tt unzip8}            \\
+       9: 01001 0  & ---                      &   &         25: 11001 0  & ---                     \\
+\sout{    01001 1} & {\it reserved}           &   &             11001 1  & ---                     \\
+      10: 01010 0  & ---                      &   &         26: 11010 0  & ---                     \\
+\sout{    01010 1} & {\it reserved}           &   &             11010 1  & ---                     \\
+      11: 01011 0  & ---                      &   &         27: 11011 0  & ---                     \\
+          01011 1  & ---                      &   &             11011 1  & ---                     \\
 
 \cline{1-2}
 \cline{4-5}
 
-      24: 01100 0  & {\tt zip4.w}             &   &         56: 11100 0  & {\tt zip4}              \\
-      25: 01100 1  & {\tt unzip4.w}           &   &         57: 11100 1  & {\tt unzip4}            \\
-      26: 01101 0  & ---                      &   &         58: 11101 0  & ---                     \\
-      27: 01101 1  & ---                      &   &         59: 11101 1  & ---                     \\
-      28: 01110 0  & {\tt zip2.w}             &   &         60: 11110 0  & {\tt zip2}              \\
-      29: 01110 1  & {\tt unzip2.w}           &   &         61: 11110 1  & {\tt unzip2}            \\
-      30: 01111 0  & {\tt zip.w}              &   &         62: 11111 0  & {\tt zip}               \\
-      31: 01111 1  & {\tt unzip.w}            &   &         63: 11111 1  & {\tt unzip}             \\
+      12: 01100 0  & {\tt zip4.w}             &   &         28: 11100 0  & {\tt zip4}              \\
+          01100 1  & {\tt unzip4.w}           &   &             11100 1  & {\tt unzip4}            \\
+      13: 01101 0  & ---                      &   &         29: 11101 0  & ---                     \\
+          01101 1  & ---                      &   &             11101 1  & ---                     \\
+      14: 01110 0  & {\tt zip2.w}             &   &         30: 11110 0  & {\tt zip2}              \\
+          01110 1  & {\tt unzip2.w}           &   &             11110 1  & {\tt unzip2}            \\
+      15: 01111 0  & {\tt zip.w}              &   &         31: 11111 0  & {\tt zip}               \\
+          01111 1  & {\tt unzip.w}            &   &             11111 1  & {\tt unzip}             \\
 \end{tabular}
 \end{center}
 \end{small}
