@@ -478,6 +478,26 @@ uint_xlen_t cselz(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- clmul
+uint_xlen_t clmul(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t x = 0;
+	for (int i = 0; i < XLEN; i++)
+		if ((rs2 >> i) & 1)
+			x ^= rs1 << i;
+	return x;
+}
+
+uint_xlen_t clmulh(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t x = 0;
+	for (int i = 1; i < XLEN; i++)
+		if ((rs2 >> i) & 1)
+			x ^= rs1 >> (XLEN-i);
+	return x;
+}
+// --REF-END--
+
 // --REF-BEGIN-- bmat
 uint64_t bmatflip(uint64_t rs1)
 {
