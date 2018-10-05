@@ -106,3 +106,40 @@ This two instructions copy their first source argument to the destination if the
 argument is non-zero (zero), and otherwise leave the destination register untouched.
 This requires less encoding space than \texttt{cmov} and can be implemented more
 efficiently (on architectures without register renaming).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Carry-less multiply (\texttt{clmul, clmulh})}
+
+Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
+produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
+of the carry-less product.
+
+We need to coordinate with the crypto extension work group if carry-less multiply should
+be part of the B-extension or crypto-extension.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
+
+These are 64-bit-only instruction that are not available on RV32. On RV128 they
+ignore the upper half of operands and set the upper half of the results to zero.
+
+This instructions interpret a 64-bit value as 8x8 binary matrix.
+
+\texttt{bmatxor} performs a matrix-matrix multiply with boolean AND as multiply
+operator and boolean XOR as addition operator.
+
+\texttt{bmator} performs a matrix-matrix multiply with boolean AND as multiply
+operator and boolean OR as addition operator.
+
+\texttt{bmatflip} is a unary operator that transposes the source matrix. It is
+equivalent to \texttt{zip; zip; zip} on RV64.
+
+Among other things, \texttt{bmatxor}/\texttt{bmator} can be used to perform
+arbitrary permuations of bits within each byte (permutation matrix as 2nd
+operand) or perform arbitrary permuations of bytes within a 64-bit word
+(permutation matrix as 1st operand).
+
+There are similar instructions in Cray XMT~\cite{CrayXMT}. The Cray X1
+architecture even has a full 64x64 bit matrix multiply unit~\cite{CrayX1}.
