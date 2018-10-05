@@ -6,8 +6,8 @@
 
 \begin{itemize}
 \item A bit-field extract instruction. Unfortunately the encoding space required
-by such an instruction would be enourmous (for forward-looking support up to
-RV128 this would require a $2 \time 7 = 14$ bits immedate. This was deemed
+by such an instruction would be enormous (for forward-looking support up to
+RV128 this would require a $2 \time 7 = 14$ bits immediate. This was deemed
 too expensive considering that the same functionality can already be implemented
 using only two shift instructions. However, see Chapter~\ref{bfxp} for an
 alternative. (The same encoding space argument applies to instructions for
@@ -17,17 +17,17 @@ inserting bits in a bit field, or setting or clearing ranges of bits.)
 butterfly stage (see Section~\ref{butterfly}). The {\tt smartbextdep} implementation
 of {\tt bext}/{\tt bdep} (see Section~\ref{cores}) already includes the hardware
 for that, all that would be required is exposing a few internal control signals.
-However, the encoding cost of such an instruction would be enourmous, the
+However, the encoding cost of such an instruction would be enormous, the
 instruction itself would only be useful in niche applications, and it would require
-implementors to implement {\tt bext}/{\tt bdep} in a certain way. So it's is
+implementers to implement {\tt bext}/{\tt bdep} in a certain way. So it's is
 not worth the effort considering that a butterfly stage can also be implemented in
 four instructions using {\tt grevi} and the MIX pattern (see Section~\ref{butterfly}).
 
-\item A reverse-subract-immediate operation that performs the calculation
+\item A reverse-subtract-immediate operation that performs the calculation
 $\texttt{imm} - \texttt{rs}$.  This comes up often in calculating bit indices
 (for example $\texttt{XLEN} - i$ is a very common operation, and compressed
 instructions are only of some help here because compressed immediates are in
-the range $-32 \dots 31$). However, a reverse-subract-immediate operation is
+the range $-32 \dots 31$). However, a reverse-subtract-immediate operation is
 not very bit-manipulation specific, would require a much larger encoding
 space than the rest of XBitmanip (it would have a 12 bit immediate), and
 does not add any functionality that can not be emulated easily with {\tt neg} and
@@ -44,14 +44,14 @@ bit width. However, a funnel shift instruction would also require three source
 operands, therefore it was not considered for inclusion in XBitmanip.
 
 \item Instructions for testing, setting and clearing bits. This operations can
-be performed in few easily macro-op fusable instructions. So implementations
+be performed in few easily macro-op fusible instructions. So implementations
 might provide hardware support for them, but we do not reserve dedicated opcodes
 for those operations.
 
 \item Instructions for the usual patterns of ALU operations to fiddle with
 trailing bits, such as {\tt x \& -x} (extract lowest set bit), or
 {\tt x \^{} (x - 1)} (mask up to and including lowest set bit). But those
-operations all fit into short easily macro-op fusable instruction sequences
+operations all fit into short easily macro-op fusible instruction sequences
 (see Section~\ref{x86comp}).
 
 \item Instructions for carry-less multiplication (similar to the x86 CLMUL
@@ -67,7 +67,7 @@ instructions.
 \subsubsection{\texttt{grev} seems to be overly complicated? Do we really need it?}
 
 The \texttt{grev} instruction can be used to build a wide range of common
-bit permutation instructions, such as endianess conversion or bit reversal.
+bit permutation instructions, such as endianness conversion or bit reversal.
 
 If \texttt{grev} were removed from this spec we would need to add a few
 new instructions in its place for those operations.
@@ -177,7 +177,7 @@ and keeping these sequences short can help with decoding them efficiently, espec
 {\tt c.neg} can be emulated using {\tt c.not} if the next (or previous) operation
 is an {\tt addi}. But commonly {\tt c.neg} is simply used to turn the value 1
 into all-bits-set and leave the value 0 at 0. Or it is used stand-alone to
-effectively perform the operation $\textrm{XLEN}-i$ to calulate the shift
+effectively perform the operation $\textrm{XLEN}-i$ to calculate the shift
 amount for the 2nd shift in a funnel shift (see Section~\ref{funnel}, XLEN does
 not actually need to be added because the shift operations only uses the lower
 $log_2(\textrm{XLEN})$ bits of their 2nd argument anyways). In those cases
@@ -186,7 +186,7 @@ there is no addition before or after the {\tt c.neg} instruction.
 Further evaluation will show which of those instructions are worth their cost
 in compressed encoding space and decoder logic.
 
-\subsubsection{The compressed instructions use weird encodings. Is this really neccessary?}
+\subsubsection{The compressed instructions use weird encodings. Is this really necessary?}
 
 This criticism is justified.
 
