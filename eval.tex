@@ -13,7 +13,7 @@ Some of the assembler routines below can not or should not overwrite their
 first argument. In those cases the arguments are passed in a1, a2,~\dots~and
 results are returned in a0.
 
-The main motivarion behind this chapter is to show that all the common bit
+The main motivation behind this chapter is to show that all the common bit
 manipulation tasks can be performed in few instructions using XBitmanip. (In
 many cases RV32I/RV64I instructions are already sufficient.) In most cases the
 sequences are short enough to allow large cores to macro-op-fuse them into a
@@ -28,7 +28,7 @@ become ``standard sequences'' for macro-op fusion.
 \section{Bitfield extract}
 
 Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
-two shift operations (or equivialently using the {\tt bfext} pseudo instruction, see
+two shift operations (or equivalently using the {\tt bfext} pseudo instruction, see
 Section~\ref{bfext}).
 
 \begin{verbatim}
@@ -286,7 +286,7 @@ reversing the order of butterfly operations.
 
 \subsection{Using omega-flip networks}
 
-The omega operation is a stage-0 butterfly preceeded by a zip operation:
+The omega operation is a stage-0 butterfly preceded by a zip operation:
 
 \begin{verbatim}
   zip a0, a0
@@ -481,7 +481,7 @@ BLSR          & 5 &  6 & {\tt addi a0, a1, -1} \\
 \label{bmi1-comp}
 \end{table}
 
-BMI2 adds a few \texttt{*X} isnstructions that just perform the indicated
+BMI2 adds a few \texttt{*X} instructions that just perform the indicated
 operation without changing any flags. RISC-V does not use flags, so this
 instructions trivially just map to their regular RISC-V counterparts. In
 addition to those instructions, BMI2 adds bit extract and deposit instructions
@@ -780,9 +780,9 @@ Cray XMT provides the following instructions for bitwise boolean operations:
 {\tt BIT\_AND}, {\tt BIT\_IMP}, {\tt BIT\_NAND}, {\tt BIT\_NIMP}, {\tt
 BIT\_NOR}, {\tt BIT\_OR}, {\tt BIT\_XNOR}, and {\tt BIT\_XOR}.
 
-These can trivially emulated using basic RISC-V instrustructions. (Some of those
+These can trivially emulated using basic RISC-V instructions. (Some of those
 XMT instructions have a direct RISC-V equivalent. The others can be emulated
-by cmbining the {\tt not} pseudoinstruction with {\tt and}, {\tt or}, or {\tt xor}.)
+by combining the {\tt not} pseudoinstruction with {\tt and}, {\tt or}, or {\tt xor}.)
 
 \subsubsection{Count Leading/Trailing Zeros/Ones}
 
@@ -952,7 +952,7 @@ as $\texttt{i$'$[5:0]} = \texttt{i[5:0]} + N \,\,\, (\textrm{mod 64})$.
 The GREV operation with shamt $N$ is $\texttt{i$'$[5:0]} = \texttt{i[5:0]} \textrm{ XOR } N$.
 
 And a GZIP operation corresponds to a rotate left shift by one position of any
-continous region of $\texttt{i[5:0]}$. For example, {\tt zip} is a left rotate shift
+continuous region of $\texttt{i[5:0]}$. For example, {\tt zip} is a left rotate shift
 of the entire bit index:
 
 $$\texttt{i$'$[5:0]} = \{ \texttt{i[4:0]},\, \texttt{i[5]} \}$$
@@ -1012,7 +1012,7 @@ rotate_z:
 
 \section{Decoding RISC-V Immediates}
 
-The following code snippets decode and sign-extend the immedate from RISC-V
+The following code snippets decode and sign-extend the immediate from RISC-V
 S-type, B-type, J-type, and CJ-type instructions. They are nice ``nothing up my
 sleeve''-examples for real-world bit permutations.
 

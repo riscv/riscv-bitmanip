@@ -271,7 +271,7 @@ shift and generalized reverse.  It implements a generalization of the operation
 commonly known as perfect outer shuffle and its inverse (shuffle/unshuffle),
 also known as zip/unzip or interlace/uninterlace.
 
-Bit permutations can be understood as reversible functions on bit indeces (i.e.
+Bit permutations can be understood as reversible functions on bit indices (i.e.
 5 bit functions on RV32 and 6 bit functions on RV64).
 
 \begin{center}
@@ -288,17 +288,17 @@ A generalized (un)shuffle operation has $log_2(\textrm{XLEN})-1$ control bits,
 one for each pair of neighbouring bits in a bit index. When the bit is set,
 generalized shuffle will swap the two index bits. The {\tt shfl} operation
 performs this swaps in MSB-to-LSB order (performing a rotate left shift on
-continous regions of set control bits), and the {\tt unshfl} operation performs
-the swaps in LSB-to-MSB order (performing a rotate right shift on continous
+continuous regions of set control bits), and the {\tt unshfl} operation performs
+the swaps in LSB-to-MSB order (performing a rotate right shift on continuous
 regions of set control bits). Combining up to $log_2(\textrm{XLEN})$ of those
 {\tt shfl}/{\tt unshfl} operations can implement any bitpermutation on the
 bit indices.
 
 The most common type of shuffle/unshuffle operation is one on an immediate
-control value that only contains one continous region of set bits. We call
+control value that only contains one continuous region of set bits. We call
 those operations zip/unzip and provide pseudo-instructions for them.
 
-Shuffle/unshuffle operations that only have individual bits set (not a continous
+Shuffle/unshuffle operations that only have individual bits set (not a continuous
 region of two or more bits) are their own inverse. This means that a few of the
 {\tt unshfli} opcodes are redundant with {\tt shfli} opcodes and therefore can
 be used to encode unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
@@ -433,7 +433,7 @@ Pseudo-Instruction \\
 \end{figure}
 
 Like GREV and rotate shift, the (un)shuffle instruction can be implemented using a short
-sequence of elementry permutations, that are enabled or disabled by the mode (shamt)
+sequence of elementary permutations, that are enabled or disabled by the mode (shamt)
 bits. But (un)shuffle has one stage fewer than GREV and the additional bit of the mode
 controls the order in which the stages are applied:
 
@@ -523,7 +523,7 @@ Implementations may choose to use smaller multi-cycle implementations of
 \texttt{bext} and \texttt{bdep}, or even emulate the instructions in software.
 
 Even though multi-cycle \texttt{bext} and \texttt{bdep} often are not fast
-enough to outperform algortihms that use sequences of shifts and bit masks,
+enough to outperform algorithms that use sequences of shifts and bit masks,
 dedicated instructions for those operations can still be of great advantage in
 cases where the mask argument is not constant.
 
@@ -599,7 +599,7 @@ They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
 \section{Bit-field extract pseudo instruction ({\tt bfext})}
 \label{bfext}
 
-Extract the continous bit field starting at {\tt pos} with length {\tt len}
+Extract the continuous bit field starting at {\tt pos} with length {\tt len}
 from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and
 $\texttt{pos}+\texttt{len}\le\textrm{XLEN}$).
 
@@ -609,7 +609,7 @@ $\texttt{pos}+\texttt{len}\le\textrm{XLEN}$).
 \end{verbatim}
 
 If possible, an implementation should fuse this two shift operations into a single
-macro-op. (Some implementors have raised concerns about the lack of a dedicated
+macro-op. (Some implementers have raised concerns about the lack of a dedicated
 bit field extract instruction with large immediate, especially for implementations
 that can not fuse instructions into macro-ops and/or implementations that do
 not support compressed instructions. See Chapter~\ref{bfxp} for a brief discussion
