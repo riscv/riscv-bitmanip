@@ -109,5 +109,15 @@ int main()
 	}
 	fclose(f);
 
+	f = fopen("testdata_clmul.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint64_t din1 = xorshift32();
+		uint64_t din2 = xorshift32();
+		bool op_mul = xorshift32() & 1;
+		uint64_t dout = op_mul ? din1 * din2 : ((uint64_t)clmulh(din1, din2) << 32) | clmul(din1, din2);
+		fprintf(f, "%1x%08llx%08llx%016llx\n", op_mul, (long long)din1, (long long)din2, (long long)dout);
+	}
+	fclose(f);
+
 	return 0;
 }

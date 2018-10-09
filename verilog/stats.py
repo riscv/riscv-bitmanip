@@ -14,6 +14,8 @@ core_list = [
     "smartbextdep",
     "XBitmanip",
     "rocketmuldiv",
+    "simplemul",
+    "simpleclmul",
 ]
 
 core_data = dict()
@@ -158,7 +160,7 @@ Module & Gates & Depth & 4-LUTs & Depth & FFs \\
 
 for core in core_list:
     ffs, luts, gates, ldep, gdep = core_data[core]
-    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebfxp", "simplebextdep", "XBitmanip"]:
+    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebfxp", "simplebextdep", "XBitmanip", "simplemul"]:
         print(r"\hline")
     corename = core if core != "rocketmuldiv" else "Rocket MulDiv"
     print(r"{\tt %s} & %d & %d & %d & %d & %d \\" % (corename, gates, gdep, luts, ldep, ffs))

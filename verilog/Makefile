@@ -1,4 +1,4 @@
-all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebitcnt simplebextdep smartbextdep
+all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebitcnt simplebextdep smartbextdep simpleclmul
 
 stats: stats.ysok
 	python3 stats.py | grep . > stats.tex
@@ -74,6 +74,14 @@ smartbextdep: smartbextdep_tb testdata_bext.hex testdata_bdep.hex
 
 # ------------------------------------------------------------------------
 
+simpleclmul_tb: simpleclmul_tb.v simpleclmul.v
+	iverilog -o $@ $^
+
+simpleclmul: simpleclmul_tb testdata_bext.hex testdata_bdep.hex
+	vvp -N simpleclmul_tb
+
+# ------------------------------------------------------------------------
+
 testdata_clz.hex: testdata_grev.hex
 testdata_ctz.hex: testdata_grev.hex
 testdata_pcnt.hex: testdata_grev.hex
@@ -82,6 +90,7 @@ testdata_bfxp.hex: testdata_grev.hex
 testdata_bfxpc.hex: testdata_grev.hex
 testdata_bext.hex: testdata_grev.hex
 testdata_bdep.hex: testdata_grev.hex
+testdata_clmul.hex: testdata_grev.hex
 
 testdata_grev.hex: testdata.cc
 	clang++ -Wall -Os -std=c++11 -o testdata testdata.cc

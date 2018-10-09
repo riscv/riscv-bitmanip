@@ -163,6 +163,46 @@ tee -a stats_smartbextdep_fpga.txt ltp -noff
 
 
 #############################
+## simpleclmul
+
+design -reset
+read_verilog simpleclmul.v
+synth -flatten -top simpleclmul
+abc -g cmos4
+tee -o stats_simpleclmul_asic.txt stat
+tee -a stats_simpleclmul_asic.txt ltp -noff
+
+design -reset
+read_verilog simpleclmul.v
+synth -flatten -top simpleclmul
+abc -lut 4
+tee -o stats_simpleclmul_fpga.txt stat
+tee -a stats_simpleclmul_fpga.txt ltp -noff
+
+
+#############################
+## simplemul
+
+design -reset
+read_verilog simpleclmul.v
+chparam -set DISABLE_CLMUL 1 simpleclmul
+synth -flatten -top simpleclmul
+rename simpleclmul simplemul
+abc -g cmos4
+tee -o stats_simplemul_asic.txt stat
+tee -a stats_simplemul_asic.txt ltp -noff
+
+design -reset
+read_verilog simpleclmul.v
+chparam -set DISABLE_CLMUL 1 simpleclmul
+synth -flatten -top simpleclmul
+rename simpleclmul simplemul
+abc -lut 4
+tee -o stats_simplemul_fpga.txt stat
+tee -a stats_simplemul_fpga.txt ltp -noff
+
+
+#############################
 ## rocketmuldiv
 
 design -reset

@@ -8,6 +8,7 @@
 /testdata_bfxpc.hex
 /testdata_bdep.hex
 /testdata_bext.hex
+/testdata_clmul.hex
 /tinygrev_tb
 /tinygrev_tb.vcd
 /tinygzip_tb
@@ -24,6 +25,8 @@
 /simplebextdep_tb.vcd
 /smartbextdep_tb
 /smartbextdep_tb.vcd
+/simpleclmul_tb
+/simpleclmul_tb.vcd
 /rocketmuldiv_check_bmc/
 /rocketmuldiv_check_cover/
 /stats_*_asic.txt
