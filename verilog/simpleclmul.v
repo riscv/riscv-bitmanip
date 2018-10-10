@@ -13,20 +13,19 @@ module simpleclmul (
 	reg [31:0] b;
 	reg [63:0] acc;
 
-	integer i;
-	reg [63:0] next_acc;
-
 	function [127:0] carry_save;
 		input [63:0] x;
 		input [63:0] y;
 		input [63:0] z;
 		begin
-			carry_save = {(mul || DISABLE_CLMUL) ? ((x & y) | (x & z) | (y & z)) << 1 : 64'd 0, x ^ y ^ z};
+			carry_save[127:64] = ({64{mul || DISABLE_CLMUL}} & ((x & y) | (x & z) | (y & z))) << 1;
+			carry_save[63:0] = x ^ y ^ z;
 		end
 	endfunction
 
 	reg [63:0] s0, s1, s2, s3, s4, s5, s6, s7;
 	reg [63:0] t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13;
+	reg [63:0] next_acc;
 
 	always @* begin
 		s0 = {64{b[0]}} & (a << 0);
