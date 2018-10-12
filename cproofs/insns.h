@@ -256,6 +256,50 @@ uint_xlen_t grev(uint_xlen_t rs1, uint_xlen_t rs2)
 #endif
 }
 
+#define GREV_PSEUDO_OP(_arg, _name) uint_xlen_t _name(uint_xlen_t rs1) { return grev(rs1, _arg); }
+
+#if XLEN == 32
+GREV_PSEUDO_OP( 1, brev_p)
+GREV_PSEUDO_OP( 2, pswap_n)
+GREV_PSEUDO_OP( 3, brev_n)
+GREV_PSEUDO_OP( 4, nswap_p)
+GREV_PSEUDO_OP( 6, pswap_b)
+GREV_PSEUDO_OP( 7, brev_b)
+GREV_PSEUDO_OP( 8, bswap_h)
+GREV_PSEUDO_OP(12, nswap_h)
+GREV_PSEUDO_OP(14, pswap_h)
+GREV_PSEUDO_OP(15, brev_h)
+GREV_PSEUDO_OP(16, hswap)
+GREV_PSEUDO_OP(24, bswap)
+GREV_PSEUDO_OP(28, nswap)
+GREV_PSEUDO_OP(30, pswap)
+GREV_PSEUDO_OP(31, brev)
+#else
+GREV_PSEUDO_OP( 1, brev_p)
+GREV_PSEUDO_OP( 2, pswap_n)
+GREV_PSEUDO_OP( 3, brev_n)
+GREV_PSEUDO_OP( 4, nswap_p)
+GREV_PSEUDO_OP( 6, pswap_b)
+GREV_PSEUDO_OP( 7, brev_b)
+GREV_PSEUDO_OP( 8, bswap_h)
+GREV_PSEUDO_OP(12, nswap_h)
+GREV_PSEUDO_OP(14, pswap_h)
+GREV_PSEUDO_OP(15, brev_h)
+GREV_PSEUDO_OP(16, hswap_w)
+GREV_PSEUDO_OP(24, bswap_w)
+GREV_PSEUDO_OP(28, nswap_w)
+GREV_PSEUDO_OP(30, pswap_w)
+GREV_PSEUDO_OP(31, brev_w)
+GREV_PSEUDO_OP(32, wswap)
+GREV_PSEUDO_OP(48, hswap)
+GREV_PSEUDO_OP(56, bswap)
+GREV_PSEUDO_OP(60, nswap)
+GREV_PSEUDO_OP(62, pswap)
+GREV_PSEUDO_OP(63, brev)
+#endif
+
+#undef GREV_PSEUDO_OP
+
 // --REF-BEGIN-- gzip32
 uint32_t shuffle32_stage(uint32_t src, uint32_t maskL, uint32_t maskR, int N)
 {
@@ -334,29 +378,6 @@ uint64_t unshfl64(uint64_t rs1, uint64_t rs2)
 }
 // --REF-END--
 
-uint32_t gzip32(uint32_t rs1, uint32_t rs2)
-{
-	if (rs2 & 1)
-		return unshfl32(rs1, rs2 >> 1);
-	return shfl32(rs1, rs2 >> 1);
-}
-
-uint64_t gzip64(uint64_t rs1, uint64_t rs2)
-{
-	if (rs2 & 1)
-		return unshfl64(rs1, rs2 >> 1);
-	return shfl64(rs1, rs2 >> 1);
-}
-
-uint_xlen_t gzip(uint_xlen_t rs1, uint_xlen_t rs2)
-{
-#if XLEN == 32
-	return gzip32(rs1, rs2);
-#else
-	return gzip64(rs1, rs2);
-#endif
-}
-
 uint_xlen_t shfl(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 #if XLEN == 32
@@ -374,6 +395,41 @@ uint_xlen_t unshfl(uint_xlen_t rs1, uint_xlen_t rs2)
 	return unshfl64(rs1, rs2);
 #endif
 }
+
+#define SHFL_PSEUDO_OP(_arg, _name) \
+  uint_xlen_t _name(uint_xlen_t rs1) { return shfl(rs1, _arg); }  \
+  uint_xlen_t un ## _name(uint_xlen_t rs1) { return unshfl(rs1, _arg); }  \
+
+#if XLEN == 32
+SHFL_PSEUDO_OP( 1, zip_n)
+SHFL_PSEUDO_OP( 2, zip2_b)
+SHFL_PSEUDO_OP( 3, zip_b)
+SHFL_PSEUDO_OP( 4, zip4_h)
+SHFL_PSEUDO_OP( 6, zip2_h)
+SHFL_PSEUDO_OP( 7, zip_h)
+SHFL_PSEUDO_OP( 8, zip8)
+SHFL_PSEUDO_OP(12, zip4)
+SHFL_PSEUDO_OP(14, zip2)
+SHFL_PSEUDO_OP(15, zip)
+#else
+SHFL_PSEUDO_OP( 1, zip_n)
+SHFL_PSEUDO_OP( 2, zip2_b)
+SHFL_PSEUDO_OP( 3, zip_b)
+SHFL_PSEUDO_OP( 4, zip4_h)
+SHFL_PSEUDO_OP( 6, zip2_h)
+SHFL_PSEUDO_OP( 7, zip_h)
+SHFL_PSEUDO_OP( 8, zip8_w)
+SHFL_PSEUDO_OP(12, zip4_w)
+SHFL_PSEUDO_OP(14, zip2_w)
+SHFL_PSEUDO_OP(15, zip_w)
+SHFL_PSEUDO_OP(16, zip16)
+SHFL_PSEUDO_OP(24, zip8)
+SHFL_PSEUDO_OP(28, zip4)
+SHFL_PSEUDO_OP(30, zip2)
+SHFL_PSEUDO_OP(31, zip)
+#endif
+
+#undef SHFL_PSEUDO_OP
 
 // --REF-BEGIN-- gzip32-alt
 uint32_t shuffle32_flip(uint32_t src)

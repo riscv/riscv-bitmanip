@@ -24,26 +24,6 @@ uint_xlen_t bitmove(uint_xlen_t x, int p, int q)
 	return ((x >> p) & 1) << q;
 }
 
-uint_xlen_t zip(uint_xlen_t rs1)
-{
-	uint_xlen_t x = 0;
-	for (int i = 0; i < XLEN/2; i++) {
-		x |= bitmove(rs1, i,          2*i);
-		x |= bitmove(rs1, i + XLEN/2, 2*i + 1);
-	}
-	return x;
-}
-
-uint_xlen_t unzip(uint_xlen_t rs1)
-{
-	uint_xlen_t x = 0;
-	for (int i = 0; i < XLEN/2; i++) {
-		x |= bitmove(rs1, 2*i,     i);
-		x |= bitmove(rs1, 2*i + 1, i + XLEN/2);
-	}
-	return x;
-}
-
 uint_xlen_t zipN(uint_xlen_t rs1, int N)
 {
 	uint_xlen_t x = 0;
@@ -98,20 +78,6 @@ uint_xlen_t bxchg(uint_xlen_t rs1, uint_xlen_t rs2)
 	lower |= lower >> (XLEN/2);
 
 	return (upper & rs2) | (lower & ~rs2);
-}
-
-uint_xlen_t omega(uint_xlen_t x, uint_xlen_t mask)
-{
-	x = zip(x);
-	x = bfly(x, mask, 0);
-	return x;
-}
-
-uint_xlen_t flip(uint_xlen_t x, uint_xlen_t mask)
-{
-	x = bfly(x, mask, 0);
-	x = unzip(x);
-	return x;
 }
 
 // ---------------------------------------------------------

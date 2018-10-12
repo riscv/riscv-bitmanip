@@ -56,7 +56,7 @@ int main()
 			}
 			break;
 		}
-		uint32_t dout = gzip32(din, mode);
+		uint32_t dout = ((mode & 1) ? unshfl : shfl)(din, mode >> 1);
 		fprintf(f, "%08x%02x%08x\n", din, mode, dout);
 	}
 	fclose(f);
