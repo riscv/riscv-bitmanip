@@ -25,7 +25,7 @@ int main()
 	{
 		int ror_pos = ctz(ror(1 << i, j));
 		int grev_pos = ctz(grev32(1 << i, j));
-		int gzip_pos = ctz(gzip32(1 << i, j));
+		int gzip_pos = ctz(((j & 1) ? unshfl : shfl)(1 << i, j >> 1));
 		int gzflip_pos = ctz(shuffle32_flip(1 << i));
 		printf("%d %d %d %d %d %d\n", i, j, ror_pos, grev_pos, gzip_pos, gzflip_pos);
 	}

@@ -116,9 +116,25 @@ produces the lower half of the carry-less product and \texttt{clmulh} produces t
 of the carry-less product.
 
 We need to coordinate with the crypto extension work group if carry-less multiply should
-be part of the B-extension or crypto-extension.
+be part of the B-extension or crypto-extension. (One possible option is to have a vectorized
+clmul instruction in the crypto-extension and a scalar version in the B-extension.)
 
 \input{bextcref-clmul}
+
+The classic applications for \texttt{clmul} are the GCM and CRC, but more
+applications exist, including the following examples.
+
+There are obvious applications in hashing and pseudo random number generations. For
+example, it has been reported that hashes based on carry-less multiplications can
+outperform Google's CityHash~\cite{CLHASH}.
+
+\texttt{clmul} of a number with itself inserts zeroes between each input bit. This can
+be useful for generating Morton code~\cite{MortonCode}.
+
+\texttt{clmul} of a number with -1 calculates the prefix XOR operation. This can
+be useful for decoding gray codes.
+
+Carry-less multiply can be used to implement Erasure code efficiently~\cite{ClmulErasureCode}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
