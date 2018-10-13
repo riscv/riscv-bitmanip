@@ -19,10 +19,24 @@
 
 // ---------------------------------------------------------
 
-void clmul_gray(uint16_t src)
+void clmul_gray1(uint16_t src)
 {
 	uint16_t gray_encoded = src ^ (src >> 1);
 	uint16_t gray_decoded = rv32b::clmul(gray_encoded, 0x0000ffff) >> 15;
+	assert(gray_decoded == src);
+}
+
+void clmul_gray2(uint32_t src)
+{
+	uint32_t gray_encoded = src ^ (src >> 1);
+	uint32_t gray_decoded = rv32b::clmulh(gray_encoded, -1) ^ gray_encoded;
+	assert(gray_decoded == src);
+}
+
+void clmul_gray3(uint32_t src)
+{
+	uint32_t gray_encoded = src ^ (src >> 1);
+	uint32_t gray_decoded = rv32b::brev(rv32b::clmul(rv32b::brev(gray_encoded), -1));
 	assert(gray_decoded == src);
 }
 
@@ -41,6 +55,9 @@ int main()
 {
 	for (int i = 0; i < 1000; i++) {
 		uint32_t src = xorshift32();
+		clmul_gray1(src);
+		clmul_gray2(src);
+		clmul_gray3(src);
 		clmul_fanout(src);
 	}
 	return 0;
