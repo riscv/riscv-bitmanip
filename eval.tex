@@ -1010,6 +1010,33 @@ rotate_z:
 \end{minipage}
 \end{multicols}
 
+\section{Rank and select}
+
+Rank and select are fundamental operations in succinct data structures~\cite{SelectX86}.
+
+\texttt{select(a0, a1)} returns the position of the \texttt{a1}th set bit in \texttt{a0}.
+It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
+
+\begin{verbatim}
+  select:
+    li a2, 1
+    sll a1, a2, a1
+    bdep a0, a1, a0
+    ctz a0, a0
+    ret
+\end{verbatim}
+
+\texttt{rank(a0, a1)} returns the number of set bits in \texttt{a0} up to and
+including position \texttt{a1}.
+
+\begin{verbatim}
+  rank:
+    not a1, a1
+    sll a0, a1
+    pcnt a0, a0
+    ret
+\end{verbatim}
+
 \section{Decoding RISC-V Immediates}
 
 The following code snippets decode and sign-extend the immediate from RISC-V
