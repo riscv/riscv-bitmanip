@@ -32,6 +32,19 @@ following semantics:
 
 \input{bextcref-minmax}
 
+Code that performs saturated arithmetic on a word size $<$ \texttt{XLEN} needs to perform
+min/max operations frequently. A simple way of performing those operations without branching
+can benefit those programs.
+
+SAT solvers spend a lot of time calculating the absolute value of a signed
+integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
+\texttt{max} (or \texttt{minu}) this is a two-instruction operation:
+
+\begin{verbatim}
+  neg a1, a0
+  max a0, a0, a1
+\end{verbatim}
+
 \input{bextminmax}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
