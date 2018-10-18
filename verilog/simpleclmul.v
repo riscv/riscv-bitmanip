@@ -8,6 +8,7 @@ module simpleclmul (
 );
 	parameter [0:0] DISABLE_CLMUL = 0;
 
+	reg mul_mode;
 	reg [4:0] state;
 	reg [55:0] a;
 	reg [31:0] b;
@@ -18,7 +19,7 @@ module simpleclmul (
 		input [63:0] y;
 		input [63:0] z;
 		begin
-			carry_save[127:64] = ({64{mul || DISABLE_CLMUL}} & ((x & y) | (x & z) | (y & z))) << 1;
+			carry_save[127:64] = ({64{mul_mode || DISABLE_CLMUL}} & ((x & y) | (x & z) | (y & z))) << 1;
 			carry_save[63:0] = x ^ y ^ z;
 		end
 	endfunction
@@ -66,6 +67,7 @@ module simpleclmul (
 			a <= rs1;
 			b <= rs2;
 			acc <= 0;
+			mul_mode <= mul;
 			state <= !reset;
 		end else begin
 			a <= a << 8;

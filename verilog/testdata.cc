@@ -119,5 +119,15 @@ int main()
 	}
 	fclose(f);
 
+	f = fopen("testdata_bmat.hex", "w");
+	for (int i = 0; i < 1000; i++) {
+		uint64_t din1 = xorshift64();
+		uint64_t din2 = xorshift64();
+		bool op_xor = xorshift32() & 1;
+		uint64_t dout = op_xor ? rv64b::bmatxor(din1, din2) : rv64b::bmator(din1, din2);
+		fprintf(f, "%1x%016llx%016llx%016llx\n", op_xor, (long long)din1, (long long)din2, (long long)dout);
+	}
+	fclose(f);
+
 	return 0;
 }

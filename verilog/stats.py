@@ -16,6 +16,7 @@ core_list = [
     "rocketmuldiv",
     "simplemul",
     "simpleclmul",
+    "simplebmat",
 ]
 
 core_data = dict()
