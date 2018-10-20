@@ -16,6 +16,7 @@ core_list = [
     "rocketmuldiv",
     "simplemul",
     "simpleclmul",
+    "tinybmat",
     "simplebmat",
 ]
 
@@ -161,7 +162,7 @@ Module & Gates & Depth & 4-LUTs & Depth & FFs \\
 
 for core in core_list:
     ffs, luts, gates, ldep, gdep = core_data[core]
-    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebfxp", "simplebextdep", "XBitmanip", "simplemul"]:
+    if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebfxp", "simplebextdep", "XBitmanip", "simplemul", "tinybmat"]:
         print(r"\hline")
     corename = core if core != "rocketmuldiv" else "Rocket MulDiv"
     print(r"{\tt %s} & %d & %d & %d & %d & %d \\" % (corename, gates, gdep, luts, ldep, ffs))

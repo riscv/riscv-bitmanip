@@ -28,8 +28,12 @@
 /smartbextdep_tb.vcd
 /simpleclmul_tb
 /simpleclmul_tb.vcd
+/tinybmat_tb
+/tinybmat_tb.vcd
+/tinybmat.log
 /simplebmat_tb
 /simplebmat_tb.vcd
+/simplebmat.log
 /rocketmuldiv_check_bmc/
 /rocketmuldiv_check_cover/
 /stats_*_asic.txt

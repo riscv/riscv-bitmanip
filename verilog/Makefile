@@ -1,6 +1,6 @@
-all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebitcnt simplebextdep smartbextdep simpleclmul simplebmat
+all: tinygrev tinygzip simplegrev simplegzip simplebfxp simplebitcnt simplebextdep smartbextdep simpleclmul tinybmat simplebmat
 
-stats: stats.ysok
+stats: stats.ysok tinybmat.log simplebmat.log
 	python3 stats.py | grep . > stats.tex
 	pdflatex stats.tex
 
@@ -82,11 +82,25 @@ simpleclmul: simpleclmul_tb testdata_bext.hex testdata_bdep.hex
 
 # ------------------------------------------------------------------------
 
+tinybmat_tb: tinybmat_tb.v tinybmat.v
+	iverilog -o $@ $^
+
+tinybmat: tinybmat_tb testdata_bext.hex testdata_bdep.hex
+	vvp -N tinybmat_tb
+
+tinybmat.log: tinybmat.v tinybmat.ys
+	yosys -v2 -l tinybmat.log tinybmat.ys
+
+# ------------------------------------------------------------------------
+
 simplebmat_tb: simplebmat_tb.v simplebmat.v
 	iverilog -o $@ $^
 
 simplebmat: simplebmat_tb testdata_bext.hex testdata_bdep.hex
 	vvp -N simplebmat_tb
+
+simplebmat.log: simplebmat.v simplebmat.ys
+	yosys -v2 -l simplebmat.log simplebmat.ys
 
 # ------------------------------------------------------------------------
 
