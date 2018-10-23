@@ -16,6 +16,7 @@ core_list = [
     "rocketmuldiv",
     "simplemul",
     "simpleclmul",
+    "deltaclmul",
     "tinybmat",
     "simplebmat",
 ]
@@ -23,7 +24,7 @@ core_list = [
 core_data = dict()
 
 for core in core_list:
-    if core == "XBitmanip":
+    if core in ("XBitmanip", "deltaclmul"):
         continue
     ff_count = 0
     lut_count = 0
@@ -83,6 +84,13 @@ for core in ["simplegrev", "simplegzip", "smartbextdep", "simplebitcnt"]:
     gate_depth = max(gate_depth, core_data[core][4])
 
 core_data["XBitmanip"] = (ff_count, lut_count, gates_count, lut_depth, gate_depth)
+
+core_data["deltaclmul"] = (
+    core_data["simpleclmul"][0] - core_data["simplemul"][0],
+    core_data["simpleclmul"][1] - core_data["simplemul"][1],
+    core_data["simpleclmul"][2] - core_data["simplemul"][2],
+    "---", "---"
+)
 
 def maketikzpicture(scale):
     ffs_scale = scale * 0.8 / core_data["ror"][0]
@@ -165,7 +173,7 @@ for core in core_list:
     if core in ["ror", "tinygrev", "tinygzip", "simplebitcnt", "simplebfxp", "simplebextdep", "XBitmanip", "simplemul", "tinybmat"]:
         print(r"\hline")
     corename = core if core != "rocketmuldiv" else "Rocket MulDiv"
-    print(r"{\tt %s} & %d & %d & %d & %d & %d \\" % (corename, gates, gdep, luts, ldep, ffs))
+    print(r"{\tt %s} & %d & %s & %d & %s & %d \\" % (corename, gates, gdep, luts, ldep, ffs))
 
 print(r"""
 \end{tabular}
