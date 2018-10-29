@@ -153,6 +153,24 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{CRC instructions (\texttt{crc32[whb], crc32c[whb]})}
+
+R-type CRC instructions that interpret the (32 LSB) bits of rs1 as a
+CRC32/CRC32C state and the 8/16/32/64 LSB bits of rs2 as input data. The
+instructions return the new CRC32/CRC32C state. (On RV64 the 32 MSB bits
+of the returned value are always zero.)
+
+The CRC instructions often need to be combined with \texttt{grevi} to implement reflection
+and/or fix the endianness of the data processed.
+
+The generator polynomial used by CRC32 is \texttt{0x04C11DB7} (in ``normal''
+non-reversed non-reciprocal representation with MSB bit omitted).
+
+The generator polynomial used by CRC32C is \texttt{0x1EDC6F41} (in ``normal''
+non-reversed non-reciprocal representation with MSB bit omitted).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
 
 These are 64-bit-only instruction that are not available on RV32. On RV128 they
