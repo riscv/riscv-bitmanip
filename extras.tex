@@ -134,7 +134,7 @@ clmul instruction in the crypto-extension and a scalar version in the B-extensio
 
 \input{bextcref-clmul}
 
-The classic applications for \texttt{clmul} are the GCM and CRC~\cite{FastCRC}, but more
+The classic applications for \texttt{clmul} are the GCM and CRC~\cite{FastCRC,Wolf18A}, but more
 applications exist, including the following examples.
 
 There are obvious applications in hashing and pseudo random number generations. For
@@ -153,21 +153,61 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{CRC instructions (\texttt{crc32[whb], crc32c[whb]})}
+\section{CRC instructions (\texttt{crc32[bhw], crc32c[bhw]})}
 
-R-type CRC instructions that interpret the (32 LSB) bits of rs1 as a
-CRC32/CRC32C state and the 8/16/32/64 LSB bits of rs2 as input data. The
-instructions return the new CRC32/CRC32C state. (On RV64 the 32 MSB bits
-of the returned value are always zero.)
+Unary CRC instructions that interpret the 32 LSB bits of rs1 as a
+CRC32/CRC32C state and perform a polynomial reduction of that state shifted
+left by 8, 16, or 32 bits. The instructions return the new CRC32/CRC32C state.
+(On RV64 the result is sign extended to 64 bits.)
 
-The CRC instructions often need to be combined with \texttt{grevi} to implement reflection
-and/or fix the endianness of the data processed.
+The \texttt{crc32w}/\texttt{crc32cw} instructions are equivalent to executing
+\texttt{crc32h}/\texttt{crc32ch} twice, and \texttt{crc32h}/\texttt{crc32ch}
+instructions are equivalent to executing \texttt{crc32b}/\texttt{crc32cb}
+twice.
 
-The generator polynomial used by CRC32 is \texttt{0x04C11DB7} (in ``normal''
-non-reversed non-reciprocal representation with MSB bit omitted).
+All 6 CRC instructions operate on bit-reflected data.
 
-The generator polynomial used by CRC32C is \texttt{0x1EDC6F41} (in ``normal''
-non-reversed non-reciprocal representation with MSB bit omitted).
+\input{bextcref-crc}
+
+Payload data must be XOR'ed into the LSB end of the state before executing the
+CRC instruction. The following code demonstrates the use of \texttt{crc32b}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t crc32_with_crc32b(const uint8_t *p, int len)
+  {
+    uint32_t x = 0xffffffff;
+    for (int i = 0; i < len; i++) {
+      x = x ^ p[i];
+      x = crc32b(x);
+    }
+    return ~x;
+  }
+\end{verbatim}
+\end{minipage}
+
+These dedicated CRC instructions are meant for RISC-V implementations without fast multiplier
+and therefore without fast \texttt{clmul[h]}. For implementations with fast \texttt{clmul[h]}
+it is recommended to use the methods described in~\cite{FastCRC} and demonstrated in~\cite{Wolf18A}
+that can process XLEN input bits using just one carry-less multiply for arbitrary CRC polynomials.
+
+In applications where those methods are not applicable it is possible to emulate the dedicared CRC
+instructions using two carry-less multiplies that implement a Barrett reduction. The following example
+implements a replacement for crc32w.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+crc32w:
+  li t0, 0x04C11DB7
+  li t1, 0x04D101DF
+  brev a0, a0
+  clmulh a1, a0, t1
+  xor a1, a1, a0
+  clmul a0, a1, t0
+  brev a0, a0
+  ret
+\end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

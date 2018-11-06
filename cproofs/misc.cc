@@ -51,6 +51,27 @@ void clmul_fanout(uint32_t src)
 
 // ---------------------------------------------------------
 
+void crc_test()
+{
+	uint32_t x = 0xffffffff;
+	x = rv32b::crc32b(x ^ '1');
+	x = rv32b::crc32h(x ^ ('2' | ('3' << 8)));
+	x = rv32b::crc32w(x ^ ('4' | ('5' << 8) | ('6' << 16) | ('7' << 24)));
+	x = rv32b::crc32h(x ^ ('8' | ('9' << 8)));
+	x = ~x;
+	assert(x == 0xcbf43926);
+
+	x = 0xffffffff;
+	x = rv32b::crc32cb(x ^ '1');
+	x = rv32b::crc32ch(x ^ ('2' | ('3' << 8)));
+	x = rv32b::crc32cw(x ^ ('4' | ('5' << 8) | ('6' << 16) | ('7' << 24)));
+	x = rv32b::crc32ch(x ^ ('8' | ('9' << 8)));
+	x = ~x;
+	assert(x == 0xe3069283);
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	for (int i = 0; i < 1000; i++) {
@@ -60,5 +81,6 @@ int main()
 		clmul_gray3(src);
 		clmul_fanout(src);
 	}
+	crc_test();
 	return 0;
 }

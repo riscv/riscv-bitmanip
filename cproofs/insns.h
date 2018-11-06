@@ -609,6 +609,56 @@ uint64_t bmator(uint64_t rs1, uint64_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- crc
+uint_xlen_t crc32b(uint_xlen_t rs1)
+{
+	uint32_t x = rs1;
+	for (int i = 0; i < 8; i++)
+		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
+	return int32_t(x);
+}
+
+uint_xlen_t crc32h(uint_xlen_t rs1)
+{
+	uint32_t x = rs1;
+	for (int i = 0; i < 16; i++)
+		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
+	return int32_t(x);
+}
+
+uint_xlen_t crc32w(uint_xlen_t rs1)
+{
+	uint32_t x = rs1;
+	for (int i = 0; i < 32; i++)
+		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
+	return int32_t(x);
+}
+
+uint_xlen_t crc32cb(uint_xlen_t rs1)
+{
+	uint32_t x = rs1;
+	for (int i = 0; i < 8; i++)
+		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
+	return int32_t(x);
+}
+
+uint_xlen_t crc32ch(uint_xlen_t rs1)
+{
+	uint32_t x = rs1;
+	for (int i = 0; i < 16; i++)
+		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
+	return int32_t(x);
+}
+
+uint_xlen_t crc32cw(uint_xlen_t rs1)
+{
+	uint32_t x = rs1;
+	for (int i = 0; i < 32; i++)
+		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
+	return int32_t(x);
+}
+// --REF-END--
+
 // --REF-BEGIN-- bfxp
 uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 		unsigned start, unsigned len, unsigned dest)
