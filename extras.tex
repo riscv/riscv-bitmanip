@@ -153,19 +153,20 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{CRC instructions (\texttt{crc32[bhw], crc32c[bhw]})}
+\section{CRC instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
 
-Unary CRC instructions that interpret the 32 LSB bits of rs1 as a
-CRC32/CRC32C state and perform a polynomial reduction of that state shifted
-left by 8, 16, or 32 bits. The instructions return the new CRC32/CRC32C state.
-(On RV64 the result is sign extended to 64 bits.)
+Unary CRC instructions that interpret the bits of rs1 as a CRC32/CRC32C state
+and perform a polynomial reduction of that state shifted left by 8, 16, 32, or
+64 bits.
+
+The instructions return the new CRC32/CRC32C state.
 
 The \texttt{crc32w}/\texttt{crc32cw} instructions are equivalent to executing
 \texttt{crc32h}/\texttt{crc32ch} twice, and \texttt{crc32h}/\texttt{crc32ch}
 instructions are equivalent to executing \texttt{crc32b}/\texttt{crc32cb}
 twice.
 
-All 6 CRC instructions operate on bit-reflected data.
+All 8 CRC instructions operate on bit-reflected data.
 
 \input{bextcref-crc}
 
@@ -174,7 +175,7 @@ CRC instruction. The following code demonstrates the use of \texttt{crc32b}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  uint32_t crc32_with_crc32b(const uint8_t *p, int len)
+  uint32_t crc32_demo(const uint8_t *p, int len)
   {
     uint32_t x = 0xffffffff;
     for (int i = 0; i < len; i++) {
@@ -193,11 +194,11 @@ that can process XLEN input bits using just one carry-less multiply for arbitrar
 
 In applications where those methods are not applicable it is possible to emulate the dedicared CRC
 instructions using two carry-less multiplies that implement a Barrett reduction. The following example
-implements a replacement for crc32w.
+implements a replacement for \texttt{crc32.w} (RV32).
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-crc32w:
+crc32_w:
   li t0, 0x04C11DB7
   li t1, 0x04D101DF
   brev a0, a0

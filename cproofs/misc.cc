@@ -54,20 +54,37 @@ void clmul_fanout(uint32_t src)
 void crc_test()
 {
 	uint32_t x = 0xffffffff;
-	x = rv32b::crc32b(x ^ '1');
-	x = rv32b::crc32h(x ^ ('2' | ('3' << 8)));
-	x = rv32b::crc32w(x ^ ('4' | ('5' << 8) | ('6' << 16) | ('7' << 24)));
-	x = rv32b::crc32h(x ^ ('8' | ('9' << 8)));
+	x = rv32b::crc32_b(x ^ '1');
+	x = rv32b::crc32_h(x ^ ('2' | ('3' << 8)));
+	x = rv32b::crc32_w(x ^ ('4' | ('5' << 8) | ('6' << 16) | ('7' << 24)));
+	x = rv32b::crc32_h(x ^ ('8' | ('9' << 8)));
 	x = ~x;
 	assert(x == 0xcbf43926);
 
 	x = 0xffffffff;
-	x = rv32b::crc32cb(x ^ '1');
-	x = rv32b::crc32ch(x ^ ('2' | ('3' << 8)));
-	x = rv32b::crc32cw(x ^ ('4' | ('5' << 8) | ('6' << 16) | ('7' << 24)));
-	x = rv32b::crc32ch(x ^ ('8' | ('9' << 8)));
+	x = rv32b::crc32c_b(x ^ '1');
+	x = rv32b::crc32c_h(x ^ ('2' | ('3' << 8)));
+	x = rv32b::crc32c_w(x ^ ('4' | ('5' << 8) | ('6' << 16) | ('7' << 24)));
+	x = rv32b::crc32c_h(x ^ ('8' | ('9' << 8)));
 	x = ~x;
 	assert(x == 0xe3069283);
+}
+
+// ---------------------------------------------------------
+
+void crc_equiv_h_bb(uint64_t x)
+{
+	assert(rv64b::crc32_h(x) == rv64b::crc32_b(rv64b::crc32_b(x)));
+}
+
+void crc_equiv_w_hh(uint64_t x)
+{
+	assert(rv64b::crc32_w(x) == rv64b::crc32_h(rv64b::crc32_h(x)));
+}
+
+void crc_equiv_d_ww(uint64_t x)
+{
+	assert(rv64b::crc32_d(x) == rv64b::crc32_w(rv64b::crc32_w(x)));
 }
 
 // ---------------------------------------------------------
@@ -80,6 +97,11 @@ int main()
 		clmul_gray2(src);
 		clmul_gray3(src);
 		clmul_fanout(src);
+
+		uint32_t x = xorshift64();
+		crc_equiv_h_bb(x);
+		crc_equiv_w_hh(x);
+		crc_equiv_d_ww(x);
 	}
 	crc_test();
 	return 0;

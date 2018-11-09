@@ -610,53 +610,32 @@ uint64_t bmator(uint64_t rs1, uint64_t rs2)
 // --REF-END--
 
 // --REF-BEGIN-- crc
-uint_xlen_t crc32b(uint_xlen_t rs1)
+uint_xlen_t crc32(uint_xlen_t x, int nbits)
 {
-	uint32_t x = rs1;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < nbits; i++)
 		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
-	return int32_t(x);
+	return x;
 }
 
-uint_xlen_t crc32h(uint_xlen_t rs1)
+uint_xlen_t crc32c(uint_xlen_t x, int nbits)
 {
-	uint32_t x = rs1;
-	for (int i = 0; i < 16; i++)
-		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
-	return int32_t(x);
-}
-
-uint_xlen_t crc32w(uint_xlen_t rs1)
-{
-	uint32_t x = rs1;
-	for (int i = 0; i < 32; i++)
-		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
-	return int32_t(x);
-}
-
-uint_xlen_t crc32cb(uint_xlen_t rs1)
-{
-	uint32_t x = rs1;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < nbits; i++)
 		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
-	return int32_t(x);
+	return x;
 }
 
-uint_xlen_t crc32ch(uint_xlen_t rs1)
-{
-	uint32_t x = rs1;
-	for (int i = 0; i < 16; i++)
-		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
-	return int32_t(x);
-}
+uint_xlen_t crc32_b(uint_xlen_t rs1) { return crc32(rs1, 8); }
+uint_xlen_t crc32_h(uint_xlen_t rs1) { return crc32(rs1, 16); }
+uint_xlen_t crc32_w(uint_xlen_t rs1) { return crc32(rs1, 32); }
 
-uint_xlen_t crc32cw(uint_xlen_t rs1)
-{
-	uint32_t x = rs1;
-	for (int i = 0; i < 32; i++)
-		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
-	return int32_t(x);
-}
+uint_xlen_t crc32c_b(uint_xlen_t rs1) { return crc32c(rs1, 8); }
+uint_xlen_t crc32c_h(uint_xlen_t rs1) { return crc32c(rs1, 16); }
+uint_xlen_t crc32c_w(uint_xlen_t rs1) { return crc32c(rs1, 32); }
+
+#if XLEN > 32
+uint_xlen_t crc32_d (uint_xlen_t rs1) { return crc32 (rs1, 64); }
+uint_xlen_t crc32c_d(uint_xlen_t rs1) { return crc32c(rs1, 64); }
+#endif
 // --REF-END--
 
 // --REF-BEGIN-- bfxp
