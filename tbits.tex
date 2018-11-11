@@ -17,7 +17,7 @@ on the bits in the control word {\tt rs3}. It is equivalent to the following seq
 
 \begin{verbatim}
   and rd, rs1, rs3
-  andc t0, r2, rs3
+  andc t0, rs2, rs3
   or rd, rd, t0
 \end{verbatim}
 
@@ -27,8 +27,8 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \section{Conditional move ({\tt cmov})}
 
-The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} or {\tt rs2} based
-on the LSB bit in the control word {\tt rs3}.
+The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
+word {\tt rs3} is non-zero, and {\tt rs2} if the control word is zero.
 
 \section{Funnel shift ({\tt fsl}, {\tt fsr})}
 
