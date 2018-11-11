@@ -170,18 +170,6 @@ All 8 CRC instructions operate on bit-reflected data.
 
 \input{bextcref-crc}
 
-In terms of binary polynomial arithmetic those instructions perform the
-operation
-
-$$ \texttt{rd}'(x) = (\texttt{rs1}'(x) \cdot x^N) \; \textrm{mod} \; \{\texttt{1}, P'\}(x)\textrm{.} $$
-
-With $N \in \{8, 16, 32, 64\}$,
-$P = \texttt{0xEDB8\_8320}$ for CRC32 and $P = \texttt{0x82F6\_3B78}$ for CRC32C,
-$a'$ denoting the XLEN bit reversal of $a$,
-$\{a, b\}$ denoting bit concatenation.
-(For example for CRC32 $\{\texttt{1}, P'\} = \texttt{0x1\_04C1\_1DB7}$
-on RV32 and $\{\texttt{1}, P'\} = \texttt{0x1\_04C1\_1DB7\_0000\_0000}$ on RV64.)
-
 Payload data must be XOR'ed into the LSB end of the state before executing the
 CRC instruction. The following code demonstrates the use of \texttt{crc32.b}:
 
@@ -198,6 +186,15 @@ CRC instruction. The following code demonstrates the use of \texttt{crc32.b}:
   }
 \end{verbatim}
 \end{minipage}
+
+In terms of binary polynomial arithmetic those instructions perform the operation
+$$ \texttt{rd}'(x) = (\texttt{rs1}'(x) \cdot x^N) \; \textrm{mod} \; \{\texttt{1}, P'\}(x)\textrm, $$
+with $N \in \{8, 16, 32, 64\}$,
+$P = \texttt{0xEDB8\_8320}$ for CRC32 and $P = \texttt{0x82F6\_3B78}$ for CRC32C,
+$a'$ denoting the XLEN bit reversal of $a$,
+and $\{a, b\}$ denoting bit concatenation.
+Note that for example for CRC32 $\{\texttt{1}, P'\} = \texttt{0x1\_04C1\_1DB7}$
+on RV32 and $\{\texttt{1}, P'\} = \texttt{0x1\_04C1\_1DB7\_0000\_0000}$ on RV64.
 
 These dedicated CRC instructions are meant for RISC-V implementations without fast multiplier
 and therefore without fast \texttt{clmul[h]}. For implementations with fast \texttt{clmul[h]}
