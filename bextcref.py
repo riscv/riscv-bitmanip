@@ -122,14 +122,15 @@ with open("bextcref-printperm-gzip-noflip.tex", "w") as outfile:
             print("\\draw (%.3f, %d) -- (%.3f, %d);" % (k * 0.15, i * 2, j * 0.15, i * 2 + 2), file=outfile)
             k = gzip_permdata[j][1 << (i+1)]
             print("\\draw (%.3f, %d) -- (%.3f, %d);" % (offset + k * 0.15, i * 2, offset + j * 0.15, i * 2 + 2), file=outfile)
-        print("\\node at (%.3f, %d) {\\tt mode[%d]};" % (2.5 + 64 * 0.15, i * 2 + 1, i+1), file=outfile)
+        print("\\node at (%.3f, %d) {\\tt mode[%d]};" % (2.5 + 64 * 0.15, i * 2 + 1, i), file=outfile)
+        print("\\node at (%.3f, %d) {\\tt mode[%d]};" % (-1.5, i * 2 + 1, 3-i), file=outfile)
 
     for j in range(32):
         print("\\draw[dashed,gray!50] (%.3f, 0) -- (%.3f, -2);" % (offset + j * 0.15, offset/2 + j * 0.15), file=outfile)
     for j in range(32):
         print("\\draw (%.3f, 0) -- (%.3f, -2);" % (j * 0.15, offset/2 + j * 0.15), file=outfile)
         print("\\filldraw[fill=white, draw=black] (%.3f, %d) circle (0.5mm);" % (offset/2 + j * 0.15, -2), file=outfile)
-    print("\\node at (%.3f, %d) {\\tt mode[0]};" % (2.5 + 64 * 0.15, -1), file=outfile)
+    print("\\node at (%.3f, %.3f) {\\tt inv};" % (1.5 + 64 * 0.15, -1.5), file=outfile)
 
     for i in range(5):
         for j in range(32):
