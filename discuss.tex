@@ -200,7 +200,7 @@ logic depth.
 
 One possible solution would be to have only one compressed instruction ({\tt
 c.not} is the obvious candidate). This instruction would occupy the entire
-reserved encoding space in {\tt c.lui/c.addi16sp} adn would operate on {\tt rd/rs}
+reserved encoding space in {\tt c.lui/c.addi16sp} and would operate on {\tt rd/rs}
 instead of {\tt rd$'$/rs$'$}. This way the instruction format of {\tt c.not}
 would match that of {\tt c.addi16sp} and {\tt c.lui}.
 
