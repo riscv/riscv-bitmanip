@@ -9,4 +9,5 @@ bash rv_imm_decode.sh
 bash zip_unzip.sh
 bash bit_matrix.sh
 bash misc.sh
+bash fsl_fsr.sh
 echo ALL_TESTS_PASSED
