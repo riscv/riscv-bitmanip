@@ -25,10 +25,14 @@ Using {\tt cmix} a single butterfly or stage can be implemented in only two
 instructions. Thus, arbitrary bit-permutations can be implemented using only
 18 instruction (32 bit) or 22 instructions (64 bits).
 
+\input{bextcref-cmix}
+
 \section{Conditional move ({\tt cmov})}
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs3} is non-zero, and {\tt rs2} if the control word is zero.
+
+\input{bextcref-cmov}
 
 \section{Funnel shift ({\tt fsl}, {\tt fsr})}
 
@@ -42,3 +46,6 @@ by concatenating rs1 and rs2 (with rs1 in the LSB half), rotate-right-shifts tha
 word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs3, and
 then writes the LSB half of the result to rd.
 
+\input{bextcref-fsl}
+
+\input{bextcref-fsr}

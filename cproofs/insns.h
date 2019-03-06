@@ -619,6 +619,54 @@ uint_xlen_t bfxpc(uint_xlen_t rs1, uint_xlen_t rs2,
 }
 // --REF-END--
 
+// --REF-BEGIN-- cmix
+uint_xlen_t cmix(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
+{
+	return (rs1 & rs3) | (rs2 & ~rs3);
+}
+// --REF-END--
+
+// --REF-BEGIN-- cmov
+uint_xlen_t cmov(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
+{
+	return rs3 ? rs1 : rs2;
+}
+// --REF-END--
+
+// --REF-BEGIN-- fsl
+uint_xlen_t fsl(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
+{
+	int shamt = rs3 & (2*XLEN - 1);
+	if (shamt >= XLEN) {
+		uint_xlen_t tmp = rs1;
+		rs1 = rs2;
+		rs2 = tmp;
+		shamt -= XLEN;
+	}
+	if (shamt == 0) {
+		return rs1;
+	}
+	return (rs1 << shamt) | (rs2 >> (XLEN-shamt));
+}
+// --REF-END--
+
+// --REF-BEGIN-- fsr
+uint_xlen_t fsr(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
+{
+	int shamt = rs3 & (2*XLEN - 1);
+	if (shamt >= XLEN) {
+		uint_xlen_t tmp = rs1;
+		rs1 = rs2;
+		rs2 = tmp;
+		shamt -= XLEN;
+	}
+	if (shamt == 0) {
+		return rs1;
+	}
+	return (rs1 >> shamt) | (rs2 << (XLEN-shamt));
+}
+// --REF-END--
+
 uint_xlen_t sll(uint_xlen_t x, int k)
 {
 	int shamt = k & (XLEN - 1);
