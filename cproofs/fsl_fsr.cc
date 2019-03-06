@@ -32,3 +32,10 @@ void test_fsr(uint64_t A, int B)
 	uint32_t res = rv32b::fsr(A_lo, A_hi, B);
 	assert(ref == res);
 }
+
+void fsl_via_fsr(uint32_t A, uint32_t B, uint32_t C)
+{
+	uint32_t ref = rv32b::fsl(A, B, C);
+	uint32_t res = rv32b::fsr(A, B, -C);
+	assert(ref == res);
+}
