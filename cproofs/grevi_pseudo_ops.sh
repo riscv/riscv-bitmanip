@@ -19,8 +19,4 @@ cbmc --trace --function rv64_hswap    grevi_pseudo_ops.cc
 cbmc --trace --function rv64_hswap_w  grevi_pseudo_ops.cc
 cbmc --trace --function rv64_wswap    grevi_pseudo_ops.cc
 
-cbmc --trace --function rv32_bswaps_h grevi_pseudo_ops.cc
-cbmc --trace --function rv64_bswaps_h grevi_pseudo_ops.cc
-cbmc --trace --function rv64_bswaps_w grevi_pseudo_ops.cc
-
 echo OK

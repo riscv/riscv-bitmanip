@@ -17,7 +17,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <assert.h>
 
 namespace rv32b {

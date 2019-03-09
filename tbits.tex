@@ -12,12 +12,12 @@ brownfield within the floating point fused-multiply-add instructions.
 
 \section{Conditional mix ({\tt cmix})}
 
-The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs2} based
-on the bits in the control word {\tt rs3}. It is equivalent to the following sequence.
+The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
+on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.
 
 \begin{verbatim}
-  and rd, rs1, rs3
-  andc t0, rs2, rs3
+  and rd, rs1, rs2
+  andc t0, rs3, rs2
   or rd, rd, t0
 \end{verbatim}
 
@@ -30,22 +30,44 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 \section{Conditional move ({\tt cmov})}
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
-word {\tt rs3} is non-zero, and {\tt rs2} if the control word is zero.
+word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \input{bextcref-cmov}
 
 \section{Funnel shift ({\tt fsl}, {\tt fsr})}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
-by concatenating rs1 and rs2 (with rs1 in the MSB half), rotate-left-shifts that
-word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs3, and
+by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
+word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs2, and
 then writes the MSB half of the result to rd.
 
 The {\tt fsr rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
-by concatenating rs1 and rs2 (with rs1 in the LSB half), rotate-right-shifts that
-word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs3, and
+by concatenating rs1 and rs3 (with rs1 in the LSB half), rotate-right-shifts that
+word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs2, and
 then writes the LSB half of the result to rd.
 
 \input{bextcref-fsl}
 
 \input{bextcref-fsr}
+
+A shift unit capable of either {\tt fsl} or {\tt fsr} is capable of performing all
+the other shift functions, including the other funnel shift, with only minimal additional
+logic.
+
+For any values of {\tt A}, {\tt C}, and {\tt C}:
+
+\begin{verbatim}
+  fsl(A, B, C) = fsr(A, -B, C)
+\end{verbatim}
+
+And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
+
+\begin{verbatim}
+  sll(x, shamt) == fsl(x, shamt, 0)
+  srl(x, shamt) == fsr(x, shamt, 0)
+  sra(x, shamt) == fsr(x, shamt, sext_x)
+  slo(x, shamt) == fsl(x, shamt, ~0)
+  sro(x, shamt) == fsr(x, shamt, ~0)
+  ror(x, shamt) == fsr(x, shamt, x)
+  rol(x, shamt) == fsl(x, shamt, x)
+\end{verbatim}
