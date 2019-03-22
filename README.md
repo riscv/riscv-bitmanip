@@ -1,6 +1,6 @@
-# RISC-V XBitmanip (Bit Manipulation) Extension
+# RISC-V Bitmanip (Bit Manipulation) Extension
 
-This is the RISC-V XBitmanip Extension draft spec. The spec aims to
+This is the RISC-V Bitmanip Extension draft spec. The spec aims to
 extend the RISC-V instruction set to enable efficent bit manipulation.
 This includes operations like;
  * counting bits, leading zeros, etc
@@ -14,11 +14,9 @@ It is currently an independently maintained document. We'd happily donate
 it to the RISC-V foundation as starting point for a new B-Extension work
 group, if there will be one.
 
-See [xbitmanip-draft.pdf](xbitmanip-draft.pdf) for a pre-built version
+See [bitmanip-draft.pdf](bitmanip-draft.pdf) for a pre-built version
 of the PDF spec document.
-
-There is also a [riscv-xbitmanip google group](https://groups.google.com/forum/#!forum/riscv-xbitmanip).
 
 Building this document from the LaTeX source:
 
-    bash xbitmanip.sh 5
+    bash bitmanip.sh 5

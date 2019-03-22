@@ -8,6 +8,6 @@ fi
 
 python3 bextcref.py
 for ((i=0; i<${1:-1}; i++)); do
-	pdflatex xbitmanip
-	bibtex xbitmanip
+	pdflatex bitmanip
+	bibtex bitmanip
 done

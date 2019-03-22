@@ -1,4 +1,4 @@
-\chapter{RISC-V XBitmanip Extension}
+\chapter{RISC-V Bitmanip Extension}
 \label{bext}
 
 In the proposals provided in this section, the C code examples are for
@@ -266,10 +266,10 @@ use the instruction encoding for ``arithmetic shift left''.
 \section{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
 \label{gzip}
 
-Shuffle is the third bit permutation instruction in XBitmanip, after rotary
-shift and generalized reverse. It implements a generalization of the operation
-commonly known as perfect outer shuffle and its inverse (shuffle/unshuffle),
-also known as zip/unzip or interlace/uninterlace.
+Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
+extension, after rotary shift and generalized reverse. It implements a
+generalization of the operation commonly known as perfect outer shuffle and its
+inverse (shuffle/unshuffle), also known as zip/unzip or interlace/uninterlace.
 
 Bit permutations can be understood as reversible functions on bit indices (i.e.
 5 bit functions on RV32 and 6 bit functions on RV64).
@@ -584,7 +584,7 @@ there are no compressed encodings for those operations because there is no \text
 instruction and \texttt{c.sub} can not operate on \texttt{x0}.
 
 Many bit manipulation operations that have dedicated opcodes in other ISAs
-must be constructed from smaller atoms in RISC-V XBitmanip code. But
+must be constructed from smaller atoms in RISC-V Bitmanip code. But
 implementations might choose to implement them in a single micro-op using
 macro-op-fusion. For this it can be helpful when the fused sequences are short.
 \texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
@@ -595,7 +595,7 @@ reversal) is also a very common atom for building bit manipulation operations. S
 is helpful to have a compressed opcode for this instruction as well.
 
 The compressed instructions \texttt{c.not,\ c.neg,\ c.brev} must be supported by
-all implementations that support the C extension and XBitmanip.
+all implementations that support the C extension and Bitmanip.
 
 \input{bextcompr}
 
@@ -621,5 +621,5 @@ macro-op. (Some implementers have raised concerns about the lack of a dedicated
 bit field extract instruction with large immediate, especially for implementations
 that can not fuse instructions into macro-ops and/or implementations that do
 not support compressed instructions. See Chapter~\ref{bfxp} for a brief discussion
-of why no such instruction is part of XBitmanip, and a short separate extension
-proposal that adds such an instruction.)
+of why no such instruction is part of the RISC-V Bitmanip Extension, and a
+short separate extension proposal that adds such an instruction.)

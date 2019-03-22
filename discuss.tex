@@ -2,7 +2,7 @@
 
 \section{Frequently Asked Questions}
 
-\subsubsection{Which instructions were considered but not included in XBitmanip?}
+\subsubsection{Which instructions were considered but not included in the RISC-V Bitmanip extension?}
 
 \begin{itemize}
 \item A bit-field extract instruction. Unfortunately the encoding space required
@@ -29,19 +29,19 @@ $\texttt{imm} - \texttt{rs}$.  This comes up often in calculating bit indices
 instructions are only of some help here because compressed immediates are in
 the range $-32 \dots 31$). However, a reverse-subtract-immediate operation is
 not very bit-manipulation specific, would require a much larger encoding
-space than the rest of XBitmanip (it would have a 12 bit immediate), and
+space than the rest of the RISC-V Bitmanip extension (it would have a 12 bit immediate), and
 does not add any functionality that can not be emulated easily with {\tt neg} and
 {\tt addi}: $\texttt{rsbi}(x, k) = \texttt{neg}(\texttt{addi}(x, -k)) = \texttt{addi}(\texttt{neg}(x), k)$
 
 \item Conditional move and mix instructions. Those would be very helpful! However,
 they would require three source operands, and we did not want to add a register
-file with three read ports as requirement for XBitmanip. See Section~\ref{mixmux}
+file with three read ports as requirement for the RISC-V Bitmanip extension. See Section~\ref{mixmux}
 for short sequences implementing conditional move (aka mux) and mix operations.
 
 \item Funnel shift instructions. Those are also super helpful! For example when
 processing input that is a bit-packed stream of words of arbitrary (variable)
 bit width. However, a funnel shift instruction would also require three source
-operands, therefore it was not considered for inclusion in XBitmanip.
+operands, therefore it was not considered for inclusion in the RISC-V Bitmanip extension.
 
 \item Instructions for testing, setting and clearing bits. This operations can
 be performed in few easily macro-op fusible instructions. So implementations
@@ -231,11 +231,11 @@ with rd$'$=0 still being an illegal instruction.
 3x &  4 & 3x &  4 & {\tt c.neg, c.not, c.brev} \\
 \end{tabular}
 \end{center}
-\caption{XBitmanip encoding space ($log2$, i.e. in equivalent number of bits)}
+\caption{Bitmanip encoding space ($log2$, i.e. in equivalent number of bits)}
 \label{encspace-tab}
 \end{table}
 
-Table~\ref{encspace-tab} lists all XBitmanip instructions and the encoding
+Table~\ref{encspace-tab} lists all Bitmanip instructions and the encoding
 space needed to implement them.  We do not count any encoding space for the
 unary instructions {\tt clz}, {\tt clzw}, {\tt ctz}, {\tt ctzw}, {\tt pcnt},
 and {\tt pcntw} because they can be implemented in the reserved modes in {\tt
@@ -245,7 +245,7 @@ The compressed encoding space is $\approx 15.6$ bits wide.
 
 $$ log_2(3 \cdot 2^{14}) \approx 15.585 $$
 
-The compressed XBitmanip instructions need the equivalent of a 4.6 bit
+The compressed Bitmanip instructions need the equivalent of a 4.6 bit
 encoding space, or $\approx 0.05\%$ of the total $\approx 15.6$ bits available.
 
 $$ log_2(3 \cdot 2^3) \approx 4.585 $$
@@ -255,7 +255,7 @@ The reserved ``C'' encoding space as of Version 2.2 of the RISC-V User-Level
 ISA is summarized in Table~\ref{resctab}. (This is not including RV32-only
 or RV64-only reserved encoding space.) According to this information
 the reserved space is $\approx 11.2$ bits wide. Therefore the compressed
-XBitmanip instructions would use $\approx 1.1\%$ of the remaining
+Bitmanip instructions would use $\approx 1.1\%$ of the remaining
 reserved ``C'' encoding space.
 
 $$ log_2(2^3-1 + 2^{11} + 2^5 + 2^7 + 2^6 + 1) \approx 11.155 $$
@@ -330,16 +330,16 @@ $$ 100 / (2^{11.155-4.585}) \approx 1.053 $$
 \label{resctab}
 \end{table}
 
-On RV32, XBitmanip requires the equivalent of a $\approx 18.9$ bit encoding space in
+On RV32, Bitmanip requires the equivalent of a $\approx 18.9$ bit encoding space in
 the uncompressed encoding space. For comparison: A single standard I-type
 instruction (such as \texttt{ADDI} or \texttt{SLTIU}) requires a $22$ bit
-encoding space. I.e. the entire RV32 XBitmanip extension needs less than
+encoding space. I.e. the entire RV32 Bitmanip extension needs less than
 one-eighth of the encoding space of the \texttt{SLTIU} instruction.
 
 $$ log_2(15\cdot2^{15}) \approx 18.907 $$
 
-On RV64, XBitmanip requires the equivalent of a $\approx 19.9$ bit encoding
-space in the uncompressed encoding space. I.e. the entire RV64 XBitmanip
+On RV64, Bitmanip requires the equivalent of a $\approx 19.9$ bit encoding
+space in the uncompressed encoding space. I.e. the entire RV64 Bitmanip
 extension needs about one-quarter of the encoding space of the \texttt{SLTIU}
 instruction.
 
@@ -441,7 +441,7 @@ $$ log_2(19\cdot2^{15} + 5\cdot2^{16}) \approx 19.858 $$
 \draw[pattern=north west lines, pattern color=blue] (8.500,0) rectangle (8.750,1.145);
 \draw[pattern=crosshatch dots, pattern color=green] (8.750,0) rectangle (9.000,1.131);
 \draw[pattern=crosshatch, pattern color=magenta] (8.500,0) rectangle (9.000,-0.119);
-\draw (9.550,0) node[above right,rotate=90] {\tiny\tt XBitmanip};
+\draw (9.550,0) node[above right,rotate=90] {\tiny\tt Bitmanip};
 \fill[white] (9.500,0) rectangle (9.750,2.221);
 \fill[white] (9.750,0) rectangle (10.000,2.123);
 \fill[white] (9.500,0) rectangle (10.000,-0.379);
@@ -459,13 +459,13 @@ $$ log_2(19\cdot2^{15} + 5\cdot2^{16}) \approx 19.858 $$
 \end{tikzpicture}
 \end{center}
 %%%%%%% END: verilog/stats.tex %%%%%%%
-\caption{Relative area of XBitmanip reference cores compared to simple 32-bit rotate
+\caption{Relative area of Bitmanip reference cores compared to simple 32-bit rotate
 shift and Rocket MulDiv. The height of 1 LUT $\hat{=}$ 2.86 Gates, 1 FF $\hat{=}$ 5.00 Gates.}
 \label{area-fig}
 \end{figure}
 
 We created RV32 implementations for the different compute cores necessary to
-implement XBitmanip (and XBitfield): \url{https://github.com/cliffordwolf/xbitmanip/tree/master/verilog}
+implement Bitmanip (and XBitfield): \url{https://github.com/riscv/riscv-bitmanip/tree/master/verilog}
 
 We are comparing the area of those cores with the following two references:
 
@@ -487,7 +487,7 @@ in 5 cycles and division/modulo in 32+ cycles. This is the {\tt MulDiv} default
 configuration used in Rocket for small cores.
 \end{enumerate}
 
-The implementations of cores performing XBitmanip (and XBitfield) operations are:
+The implementations of cores performing Bitmanip (and XBitfield) operations are:
 
 \begin{itemize}
 \item {\tt tinygrev} --- A small multi-cycle implementation of {\tt grev}/{\tt grevi}.
@@ -533,14 +533,14 @@ Module & Gates & Depth & 4-LUTs & Depth & FFs \\
 {\tt simplebextdep} & 794 & 35 & 318 & 13 & 131 \\
 {\tt smartbextdep} & 1542 & 28 & 532 & 10 & 32 \\
 \hline
-{\tt XBitmanip} & 2992 & 42 & 999 & 13 & 102 \\
+{\tt Bitmanip} & 2992 & 42 & 999 & 13 & 102 \\
 {\tt Rocket MulDiv} & 5068 & 49 & 1432 & 24 & 120 \\
 \end{tabular}
 \end{center}
 %%%%%%% END: verilog/stats.tex %%%%%%%
-\caption{Area and logic depth of XBitmanip reference cores compared to simple 32-bit rotate
-shift and Rocket MulDiv. The entry {\tt XBitmanip} is just the total of {\tt simplegrev} $+$ {\tt
-simplegzip} $+$ {\tt simplebitcnt} $+$ {\tt smartbextdep}. Not included in {\tt XBitmanip} is the
+\caption{Area and logic depth of Bitmanip reference cores compared to simple 32-bit rotate
+shift and Rocket MulDiv. The entry {\tt Bitmanip} is just the total of {\tt simplegrev} $+$ {\tt
+simplegzip} $+$ {\tt simplebitcnt} $+$ {\tt smartbextdep}. Not included in {\tt Bitmanip} is the
 cost for adding shift-ones and rotate-shift support to the existing ALU shifter
 and the cost for additional decode and control logic.}
 \label{area-tab}
