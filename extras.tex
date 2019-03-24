@@ -108,7 +108,7 @@ and therefore without fast \texttt{clmul[h]}. For implementations with fast \tex
 it is recommended to use the methods described in~\cite{FastCRC} and demonstrated in~\cite{Wolf18A}
 that can process XLEN input bits using just one carry-less multiply for arbitrary CRC polynomials.
 
-In applications where those methods are not applicable it is possible to emulate the dedicared CRC
+In applications where those methods are not applicable it is possible to emulate the dedicated CRC
 instructions using two carry-less multiplies that implement a Barrett reduction. The following example
 implements a replacement for \texttt{crc32.w} (RV32).
 
