@@ -62,6 +62,50 @@ void prefix_byte_nibbles_check(uint32_t src)
 
 // ---------------------------------------------------------
 
+uint32_t index_byte_nibbles_reference(uint32_t src)
+{
+	uint32_t a = 0;
+	uint32_t k = 0;
+
+	for (int i = 0; i < 8; i++) {
+		if ((src >> i) & 1) {
+			a |= (i+1) << k;
+			k += 4;
+		}
+	}
+
+	return a;
+}
+
+uint32_t index_byte_nibbles_impl(uint32_t src)
+{
+	uint32_t a0, a1;
+
+	a0 = src & 0xff;
+	a0 = rv32b::shfl(a0, 15);
+	a0 = rv32b::shfl(a0, 15);
+
+	a1 = rv32b::sll(a0, 1);
+	a0 |= a1;
+
+	a1 = rv32b::sll(a0, 2);
+	a0 |= a1;
+
+	a1 = a0 & 0x87654321;
+	a0 = rv32b::bext(a1, a0);
+
+	return a0;
+}
+
+void index_byte_nibbles_check(uint32_t src)
+{
+	uint32_t a = index_byte_nibbles_reference(src);
+	uint32_t b = index_byte_nibbles_impl(src);
+	assert(a == b);
+}
+
+// ---------------------------------------------------------
+
 int tenth_bit_reference(uint32_t src)
 {
 	int k = 0;
