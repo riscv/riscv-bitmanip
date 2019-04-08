@@ -8,3 +8,5 @@
 /bextcref-*.tex
 /bextcref-*.dat
 /bextcref-*.exe
+/.cproject
+/.project

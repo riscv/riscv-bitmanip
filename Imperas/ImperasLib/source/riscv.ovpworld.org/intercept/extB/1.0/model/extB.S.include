@@ -1,0 +1,156 @@
+# Macro Assembler
+# RD  @7
+# RS1 @15
+# RS2 @20
+# CU5 @20
+# CU7 @20
+
+# DECODE_ENTRY(0, CLZ,     "|0110000|00000|.....|001|.....|0010011|"); // OP-IMM (no space)
+.macro CLZ rd rs1
+    .int 0x60001013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CTZ,     "|0110000|00001|.....|001|.....|0010011|"); // OP-IMM (no space)
+.macro CTZ rd rs1
+    .int 0x60101013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, PCNT,    "|0110000|00010|.....|001|.....|0010011|"); // OP-IMM (no space)
+.macro PCNT rd rs1
+    .int 0x60201013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, ANDC,    "|0000000|.....|.....|000|.....|0101011|"); // OP
+.macro ANDC rd rs1 rs2
+    .int 0x0000002B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, SLO,     "|0010000|.....|.....|001|.....|0110011|"); // OP
+.macro SLO rd rs1 rs2
+    .int 0x20001033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, SRO,     "|0010000|.....|.....|101|.....|0110011|"); // OP
+.macro SRO rd rs1 rs2
+    .int 0x20005033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, SLOI,    "|10...|.......|.....|000|.....|0001011|"); // OP-IMM
+.macro SLOI rd rs1 imm
+    .int 0x20001013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+
+# DECODE_ENTRY(0, SROI,    "|00100|.......|.....|101|.....|0010011|"); // OP-IMM
+.macro SROI rd rs1 imm
+    .int 0x20005013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+
+# DECODE_ENTRY(0, ROL,     "|0000100|.....|.....|000|.....|0101011|"); // OP
+.macro ROL rd rs1 rs2
+    .int 0x60001033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, ROR,     "|0110000|.....|.....|101|.....|0110011|"); // OP
+.macro ROR rd rs1 rs2
+    .int 0x60005033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, RORI,    "|01100|.......|.....|101|.....|0010011|"); // OP-IMM
+.macro RORI rd rs1 imm
+    .int 0x60005013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+
+# DECODE_ENTRY(0, GREV,    "|0100000|.....|.....|001|.....|0110011|"); // OP
+.macro GREV rd rs1 rs2
+    .int 0x40001033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm    
+
+# DECODE_ENTRY(0, GREVI,   "|01000|.......|.....|001|.....|0010011|"); // OP-IMM
+.macro GREVI rd rs1 imm
+    .int 0x40001013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+
+# DECODE_ENTRY(0, SHFL,    "|0000110|.....|.....|000|.....|0101011|"); // OP
+.macro SHFL rd rs1 rs2
+    .int 0x0C00002B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm    
+ 
+# DECODE_ENTRY(0, SHFLI,   "|10...|.......|.....|100|.....|0001011|"); // OP-IMM
+.macro SHFLI rd rs1 imm
+    .int 0x8000400B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+ 
+# DECODE_ENTRY(0, UNSHFL,  "|0000111|.....|.....|000|.....|0101011|"); // OP
+.macro UNSHFL rd rs1 rs2
+    .int 0x0E00002B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm 
+
+# DECODE_ENTRY(0, UNSHFLI,  "|10...|.......|.....|101|.....|0001011|"); // I-type (UNDEF)
+.macro UNSHFLI rd rs1 imm
+    .int 0x8000500B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+
+# DECODE_ENTRY(0, BEXT,    "|0001000|.....|.....|000|.....|0101011|"); // OP
+.macro BEXT rd rs1 rs2
+    .int 0x1000002B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm    
+
+# DECODE_ENTRY(0, BDEP,    "|0001001|.....|.....|000|.....|0101011|"); // OP
+.macro BDEP rd rs1 rs2
+    .int 0x1200002B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+
+# DECODE_ENTRY(0, CRC32_B,  "|0110000|10000|.....|001|.....|0010011|"); // R-type
+.macro CRC32_B rd rs1
+    .int 0x61001013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32_H,  "|0110000|10001|.....|001|.....|0010011|"); // R-type
+.macro CRC32_H rd rs1
+    .int 0x61101013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32_W,  "|0110000|10010|.....|001|.....|0010011|"); // R-type
+.macro CRC32_W rd rs1
+    .int 0x61201013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32_D,  "|0110000|10011|.....|001|.....|0010011|"); // R-type
+
+# DECODE_ENTRY(0, CRC32C_B, "|0110000|11000|.....|001|.....|0010011|"); // R-type
+.macro CRC32C_B rd rs1
+    .int 0x61801013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32C_H, "|0110000|11001|.....|001|.....|0010011|"); // R-type
+.macro CRC32C_H rd rs1
+    .int 0x61901013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32C_W, "|0110000|11010|.....|001|.....|0010011|"); // R-type
+.macro CRC32C_W rd rs1
+    .int 0x61A01013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, BMATFLIP, "|0110000|00011|.....|001|.....|0010011|"); // R-type
+.macro BMATFLIP rd rs1
+    .int 0x60301013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|"); // R-type
+
+# DECODE_ENTRY(0, NEG,  "|011|000|...|00000|01|");
+.macro CNEG rd
+    .short 0x6001 | ((\rd&0x7)<<7)
+.endm
+
+# DECODE_ENTRY(0, NOT,  "|011|001|...|00000|01|");
+.macro CNOT rd
+    .short 0x6401 | ((\rd&0x7)<<7)
+.endm
+
+# DECODE_ENTRY(0, BREV, "|011|010|...|00000|01|");
+.macro CBREV rd
+    .short 0x6801 | ((\rd&0x7)<<7)
+.endm

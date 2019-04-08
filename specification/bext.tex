@@ -1,0 +1,642 @@
+\chapter{RISC-V Bitmanip Extension}
+\label{bext}
+
+In the proposals provided in this section, the C code examples are for
+illustration purposes. They are not optimal implementations, but are intended
+to specify the desired functionality. See Chapter~\ref{fastc} for fast C code
+for use in emulators.
+
+The sections on encodings are mere placeholders.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
+
+The {\tt clz} operation counts the number of 0 bits at the MSB end of the
+argument.  That is, the number of 0 bits before the first 1 bit counting from
+the most significant bit. If the input is 0, the output is XLEN. If the input
+is -1, the output is 0.
+
+The {\tt ctz} operation counts the number of 0 bits at the LSB end of the
+argument. If the input is 0, the output is XLEN. If the input is -1, the
+output is 0.
+
+\input{bextcref-clz-ctz}
+
+\input{bextclz.tex}
+
+One possible encoding for \texttt{clz} and \texttt{ctz} is as standard I-type opcodes
+somewhere in the brownfield surrounding the shift-immediate instructions.
+
+% \subsection{References}
+%
+% https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
+%
+% https://fgiesen.wordpress.com/2013/10/18/bit-scanning-equivalencies/
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Count Bits Set (\texttt{pcnt})}
+
+This instruction counts the number of 1 bits in a register. This operations is known as
+population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
+
+\input{bextcref-pcnt}
+
+\input{bextpcnt.tex}
+
+One possible encoding for \texttt{pcnt} is as a standard I-type opcode somewhere
+in the brownfield surrounding the shift-immediate instructions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{And-with-complement (\texttt{andc})}
+
+This instruction implements the and-with-complement operation.
+
+\input{bextcref-andc}
+
+Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
+by combining {\tt not} ({\tt c.not}) with the base ALU operation. (Which can
+fit in 32 bit when using two compressed instructions.) Only and-with-complement
+occurs frequently enough to warrant a dedicated instruction.
+
+\input{bextandc.tex}
+
+% \subsection{Justification}
+%
+% http://svn.clifford.at/handicraft/2017/bitcode/
+%
+% \subsection{References}
+%
+% http://www.hackersdelight.org/basics2.pdf
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
+
+These instructions are similar to shift-logical operations from the base
+spec, except instead of shifting in zeros, they shift in ones.
+
+\input{bextcref-sxo}
+
+\input{bextsxo.tex}
+
+\texttt{s(l/r)o(i)} is encoded similarly to the logical shifts in the
+base spec. However, the spec of the entire family of instructions is
+changed so that the high bit of the instruction indicates the value to
+be inserted during a shift. This means that a \texttt{sloi} instruction
+can be encoded similarly to an \texttt{slli} instruction, but with a 1
+in the highest bit of the encoded instruction. This encoding is
+backwards compatible with the definition for the shifts in the base
+spec, but allows for simple addition of a ones-insert.
+
+When implementing this circuit, the only change in the ALU over a
+standard logical shift is that the value shifted in is not zero, but is
+a 1-bit register value that has been forwarded from the high bit of the
+instruction decode. This creates the desired behavior on both logical
+zero-shifts and logical ones-shifts.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
+
+These instructions are similar to shift-logical operations from the base
+spec, except they shift in the values from the opposite side of the
+register, in order. This is also called `circular shift'.
+
+\input{bextcref-rox}
+
+\input{bextrox.tex}
+
+Rotate shift is implemented very similarly to the other shift
+instructions. One possible way to encode it is to re-use the way that
+bit 30 in the instruction encoding selects `arithmetic shift' when bit
+31 is zero (signalling a logical-zero shift). We can re-use this so that
+when bit 31 is set (signalling a logical-ones shift), if bit 30 is also
+set, then we are doing a rotate. The following table summarizes the
+behavior. The generalized reverse instructions can be encoded using the
+bit pattern that would otherwise encode an ``Arithmetic Left Shift''
+(which is an operation that does not exist). Likewise, the generalized zip
+instruction can be encoded using the bit pattern that would otherwise
+encode an ``Rotate left immediate''.
+
+\begin{center}
+\begin{tabular}{lll}
+Bit 31 & Bit 30 & Meaning \\
+\hline
+0 & 0 & Logical Shift-Zeros \\
+0 & 1 & Arithmetic Shift \\
+1 & 0 & Logical Shift-Ones \\
+1 & 1 & Rotate \\
+\end{tabular}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-ror}
+\end{center}
+\caption{\texttt{ror} permutation network}
+\label{permnet-ror}
+\end{figure}
+
+\section{Generalized Reverse (\texttt{grev,\ grevi})}
+\label{grev}
+
+This instruction provides a single hardware instruction that can implement all
+of byte-order swap, bitwise reversal, short-order-swap, word-order-swap
+(RV64), nibble-order swap, bitwise reversal in a byte, etc, all from a single
+hardware instruction. It takes in a single register value and an immediate that
+controls which function occurs, through controlling the levels in the recursive
+tree at which reversals occur.
+
+This operation iteratively checks each bit $i$ in rs2 from $i=0$ to
+$\textrm{XLEN}-1$, and if the corresponding bit is set, swaps each adjacent
+pair of $2^i$ bits.
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-grev}
+\end{center}
+\caption{\texttt{grev} permutation network}
+\label{permnet-grev}
+\end{figure}
+
+\input{bextcref-grev}
+
+The above pattern should be intuitive to understand in order to extend
+this definition in an obvious manner for RV128.
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{r l p{0.5in} r l p{0.3in} r l}
+
+\multicolumn{2}{c}{RV32} & &
+\multicolumn{5}{c}{RV64} \\
+
+\cline{1-2}
+\cline{4-8}
+
+\multicolumn{1}{c}{shamt} & Instruction & &
+\multicolumn{1}{c}{shamt} & Instruction & &
+\multicolumn{1}{c}{shamt} & Instruction \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+ 0: 00000 & ---           &   &  0: 000000 & ---           &   & 32: 100000 & {\tt wswap} \\
+ 1: 00001 & {\tt brev.p}  &   &  1: 000001 & {\tt brev.p}  &   & 33: 100001 & ---         \\
+ 2: 00010 & {\tt pswap.n} &   &  2: 000010 & {\tt pswap.n} &   & 34: 100010 & ---         \\
+ 3: 00011 & {\tt brev.n}  &   &  3: 000011 & {\tt brev.n}  &   & 35: 100011 & ---         \\
+ 4: 00100 & {\tt nswap.b} &   &  4: 000100 & {\tt nswap.b} &   & 36: 100100 & ---         \\
+ 5: 00101 & ---           &   &  5: 000101 & ---           &   & 37: 100101 & ---         \\
+ 6: 00110 & {\tt pswap.b} &   &  6: 000110 & {\tt pswap.b} &   & 38: 100110 & ---         \\
+ 7: 00111 & {\tt brev.b}  &   &  7: 000111 & {\tt brev.b}  &   & 39: 100111 & ---         \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+ 8: 01000 & {\tt bswap.h} &   &  8: 001000 & {\tt bswap.h} &   & 40: 101000 & ---         \\
+ 9: 01001 & ---           &   &  9: 001001 & ---           &   & 41: 101001 & ---         \\
+10: 01010 & ---           &   & 10: 001010 & ---           &   & 42: 101010 & ---         \\
+11: 01011 & ---           &   & 11: 001011 & ---           &   & 43: 101011 & ---         \\
+12: 01100 & {\tt nswap.h} &   & 12: 001100 & {\tt nswap.h} &   & 44: 101100 & ---         \\
+13: 01101 & ---           &   & 13: 001101 & ---           &   & 45: 101101 & ---         \\
+14: 01110 & {\tt pswap.h} &   & 14: 001110 & {\tt pswap.h} &   & 46: 101110 & ---         \\
+15: 01111 & {\tt brev.h}  &   & 15: 001111 & {\tt brev.h}  &   & 47: 101111 & ---         \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+16: 10000 & {\tt hswap}   &   & 16: 010000 & {\tt hswap.w} &   & 48: 110000 & {\tt hswap} \\
+17: 10001 & ---           &   & 17: 010001 & ---           &   & 49: 110001 & ---         \\
+18: 10010 & ---           &   & 18: 010010 & ---           &   & 50: 110010 & ---         \\
+19: 10011 & ---           &   & 19: 010011 & ---           &   & 51: 110011 & ---         \\
+20: 10100 & ---           &   & 20: 010100 & ---           &   & 52: 110100 & ---         \\
+21: 10101 & ---           &   & 21: 010101 & ---           &   & 53: 110101 & ---         \\
+22: 10110 & ---           &   & 22: 010110 & ---           &   & 54: 110110 & ---         \\
+23: 10111 & ---           &   & 23: 010111 & ---           &   & 55: 110111 & ---         \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+24: 11000 & {\tt bswap}   &   & 24: 011000 & {\tt bswap.w} &   & 56: 111000 & {\tt bswap} \\
+25: 11001 & ---           &   & 25: 011001 & ---           &   & 57: 111001 & ---         \\
+26: 11010 & ---           &   & 26: 011010 & ---           &   & 58: 111010 & ---         \\
+27: 11011 & ---           &   & 27: 011011 & ---           &   & 59: 111011 & ---         \\
+28: 11100 & {\tt nswap}   &   & 28: 011100 & {\tt nswap.w} &   & 60: 111100 & {\tt nswap} \\
+29: 11101 & ---           &   & 29: 011101 & ---           &   & 61: 111101 & ---         \\
+30: 11110 & {\tt pswap}   &   & 30: 011110 & {\tt pswap.w} &   & 62: 111110 & {\tt pswap} \\
+31: 11111 & {\tt brev}    &   & 31: 011111 & {\tt brev.w}  &   & 63: 111111 & {\tt brev}  \\
+\end{tabular}
+\end{center}
+\end{small}
+\caption{Pseudo-instructions for {\tt grevi} instruction}
+\label{grevi-modes}
+\end{table}
+
+The {\tt grev} operation can easily be implemented using a permutation
+network with $log_2(\textrm{XLEN})$ stages. Figure~\ref{permnet-ror}
+shows the permutation network for {\tt ror} for reference.
+Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
+
+\input{bextgrev.tex}
+
+\texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
+encoded as standard I-type opcode. \texttt{grev} and \texttt{grevi} can
+use the instruction encoding for ``arithmetic shift left''.
+
+% \subsection{References}
+%
+% Hackers Delight, Chapter 7.1, ``Generalized Bit Reversal'' in
+%
+% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
+%
+% http://hackersdelight.org/
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
+\label{gzip}
+
+Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
+extension, after rotary shift and generalized reverse. It implements a
+generalization of the operation commonly known as perfect outer shuffle and its
+inverse (shuffle/unshuffle), also known as zip/unzip or interlace/uninterlace.
+
+Bit permutations can be understood as reversible functions on bit indices (i.e.
+5 bit functions on RV32 and 6 bit functions on RV64).
+
+\begin{center}
+\begin{tabular}{l l}
+Operation & Corresponding function on bit indices \\
+\hline
+Rotate shift & Addition modulo {\rm XLEN} \\
+Generalized reverse & XOR with bitmask \\
+Generalized shuffle & Bitpermutation \\
+\end{tabular}
+\end{center}
+
+A generalized (un)shuffle operation has $log_2(\textrm{XLEN})-1$ control bits,
+one for each pair of neighbouring bits in a bit index. When the bit is set,
+generalized shuffle will swap the two index bits. The {\tt shfl} operation
+performs this swaps in MSB-to-LSB order (performing a rotate left shift on
+continuous regions of set control bits), and the {\tt unshfl} operation performs
+the swaps in LSB-to-MSB order (performing a rotate right shift on continuous
+regions of set control bits). Combining up to $log_2(\textrm{XLEN})$ of those
+{\tt shfl}/{\tt unshfl} operations can implement any bitpermutation on the
+bit indices.
+
+The most common type of shuffle/unshuffle operation is one on an immediate
+control value that only contains one continuous region of set bits. We call
+those operations zip/unzip and provide pseudo-instructions for them.
+
+Shuffle/unshuffle operations that only have individual bits set (not a continuous
+region of two or more bits) are their own inverse. This means that a few of the
+{\tt unshfli} opcodes are redundant with {\tt shfli} opcodes and therefore can
+be reserved for encoding unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{r c l l}
+\multicolumn{1}{c}{shamt} &
+\multicolumn{1}{c}{inv} &
+Bit index rotations &
+Pseudo-Instruction \\
+
+\hline
+
+ 0: 0000 & 0 & no-op                            & ---                    \\
+    0000 & 1 & no-op                            & {\it reserved}         \\
+ 1: 0001 & 0 & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
+    0001 & 1 & {\it equivalent to 0001 0}       & {\it reserved}         \\
+ 2: 0010 & 0 & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
+    0010 & 1 & {\it equivalent to 0010 0}       & {\it reserved}         \\
+ 3: 0011 & 0 & {\tt i[2] -> i[0]}               & {\tt zip.b}            \\
+    0011 & 1 & {\tt i[2] <- i[0]}               & {\tt unzip.b}          \\
+
+\hline
+
+ 4: 0100 & 0 & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
+    0100 & 1 & {\it equivalent to 0100 0}       & {\it reserved}         \\
+ 5: 0101 & 0 & {\tt i[3] -> i[2], i[1] -> i[0]} & ---                    \\
+    0101 & 1 & {\it equivalent to 0101 0}       & {\it reserved}         \\
+ 6: 0110 & 0 & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
+    0110 & 1 & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
+ 7: 0111 & 0 & {\tt i[3] -> i[0]}               & {\tt zip.h}            \\
+    0111 & 1 & {\tt i[3] <- i[0]}               & {\tt unzip.h}          \\
+
+\hline
+
+ 8: 1000 & 0 & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
+    1000 & 1 & {\it equivalent to 1000 0}       & {\it reserved}         \\
+ 9: 1001 & 0 & {\tt i[4] -> i[3], i[1] -> i[0]} & ---                    \\
+    1001 & 1 & {\it equivalent to 1001 0}       & {\it reserved}         \\
+10: 1010 & 0 & {\tt i[4] -> i[3], i[2] -> i[1]} & ---                    \\
+    1010 & 1 & {\it equivalent to 1010 0}       & {\it reserved}         \\
+11: 1011 & 0 & {\tt i[4] -> i[3], i[2] -> i[0]} & ---                    \\
+    1011 & 1 & {\tt i[4] <- i[3], i[2] <- i[0]} & ---                    \\
+
+\hline
+
+12: 1100 & 0 & {\tt i[4] -> i[2]}               & {\tt zip4}             \\
+    1100 & 1 & {\tt i[4] <- i[2]}               & {\tt unzip4}           \\
+13: 1101 & 0 & {\tt i[4] -> i[2], i[1] -> i[0]} & ---                    \\
+    1101 & 1 & {\tt i[4] <- i[2], i[1] <- i[0]} & ---                    \\
+14: 1110 & 0 & {\tt i[4] -> i[1]}               & {\tt zip2}             \\
+    1110 & 1 & {\tt i[4] <- i[1]}               & {\tt unzip2}           \\
+15: 1111 & 0 & {\tt i[4] -> i[0]}               & {\tt zip}              \\
+    1111 & 1 & {\tt i[4] <- i[0]}               & {\tt unzip}            \\
+
+\end{tabular}
+\end{center}
+\end{small}
+\caption{RV32 modes and pseudo-instructions for {\tt shfli}/{\tt unshfli} instruction}
+\label{gzip32-modes}
+\end{table}
+
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{r c l p{1in} r c l}
+\multicolumn{1}{c}{shamt} &
+\multicolumn{1}{c}{inv} &
+Pseudo-Instruction & &
+\multicolumn{1}{c}{shamt} &
+\multicolumn{1}{c}{inv} &
+Pseudo-Instruction \\
+
+\cline{1-3}
+\cline{5-7}
+
+ 0: 00000 & 0 & ---                      &   &   16: 10000 & 0 & {\tt zip16, unzip16}    \\
+    00000 & 1 & {\it reserved}           &   &       10000 & 1 & {\it reserved}          \\
+ 1: 00001 & 0 & {\tt zip.n, unzip.n}     &   &   17: 10001 & 0 & ---                     \\
+    00001 & 1 & {\it reserved}           &   &       10001 & 1 & {\it reserved}          \\
+ 2: 00010 & 0 & {\tt zip2.b, unzip2.b}   &   &   18: 10010 & 0 & ---                     \\
+    00010 & 1 & {\it reserved}           &   &       10010 & 1 & {\it reserved}          \\
+ 3: 00011 & 0 & {\tt zip.b}              &   &   19: 10011 & 0 & ---                     \\
+    00011 & 1 & {\tt unzip.b}            &   &       10011 & 1 & ---                     \\
+
+\cline{1-3}
+\cline{5-7}
+
+ 4: 00100 & 0 & {\tt zip4.h, unzip4.h}   &   &   20: 10100 & 0 & ---                     \\
+    00100 & 1 & {\it reserved}           &   &       10100 & 1 & {\it reserved}          \\
+ 5: 00101 & 0 & ---                      &   &   21: 10101 & 0 & ---                     \\
+    00101 & 1 & {\it reserved}           &   &       10101 & 1 & {\it reserved}          \\
+ 6: 00110 & 0 & {\tt zip2.h}             &   &   22: 10110 & 0 & ---                     \\
+    00110 & 1 & {\tt unzip2.h}           &   &       10110 & 1 & ---                     \\
+ 7: 00111 & 0 & {\tt zip.h}              &   &   23: 10111 & 0 & ---                     \\
+    00111 & 1 & {\tt unzip.h}            &   &       10111 & 1 & ---                     \\
+
+\cline{1-3}
+\cline{5-7}
+
+ 8: 01000 & 0 & {\tt zip8.w, unzip8.w}   &   &   24: 11000 & 0 & {\tt zip8}              \\
+    01000 & 1 & {\it reserved}           &   &       11000 & 1 & {\tt unzip8}            \\
+ 9: 01001 & 0 & ---                      &   &   25: 11001 & 0 & ---                     \\
+    01001 & 1 & {\it reserved}           &   &       11001 & 1 & ---                     \\
+10: 01010 & 0 & ---                      &   &   26: 11010 & 0 & ---                     \\
+    01010 & 1 & {\it reserved}           &   &       11010 & 1 & ---                     \\
+11: 01011 & 0 & ---                      &   &   27: 11011 & 0 & ---                     \\
+    01011 & 1 & ---                      &   &       11011 & 1 & ---                     \\
+
+\cline{1-3}
+\cline{5-7}
+
+12: 01100 & 0 & {\tt zip4.w}             &   &   28: 11100 & 0 & {\tt zip4}              \\
+    01100 & 1 & {\tt unzip4.w}           &   &       11100 & 1 & {\tt unzip4}            \\
+13: 01101 & 0 & ---                      &   &   29: 11101 & 0 & ---                     \\
+    01101 & 1 & ---                      &   &       11101 & 1 & ---                     \\
+14: 01110 & 0 & {\tt zip2.w}             &   &   30: 11110 & 0 & {\tt zip2}              \\
+    01110 & 1 & {\tt unzip2.w}           &   &       11110 & 1 & {\tt unzip2}            \\
+15: 01111 & 0 & {\tt zip.w}              &   &   31: 11111 & 0 & {\tt zip}               \\
+    01111 & 1 & {\tt unzip.w}            &   &       11111 & 1 & {\tt unzip}             \\
+
+\end{tabular}
+\end{center}
+\end{small}
+\caption{RV64 modes and pseudo-instructions for {\tt shfli}/{\tt unshfli} instruction}
+\label{gzip64-modes}
+\end{table}
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-gzip-noflip}
+\end{center}
+\caption{(un)shuffle permutation network without ``flip'' stages}
+\label{permnet-gzip-noflip}
+\end{figure}
+
+Like GREV and rotate shift, the (un)shuffle instruction can be implemented using a short
+sequence of elementary permutations, that are enabled or disabled by the shamt
+bits. But (un)shuffle has one stage fewer than GREV. Thus shfli+unshfli together require
+the same amount of encoding space as grevi.
+
+\input{bextcref-gzip32}
+
+Or for RV64:
+
+\input{bextcref-gzip64}
+
+The above pattern should be intuitive to understand in order to extend
+this definition in an obvious manner for RV128.
+
+Alternatively (un)shuffle) can be implemented in a single network with one more
+stage than GREV, with the additional first and last stage executing a
+permutation that effectively reverses the order of the inner stages. However,
+since the inner stages only mux half of the bits in the word each, a hardware
+implementation using this additional ``flip'' stages might actually be more
+expensive than simply creating two networks.
+
+\input{bextcref-gzip32-alt}
+
+Figure~\ref{permnet-gzip-flip} shows the (un)shuffle permutation network with
+``flip'' stages and Figure~\ref{permnet-gzip-noflip} shows the (un)shuffle
+permutation network without ``flip'' stages.
+
+\begin{figure}[t]
+\begin{center}
+\input{bextcref-printperm-gzip-flip}
+\end{center}
+\caption{(un)shuffle permutation network with ``flip'' stages}
+\label{permnet-gzip-flip}
+\end{figure}
+
+The \texttt{zip} instruction with the upper half of its input cleared performs
+the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
+0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits
+in the lower quarter of the input word by a spacing of 4 bits.
+
+For example, the following code calculates the bitwise prefix sum of the bits
+in the lower byte of a 32 bit word on RV32:
+
+\begin{verbatim}
+  andi a0, a0, 0xff
+  zip a0, a0
+  zip a0, a0
+  slli a1, a0, 4
+  c.add a0, a1
+  slli a1, a0, 8
+  c.add a0, a1
+  slli a1, a0, 16
+  c.add a0, a1
+\end{verbatim}
+
+The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.
+
+Similarly, the following code stores the indices of the set bits in the LSB
+nibbles of the output word (with the LSB bit having index 1), with the unused
+MSB nibbles in the output set to zero:
+
+\begin{verbatim}
+  andi a0, a0, 0xff
+  zip a0, a0
+  zip a0, a0
+  slli a1, a0, 1
+  or a0, a0, a1
+  slli a1, a0, 2
+  or a0, a0, a1
+  li a1, 0x87654321
+  and a1, a0, a1
+  bext a0, a1, a0
+\end{verbatim}
+
+Other {\tt zip} modes can be used to ``fan-out'' in blocks of 2, 4, 8, or 16 bit.
+{\tt zip} can be combined with {\tt grevi} to perform inner shuffles. For example
+on RV64:
+
+\begin{verbatim}
+  li a0, 0x0000000012345678
+  zip4 t0, a0    ; <- 0x0102030405060708
+  nswap.b t1, t0 ; <- 0x1020304050607080
+  zip8 t2, a0    ; <- 0x0012003400560078
+  bswap.h t3, t2 ; <- 0x1200340056007800
+  zip16 t4, a0   ; <- 0x0000123400005678
+  hswap.w t5, t4 ; <- 0x1234000056780000
+\end{verbatim}
+
+Another application for the zip instruction is generating Morton
+code~\cite[MortonCode].
+
+\input{bextshfl}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
+
+This instructions implement the generic bit extract and bit deposit functions.
+This operation is also referred to as bit gather/scatter, bit pack/unpack,
+parallel extract/deposit, compress/expand, or right\_compress/right\_expand.
+
+\texttt{bext} collects LSB justified bits to rd from rs1 using extract mask in rs2.
+
+\texttt{bdep} writes LSB justified bits from rs1 to rd using deposit mask in rs2.
+
+\input{bextcref-bext}
+
+Implementations may choose to use smaller multi-cycle implementations of
+\texttt{bext} and \texttt{bdep}, or even emulate the instructions in software.
+
+Even though multi-cycle \texttt{bext} and \texttt{bdep} often are not fast
+enough to outperform algorithms that use sequences of shifts and bit masks,
+dedicated instructions for those operations can still be of great advantage in
+cases where the mask argument is not constant.
+
+For example, the following code efficiently calculates the index of the tenth
+set bit in {\tt a0} using \texttt{bdep}:
+
+\begin{verbatim}
+  li a1, 0x00000200
+  bdep a0, a1, a0
+  ctz a0, a0
+\end{verbatim}
+
+For cases with a constant mask an optimizing compiler would decide when to use
+\texttt{bext} or \texttt{bdep} based on the optimization profile for the
+concrete processor it is optimizing for. This is similar to the decision
+whether to use MUL or DIV with a constant, or to perform the same operation
+using a longer sequence of much simpler operations.
+
+\input{bextscagat.tex}
+
+% \subsection{Justification}
+%
+% http://svn.clifford.at/handicraft/2017/permsyn/
+%
+% \subsection{References}
+%
+% http://programming.sirrida.de/bit\_perm.html\#gather\_scatter
+%
+% Hackers Delight, Chapter 7.1, ``Compress, Generalized Extract'' in
+%
+% https://books.google.com/books?id=iBNKMspIlqEC\&lpg=PP1\&pg=RA1-SL20-PA2\#v=onepage\&q\&f=false
+%
+% http://hackersdelight.org/
+%
+% https://github.com/cliffordwolf/bextdep
+%
+% http://palms.ee.princeton.edu/system/files/Hilewitz_JSPS_08.pdf
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.brev})}
+
+The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
+and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
+\texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as
+\texttt{sub\ rd,\ x0,\ rs}.
+
+In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations. But
+there are no compressed encodings for those operations because there is no \texttt{c.xori}
+instruction and \texttt{c.sub} can not operate on \texttt{x0}.
+
+Many bit manipulation operations that have dedicated opcodes in other ISAs
+must be constructed from smaller atoms in RISC-V Bitmanip code. But
+implementations might choose to implement them in a single micro-op using
+macro-op-fusion. For this it can be helpful when the fused sequences are short.
+\texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
+it can be helpful to have compressed opcodes for them.
+
+Likewise \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1}, i.e. bitwise
+reversal) is also a very common atom for building bit manipulation operations. So it
+is helpful to have a compressed opcode for this instruction as well.
+
+The compressed instructions \texttt{c.not,\ c.neg,\ c.brev} must be supported by
+all implementations that support the C extension and Bitmanip.
+
+\input{bextcompr}
+
+These three instructions fit nicely in the reserved space in C.LUI/C.ADDI16SP.
+They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit-field extract pseudo instruction ({\tt bfext})}
+\label{bfext}
+
+Extract the continuous bit field starting at {\tt pos} with length {\tt len}
+from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and
+$\texttt{pos}+\texttt{len}\le\textrm{XLEN}$).
+
+\begin{verbatim}
+  bfext rd, rs, pos, len   ->   slli rd, rs, (XLEN-pos-len)
+                                srli rd, rd, (XLEN-len)
+\end{verbatim}
+
+If possible, an implementation should fuse this two shift operations into a single
+macro-op. (Some implementers have raised concerns about the lack of a dedicated
+bit field extract instruction with large immediate, especially for implementations
+that can not fuse instructions into macro-ops and/or implementations that do
+not support compressed instructions. See Chapter~\ref{bfxp} for a brief discussion
+of why no such instruction is part of the RISC-V Bitmanip Extension, and a
+short separate extension proposal that adds such an instruction.)

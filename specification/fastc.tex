@@ -1,0 +1,21 @@
+\chapter{Fast C reference implementations}
+\label{fastc}
+
+GCC has intrinsics for the bit counting instructions {\tt clz}, {\tt ctz}, and
+{\tt pcnt}.  So a performance-sensitive application (such as an emulator)
+should probably just use those:
+
+\input{bextcref-fast-bitcnt}
+
+For processors with BMI2 support GCC has intrinsics for bit extract and bit
+deposit instructions (compile with {\tt -mbmi2} and include {\tt <x86intrin.h>}):
+
+\input{bextcref-fast-bext-bmi2}
+
+For other processors we need to provide our own implementations. The following
+implementation is a good compromise between code complexity and runtime:
+
+\input{bextcref-fast-bext}
+
+For the other Bitmanip instructions the C reference functions given in Chapter~\ref{bext}
+are already reasonably efficient.
