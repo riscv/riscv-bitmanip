@@ -30,7 +30,7 @@ verify:
 
 %.log: %.elf FORCE
 	$(RUN_TARGET) --program $(<) --logfile $(@).tmp
-	$(RUN_TARGET) --program $(<) --logfile $(@).trc --trace >/dev/null
+	$(RUN_TARGET) --program $(<) --logfile $(@).trc --trace --tracechange >/dev/null
 	@ grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 

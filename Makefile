@@ -1,4 +1,4 @@
-all: document autoasm
+all: document runtest
 
 document:
 	make -C specification
