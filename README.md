@@ -24,7 +24,7 @@ The [verilog](verilog) directory includes Verilog reference implementations.
 The [cproofs](cproofs) directory contains a few proofs for the reference C models.
 
 ## riscvOVPsim Reference Simulation
-Included in this repository in the dir [riscv-ovpsim](riscv-ovpsim) is a version of the Imperas [riscvOVPsim](riscv-ovpsim/README.md) simulator that includes a full implementation of the RISC-V 32 & 64 Bit ISA specification and an implementation of these new bitmanip instructions. 
+Included in this repository in the directory [riscv-ovpsim](riscv-ovpsim) is a version of the Imperas [riscvOVPsim](riscv-ovpsim/README.md) simulator that includes a full implementation of the RISC-V 32 & 64 Bit ISA specification and an implementation of these new bitmanip instructions. 
 
 To enable the new instructions, just add a command line option:
 
@@ -38,27 +38,32 @@ This simulation is instruction accurate, is provided as a pre-compiled binary, a
 
 NOTE the instruction behavior and decodes will change before they become part of the RISC-V open standard ISA.
 
-## Testing Instructions
-Many assembly tests are included ([asmtests](asmtests)) that provide directed and generated tests for the new instructions. There is a simple framework to run the tests and compare them with a golden logfile.
+## Building the Specification PDF
+In order to produce the Specification pdf run he following command
+
+    $ make document
 
 ## Issues or more information
 Please add an issue to this repository or email the normal bitmanip working group alias.
 
-## Building Specification PDF
-In order to produce the Specification pdf run he following command
-    $ make document
+## Instruction Assembler Tests
+Many assembly tests are included ([asmtests](asmtests)) that provide directed and generated tests for the new instructions. There is a simple framework to run the tests and compare them with a golden logfile.
 
-## Building and Running Assembler tests matching the specification
-Firstly the search path needs to include the path to a RISCV Compiler, eg
+## Building and Running the Instruction Assembler Tests
+To start, you need to set up the search path to include the path to a RISCV Compiler, eg:
+
     $ export PATH=${PATH}:/home/tools/riscv-none-embed/bin
     
-Also a variable to define the canonical compiler prefix, eg
+Also you need a variable to define the canonical compiler prefix, eg:
+
     $ export RISCV_PREFIX=riscv-none-embed-
     
-Running the tests
+And then you run the tests:
+
     $ make runtest
     
-this process is self checking, and will report a set of passing/failing tests at the end
+This process is self checking, and will report a set of passing/failing tests at the end:
+
     Test Passed andc
     Test Passed autoasm
     Test Passed bdep
@@ -84,9 +89,10 @@ this process is self checking, and will report a set of passing/failing tests at
     Summary: All Tests Passed
 
 ## Clean Sandbox
-To remove all generated filed
+To remove all generated files:
+
     $ make clean
  
-## Enhancing supported instructions in reference simulator
-Please contact Imperas : support@imperas.com
+## Enhancing supported instructions in the riscvOVPsim reference simulator
+If you  need changes to the instructions or want to make other additions or enhancements, please contact Imperas : support@imperas.com
 
