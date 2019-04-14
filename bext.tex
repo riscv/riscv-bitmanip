@@ -8,6 +8,67 @@ for use in emulators.
 
 The sections on encodings are mere placeholders.
 
+The final standard will likely define a range of Z-extensions for different bit
+manipulation instructions, with the ``B'' extension itself being a mix of
+instructions from those Z-extensions. It is completely unclear as of yet what
+this will look like, but an educated guess could look like this:
+
+\begin{center}
+\begin{tikzpicture}
+ \node (clz) { \textbf{clz, ctz} };
+ \node (pcnt) [below=0.5cm of clz.west,anchor=west] { \textbf{pcnt, andc} };
+ \node (cnot) [right=4.0cm of pcnt.west,anchor=west] { \textbf{c.not} };
+ \node (min) [below=0.5cm of pcnt.west,anchor=west] { \textbf{min[u], max[u]} };
+
+ \node (rol) [below=1.0cm of min.west,anchor=west] { \textbf{rol, ror[i]} };
+ \node (bswap) [below=0.5cm of rol.west,anchor=west] { \textbf{bswap, brev} };
+ \node (pswap) [right=4.0cm of bswap.west,anchor=west] { \textbf{pswap} };
+ \node (grev) [right=6.5cm of bswap.west,anchor=west] { \textbf{grev[i]} };
+
+ \node (zip) [below=1.0cm of bswap.west,anchor=west] { \textbf{zip, unzip, brev.p} };
+ \node (shuffle) [right=6.5cm of zip.west,anchor=west] { \textbf{shfl[i], unshfl[i]} };
+
+ \node (bext) [below=1.0cm of zip.west,anchor=west] { \textbf{bext, bdep} };
+
+ \node (clmul) [below=1.0cm of bext.west,anchor=west] { \textbf{clmul[h]} };
+
+ \node (cmov) [right=3.5cm of bext.west,anchor=north west] { \textbf{cmov, cmix} };
+ \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \textbf{fsl, fsr} };
+
+ \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \textbf{crc32.[bhwd]} };
+ \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \textbf{crc32c.[bhwd]} };
+
+ \node (bitmatxor) [right=3.5cm of crc32.west,anchor=west] { \textbf{bmat[x]or} };
+ \node (bitmatflip) [below=0.5cm of bitmatxor.west,anchor=west] { \textbf{bitmatflip} };
+
+ \begin{scope}[on background layer]
+   \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B} };
+   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) rectangle ($ (clmul.south west) + (6.0cm,-0.2cm) $);
+
+   \node (bmini) at ($ (clz.north west) + (-0.5cm,0) $) [rotate=90, above left, text=red] { \textbf{Zbmini} };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
+
+   \node (bperm) at ($ (rol.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (rol.north west) + (-0.2cm,0) $) rectangle ($ (shuffle.south east) + (0,0) $);
+
+   \node (bextdep) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbextdep} };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
+
+   \node (betrnary) at ($ (cmov.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbternary} };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
+
+   \node (bclmul) at ($ (clmul.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbclmul} };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (clmul.north west) + (-0.5cm,0) $) rectangle ($ (clmul.south west) + (3.0cm,0) $);
+
+   \node (bcrc) at ($ (crc32.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbcrc} };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.5cm,0) $) rectangle ($ (crc32c.south west) + (3.0cm,0) $);
+
+   \node (bmat) at ($ (bitmatxor.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbmat} };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (bitmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bitmatflip.south west) + (3.0cm,0) $);
+ \end{scope}
+\end{tikzpicture}
+\end{center}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
