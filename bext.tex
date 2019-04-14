@@ -682,6 +682,223 @@ They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Min/max instructions (\texttt{min, max, minu, maxu})}
+
+We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
+following semantics:
+
+\input{bextcref-minmax}
+
+Code that performs saturated arithmetic on a word size $<$ \texttt{XLEN} needs to perform
+min/max operations frequently. A simple way of performing those operations without branching
+can benefit those programs.
+
+SAT solvers spend a lot of time calculating the absolute value of a signed
+integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
+\texttt{max} (or \texttt{minu}) this is a two-instruction operation:
+
+\begin{verbatim}
+  neg a1, a0
+  max a0, a0, a1
+\end{verbatim}
+
+\input{bextminmax}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Carry-less multiply (\texttt{clmul, clmulh})}
+
+Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
+produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
+of the carry-less product.
+
+We need to coordinate with the crypto extension work group if carry-less multiply should
+be part of the B-extension or crypto-extension. (One possible option is to have a vectorized
+clmul instruction in the crypto-extension and a scalar version in the B-extension.)
+
+\input{bextcref-clmul}
+
+The classic applications for \texttt{clmul} are the GCM and CRC~\cite{FastCRC,Wolf18A}, but more
+applications exist, including the following examples.
+
+There are obvious applications in hashing and pseudo random number generations. For
+example, it has been reported that hashes based on carry-less multiplications can
+outperform Google's CityHash~\cite{CLHASH}.
+
+\texttt{clmul} of a number with itself inserts zeroes between each input bit. This can
+be useful for generating Morton code~\cite{MortonCode}.
+
+\texttt{clmul} of a number with -1 calculates the prefix XOR operation. This can
+be useful for decoding gray codes.
+
+Carry-less multiply can be used to implement Erasure code efficiently~\cite{ClmulErasureCode}.
+
+SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{CRC instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
+
+Unary CRC instructions that interpret the bits of rs1 as a CRC32/CRC32C state
+and perform a polynomial reduction of that state shifted left by 8, 16, 32, or
+64 bits.
+
+The instructions return the new CRC32/CRC32C state.
+
+The \texttt{crc32w}/\texttt{crc32cw} instructions are equivalent to executing
+\texttt{crc32h}/\texttt{crc32ch} twice, and \texttt{crc32h}/\texttt{crc32ch}
+instructions are equivalent to executing \texttt{crc32b}/\texttt{crc32cb}
+twice.
+
+All 8 CRC instructions operate on bit-reflected data.
+
+\input{bextcref-crc}
+
+Payload data must be XOR'ed into the LSB end of the state before executing the
+CRC instruction. The following code demonstrates the use of \texttt{crc32.b}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t crc32_demo(const uint8_t *p, int len)
+  {
+    uint32_t x = 0xffffffff;
+    for (int i = 0; i < len; i++) {
+      x = x ^ p[i];
+      x = crc32_b(x);
+    }
+    return ~x;
+  }
+\end{verbatim}
+\end{minipage}
+
+In terms of binary polynomial arithmetic those instructions perform the operation
+$$ \texttt{rd}'(x) = (\texttt{rs1}'(x) \cdot x^N) \; \textrm{mod} \; \{\texttt{1}, P'\}(x)\textrm, $$
+with $N \in \{8, 16, 32, 64\}$,
+$P = \texttt{0xEDB8\_8320}$ for CRC32 and $P = \texttt{0x82F6\_3B78}$ for CRC32C,
+$a'$ denoting the XLEN bit reversal of $a$,
+and $\{a, b\}$ denoting bit concatenation.
+Note that for example for CRC32 $\{\texttt{1}, P'\} = \texttt{0x1\_04C1\_1DB7}$
+on RV32 and $\{\texttt{1}, P'\} = \texttt{0x1\_04C1\_1DB7\_0000\_0000}$ on RV64.
+
+These dedicated CRC instructions are meant for RISC-V implementations without fast multiplier
+and therefore without fast \texttt{clmul[h]}. For implementations with fast \texttt{clmul[h]}
+it is recommended to use the methods described in~\cite{FastCRC} and demonstrated in~\cite{Wolf18A}
+that can process XLEN input bits using just one carry-less multiply for arbitrary CRC polynomials.
+
+In applications where those methods are not applicable it is possible to emulate the dedicated CRC
+instructions using two carry-less multiplies that implement a Barrett reduction. The following example
+implements a replacement for \texttt{crc32.w} (RV32).
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+crc32_w:
+  li t0, 0x04C11DB7
+  li t1, 0x04D101DF
+  brev a0, a0
+  clmulh a1, a0, t1
+  xor a1, a1, a0
+  clmul a0, a1, t0
+  brev a0, a0
+  ret
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
+
+These are 64-bit-only instruction that are not available on RV32. On RV128 they
+ignore the upper half of operands and set the upper half of the results to zero.
+
+This instructions interpret a 64-bit value as 8x8 binary matrix.
+
+\texttt{bmatxor} performs a matrix-matrix multiply with boolean AND as multiply
+operator and boolean XOR as addition operator.
+
+\texttt{bmator} performs a matrix-matrix multiply with boolean AND as multiply
+operator and boolean OR as addition operator.
+
+\texttt{bmatflip} is a unary operator that transposes the source matrix. It is
+equivalent to \texttt{zip; zip; zip} on RV64.
+
+Among other things, \texttt{bmatxor}/\texttt{bmator} can be used to perform
+arbitrary permutations of bits within each byte (permutation matrix as 2nd
+operand) or perform arbitrary permutations of bytes within a 64-bit word
+(permutation matrix as 1st operand).
+
+There are similar instructions in Cray XMT~\cite{CrayXMT}. The Cray X1
+architecture even has a full 64x64 bit matrix multiply unit~\cite{CrayX1}.
+
+The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cite[p.~182f]{Knuth4A}
+
+\input{bextcref-bmat}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conditional mix ({\tt cmix})}
+
+The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
+on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.
+
+\begin{verbatim}
+  and rd, rs1, rs2
+  andc t0, rs3, rs2
+  or rd, rd, t0
+\end{verbatim}
+
+Using {\tt cmix} a single butterfly or stage can be implemented in only two
+instructions. Thus, arbitrary bit-permutations can be implemented using only
+18 instruction (32 bit) or 22 instructions (64 bits).
+
+\input{bextcref-cmix}
+
+\section{Conditional move ({\tt cmov})}
+
+The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
+word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
+
+\input{bextcref-cmov}
+
+\section{Funnel shift ({\tt fsl}, {\tt fsr})}
+
+The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
+by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
+word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs2, and
+then writes the MSB half of the result to rd.
+
+The {\tt fsr rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
+by concatenating rs1 and rs3 (with rs1 in the LSB half), rotate-right-shifts that
+word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs2, and
+then writes the LSB half of the result to rd.
+
+\input{bextcref-fsl}
+
+\input{bextcref-fsr}
+
+A shift unit capable of either {\tt fsl} or {\tt fsr} is capable of performing all
+the other shift functions, including the other funnel shift, with only minimal additional
+logic.
+
+For any values of {\tt A}, {\tt C}, and {\tt C}:
+
+\begin{verbatim}
+  fsl(A, B, C) = fsr(A, -B, C)
+\end{verbatim}
+
+And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
+
+\begin{verbatim}
+  sll(x, shamt) == fsl(x, shamt, 0)
+  srl(x, shamt) == fsr(x, shamt, 0)
+  sra(x, shamt) == fsr(x, shamt, sext_x)
+  slo(x, shamt) == fsl(x, shamt, ~0)
+  sro(x, shamt) == fsr(x, shamt, ~0)
+  ror(x, shamt) == fsr(x, shamt, x)
+  rol(x, shamt) == fsl(x, shamt, x)
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Bit-field extract pseudo instruction ({\tt bfext})}
 \label{bfext}
 
