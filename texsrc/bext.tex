@@ -77,6 +77,16 @@ this will look like, but an educated guess could look like this:
 
 \subsection{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
 
+\begin{verbatim}
+  RV32, RV64:
+    clz rd, rs
+    ctz rd, rs
+
+  RV64 only:
+    clzw rd, rs
+    ctzw rd, rs
+\end{verbatim}
+
 The {\tt clz} operation counts the number of 0 bits at the MSB end of the
 argument.  That is, the number of 0 bits before the first 1 bit counting from
 the most significant bit. If the input is 0, the output is XLEN. If the input
@@ -88,11 +98,6 @@ output is 0.
 
 \input{bextcref-clz-ctz}
 
-\input{bextclz.tex}
-
-One possible encoding for \texttt{clz} and \texttt{ctz} is as standard I-type opcodes
-somewhere in the brownfield surrounding the shift-immediate instructions.
-
 % \subsection{References}
 %
 % https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
@@ -103,19 +108,27 @@ somewhere in the brownfield surrounding the shift-immediate instructions.
 
 \subsection{Count Bits Set (\texttt{pcnt})}
 
+\begin{verbatim}
+  RV32, RV64:
+    pcnt rd, rs
+
+  RV64 only:
+    pcntw rd, rs
+\end{verbatim}
+
 This instruction counts the number of 1 bits in a register. This operations is known as
 population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
 
 \input{bextcref-pcnt}
 
-\input{bextpcnt.tex}
-
-One possible encoding for \texttt{pcnt} is as a standard I-type opcode somewhere
-in the brownfield surrounding the shift-immediate instructions.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{And-with-complement (\texttt{andc})}
+
+\begin{verbatim}
+  RV32, RV64:
+    andc rd, rs1, rs2
+\end{verbatim}
 
 This instruction implements the and-with-complement operation.
 
@@ -125,8 +138,6 @@ Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
 by combining {\tt not} ({\tt c.not}) with the base ALU operation. (Which can
 fit in 32 bit when using two compressed instructions.) Only and-with-complement
 occurs frequently enough to warrant a dedicated instruction.
-
-\input{bextandc.tex}
 
 % \subsection{Justification}
 %
@@ -139,6 +150,20 @@ occurs frequently enough to warrant a dedicated instruction.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
+
+\begin{verbatim}
+  RV32, RV64:
+    min rd, rs1, rs2
+    max rd, rs1, rs2
+    minu rd, rs1, rs2
+    maxu rd, rs1, rs2
+
+  RV64 only:
+    minw rd, rs1, rs2
+    maxw rd, rs1, rs2
+    minuw rd, rs1, rs2
+    maxuw rd, rs1, rs2
+\end{verbatim}
 
 We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
 following semantics:
@@ -158,18 +183,28 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
   max a0, a0, a1
 \end{verbatim}
 
-\input{bextminmax}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
+
+\begin{verbatim}
+  RV32, RV64:
+    slo rd, rs1, rs2
+    sro rd, rs1, rs2
+    sloi rd, rs1, imm
+    sroi rd, rs1, imm
+
+  RV64 only:
+    slow rd, rs1, rs2
+    srow rd, rs1, rs2
+    sloiw rd, rs1, imm
+    sroiw rd, rs1, imm
+\end{verbatim}
 
 These instructions are similar to shift-logical operations from the base
 spec, except instead of shifting in zeros, they shift in ones.
 
 \input{bextcref-sxo}
-
-\input{bextsxo.tex}
 
 \texttt{s(l/r)o(i)} is encoded similarly to the logical shifts in the
 base spec. However, the spec of the entire family of instructions is
@@ -194,13 +229,23 @@ zero-shifts and logical ones-shifts.
 
 \subsection{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
 
+\begin{verbatim}
+  RV32, RV64:
+    ror rd, rs1, rs2
+    rol rd, rs1, rs2
+    rori rd, rs1, imm
+
+  RV64 only:
+    rorw rd, rs1, rs2
+    rolw rd, rs1, rs2
+    roriw rd, rs1, imm
+\end{verbatim}
+
 These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
 register, in order. This is also called `circular shift'.
 
 \input{bextcref-rox}
-
-\input{bextrox.tex}
 
 Rotate shift is implemented very similarly to the other shift
 instructions. One possible way to encode it is to re-use the way that
@@ -237,6 +282,12 @@ Bit 31 & Bit 30 & Meaning \\
 
 \subsection{Generalized Reverse (\texttt{grev,\ grevi})}
 \label{grev}
+
+\begin{verbatim}
+  RV32, RV64:
+    grev rd, rs1, rs2
+    grevi rd, rs1, imm
+\end{verbatim}
 
 This instruction provides a single hardware instruction that can implement all
 of byte-order swap, bitwise reversal, short-order-swap, word-order-swap
@@ -340,8 +391,6 @@ network with $log_2(\textrm{XLEN})$ stages. Figure~\ref{permnet-ror}
 shows the permutation network for {\tt ror} for reference.
 Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
 
-\input{bextgrev.tex}
-
 \texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
 encoded as standard I-type opcode. \texttt{grev} and \texttt{grevi} can
 use the instruction encoding for ``arithmetic shift left''.
@@ -358,6 +407,14 @@ use the instruction encoding for ``arithmetic shift left''.
 
 \subsection{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
 \label{gzip}
+
+\begin{verbatim}
+  RV32, RV64:
+    shfl rd, rs1, rs2
+    unshfl rd, rs1, rs2
+    shfli rd, rs1, imm
+    unshfli rd, rs1, imm
+\end{verbatim}
 
 Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
 extension, after rotary shift and generalized reverse. It implements a
@@ -621,11 +678,19 @@ on RV64:
 Another application for the zip instruction is generating Morton
 code~\cite[MortonCode].
 
-\input{bextshfl}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
+
+\begin{verbatim}
+  RV32, RV64:
+    bext rd, rs1, rs2
+    bdep rd, rs1, rs2
+
+  RV64 only:
+    bextw rd, rs1, rs2
+    bdepw rd, rs1, rs2
+\end{verbatim}
 
 This instructions implement the generic bit extract and bit deposit functions.
 This operation is also referred to as bit gather/scatter, bit pack/unpack,
@@ -660,8 +725,6 @@ concrete processor it is optimizing for. This is similar to the decision
 whether to use MUL or DIV with a constant, or to perform the same operation
 using a longer sequence of much simpler operations.
 
-\input{bextscagat.tex}
-
 % \subsection{Justification}
 %
 % http://svn.clifford.at/handicraft/2017/permsyn/
@@ -683,6 +746,15 @@ using a longer sequence of much simpler operations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Carry-less multiply (\texttt{clmul, clmulh})}
+
+\begin{verbatim}
+  RV32, RV64:
+    clmul rd, rs1, rs2
+    clmulh rd, rs1, rs2
+
+  RV64 only:
+    clmulw rd, rs1, rs2
+\end{verbatim}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
 produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
@@ -714,6 +786,20 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{CRC instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
+
+\begin{verbatim}
+  RV32, RV64:
+    crc32.b rd, rs
+    crc32.h rd, rs
+    crc32.w rd, rs
+    crc32c.b rd, rs
+    crc32c.h rd, rs
+    crc32c.w rd, rs
+
+  RV64 only:
+    crc32.d rd, rs
+    crc32c.d rd, rs
+\end{verbatim}
 
 Unary CRC instructions that interpret the bits of rs1 as a CRC32/CRC32C state
 and perform a polynomial reduction of that state shifted left by 8, 16, 32, or
@@ -783,6 +869,13 @@ crc32_w:
 
 \section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
 
+\begin{verbatim}
+  RV64 only:
+    bmator rd, rs1, rs2
+    bmatxor rd, rs1, rs2
+    bmatflip rd, rs
+\end{verbatim}
+
 These are 64-bit-only instruction that are not available on RV32. On RV128 they
 ignore the upper half of operands and set the upper half of the results to zero.
 
@@ -817,6 +910,11 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 \subsection{Conditional mix ({\tt cmix})}
 
+\begin{verbatim}
+  RV32, RV64:
+    cmix rd, rs1, rs2, rs2
+\end{verbatim}
+
 The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
 on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.
 
@@ -834,12 +932,23 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \subsection{Conditional move ({\tt cmov})}
 
+\begin{verbatim}
+  RV32, RV64:
+    cmov rd, rs1, rs2, rs2
+\end{verbatim}
+
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \input{bextcref-cmov}
 
 \subsection{Funnel shift ({\tt fsl}, {\tt fsr})}
+
+\begin{verbatim}
+  RV32, RV64:
+    fsl rd, rs1, rs2, rs2
+    fsr rd, rs1, rs2, rs2
+\end{verbatim}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
 by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
