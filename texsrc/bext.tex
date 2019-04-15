@@ -1,12 +1,12 @@
 \chapter{RISC-V Bitmanip Extension}
 \label{bext}
 
-In the proposals provided in this section, the C code examples are for
-illustration purposes. They are not optimal implementations, but are intended
-to specify the desired functionality. See Chapter~\ref{fastc} for fast C code
-for use in emulators.
+In the proposals provided in this chapter, the C code examples are for
+illustration purposes only. They are not optimal implementations, but are
+intended to specify the desired functionality. See Section~\ref{fastc} for fast
+C code for use in emulators.
 
-The sections on encodings are mere placeholders.
+The section on opcode encodings are mere placeholders.
 
 The final standard will likely define a range of Z-extensions for different bit
 manipulation instructions, with the ``B'' extension itself being a mix of
@@ -22,10 +22,10 @@ this will look like, but an educated guess could look like this:
 
  \node (rol) [below=1.0cm of min.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
- \node (pswap) [right=4.0cm of bswap.west,anchor=west] { \texttt{pswap} };
+ \node (brevp) [right=4.0cm of bswap.west,anchor=west] { \texttt{brev.p} };
  \node (grev) [right=6.5cm of bswap.west,anchor=west] { \texttt{grev[i]} };
 
- \node (zip) [below=1.0cm of bswap.west,anchor=west] { \texttt{zip, unzip, brev.p} };
+ \node (zip) [below=1.0cm of bswap.west,anchor=west] { \texttt{zip, unzip, zip.n} };
  \node (shuffle) [right=6.5cm of zip.west,anchor=west] { \texttt{shfl[i], unshfl[i]} };
 
  \node (bext) [below=1.0cm of zip.west,anchor=west] { \texttt{bext, bdep} };
