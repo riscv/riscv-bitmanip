@@ -71,7 +71,11 @@ this will look like, but an educated guess could look like this:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
+\section{Basic bit manipulation instructions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
 
 The {\tt clz} operation counts the number of 0 bits at the MSB end of the
 argument.  That is, the number of 0 bits before the first 1 bit counting from
@@ -97,7 +101,7 @@ somewhere in the brownfield surrounding the shift-immediate instructions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Count Bits Set (\texttt{pcnt})}
+\subsection{Count Bits Set (\texttt{pcnt})}
 
 This instruction counts the number of 1 bits in a register. This operations is known as
 population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
@@ -111,7 +115,7 @@ in the brownfield surrounding the shift-immediate instructions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{And-with-complement (\texttt{andc})}
+\subsection{And-with-complement (\texttt{andc})}
 
 This instruction implements the and-with-complement operation.
 
@@ -134,7 +138,31 @@ occurs frequently enough to warrant a dedicated instruction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
+\subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
+
+We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
+following semantics:
+
+\input{bextcref-minmax}
+
+Code that performs saturated arithmetic on a word size $<$ \texttt{XLEN} needs to perform
+min/max operations frequently. A simple way of performing those operations without branching
+can benefit those programs.
+
+SAT solvers spend a lot of time calculating the absolute value of a signed
+integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
+\texttt{max} (or \texttt{minu}) this is a two-instruction operation:
+
+\begin{verbatim}
+  neg a1, a0
+  max a0, a0, a1
+\end{verbatim}
+
+\input{bextminmax}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
 
 These instructions are similar to shift-logical operations from the base
 spec, except instead of shifting in zeros, they shift in ones.
@@ -160,7 +188,11 @@ zero-shifts and logical ones-shifts.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
+\section{Bit permutation instructions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
 
 These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
@@ -203,7 +235,7 @@ Bit 31 & Bit 30 & Meaning \\
 \label{permnet-ror}
 \end{figure}
 
-\section{Generalized Reverse (\texttt{grev,\ grevi})}
+\subsection{Generalized Reverse (\texttt{grev,\ grevi})}
 \label{grev}
 
 This instruction provides a single hardware instruction that can implement all
@@ -324,7 +356,7 @@ use the instruction encoding for ``arithmetic shift left''.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
+\subsection{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
 \label{gzip}
 
 Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
@@ -650,62 +682,6 @@ using a longer sequence of much simpler operations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.brev})}
-
-The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
-and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
-\texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as
-\texttt{sub\ rd,\ x0,\ rs}.
-
-In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations. But
-there are no compressed encodings for those operations because there is no \texttt{c.xori}
-instruction and \texttt{c.sub} can not operate on \texttt{x0}.
-
-Many bit manipulation operations that have dedicated opcodes in other ISAs
-must be constructed from smaller atoms in RISC-V Bitmanip code. But
-implementations might choose to implement them in a single micro-op using
-macro-op-fusion. For this it can be helpful when the fused sequences are short.
-\texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
-it can be helpful to have compressed opcodes for them.
-
-Likewise \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1}, i.e. bitwise
-reversal) is also a very common atom for building bit manipulation operations. So it
-is helpful to have a compressed opcode for this instruction as well.
-
-The compressed instructions \texttt{c.not,\ c.neg,\ c.brev} must be supported by
-all implementations that support the C extension and Bitmanip.
-
-\input{bextcompr}
-
-These three instructions fit nicely in the reserved space in C.LUI/C.ADDI16SP.
-They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Min/max instructions (\texttt{min, max, minu, maxu})}
-
-We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
-following semantics:
-
-\input{bextcref-minmax}
-
-Code that performs saturated arithmetic on a word size $<$ \texttt{XLEN} needs to perform
-min/max operations frequently. A simple way of performing those operations without branching
-can benefit those programs.
-
-SAT solvers spend a lot of time calculating the absolute value of a signed
-integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
-\texttt{max} (or \texttt{minu}) this is a two-instruction operation:
-
-\begin{verbatim}
-  neg a1, a0
-  max a0, a0, a1
-\end{verbatim}
-
-\input{bextminmax}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Carry-less multiply (\texttt{clmul, clmulh})}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
@@ -835,7 +811,11 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Conditional mix ({\tt cmix})}
+\section{Ternary bit-manipulation instructions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Conditional mix ({\tt cmix})}
 
 The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
 on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.
@@ -852,14 +832,14 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \input{bextcref-cmix}
 
-\section{Conditional move ({\tt cmov})}
+\subsection{Conditional move ({\tt cmov})}
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \input{bextcref-cmov}
 
-\section{Funnel shift ({\tt fsl}, {\tt fsr})}
+\subsection{Funnel shift ({\tt fsl}, {\tt fsr})}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
 by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
@@ -899,7 +879,43 @@ And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bit-field extract pseudo instruction ({\tt bfext})}
+\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.brev})}
+
+The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
+and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
+\texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as
+\texttt{sub\ rd,\ x0,\ rs}.
+
+In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations. But
+there are no compressed encodings for those operations because there is no \texttt{c.xori}
+instruction and \texttt{c.sub} can not operate on \texttt{x0}.
+
+Many bit manipulation operations that have dedicated opcodes in other ISAs
+must be constructed from smaller atoms in RISC-V Bitmanip code. But
+implementations might choose to implement them in a single micro-op using
+macro-op-fusion. For this it can be helpful when the fused sequences are short.
+\texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
+it can be helpful to have compressed opcodes for them.
+
+Likewise \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1}, i.e. bitwise
+reversal) is also a very common atom for building bit manipulation operations. So it
+is helpful to have a compressed opcode for this instruction as well.
+
+The compressed instructions \texttt{c.not,\ c.neg,\ c.brev} must be supported by
+all implementations that support the C extension and Bitmanip.
+
+\input{bextcompr}
+
+These three instructions fit nicely in the reserved space in C.LUI/C.ADDI16SP.
+They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Micro architectural considerations and macro-op fusion for bit-manipulation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Bit-field extract pseudo instruction ({\tt bfext})}
 \label{bfext}
 
 Extract the continuous bit field starting at {\tt pos} with length {\tt len}
