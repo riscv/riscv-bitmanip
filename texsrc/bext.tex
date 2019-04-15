@@ -45,7 +45,7 @@ this will look like, but an educated guess could look like this:
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B} };
    \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) rectangle ($ (clmul.south west) + (6.0cm,-0.2cm) $);
 
-   \node (bmini) at ($ (clz.north west) + (-0.5cm,0) $) [rotate=90, above left, text=red] { \textbf{Zbmini} };
+   \node (bmini) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbmini} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
 
    \node (bperm) at ($ (rol.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
@@ -77,8 +77,7 @@ this will look like, but an educated guess could look like this:
 
 \subsection{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     clz rd, rs
     ctz rd, rs
@@ -86,8 +85,7 @@ this will look like, but an educated guess could look like this:
   RV64 only:
     clzw rd, rs
     ctzw rd, rs
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 The {\tt clz} operation counts the number of 0 bits at the MSB end of the
 argument.  That is, the number of 0 bits before the first 1 bit counting from
@@ -110,15 +108,13 @@ output is 0.
 
 \subsection{Count Bits Set (\texttt{pcnt})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     pcnt rd, rs
 
   RV64 only:
     pcntw rd, rs
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 This instruction counts the number of 1 bits in a register. This operations is known as
 population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
@@ -129,12 +125,10 @@ population count, popcount, sideways sum, bit summation, or Hamming weight.~\cit
 
 \subsection{And-with-complement (\texttt{andc})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     andc rd, rs1, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 This instruction implements the and-with-complement operation.
 
@@ -157,8 +151,7 @@ occurs frequently enough to warrant a dedicated instruction.
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     min rd, rs1, rs2
     max rd, rs1, rs2
@@ -170,8 +163,7 @@ occurs frequently enough to warrant a dedicated instruction.
     maxw rd, rs1, rs2
     minuw rd, rs1, rs2
     maxuw rd, rs1, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
 following semantics:
@@ -197,8 +189,7 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
 
 \subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     slo rd, rs1, rs2
     sro rd, rs1, rs2
@@ -210,8 +201,7 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
     srow rd, rs1, rs2
     sloiw rd, rs1, imm
     sroiw rd, rs1, imm
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 These instructions are similar to shift-logical operations from the base
 spec, except instead of shifting in zeros, they shift in ones.
@@ -241,8 +231,7 @@ zero-shifts and logical ones-shifts.
 
 \subsection{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     ror rd, rs1, rs2
     rol rd, rs1, rs2
@@ -252,8 +241,7 @@ zero-shifts and logical ones-shifts.
     rorw rd, rs1, rs2
     rolw rd, rs1, rs2
     roriw rd, rs1, imm
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
@@ -297,13 +285,11 @@ Bit 31 & Bit 30 & Meaning \\
 \subsection{Generalized Reverse (\texttt{grev,\ grevi})}
 \label{grev}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     grev rd, rs1, rs2
     grevi rd, rs1, imm
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 This instruction provides a single hardware instruction that can implement all
 of byte-order swap, bitwise reversal, short-order-swap, word-order-swap
@@ -424,15 +410,13 @@ use the instruction encoding for ``arithmetic shift left''.
 \subsection{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
 \label{gzip}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     shfl rd, rs1, rs2
     unshfl rd, rs1, rs2
     shfli rd, rs1, imm
     unshfli rd, rs1, imm
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
 extension, after rotary shift and generalized reverse. It implements a
@@ -706,8 +690,7 @@ code~\cite[MortonCode].
 
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     bext rd, rs1, rs2
     bdep rd, rs1, rs2
@@ -715,8 +698,7 @@ code~\cite[MortonCode].
   RV64 only:
     bextw rd, rs1, rs2
     bdepw rd, rs1, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 This instructions implement the generic bit extract and bit deposit functions.
 This operation is also referred to as bit gather/scatter, bit pack/unpack,
@@ -775,16 +757,14 @@ using a longer sequence of much simpler operations.
 
 \section{Carry-less multiply (\texttt{clmul, clmulh})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     clmul rd, rs1, rs2
     clmulh rd, rs1, rs2
 
   RV64 only:
     clmulw rd, rs1, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
 produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
@@ -817,8 +797,7 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
 
 \section{CRC instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     crc32.b rd, rs
     crc32.h rd, rs
@@ -830,8 +809,7 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
   RV64 only:
     crc32.d rd, rs
     crc32c.d rd, rs
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 Unary CRC instructions that interpret the bits of rs1 as a CRC32/CRC32C state
 and perform a polynomial reduction of that state shifted left by 8, 16, 32, or
@@ -901,14 +879,12 @@ crc32_w:
 
 \section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV64 only:
     bmator rd, rs1, rs2
     bmatxor rd, rs1, rs2
     bmatflip rd, rs
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 These are 64-bit-only instruction that are not available on RV32. On RV128 they
 ignore the upper half of operands and set the upper half of the results to zero.
@@ -944,12 +920,10 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 \subsection{Conditional mix ({\tt cmix})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     cmix rd, rs1, rs2, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
 on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.

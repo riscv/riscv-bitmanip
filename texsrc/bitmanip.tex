@@ -4,11 +4,20 @@
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage[normalem]{ulem}
 \usepackage{multicol}
+\usepackage{fancyvrb}
 \usepackage{tikz}
 \usetikzlibrary{patterns}
 \usetikzlibrary{positioning}
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{calc}
+
+\DefineVerbatimEnvironment{rvb}{Verbatim}{%
+  samepage=true,
+  label=RISC-V Bitmanip ISA,
+  labelposition=topline,
+  frame=single,
+  framerule=0.8mm
+}
 
 \DeclareRobustCommand{\hsout}[1]{\texorpdfstring{\sout{#1}}{#1}}
 
