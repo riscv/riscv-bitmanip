@@ -1,7 +1,7 @@
 all: document runtest
 
 document:
-	bitmanip.sh
+	bash bitmanip.sh 3
 
 autoasm:
 	make -C asmtests/auto
