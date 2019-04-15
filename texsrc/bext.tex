@@ -39,8 +39,8 @@ this will look like, but an educated guess could look like this:
  \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \texttt{crc32.[bhwd]} };
  \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \texttt{crc32c.[bhwd]} };
 
- \node (bitmatxor) [right=3.5cm of crc32.west,anchor=west] { \texttt{bmat[x]or} };
- \node (bitmatflip) [below=0.5cm of bitmatxor.west,anchor=west] { \texttt{bitmatflip} };
+ \node (bmatxor) [right=3.5cm of crc32.west,anchor=west] { \texttt{bmat[x]or} };
+ \node (bmatflip) [below=0.5cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B} };
@@ -64,8 +64,8 @@ this will look like, but an educated guess could look like this:
    \node (bcrc) at ($ (crc32.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbcrc} };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.5cm,0) $) rectangle ($ (crc32c.south west) + (3.0cm,0) $);
 
-   \node (bmat) at ($ (bitmatxor.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbmat} };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (bitmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bitmatflip.south west) + (3.0cm,0) $);
+   \node (bmat) at ($ (bmatxor.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbmat} };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (bmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
  \end{scope}
 \end{tikzpicture}
 \end{center}
@@ -878,7 +878,7 @@ crc32_w:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
+\section{Bit-matrix operations (\texttt{bmatxor, bmator, bmatflip})}
 
 \begin{rvb}
   RV64 only:
