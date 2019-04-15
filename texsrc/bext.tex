@@ -879,35 +879,47 @@ And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Compressed instructions (\texttt{c.not,\ c.neg,\ c.brev})}
+\section{Compressed NOT instructions (\texttt{c.not})}
 
 The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
 and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
-\texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as
-\texttt{sub\ rd,\ x0,\ rs}.
+\texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as \texttt{sub\ rd,\ x0,\ rs}.
 
-In bitmanipulation code \texttt{not} and \texttt{neg} are very common operations. But
-there are no compressed encodings for those operations because there is no \texttt{c.xori}
-instruction and \texttt{c.sub} can not operate on \texttt{x0}.
+In bitmanipulation code \texttt{not} is a very common operations. But there are
+no compressed encodings for those operations because there is no
+\texttt{c.xori} instruction.
 
 Many bit manipulation operations that have dedicated opcodes in other ISAs
 must be constructed from smaller atoms in RISC-V Bitmanip code. But
 implementations might choose to implement them in a single micro-op using
 macro-op-fusion. For this it can be helpful when the fused sequences are short.
-\texttt{not} and \texttt{neg} are good candidates for macro-op-fusion, so
-it can be helpful to have compressed opcodes for them.
+\texttt{not} is a good candidate for macro-op-fusion, so it can be helpful to
+have compressed opcodes for them.
 
-Likewise \texttt{brev} (an alias for \texttt{grevi\ rd,\ rs,\ -1}, i.e. bitwise
-reversal) is also a very common atom for building bit manipulation operations. So it
-is helpful to have a compressed opcode for this instruction as well.
+The compressed instructions \texttt{c.not} must be supported by all
+implementations that support the C extension and Bitmanip.
 
-The compressed instructions \texttt{c.not,\ c.neg,\ c.brev} must be supported by
-all implementations that support the C extension and Bitmanip.
+An encoding with the constraint \texttt{rd $=$ rs} would fit nicely in the reserved
+space in \texttt{c.addi16sp/c.lui}.
 
-\input{bextcompr}
+\input{bextcompr-var1}
 
-These three instructions fit nicely in the reserved space in C.LUI/C.ADDI16SP.
-They only occupy $0.1\%$ of the $\approx15.6$ bits wide RVC encoding space.
+Without this constraint it would fit nicely in one of the two reserved ALU slots in
+RVC Quadrant 1.
+
+\input{bextcompr-var2}
+
+A \texttt{c.not} instruction would be most useful as a prefix for macro-op fusion
+if it supported \texttt{rd $\neq$ rs}. For postfix-fusion the constraint \texttt{rd $=$ rs}
+is acceptable. Experiments will show which version has the best trade-off between
+utility and used compressed encoding space.
+
+The entire RVC encoding space is $15.585$~bits wide, the remaining reserved
+encoding space in RVC is $11.155$~bits wide, not including space that is only reserved
+on RV32/RV64. This means that above encodings would use $0.0065\%$ or $0.13\%$
+of the RVC encoding space respectively, or $1.4\%$ or $2.8\%$ of the reserved
+RVC encoding space respectively. Preliminary experiments have show that NOT
+instructions make up approximately $1\%$ of bitmanipulation code.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
