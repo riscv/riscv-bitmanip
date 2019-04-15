@@ -1,0 +1,194 @@
+# RISC-V Bit Manipulation Instruction Support
+#
+# Copyright (c) 2019, Imperas Software Ltd. Additions
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#      * Redistributions of source code must retain the above copyright
+#        notice, this list of conditions and the following disclaimer.
+#      * Redistributions in binary form must reproduce the above copyright
+#        notice, this list of conditions and the following disclaimer in the
+#        documentation and/or other materials provided with the distribution.
+#      * the name of Imperas Software Ltd. nor the
+#        names of its contributors may be used to endorse or promote products
+#        derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Codasip Ltd., Imperas Software Ltd.
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+.include "extB.S.include"
+
+# use s0(r8)  - s1(r9)
+# use s2(r18) - s11(r27)
+
+.macro test_SLO imm1 imm2
+    WRITE_LOG_N str1
+    WRITE_S sep
+    li s3, \imm1
+    li s4, \imm2
+    SLO 18 19 20
+    WRITE_RAW s3
+    WRITE_S op
+    WRITE_RAW s4
+    WRITE_S gives
+    WRITE_RAW s2
+    WRITE_NL
+.endm
+
+START_TEST:
+    test_SLO 0x00000000 0x00000000
+    test_SLO 0x00000000 0x00000001
+    test_SLO 0x00000000 0x00000002
+    test_SLO 0x00000000 0x00000003
+    test_SLO 0x00000000 0x00000004
+    test_SLO 0x00000000 0x00000005
+    test_SLO 0x00000000 0x00000006
+    test_SLO 0x00000000 0x00000007
+    test_SLO 0x00000000 0x00000008
+    test_SLO 0x00000000 0x00000009
+    test_SLO 0x00000000 0x0000000a
+    test_SLO 0x00000000 0x0000000b
+    test_SLO 0x00000000 0x0000000c
+    test_SLO 0x00000000 0x0000000d
+    test_SLO 0x00000000 0x0000000e
+    test_SLO 0x00000000 0x0000000f
+    test_SLO 0x00000000 0x00000010
+    test_SLO 0x00000000 0x00000011
+    test_SLO 0x00000000 0x00000012
+    test_SLO 0x00000000 0x00000013
+    test_SLO 0x00000000 0x00000014
+    test_SLO 0x00000000 0x00000015
+    test_SLO 0x00000000 0x00000016
+    test_SLO 0x00000000 0x00000017
+    test_SLO 0x00000000 0x00000018
+    test_SLO 0x00000000 0x00000019
+    test_SLO 0x00000000 0x0000001a
+    test_SLO 0x00000000 0x0000001b
+    test_SLO 0x00000000 0x0000001c
+    test_SLO 0x00000000 0x0000001d
+    test_SLO 0x00000000 0x0000001e
+    test_SLO 0x00000000 0x0000001f
+
+    test_SLO 0x00000001 0x00000000
+    test_SLO 0x00000001 0x00000001
+    test_SLO 0x00000001 0x00000002
+    test_SLO 0x00000001 0x00000003
+    test_SLO 0x00000001 0x00000004
+    test_SLO 0x00000001 0x00000005
+    test_SLO 0x00000001 0x00000006
+    test_SLO 0x00000001 0x00000007
+    test_SLO 0x00000001 0x00000008
+    test_SLO 0x00000001 0x00000009
+    test_SLO 0x00000001 0x0000000a
+    test_SLO 0x00000001 0x0000000b
+    test_SLO 0x00000001 0x0000000c
+    test_SLO 0x00000001 0x0000000d
+    test_SLO 0x00000001 0x0000000e
+    test_SLO 0x00000001 0x0000000f
+    test_SLO 0x00000001 0x00000010
+    test_SLO 0x00000001 0x00000011
+    test_SLO 0x00000001 0x00000012
+    test_SLO 0x00000001 0x00000013
+    test_SLO 0x00000001 0x00000014
+    test_SLO 0x00000001 0x00000015
+    test_SLO 0x00000001 0x00000016
+    test_SLO 0x00000001 0x00000017
+    test_SLO 0x00000001 0x00000018
+    test_SLO 0x00000001 0x00000019
+    test_SLO 0x00000001 0x0000001a
+    test_SLO 0x00000001 0x0000001b
+    test_SLO 0x00000001 0x0000001c
+    test_SLO 0x00000001 0x0000001d
+    test_SLO 0x00000001 0x0000001e
+    test_SLO 0x00000001 0x0000001f
+
+    test_SLO 0x55555555 0x00000000
+    test_SLO 0x55555555 0x00000001
+    test_SLO 0x55555555 0x00000002
+    test_SLO 0x55555555 0x00000003
+    test_SLO 0x55555555 0x00000004
+    test_SLO 0x55555555 0x00000005
+    test_SLO 0x55555555 0x00000006
+    test_SLO 0x55555555 0x00000007
+    test_SLO 0x55555555 0x00000008
+    test_SLO 0x55555555 0x00000009
+    test_SLO 0x55555555 0x0000000a
+    test_SLO 0x55555555 0x0000000b
+    test_SLO 0x55555555 0x0000000c
+    test_SLO 0x55555555 0x0000000d
+    test_SLO 0x55555555 0x0000000e
+    test_SLO 0x55555555 0x0000000f
+    test_SLO 0x55555555 0x00000010
+    test_SLO 0x55555555 0x00000011
+    test_SLO 0x55555555 0x00000012
+    test_SLO 0x55555555 0x00000013
+    test_SLO 0x55555555 0x00000014
+    test_SLO 0x55555555 0x00000015
+    test_SLO 0x55555555 0x00000016
+    test_SLO 0x55555555 0x00000017
+    test_SLO 0x55555555 0x00000018
+    test_SLO 0x55555555 0x00000019
+    test_SLO 0x55555555 0x0000001a
+    test_SLO 0x55555555 0x0000001b
+    test_SLO 0x55555555 0x0000001c
+    test_SLO 0x55555555 0x0000001d
+    test_SLO 0x55555555 0x0000001e
+    test_SLO 0x55555555 0x0000001f
+
+    test_SLO 0xFFFFFFFF 0x00000000
+    test_SLO 0xFFFFFFFE 0x00000000
+    test_SLO 0xFFFFFFFC 0x00000001
+    test_SLO 0xFFFFFFF8 0x00000002
+    test_SLO 0xFFFFFFF0 0x00000003
+    test_SLO 0xFFFFFFE0 0x00000004
+    test_SLO 0xFFFFFFC0 0x00000005
+    test_SLO 0xFFFFFF80 0x00000006
+    test_SLO 0xFFFFFF00 0x00000007
+    test_SLO 0xFFFFFE00 0x00000008
+    test_SLO 0xFFFFFC00 0x00000009
+    test_SLO 0xFFFFF800 0x0000000a
+    test_SLO 0xFFFFF000 0x0000000b
+    test_SLO 0xFFFFE000 0x0000000c
+    test_SLO 0xFFFFC000 0x0000000d
+    test_SLO 0xFFFF8000 0x0000000e
+    test_SLO 0xFFFF0000 0x0000000f
+    test_SLO 0xFFFE0000 0x00000010
+    test_SLO 0xFFFC0000 0x00000011
+    test_SLO 0xFFF80000 0x00000012
+    test_SLO 0xFFF00000 0x00000013
+    test_SLO 0xFFE00000 0x00000014
+    test_SLO 0xFFC00000 0x00000015
+    test_SLO 0xFF800000 0x00000016
+    test_SLO 0xFF000000 0x00000017
+    test_SLO 0xFE000000 0x00000018
+    test_SLO 0xFC000000 0x00000019
+    test_SLO 0xF8000000 0x0000001a
+    test_SLO 0xF0000000 0x0000001b
+    test_SLO 0xE0000000 0x0000001c
+    test_SLO 0xC0000000 0x0000001d
+    test_SLO 0x80000000 0x0000001e
+    test_SLO 0x00000000 0x0000001f
+
+
+    EXIT_TEST
+
+str1:
+    .string "Testing SLO"
+
+sep:
+    .string " "
+
+gives:
+    .string " => "
+
+op:
+    .string " (OP) "
