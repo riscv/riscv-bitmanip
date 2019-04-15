@@ -1,8 +1,9 @@
 #!/bin/bash
 set -ex
+cd texsrc
 
-if [ ! -f bextcref-printperm.dat ] || [ bextcref-printperm -ot cproofs/common.h ] || [ bextcref-printperm -ot cproofs/printperm.cc ]; then
-	clang++ -Wall -o bextcref-printperm.exe cproofs/printperm.cc
+if [ ! -f bextcref-printperm.dat ] || [ bextcref-printperm -ot ../cproofs/common.h ] || [ bextcref-printperm -ot ../cproofs/printperm.cc ]; then
+	clang++ -Wall -o bextcref-printperm.exe ../cproofs/printperm.cc
 	./bextcref-printperm.exe > bextcref-printperm.dat
 fi
 
@@ -11,3 +12,5 @@ for ((i=0; i<${1:-1}; i++)); do
 	pdflatex bitmanip
 	bibtex bitmanip
 done
+
+mv bitmanip.pdf ..

@@ -15,31 +15,31 @@ this will look like, but an educated guess could look like this:
 
 \begin{center}
 \begin{tikzpicture}
- \node (clz) { \textbf{clz, ctz} };
- \node (pcnt) [below=0.5cm of clz.west,anchor=west] { \textbf{pcnt, andc} };
- \node (cnot) [right=4.0cm of pcnt.west,anchor=west] { \textbf{c.not} };
- \node (min) [below=0.5cm of pcnt.west,anchor=west] { \textbf{min[u], max[u]} };
+ \node (clz) { \texttt{clz, ctz} };
+ \node (pcnt) [below=0.5cm of clz.west,anchor=west] { \texttt{pcnt, andc} };
+ \node (cnot) [right=4.0cm of pcnt.west,anchor=west] { \texttt{c.not} };
+ \node (min) [below=0.5cm of pcnt.west,anchor=west] { \texttt{min[u], max[u]} };
 
- \node (rol) [below=1.0cm of min.west,anchor=west] { \textbf{rol, ror[i]} };
- \node (bswap) [below=0.5cm of rol.west,anchor=west] { \textbf{bswap, brev} };
- \node (pswap) [right=4.0cm of bswap.west,anchor=west] { \textbf{pswap} };
- \node (grev) [right=6.5cm of bswap.west,anchor=west] { \textbf{grev[i]} };
+ \node (rol) [below=1.0cm of min.west,anchor=west] { \texttt{rol, ror[i]} };
+ \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
+ \node (pswap) [right=4.0cm of bswap.west,anchor=west] { \texttt{pswap} };
+ \node (grev) [right=6.5cm of bswap.west,anchor=west] { \texttt{grev[i]} };
 
- \node (zip) [below=1.0cm of bswap.west,anchor=west] { \textbf{zip, unzip, brev.p} };
- \node (shuffle) [right=6.5cm of zip.west,anchor=west] { \textbf{shfl[i], unshfl[i]} };
+ \node (zip) [below=1.0cm of bswap.west,anchor=west] { \texttt{zip, unzip, brev.p} };
+ \node (shuffle) [right=6.5cm of zip.west,anchor=west] { \texttt{shfl[i], unshfl[i]} };
 
- \node (bext) [below=1.0cm of zip.west,anchor=west] { \textbf{bext, bdep} };
+ \node (bext) [below=1.0cm of zip.west,anchor=west] { \texttt{bext, bdep} };
 
- \node (clmul) [below=1.0cm of bext.west,anchor=west] { \textbf{clmul[h]} };
+ \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[h]} };
 
- \node (cmov) [right=3.5cm of bext.west,anchor=north west] { \textbf{cmov, cmix} };
- \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \textbf{fsl, fsr} };
+ \node (cmov) [right=3.5cm of bext.west,anchor=north west] { \texttt{cmov, cmix} };
+ \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr} };
 
- \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \textbf{crc32.[bhwd]} };
- \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \textbf{crc32c.[bhwd]} };
+ \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \texttt{crc32.[bhwd]} };
+ \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \texttt{crc32c.[bhwd]} };
 
- \node (bitmatxor) [right=3.5cm of crc32.west,anchor=west] { \textbf{bmat[x]or} };
- \node (bitmatflip) [below=0.5cm of bitmatxor.west,anchor=west] { \textbf{bitmatflip} };
+ \node (bitmatxor) [right=3.5cm of crc32.west,anchor=west] { \texttt{bmat[x]or} };
+ \node (bitmatflip) [below=0.5cm of bitmatxor.west,anchor=west] { \texttt{bitmatflip} };
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B} };

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-with open("cproofs/insns.h", "r") as infile:
+with open("../cproofs/insns.h", "r") as infile:
     outfile = None
     breakstate = 1
     for line in infile:
