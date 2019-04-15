@@ -18,7 +18,8 @@ this will look like, but an educated guess could look like this:
  \node (clz) { \texttt{clz, ctz} };
  \node (pcnt) [below=0.5cm of clz.west,anchor=west] { \texttt{pcnt, andc} };
  \node (cnot) [right=4.0cm of pcnt.west,anchor=west] { \texttt{c.not} };
- \node (min) [below=0.5cm of pcnt.west,anchor=west] { \texttt{min[u], max[u]} };
+ \node (slo) [below=0.5cm of pcnt.west,anchor=west] { \texttt{slo[i], sro[i]} };
+ \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
 
  \node (rol) [below=1.0cm of min.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
@@ -1047,7 +1048,7 @@ The entire RVC encoding space is $15.585$~bits wide, the remaining reserved
 encoding space in RVC is $11.155$~bits wide, not including space that is only reserved
 on RV32/RV64. This means that above encodings would use $0.0065\%$ or $0.13\%$
 of the RVC encoding space respectively, or $1.4\%$ or $2.8\%$ of the reserved
-RVC encoding space respectively. Preliminary experiments have show that NOT
+RVC encoding space respectively. Preliminary experiments have shown that NOT
 instructions make up approximately $1\%$ of bitmanipulation code.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1056,27 +1057,91 @@ instructions make up approximately $1\%$ of bitmanipulation code.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Bit-field extract pseudo instruction ({\tt bfext})}
-\label{bfext}
+\subsection{Fast {\tt MUL}, {\tt MULH}, {\tt MULHSU}, {\tt MULHU}}
 
-Extract the continuous bit field starting at {\tt pos} with length {\tt len}
-from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and
-$\texttt{pos}+\texttt{len}\le\textrm{XLEN}$).
+A lot of bit manipulation code depends on ``multiply with magic number''-tricks. Often those
+tricks need the upper half of the $2 \cdot \textrm{XLEN}$ product. Therefore decent performance
+for the \texttt{MUL} and especially \texttt{MULH[[S]U]} instructions is important for fast
+bit manipulation code.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fused NOT instructions}
+
+Preliminary experiments have shown that NOT instructions make up approximately
+$1\%$ of bitmanipulation code size, more when looking at dynamic instruction count.~\cite{Wolf17A}
+
+Therefore it makes sense to fuse NOT instructions with other ALU instructions, if possible.
+
+The most important form of NOT fusion is postfix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  bfext rd, rs, pos, len   ->   slli rd, rs, (XLEN-pos-len)
-                                srli rd, rd, (XLEN-len)
+  alu_op rd, rs1, rs2
+  not rd, rd
+\end{verbatim}
+\end{minipage}
+
+But there is also additional value in prefix fusion:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  not rd, rs1
+  alu_op rd, rd, rs2
+
+  not rd, rs2
+  alu_op rd, rs1, rd
+\end{verbatim}
+\end{minipage}
+
+The compressed NOT instructions {\tt c.not} helps keeping those fused sequences short.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fused {\tt slli-srli} and {\tt slli-srai} sequences}
+
+Pairs of left end right shifts are common operations for extracting a bit field.
+
+To extract the continuous bit field starting at {\tt pos} with length {\tt len}
+from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and
+$\texttt{pos}+\texttt{len}\le\textrm{XLEN}$):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  slli rd, rs, (XLEN-len-pos)
+  srli rd, rd, (XLEN-len)
+\end{verbatim}
+\end{minipage}
+
+Using \texttt{srai} instead of \texttt{srli} will sign-extend the extracted bit-field.
+
+Similarly, placing a bit field with length {\tt len} at the position {\tt pos}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  slli rd, rs, (XLEN-len)
+  srli rd, rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
 
 If possible, an implementation should fuse this two shift operations into a single
-macro-op. (Some implementers have raised concerns about the lack of a dedicated
-bit field extract instruction with large immediate, especially for implementations
-that can not fuse instructions into macro-ops and/or implementations that do
-not support compressed instructions. See Chapter~\ref{bfxp} for a brief discussion
-of why no such instruction is part of the RISC-V Bitmanip Extension, and a
-short separate extension proposal that adds such an instruction.)
+macro-op.
+
+Note that the 2nd shift instruction can use a compressed encoding, yielding a 48-bit fused instruction.
+
+For mask generation the following 48-bit sequence can be used to create a mask with a continous
+run of 1 bits of length {\tt len} at position {\tt pos}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  c.li rd, -1
+  c.slli rd, (XLEN-len)
+  c.srli rd, (XLEN-len-pos)
+\end{verbatim}
+\end{minipage}
+
+This can be a useful sequence on RV64, where loading an arbitrary 64-bit constant would usually
+require at least 96 bits (using \texttt{c.ld}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
