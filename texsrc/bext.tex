@@ -77,6 +77,7 @@ this will look like, but an educated guess could look like this:
 
 \subsection{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     clz rd, rs
@@ -86,6 +87,7 @@ this will look like, but an educated guess could look like this:
     clzw rd, rs
     ctzw rd, rs
 \end{verbatim}
+\end{minipage}
 
 The {\tt clz} operation counts the number of 0 bits at the MSB end of the
 argument.  That is, the number of 0 bits before the first 1 bit counting from
@@ -108,6 +110,7 @@ output is 0.
 
 \subsection{Count Bits Set (\texttt{pcnt})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     pcnt rd, rs
@@ -115,6 +118,7 @@ output is 0.
   RV64 only:
     pcntw rd, rs
 \end{verbatim}
+\end{minipage}
 
 This instruction counts the number of 1 bits in a register. This operations is known as
 population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
@@ -125,10 +129,12 @@ population count, popcount, sideways sum, bit summation, or Hamming weight.~\cit
 
 \subsection{And-with-complement (\texttt{andc})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     andc rd, rs1, rs2
 \end{verbatim}
+\end{minipage}
 
 This instruction implements the and-with-complement operation.
 
@@ -151,6 +157,7 @@ occurs frequently enough to warrant a dedicated instruction.
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     min rd, rs1, rs2
@@ -164,6 +171,7 @@ occurs frequently enough to warrant a dedicated instruction.
     minuw rd, rs1, rs2
     maxuw rd, rs1, rs2
 \end{verbatim}
+\end{minipage}
 
 We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
 following semantics:
@@ -178,15 +186,18 @@ SAT solvers spend a lot of time calculating the absolute value of a signed
 integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
 \texttt{max} (or \texttt{minu}) this is a two-instruction operation:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   neg a1, a0
   max a0, a0, a1
 \end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     slo rd, rs1, rs2
@@ -200,6 +211,7 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
     sloiw rd, rs1, imm
     sroiw rd, rs1, imm
 \end{verbatim}
+\end{minipage}
 
 These instructions are similar to shift-logical operations from the base
 spec, except instead of shifting in zeros, they shift in ones.
@@ -229,6 +241,7 @@ zero-shifts and logical ones-shifts.
 
 \subsection{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     ror rd, rs1, rs2
@@ -240,6 +253,7 @@ zero-shifts and logical ones-shifts.
     rolw rd, rs1, rs2
     roriw rd, rs1, imm
 \end{verbatim}
+\end{minipage}
 
 These instructions are similar to shift-logical operations from the base
 spec, except they shift in the values from the opposite side of the
@@ -283,11 +297,13 @@ Bit 31 & Bit 30 & Meaning \\
 \subsection{Generalized Reverse (\texttt{grev,\ grevi})}
 \label{grev}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     grev rd, rs1, rs2
     grevi rd, rs1, imm
 \end{verbatim}
+\end{minipage}
 
 This instruction provides a single hardware instruction that can implement all
 of byte-order swap, bitwise reversal, short-order-swap, word-order-swap
@@ -408,6 +424,7 @@ use the instruction encoding for ``arithmetic shift left''.
 \subsection{Generalized Shuffle (\texttt{shfl}, \texttt{unshfl}, \texttt{shfli}, \texttt{unshfli})}
 \label{gzip}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     shfl rd, rs1, rs2
@@ -415,6 +432,7 @@ use the instruction encoding for ``arithmetic shift left''.
     shfli rd, rs1, imm
     unshfli rd, rs1, imm
 \end{verbatim}
+\end{minipage}
 
 Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
 extension, after rotary shift and generalized reverse. It implements a
@@ -630,6 +648,7 @@ in the lower quarter of the input word by a spacing of 4 bits.
 For example, the following code calculates the bitwise prefix sum of the bits
 in the lower byte of a 32 bit word on RV32:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   andi a0, a0, 0xff
   zip a0, a0
@@ -641,6 +660,7 @@ in the lower byte of a 32 bit word on RV32:
   slli a1, a0, 16
   c.add a0, a1
 \end{verbatim}
+\end{minipage}
 
 The final prefix sum is stored in the 8 nibbles of the {\tt a0} output word.
 
@@ -648,6 +668,7 @@ Similarly, the following code stores the indices of the set bits in the LSB
 nibbles of the output word (with the LSB bit having index 1), with the unused
 MSB nibbles in the output set to zero:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   andi a0, a0, 0xff
   zip a0, a0
@@ -660,11 +681,13 @@ MSB nibbles in the output set to zero:
   and a1, a0, a1
   bext a0, a1, a0
 \end{verbatim}
+\end{minipage}
 
 Other {\tt zip} modes can be used to ``fan-out'' in blocks of 2, 4, 8, or 16 bit.
 {\tt zip} can be combined with {\tt grevi} to perform inner shuffles. For example
 on RV64:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   li a0, 0x0000000012345678
   zip4 t0, a0    ; <- 0x0102030405060708
@@ -674,6 +697,7 @@ on RV64:
   zip16 t4, a0   ; <- 0x0000123400005678
   hswap.w t5, t4 ; <- 0x1234000056780000
 \end{verbatim}
+\end{minipage}
 
 Another application for the zip instruction is generating Morton
 code~\cite[MortonCode].
@@ -682,6 +706,7 @@ code~\cite[MortonCode].
 
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     bext rd, rs1, rs2
@@ -691,6 +716,7 @@ code~\cite[MortonCode].
     bextw rd, rs1, rs2
     bdepw rd, rs1, rs2
 \end{verbatim}
+\end{minipage}
 
 This instructions implement the generic bit extract and bit deposit functions.
 This operation is also referred to as bit gather/scatter, bit pack/unpack,
@@ -713,11 +739,13 @@ cases where the mask argument is not constant.
 For example, the following code efficiently calculates the index of the tenth
 set bit in {\tt a0} using \texttt{bdep}:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   li a1, 0x00000200
   bdep a0, a1, a0
   ctz a0, a0
 \end{verbatim}
+\end{minipage}
 
 For cases with a constant mask an optimizing compiler would decide when to use
 \texttt{bext} or \texttt{bdep} based on the optimization profile for the
@@ -747,6 +775,7 @@ using a longer sequence of much simpler operations.
 
 \section{Carry-less multiply (\texttt{clmul, clmulh})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     clmul rd, rs1, rs2
@@ -755,6 +784,7 @@ using a longer sequence of much simpler operations.
   RV64 only:
     clmulw rd, rs1, rs2
 \end{verbatim}
+\end{minipage}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
 produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
@@ -787,6 +817,7 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
 
 \section{CRC instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     crc32.b rd, rs
@@ -800,6 +831,7 @@ SPARC introduced similar instructions (XMULX, XMULXHI) in SPARC T3 in 2010.
     crc32.d rd, rs
     crc32c.d rd, rs
 \end{verbatim}
+\end{minipage}
 
 Unary CRC instructions that interpret the bits of rs1 as a CRC32/CRC32C state
 and perform a polynomial reduction of that state shifted left by 8, 16, 32, or
@@ -869,12 +901,14 @@ crc32_w:
 
 \section{Bit-matrix operations (\texttt{bmatxor, bmator, bitmatflip})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV64 only:
     bmator rd, rs1, rs2
     bmatxor rd, rs1, rs2
     bmatflip rd, rs
 \end{verbatim}
+\end{minipage}
 
 These are 64-bit-only instruction that are not available on RV32. On RV128 they
 ignore the upper half of operands and set the upper half of the results to zero.
@@ -910,19 +944,23 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 \subsection{Conditional mix ({\tt cmix})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     cmix rd, rs1, rs2, rs2
 \end{verbatim}
+\end{minipage}
 
 The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
 on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   and rd, rs1, rs2
   andc t0, rs3, rs2
   or rd, rd, t0
 \end{verbatim}
+\end{minipage}
 
 Using {\tt cmix} a single butterfly or stage can be implemented in only two
 instructions. Thus, arbitrary bit-permutations can be implemented using only
@@ -932,10 +970,12 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \subsection{Conditional move ({\tt cmov})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     cmov rd, rs1, rs2, rs2
 \end{verbatim}
+\end{minipage}
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
@@ -944,11 +984,13 @@ word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \subsection{Funnel shift ({\tt fsl}, {\tt fsr})}
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   RV32, RV64:
     fsl rd, rs1, rs2, rs2
     fsr rd, rs1, rs2, rs2
 \end{verbatim}
+\end{minipage}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
 by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
@@ -970,12 +1012,15 @@ logic.
 
 For any values of {\tt A}, {\tt C}, and {\tt C}:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   fsl(A, B, C) = fsr(A, -B, C)
 \end{verbatim}
+\end{minipage}
 
 And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   sll(x, shamt) == fsl(x, shamt, 0)
   srl(x, shamt) == fsr(x, shamt, 0)
@@ -985,6 +1030,7 @@ And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
   ror(x, shamt) == fsr(x, shamt, x)
   rol(x, shamt) == fsl(x, shamt, x)
 \end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1043,10 +1089,12 @@ Extract the continuous bit field starting at {\tt pos} with length {\tt len}
 from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and
 $\texttt{pos}+\texttt{len}\le\textrm{XLEN}$).
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   bfext rd, rs, pos, len   ->   slli rd, rs, (XLEN-pos-len)
                                 srli rd, rd, (XLEN-len)
 \end{verbatim}
+\end{minipage}
 
 If possible, an implementation should fuse this two shift operations into a single
 macro-op. (Some implementers have raised concerns about the lack of a dedicated
