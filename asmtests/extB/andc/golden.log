@@ -1,0 +1,8 @@
+LOG: Testing ANDC 00000000 (OP) 00000000 => 00000000
+LOG: Testing ANDC 00000000 (OP) ffffffff => 00000000
+LOG: Testing ANDC ffffffff (OP) ffffffff => 00000000
+LOG: Testing ANDC ffffffff (OP) 00000000 => ffffffff
+LOG: Testing ANDC f0f0f0f0 (OP) 00000000 => f0f0f0f0
+LOG: Testing ANDC f0f0f0f0 (OP) 0f0f0f0f => f0f0f0f0
+LOG: Testing ANDC f0f0f0f0 (OP) ffffffff => 00000000
+LOG: Testing ANDC f0f0f0f0 (OP) f0f0f0f0 => 00000000
