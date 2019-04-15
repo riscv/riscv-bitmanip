@@ -945,12 +945,10 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \subsection{Conditional move ({\tt cmov})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     cmov rd, rs1, rs2, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
@@ -959,13 +957,11 @@ word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \subsection{Funnel shift ({\tt fsl}, {\tt fsr})}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
+\begin{rvb}
   RV32, RV64:
     fsl rd, rs1, rs2, rs2
     fsr rd, rs1, rs2, rs2
-\end{verbatim}
-\end{minipage}
+\end{rvb}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
 by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
