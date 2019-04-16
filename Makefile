@@ -1,7 +1,7 @@
 all: document runtest
 
 document:
-	cd texsrc && bash bitmanip.sh 3
+	cd texsrc && bash bitmanip.sh 5
 	cp texsrc/bitmanip.pdf .
 
 autoasm:
