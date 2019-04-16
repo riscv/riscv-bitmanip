@@ -11,7 +11,7 @@ The section on opcode encodings are mere placeholders.
 The final standard will likely define a range of Z-extensions for different bit
 manipulation instructions, with the ``B'' extension itself being a mix of
 instructions from those Z-extensions. It is completely unclear as of yet what
-this will look like, but an educated guess could look like this:
+this will look like, but a guess could look like this:
 
 \begin{center}
 \begin{tikzpicture}
@@ -43,10 +43,10 @@ this will look like, but an educated guess could look like this:
  \node (bmatflip) [below=0.5cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
 
  \begin{scope}[on background layer]
-   \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B} };
+   \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
    \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) rectangle ($ (clmul.south west) + (6.0cm,-0.2cm) $);
 
-   \node (bmini) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbmini} };
+   \node (bmini) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbmini$^?$} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
 
    \node (bperm) at ($ (rol.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
@@ -69,6 +69,19 @@ this will look like, but an educated guess could look like this:
  \end{scope}
 \end{tikzpicture}
 \end{center}
+
+The main open questions of course relate to what should and shouldn't be
+included in ``B'', and what should or shouldn't be included in ``Zbmini''.
+This decisions will be informed in big part by evaluations of the cost and
+added value for the individual instructions.
+
+With regard to ``B'', the open questions are:
+\begin{itemize}
+\item Should {\tt clmul[h]} be included, or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
+\item Should Zbternary be included? It adds a large architectural cost by adding instructions with three source operands.
+\item Should Zbextdep be included? Should Zbmat be included?
+\item Which Zbperm pseudo-ops should be included in ``B''?
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
