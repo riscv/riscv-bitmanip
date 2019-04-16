@@ -19,18 +19,19 @@ RUN_TARGET = \
         --override riscvOVPsim/cpu/user_version=2.3 \
         --override riscvOVPsim/cpu/priv_version=1.11
 
-export RISCV_CC      ?= riscv-none-embed-gcc
-export RISCV_OBJDUMP ?= riscv-none-embed-objdump
+export RISCV_PREFIX  ?= riscv-none-embed-
+export RISCV_CC      ?= $(RISCV_PREFIX)gcc
+export RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
 
 all: 
-	make -C extB $@
-	make run
-	make verify
-	
+	$(MAKE) -C extB $@
+	$(MAKE) run
+	$(MAKE) verify
+
 run: $(LOG)
 
 verify:
-	@ verify.sh
+	@ bash verify.sh
 
 %.log: %.elf FORCE
 	$(RUN_TARGET) --program $(<) --logfile $(@).tmp
@@ -39,6 +40,6 @@ verify:
 	@ rm -f $(@).tmp
 
 clean:
-	make -C extB $@
+	$(MAKE) -C extB $@
 	
 FORCE:

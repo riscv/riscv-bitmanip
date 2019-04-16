@@ -5,14 +5,14 @@ document:
 	cp texsrc/bitmanip.pdf .
 
 autoasm:
-	make -C asmtests/auto
+	$(MAKE) -C asmtests/auto
 
 runtest: autoasm
-	make -C asmtests
+	$(MAKE) -C asmtests
 
 clean:
-	make -C asmtests/auto clean
-	make -C asmtests clean
+	$(MAKE) -C asmtests/auto clean
+	$(MAKE) -C asmtests clean
 
 help:
 	@echo "Targets"
