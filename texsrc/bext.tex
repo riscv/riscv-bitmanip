@@ -209,14 +209,10 @@ spec, except instead of shifting in zeros, they shift in ones.
 
 \input{bextcref-sxo}
 
-\texttt{s(l/r)o(i)} is encoded similarly to the logical shifts in the
-base spec. However, the spec of the entire family of instructions is
-changed so that the high bit of the instruction indicates the value to
-be inserted during a shift. This means that a \texttt{sloi} instruction
-can be encoded similarly to an \texttt{slli} instruction, but with a 1
-in the highest bit of the encoded instruction. This encoding is
-backwards compatible with the definition for the shifts in the base
-spec, but allows for simple addition of a ones-insert.
+ISAs with flag registers often have a "Shift in Carry" or "Rotate through Carry" instruction.
+Arguably a "Shift Ones" is an equivalent on an ISA like RISC-V that avoids such flag registers.
+
+The main application for the Shift Ones instruction is mask generation.
 
 When implementing this circuit, the only change in the ALU over a
 standard logical shift is that the value shifted in is not zero, but is
