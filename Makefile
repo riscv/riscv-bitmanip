@@ -1,7 +1,8 @@
 all: document runtest
 
 document:
-	bash bitmanip.sh 3
+	cd texsrc && bash bitmanip.sh 3
+	cp texsrc/bitmanip.pdf .
 
 autoasm:
 	make -C asmtests/auto
