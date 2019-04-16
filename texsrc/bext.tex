@@ -299,6 +299,10 @@ Bit 31 & Bit 30 & Meaning \\
   RV32, RV64:
     grev rd, rs1, rs2
     grevi rd, rs1, imm
+
+  RV64 only:
+    grevw rd, rs1, rs2
+    greviw rd, rs1, imm
 \end{rvb}
 
 This instruction provides a single hardware instruction that can implement all
@@ -426,6 +430,12 @@ use the instruction encoding for ``arithmetic shift left''.
     unshfl rd, rs1, rs2
     shfli rd, rs1, imm
     unshfli rd, rs1, imm
+
+  RV64 only:
+    shflw rd, rs1, rs2
+    unshflw rd, rs1, rs2
+    shfliw rd, rs1, imm
+    unshfliw rd, rs1, imm
 \end{rvb}
 
 Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
@@ -1237,6 +1247,12 @@ opcodes.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
+|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  GREVW
+|  0100000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  GREVIW
+|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
+|  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
+|  00001000     |  imm  |   rs1   | 001 |    rd   |   0011011   |  SHFLIW
+|  00001000     |  imm  |   rs1   | 101 |    rd   |   0011011   |  UNSHFLIW
 |  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  BDEPW
 |  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  MINW
