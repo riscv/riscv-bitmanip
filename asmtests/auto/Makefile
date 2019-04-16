@@ -6,5 +6,3 @@ asmgen.exe: asmgen.c
 	
 clean:
 	- rm asmgen.exe
-	- rm random.asm
-	
