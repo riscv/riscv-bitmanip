@@ -1,7 +1,11 @@
 ELF = $(wildcard extB/object/*/test.elf)
 LOG = $(ELF:.elf=.log)
 
-TARGET_SIM ?= ../riscv-ovpsim/bin/Linux64/riscvOVPsim.exe
+ifeq ($(OS),Windows_NT)
+    TARGET_SIM ?= ../riscv-ovpsim/bin/Windows64/riscvOVPsim.exe
+else
+    TARGET_SIM ?= ../riscv-ovpsim/bin/Linux64/riscvOVPsim.exe
+endif
 
 ifeq ($(shell command -v $(TARGET_SIM) 2> /dev/null),)
     $(error Target simulator executable '$(TARGET_SIM)` not found)
