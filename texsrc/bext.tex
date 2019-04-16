@@ -1113,7 +1113,7 @@ The compressed NOT instructions {\tt c.not} helps keeping those fused sequences 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Fused {\tt slli-srli} and {\tt slli-srai} sequences}
+\subsection{Fused {\tt *-srli} and {\tt *-srai} sequences}
 
 Pairs of left end right shifts are common operations for extracting a bit field.
 
@@ -1139,18 +1139,27 @@ Similarly, placing a bit field with length {\tt len} at the position {\tt pos}:
 \end{verbatim}
 \end{minipage}
 
-If possible, an implementation should fuse this two shift operations into a single
-macro-op.
-
-Note that the 2nd shift instruction can use a compressed encoding, yielding a 48-bit fused instruction.
-
-For mask generation the following 48-bit sequence can be used to create a mask with a continous
-run of 1 bits of length {\tt len} at position {\tt pos}:
+If possible, an implementation should fuse the following macro ops:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  c.li rd, -1
-  c.slli rd, (XLEN-len)
+  alu_op rd, rs1, rs2
+  srli rd, rd, imm
+
+  alu_op rd, rs1, rs2
+  srai rd, rd, imm
+\end{verbatim}
+\end{minipage}
+
+Note that the postfix right shift instruction can use a compressed encoding,
+yielding a 48-bit fused instruction if {\tt alu\_op} is a 32-bit instruction.
+
+For generating masks, i.e. constants with one continous run of 1 bits, a sequence
+like the following can be used that would utilize postfix fusion of right shifts:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  sroi rd, len
   c.srli rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
