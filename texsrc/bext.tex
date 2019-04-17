@@ -1134,8 +1134,8 @@ Similarly, placing a bit field with length {\tt len} at the position {\tt pos}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  slli rd, rs, (XLEN-len)
-  srli rd, rd, (XLEN-len-pos)
+  slli rd, rs, (XLEN-len-pos)
+  srli rd, rd, (XLEN-len)
 \end{verbatim}
 \end{minipage}
 
@@ -1185,8 +1185,8 @@ Assembler pseudo-ops for {\tt c.sr[la]i} postfix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  ext  rd, rs, len, pos    ->   slli rd, rs, (XLEN-len); c.srai rd, (XLEN-len-pos)
-  extu rd, rs, len, pos    ->   slli rd, rs, (XLEN-len); c.srli rd, (XLEN-len-pos)
+  ext  rd, rs, len, pos    ->   slli rd, rs, (XLEN-len-pos); c.srai rd, (XLEN-len)
+  extu rd, rs, len, pos    ->   slli rd, rs, (XLEN-len-pos); c.srli rd, (XLEN-len)
   mak  rd, len, pos        ->   sroi rd, zero, len; c.srli rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
