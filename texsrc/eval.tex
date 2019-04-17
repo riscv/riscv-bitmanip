@@ -1017,6 +1017,7 @@ Rank and select are fundamental operations in succinct data structures~\cite{Sel
 \texttt{select(a0, a1)} returns the position of the \texttt{a1}th set bit in \texttt{a0}.
 It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   select:
     li a2, 1
@@ -1025,10 +1026,12 @@ It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
     ctz a0, a0
     ret
 \end{verbatim}
+\end{minipage}
 
 \texttt{rank(a0, a1)} returns the number of set bits in \texttt{a0} up to and
 including position \texttt{a1}.
 
+\begin{minipage}{\linewidth}
 \begin{verbatim}
   rank:
     not a1, a1
@@ -1036,6 +1039,73 @@ including position \texttt{a1}.
     pcnt a0, a0
     ret
 \end{verbatim}
+\end{minipage}
+
+\section{Inverting Xorshift RNGs}
+
+Xorshift RNGs are a class of fast RNGs for different bit widths. There are 648
+Xorshift RNGs for 32 bits, but this is the one that the author of the original
+Xorshift RNG paper recommends.~\cite[p. 4]{Xorshift}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t xorshift32(uint32_t x)
+  {
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+This function of course has been designed and selected so it's efficient, even
+without special bit-manipulation instructions. So let's look at the inverse
+instead. First, the na\"ive form of inverting this function:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t xorshift32_inv(uint32_t x)
+  {
+    uint32_t t;
+    t = x ^ (x << 5);
+    t = x ^ (t << 5);
+    t = x ^ (t << 5);
+    t = x ^ (t << 5);
+    t = x ^ (t << 5);
+    x = x ^ (t << 5);
+    x = x ^ (x >> 17);
+    t = x ^ (x << 13);
+    x = x ^ (t << 13);
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+This are 18 RISC-V instructions, not including the function call overhead.
+
+Obviously the C statement {\tt x = x \^{} (x >> 17);} is already its own inverse
+(because $17 \ge XLEN/2$) and therefore already pretty effecient. But the two
+other blocks can easily be implemented using a single {\tt clmul} instruction each:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t xorshift32_inv(uint32_t x)
+  {
+    x = clmul(x, 0x42108421);
+    x = x ^ (x >> 17);
+    x = clmul(x, 0x04002001);
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+This are 8 RISC-V instructions, including 4 instructions for loading the
+constants, but not including the function call overhead.
+
+Note that an optimizing compiler could easily generate the clmul instructions and the magic
+constants from the C code for the na\"ive implementation. ({\tt 0x04002001 = (1 << 2*13) | (1 << 13) | 1}
+and {\tt 0x42108421 = (1 << 6*5) | (1 << 5*5) | \dots | (1 << 5) | 1})
 
 \section{Decoding RISC-V Immediates}
 
