@@ -1159,13 +1159,40 @@ like the following can be used that would utilize postfix fusion of right shifts
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  sroi rd, len
+  sroi rd, zero, len
   c.srli rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
 
 This can be a useful sequence on RV64, where loading an arbitrary 64-bit constant would usually
 require at least 96 bits (using \texttt{c.ld}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Pseudo-ops for fused sequences}
+
+Assembler pseudo-ops for {\tt c.not} postfix fusion:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  nand rd, rs1, rs2        ->   and rd, rs1, rs2; c.not rd
+  nor  rd, rs1, rs2        ->   or  rd, rs1, rs2; c.not rd
+  xnor rd, rs1, rs2        ->   xor rd, rs1, rs2; c.not rd
+\end{verbatim}
+\end{minipage}
+
+Assembler pseudo-ops for {\tt c.sr[la]i} postfix fusion:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  ext  rd, rs1, len, pos   ->   slli rd, rs, (XLEN-len); c.srai rd, (XLEN-len-pos)
+  extu rd, rs1, len, pos   ->   slli rd, rs, (XLEN-len); c.srli rd, (XLEN-len-pos)
+  mak  rd, len, pos        ->   sroi rd, zero, len; c.srli rd, (XLEN-len-pos)
+\end{verbatim}
+\end{minipage}
+
+The names {\tt ext}, {\tt extu}, and {\tt mak} are borrowed from m88k, that had
+dedicated instructions with equivalent semantics.~\cite[p.~3-28]{m88k}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
