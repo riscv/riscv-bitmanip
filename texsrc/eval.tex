@@ -1085,7 +1085,7 @@ instead. First, the na\"ive form of inverting this function:
 This are 18 RISC-V instructions, not including the function call overhead.
 
 Obviously the C statement {\tt x = x \^{} (x >> 17);} is already its own inverse
-(because $17 \ge XLEN/2$) and therefore already pretty effecient. But the two
+(because $17 \ge XLEN/2$) and therefore already has an effecient inverse. But the two
 other blocks can easily be implemented using a single {\tt clmul} instruction each:
 
 \begin{minipage}{\linewidth}
@@ -1103,7 +1103,7 @@ other blocks can easily be implemented using a single {\tt clmul} instruction ea
 This are 8 RISC-V instructions, including 4 instructions for loading the
 constants, but not including the function call overhead.
 
-Note that an optimizing compiler could easily generate the clmul instructions and the magic
+An optimizing compiler could easily generate the clmul instructions and the magic
 constants from the C code for the na\"ive implementation. ({\tt 0x04002001 = (1 << 2*13) | (1 << 13) | 1}
 and {\tt 0x42108421 = (1 << 6*5) | (1 << 5*5) | \dots | (1 << 5) | 1})
 
