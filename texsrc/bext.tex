@@ -1185,8 +1185,8 @@ Assembler pseudo-ops for {\tt c.sr[la]i} postfix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  ext  rd, rs1, len, pos   ->   slli rd, rs, (XLEN-len); c.srai rd, (XLEN-len-pos)
-  extu rd, rs1, len, pos   ->   slli rd, rs, (XLEN-len); c.srli rd, (XLEN-len-pos)
+  ext  rd, rs, len, pos    ->   slli rd, rs, (XLEN-len); c.srai rd, (XLEN-len-pos)
+  extu rd, rs, len, pos    ->   slli rd, rs, (XLEN-len); c.srli rd, (XLEN-len-pos)
   mak  rd, len, pos        ->   sroi rd, zero, len; c.srli rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
