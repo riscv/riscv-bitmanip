@@ -1097,7 +1097,7 @@ The most important form of NOT fusion is postfix fusion:
 \end{verbatim}
 \end{minipage}
 
-But there is also additional value in prefix fusion:
+But there may also be additional value in prefix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1109,7 +1109,7 @@ But there is also additional value in prefix fusion:
 \end{verbatim}
 \end{minipage}
 
-The compressed NOT instructions {\tt c.not} helps keeping those fused sequences short.
+The compressed NOT instruction {\tt c.not} helps keeping those fused sequences short.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1166,6 +1166,25 @@ like the following can be used that would utilize postfix fusion of right shifts
 
 This can be a useful sequence on RV64, where loading an arbitrary 64-bit constant would usually
 require at least 96 bits (using \texttt{c.ld}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fused ternary ALU sequences}
+
+Architectures with support for ternary operations may want to support fusing two ALU operations.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  alu_op rd, ...
+  alu_op rd, rd, ...
+\end{verbatim}
+\end{minipage}
+
+This would be a postfix-fusion pattern, extending the postfix shift-right
+fusion described in the previous section.
+
+Candidates for this kind of postfix fusion would be simple ALU operations, such
+as AND/OR/XOR/ADD/SUB.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
