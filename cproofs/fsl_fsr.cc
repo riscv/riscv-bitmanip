@@ -40,39 +40,77 @@ void fsl_via_fsr(uint32_t A, uint32_t B, uint32_t C)
 	assert(ref == res);
 }
 
-void shift_ids(uint32_t x, int shamt)
+uint32_t shift32(uint32_t x, int shamt, uint32_t y)
 {
-	uint32_t sext_x = int32_t(x) >> 31;
-	shamt &= 31;
-
-	assert(rv32b::sll(x, shamt) == rv32b::fsl(x, shamt, 0));
-	assert(rv32b::srl(x, shamt) == rv32b::fsr(x, shamt, 0));
-	assert(rv32b::sra(x, shamt) == rv32b::fsr(x, shamt, sext_x));
-	assert(rv32b::slo(x, shamt) == rv32b::fsl(x, shamt, ~0));
-	assert(rv32b::sro(x, shamt) == rv32b::fsr(x, shamt, ~0));
-	assert(rv32b::ror(x, shamt) == rv32b::fsr(x, shamt, x));
-	assert(rv32b::rol(x, shamt) == rv32b::fsl(x, shamt, x));
+	return rv32b::fsr(x, shamt, y);
 }
 
-void shiftw_ids(uint64_t x, int shamt, uint64_t y, uint64_t dc)
+void shift32_ids(uint32_t x, int shamt, uint32_t y)
 {
-	uint64_t xs = (int64_t)(int32_t)x;  // sign exteded from lower 32-bit
-	uint64_t x0 = (uint32_t)x;          // zero extended from lower 32-bit
-	uint64_t x1 = x0 | (~0LL << 32);    // ones extended from lower 32-bit
-	uint64_t xx = x0 | (x0 << 32);      // lower 32-bit copied to upper half
-	uint64_t sext_x = int64_t(x) >> 64;
+	uint32_t sx = int32_t(x) >> 31;
+	int sh6 = shamt & 63;
+	int sh5 = shamt & 31;
 
-	uint64_t y0 = (uint32_t)y;
-	uint64_t xy = x0 | (y0 << 32);
+	assert(rv32b::sll(x, sh5) == shift32(x, -sh5,  0));
+	assert(rv32b::srl(x, sh5) == shift32(x,  sh5,  0));
+	assert(rv32b::sra(x, sh5) == shift32(x,  sh5, sx));
+	assert(rv32b::slo(x, sh5) == shift32(x, -sh5, ~0));
+	assert(rv32b::sro(x, sh5) == shift32(x,  sh5, ~0));
+	assert(rv32b::rol(x, sh5) == shift32(x, -sh5,  x));
+	assert(rv32b::ror(x, sh5) == shift32(x,  sh5,  x));
 
-	assert(rv32b::sll(x, shamt) == (uint32_t)rv64b::fsl(x0, shamt & 31, 0));
-	assert(rv32b::srl(x, shamt) == (uint32_t)rv64b::fsr(x0, shamt & 31, 0));
-	assert(rv32b::sra(x, shamt) == (uint32_t)rv64b::fsr(xs, shamt & 31, sext_x));
-	assert(rv32b::slo(x, shamt) == (uint32_t)rv64b::fsl(x1, shamt & 31, ~0));
-	assert(rv32b::sro(x, shamt) == (uint32_t)rv64b::fsr(x1, shamt & 31, ~0));
-	assert(rv32b::ror(x, shamt) == (uint32_t)rv64b::fsr(xx, shamt & 31, xx));
-	assert(rv32b::rol(x, shamt) == (uint32_t)rv64b::fsl(xx, shamt & 31, xx));
+	assert(rv32b::fsl(x, sh6, y) == shift32(x, -sh6, y));
+	assert(rv32b::fsr(x, sh6, y) == shift32(x,  sh6, y));
+}
 
-	assert(rv32b::fsl(x, shamt, y) == (uint32_t)rv64b::fsl(xy, shamt & 63, xy));
-	assert(rv32b::fsr(x, shamt, y) == (uint32_t)rv64b::fsr(xy, shamt & 63, xy));
+uint64_t shift64(uint64_t x, int shamt, uint64_t y)
+{
+	return rv64b::fsr(x, shamt, y);
+}
+
+void shift64_ids(uint64_t x, int shamt, uint64_t y)
+{
+	uint64_t sx = int64_t(x) >> 63;
+	int sh7 = shamt & 127;
+	int sh6 = shamt & 63;
+
+	assert(rv64b::sll(x, sh6) == shift64(x, -sh6,  0));
+	assert(rv64b::srl(x, sh6) == shift64(x,  sh6,  0));
+	assert(rv64b::sra(x, sh6) == shift64(x,  sh6, sx));
+	assert(rv64b::slo(x, sh6) == shift64(x, -sh6, ~0));
+	assert(rv64b::sro(x, sh6) == shift64(x,  sh6, ~0));
+	assert(rv64b::rol(x, sh6) == shift64(x, -sh6,  x));
+	assert(rv64b::ror(x, sh6) == shift64(x,  sh6,  x));
+
+	assert(rv64b::fsl(x, sh7, y) == shift64(x, -sh7, y));
+	assert(rv64b::fsr(x, sh7, y) == shift64(x,  sh7, y));
+}
+
+uint32_t shift64w(uint64_t x, int shamt, uint64_t y)
+{
+	// X = XH:XL, Y = YH:YL
+	x <<= 32, x >>= 32;
+	y = (x |= y << 32);
+	// X = YL:XL, Y = YL:XL
+
+	return rv64b::fsr(x, shamt, y);
+}
+
+void shift64w_ids(uint64_t x, int shamt, uint64_t y)
+{
+	uint64_t sx = int64_t(x << 32) >> 63;
+	int sh6 = shamt & 63;
+	int sh5 = shamt & 31;
+
+	assert(rv32b::sll(x, sh5) == shift64w(x, -sh5,  0));
+	assert(rv32b::srl(x, sh5) == shift64w(x,  sh5,  0));
+
+	assert(rv32b::sra(x, sh5) == shift64w(x,  sh5, sx));
+	assert(rv32b::slo(x, sh5) == shift64w(x, -sh5, ~0));
+	assert(rv32b::sro(x, sh5) == shift64w(x,  sh5, ~0));
+	assert(rv32b::rol(x, sh5) == shift64w(x, -sh5,  x));
+	assert(rv32b::ror(x, sh5) == shift64w(x,  sh5,  x));
+
+	assert(rv32b::fsl(x, sh6, y) == shift64w(x, -sh6, y));
+	assert(rv32b::fsr(x, sh6, y) == shift64w(x,  sh6, y));
 }
