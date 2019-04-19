@@ -134,6 +134,13 @@ uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- packw
+uint64_t packw(uint32_t rs1, uint32_t rs2)
+{
+	return ((uint64_t)rs1 << 32) | rs2;
+}
+// --REF-END--
+
 // --REF-BEGIN-- bext
 uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
 {

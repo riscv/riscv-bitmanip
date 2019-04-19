@@ -15,10 +15,10 @@ this will look like, but a guess could look like this:
 
 \begin{center}
 \begin{tikzpicture}
- \node (clz) { \texttt{clz, ctz} };
- \node (pcnt) [below=0.5cm of clz.west,anchor=west] { \texttt{pcnt, andc} };
- \node (cnot) [right=4.0cm of pcnt.west,anchor=west] { \texttt{c.not} };
- \node (slo) [below=0.5cm of pcnt.west,anchor=west] { \texttt{slo[i], sro[i]} };
+ \node (clz) { \texttt{clz, ctz, pcnt} };
+ \node (andc) [below=0.5cm of clz.west,anchor=west] { \texttt{andc, packw} };
+ \node (cnot) [right=4.0cm of andc.west,anchor=west] { \texttt{c.not} };
+ \node (slo) [below=0.5cm of andc.west,anchor=west] { \texttt{slo[i], sro[i]} };
  \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
 
  \node (rol) [below=1.0cm of min.west,anchor=west] { \texttt{rol, ror[i]} };
@@ -160,6 +160,46 @@ occurs frequently enough to warrant a dedicated instruction.
 % \subsection{References}
 %
 % http://www.hackersdelight.org/basics2.pdf
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Pack 32-bit words (\texttt{packw}, RV64 only)}
+
+\begin{rvb}
+  RV64 only:
+    packw rd, rs1, rs2
+\end{rvb}
+
+This RV64-only instruction packs the 32-bit lower halfs of rs1 and rs2 into
+rd, with rs1 in the upper half and rs2 in the lower half.
+
+\input{bextcref-packw}
+
+Applications include 32-bit funnel shifts, zero-extend 32 bit values, duplicate the lower
+32 bits (e.g. for mask creation), and loading unsigned 32 constants.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  ; 0xffff0000ffff0000
+  li rd, 0xffff0000
+  packw rd, rd, rd
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  ; Same as FSLW
+  packw rd, rs1, rs3
+  rolw rd, rd, rs2
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  ; Clear the upper 32 bits of rd
+  packw rd, zero, rd
+\end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -897,7 +937,7 @@ crc32_w:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bit-matrix operations (\texttt{bmatxor, bmator, bmatflip})}
+\section{Bit-matrix operations (\texttt{bmatxor, bmator, bmatflip}, RV64 only)}
 
 \begin{rvb}
   RV64 only:
@@ -946,7 +986,11 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 \end{rvb}
 
 The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
-on the bits in the control word {\tt rs2}. It is equivalent to the following sequence.
+on the bits in the control word {\tt rs2}.
+
+\input{bextcref-cmix}
+
+It is equivalent to the following sequence.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -956,11 +1000,9 @@ on the bits in the control word {\tt rs2}. It is equivalent to the following seq
 \end{verbatim}
 \end{minipage}
 
-Using {\tt cmix} a single butterfly or stage can be implemented in only two
+Using {\tt cmix} a single butterfly stage can be implemented in only two
 instructions. Thus, arbitrary bit-permutations can be implemented using only
 18 instruction (32 bit) or 22 instructions (64 bits).
-
-\input{bextcref-cmix}
 
 \subsection{Conditional move ({\tt cmov})}
 
@@ -1284,6 +1326,7 @@ opcodes.
 |  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMUL
 |  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMULH
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  PACKW
 |  0110000       10000  |   rs1   | 001 |    rd   |   0010011   |  CRC32.B
 |  0110000       10001  |   rs1   | 001 |    rd   |   0010011   |  CRC32.H
 |  0110000       10010  |   rs1   | 001 |    rd   |   0010011   |  CRC32.W
