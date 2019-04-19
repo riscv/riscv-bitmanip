@@ -180,8 +180,8 @@ Applications include 32-bit funnel shifts, zero-extend 32 bit values, duplicate 
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  ; 0xffff0000ffff0000
-  li rd, 0xffff0000
+  ; Load 0xffff0000ffff0000
+  lui rd, 0xffff0
   packw rd, rd, rd
 \end{verbatim}
 \end{minipage}
@@ -1093,24 +1093,14 @@ implementations that support the C extension and Bitmanip.
 An encoding with the constraint \texttt{rd $=$ rs} would fit nicely in the reserved
 space in \texttt{c.addi16sp/c.lui}.
 
-\input{bextcompr-var1}
-
-Without this constraint it would fit nicely in one of the two reserved ALU slots in
-RVC Quadrant 1.
-
-\input{bextcompr-var2}
-
-A \texttt{c.not} instruction would be most useful as a prefix for macro-op fusion
-if it supported \texttt{rd $\neq$ rs}. For postfix-fusion the constraint \texttt{rd $=$ rs}
-is acceptable. Experiments will show which version has the best trade-off between
-utility and used compressed encoding space.
+\input{bextcompr}
 
 The entire RVC encoding space is $15.585$~bits wide, the remaining reserved
-encoding space in RVC is $11.155$~bits wide, not including space that is only reserved
-on RV32/RV64. This means that above encodings would use $0.0065\%$ or $0.13\%$
-of the RVC encoding space respectively, or $1.4\%$ or $2.8\%$ of the reserved
-RVC encoding space respectively. Preliminary experiments have shown that NOT
-instructions make up approximately $1\%$ of bitmanipulation code.~\cite{Wolf17A}
+encoding space in RVC is $11.155$~bits wide, not including space that is only
+reserved on RV32/RV64. This means that above encoding would use $0.0065\%$ of
+the RVC encoding space, or $1.4\%$ of the remaining reserved RVC encoding
+space. Preliminary experiments have shown that NOT instructions make up
+approximately $1\%$ of bitmanipulation code size.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1127,7 +1117,7 @@ bit manipulation code.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Fused NOT instructions}
+\subsection{Fused {\tt *-not} sequences}
 
 Preliminary experiments have shown that NOT instructions make up approximately
 $1\%$ of bitmanipulation code size, more when looking at dynamic instruction count.~\cite{Wolf17A}
@@ -1140,18 +1130,6 @@ The most important form of NOT fusion is postfix fusion:
 \begin{verbatim}
   alu_op rd, rs1, rs2
   not rd, rd
-\end{verbatim}
-\end{minipage}
-
-But there may also be additional value in prefix fusion:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  not rd, rs1
-  alu_op rd, rd, rs2
-
-  not rd, rs2
-  alu_op rd, rs1, rd
 \end{verbatim}
 \end{minipage}
 
@@ -1229,8 +1207,8 @@ Architectures with support for ternary operations may want to support fusing two
 This would be a postfix-fusion pattern, extending the postfix shift-right
 fusion described in the previous section.
 
-Candidates for this kind of postfix fusion would be simple ALU operations, such
-as AND/OR/XOR/ADD/SUB.
+Candidates for this kind of postfix fusion would be simple ALU operations, specifically
+AND/OR/XOR/ADD/SUB and ANDI/ORI/XORI/ADDI/SUBI.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
