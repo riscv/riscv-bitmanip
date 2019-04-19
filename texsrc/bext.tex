@@ -980,6 +980,10 @@ word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
   RV32, RV64:
     fsl rd, rs1, rs2, rs2
     fsr rd, rs1, rs2, rs2
+
+  RV64 only:
+    fslw rd, rs1, rs2, rs2
+    fsrw rd, rs1, rs2, rs2
 \end{rvb}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
@@ -1310,6 +1314,8 @@ opcodes.
 |  00001000     |  imm  |   rs1   | 101 |    rd   |   0011011   |  UNSHFLIW
 |  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  BDEPW
+|   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0111011   |  FSLW
+|   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0111011   |  FSRW
 |  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  MINW
 |  0000100    |   rs2   |   rs1   | 011 |    rd   |   0111011   |  MINUW
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  MAXW
