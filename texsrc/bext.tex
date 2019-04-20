@@ -226,12 +226,6 @@ example, interleaving the bytes in the lower halves of {\tt rs1} and {\tt rs2}:
     max rd, rs1, rs2
     minu rd, rs1, rs2
     maxu rd, rs1, rs2
-
-  RV64 only:
-    minw rd, rs1, rs2
-    maxw rd, rs1, rs2
-    minuw rd, rs1, rs2
-    maxuw rd, rs1, rs2
 \end{rvb}
 
 We define 4 R-type instructions \texttt{min, max, minu, maxu} with the
@@ -1264,25 +1258,8 @@ in this document. {\bf DO NOT IMPLEMENT THESE OPCODES YET.} We are trying to get
 official opcodes assigned and will update this chapter soon with the official
 opcodes.
 
-% Opcodes:
-% 0010011 OP-IMM
-% 0110011 OP
-% 0011011 OP-IMM-32
-% 0111011 OP-32
-
-% Shift Opcodes:
-%         | SLL  SRL  SRA | GREV | SLO SRO ROL ROR
-%  op[30] |   0    0    1 |    1 |   0   0   1   1
-%  op[29] |   0    0    0 |    0 |   1   1   1   1
-%  funct3 | 001  101  101 |  001 | 001 101 001 101
-%
-% Unary operations are using the ROLI encoding space.
-%
-% Other ALU instructions use funct7=0000100 or funct7=0000101.
-%
-% All ternary instructions use f2=01.
-%
-% Reserved immediate fields in the table below are large enough to support RV128.
+{\tt c.not} is encoded as {\tt rd = rs1} opcode in the reserved space in
+c.addi16sp/c.lui:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1290,46 +1267,128 @@ opcodes.
 |5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
 |-------------------------------|
 | 011 |0|  rs1/rd |  00000 | 01 | C.NOT (rs1/rd != {0,2})
+\end{verbatim}
+\end{minipage}
 
+The {\tt andc} instruction is encoded the same way as {\tt and}, but with
+{\tt op[30]} set, mirroring the encoding scheme used for {\tt add} and {\tt sub}.
 
+All shift instructions use {\tt funct3=001} for left shifts and {\tt funct3=101}
+for right shifts. GREV occupies the spot that would decode as SLA (arithmetic
+left shift).
 
+{\tt op[26]=1} selects funnel shifts. For funnel shifts {\tt op[30:29]} is part
+if the 3rd operand and therefore unused for encoding the operation. For all other
+shift operations {\tt op[26]=0}, except for immedate shifts on RV128 where {\tt op[26]}
+contains the MSB of the immediate. (There is no FSLI/FSRI instruction.)
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+         | SLL  SRL  SRA | GREV | SLO SRO | ROL ROR | FSL FSR
+  op[30] |   0    0    1 |    1 |   0   0 |   1   1 |   -   -
+  op[29] |   0    0    0 |    0 |   1   1 |   1   1 |   -   -
+  op[26] |   0    0    0 |    0 |   0   0 |   0   0 |   1   1
+  funct3 | 001  101  101 |  001 | 001 101 | 001 101 | 001 101
+\end{verbatim}
+\end{minipage}
+
+Only an encoding for RORI exists, as ROLI can be implemented with RORI by inverting
+the immediate. Unary functions are encoded in the spot that would correspond to ROLI,
+with the function encoded in the immediate.
+
+The CRC instructions are encoded as unary instructions with {\tt op[24]} set. The
+polynomial is selected with {\tt op[23]}, with {\tt op[23]=0} for CRC32 and
+{\tt op[23]=1} for CRC32C. The width is selected with {\tt op[22:20]}, using
+the same encoding as is used in {\tt funct3} for the load/store operations.
+
+{\tt cmix} and {\tt cmov} is encoded using the two remaining ternary operator
+encodings in {\tt funct3=001} and {\tt funct3=101}. (There are two ternary
+operator encodings per minor opcode using the {\tt op[26]=1} scheme for
+marking ternary OPs.)
+
+The remaining instructions are encoded with {\tt funct7=0000100} or
+{\tt funct7=0000101}.
+
+The {\tt funct7=0000101} contains {\tt clmul[h]}, {\tt bmat[x]or},
+and {\tt min[u]}/{\tt max[u]}.
+
+The encoding of {\tt clmul[h]} is identical to the encoding of {\tt mul[h]},
+except that {\tt op[27]=1}.
+
+The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
+{\tt funct3} encoding matches {\tt op[31:29]} of the AMO min/max functions.
+
+The {\tt bmat[x]or} use the remaining slots in {\tt funct7=0000101} with {\tt
+funct3=010} and {\tt funct3=011}. (For what it's worth, this matches the funct3
+for the corresponding {\tt or/xor} instruction, shifted to right by one.)
+
+The remaining instructions are encoded with {\tt funct7=0000100}. The
+shift-like {\tt shfl}/{\tt unshfl} instructions uses the same minor opcodes
+as the shift operations. {\tt bdep} and {\tt bext} are encoded in a way so that
+{\tt funct3[2]} selects the ``direction'', similar to shift operations.
+
+RV64 has {\tt *W} instructions for all bitmanip instructions, with the
+following exceptions:
+
+{\tt andc}, {\tt cmix}, {\tt cmov}, {\tt min[u]}, {\tt max[u]} have no {\tt *W}
+variants because they already behave in the way a {\tt *W} instruction would
+when presented with sign-exteded 32-bit arguments.
+
+{\tt bmatflip}, {\tt bmatxor}, {\tt bmator} have no {\tt *W} variants because
+they are 64-bit only instructions.
+
+{\tt crc32.[bhwd]}, {\tt crc32c.[bhwd]} have no {\tt *W} variants because {\tt
+crc32[c].w} is sufficient.
+
+{\tt clmulh} has no {\tt *W} variant because, similar to {\tt mulh}, one
+doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
+
+% Opcodes:
+% 0010011 OP-IMM
+% 0110011 OP
+% 0011011 OP-IMM-32
+% 0111011 OP-32
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
 |  3                   2                   1                    |
 |1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
 |---------------------------------------------------------------|
 |    funct7   |   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R-type
 |   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
+|===============================================================|
+|  0100000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  ANDC
+|---------------------------------------------------------------|
+|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  GREV
+|  0010000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLO
+|  0010000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRO
+|  0110000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  ROL
+|  0110000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  ROR
+|   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0110011   |  FSL
+|   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0110011   |  FSR
+|---------------------------------------------------------------|
+|  01000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  GREVI
+|  00100  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLOI
+|  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
+|  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
 |---------------------------------------------------------------|
 |  0110000       00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
 |  0110000       00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
 |  0110000       00010  |   rs1   | 001 |    rd   |   0010011   |  PCNT
-|  0100000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  ANDC
-|  0010000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLO
-|  0010000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRO
-|  00100  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLOI
-|  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
-|  0110000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  ROL
-|  0110000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  ROR
-|  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
-|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  GREV
-|  01000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  GREVI
-|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
-|  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
-|  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
-|  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  BEXT
-|  0000100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  BDEP
-|   rs3   | 10|   rs2   |   rs1   | 010 |    rd   |   0110011   |  CMIX
-|   rs3   | 10|   rs2   |   rs1   | 011 |    rd   |   0110011   |  CMOV
-|   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0110011   |  FSL
-|   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0110011   |  FSR
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  MIN
-|  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  MINU
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MAX
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
-|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMUL
-|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMULH
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  PACK
+|  0110000       00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
+|---------------------------------------------------------------|
+|  0110000       10000  |   rs1   | 001 |    rd   |   0010011   |  CRC32.B
+|  0110000       10001  |   rs1   | 001 |    rd   |   0010011   |  CRC32.H
+|  0110000       10010  |   rs1   | 001 |    rd   |   0010011   |  CRC32.W
+|  0110000       10011  |   rs1   | 001 |    rd   |   0010011   |  CRC32.D
+|  0110000       11000  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.B
+|  0110000       11001  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.H
+|  0110000       11010  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.W
+|  0110000       11011  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.D
+|---------------------------------------------------------------|
+|   rs3   | 11|   rs2   |   rs1   | 001 |    rd   |   0110011   |  CMIX
+|   rs3   | 11|   rs2   |   rs1   | 101 |    rd   |   0110011   |  CMOV
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -1342,46 +1401,47 @@ opcodes.
 |    funct7   |   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R-type
 |   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
+|===============================================================|
+|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMUL
+|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMULH
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BMATXOR
+|  0000101    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
+|  0000101    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  MIN
+|  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  MAX
+|  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MINU
+|  0000101    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
 |---------------------------------------------------------------|
-|  0110000       10000  |   rs1   | 001 |    rd   |   0010011   |  CRC32.B
-|  0110000       10001  |   rs1   | 001 |    rd   |   0010011   |  CRC32.H
-|  0110000       10010  |   rs1   | 001 |    rd   |   0010011   |  CRC32.W
-|  0110000       10011  |   rs1   | 001 |    rd   |   0010011   |  CRC32.D
-|  0110000       11000  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.B
-|  0110000       11001  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.H
-|  0110000       11010  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.W
-|  0110000       11011  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.D
+|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  PACK
+|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BDEP
+|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
+|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
+|  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
 |---------------------------------------------------------------|
-|  0110000       00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BMATXOR
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BMATOR
-|---------------------------------------------------------------|
+|  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
+|  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
+|===============================================================|
+|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  GREVW
+|  0010000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SLOW
+|  0010000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SROW
+|  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
+|  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
+|   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0111011   |  FSLW
+|   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0111011   |  FSRW
+|  0100000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  GREVIW
+|  0010000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLOIW
+|  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
+|  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
 |  0110000       00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
 |  0110000       00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
 |  0110000       00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
-|  0010000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SLOW
-|  0010000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SROW
-|  0010000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLOIW
-|  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
-|  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
-|  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
-|  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
-|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  GREVW
-|  0100000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  GREVIW
+|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  CLMULW
+|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  PACKW
+|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
+|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
-|  00001000     |  imm  |   rs1   | 001 |    rd   |   0011011   |  SHFLIW
-|  00001000     |  imm  |   rs1   | 101 |    rd   |   0011011   |  UNSHFLIW
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  BEXTW
-|  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  BDEPW
-|   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0111011   |  FSLW
-|   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0111011   |  FSRW
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  MINW
-|  0000100    |   rs2   |   rs1   | 011 |    rd   |   0111011   |  MINUW
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  MAXW
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  MAXUW
-|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMULW
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  PACKW
+|  000010000    |  imm  |   rs1   | 001 |    rd   |   0011011   |  SHFLIW
+|  000010000    |  imm  |   rs1   | 101 |    rd   |   0011011   |  UNSHFLIW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
