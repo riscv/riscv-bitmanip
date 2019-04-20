@@ -515,9 +515,7 @@ control value that only contains one continuous region of set bits. We call
 those operations zip/unzip and provide pseudo-instructions for them.
 
 Shuffle/unshuffle operations that only have individual bits set (not a continuous
-region of two or more bits) are their own inverse. This means that a few of the
-{\tt unshfli} opcodes are redundant with {\tt shfli} opcodes and therefore can
-be reserved for encoding unary functions such as {\tt ctz}, {\tt clz}, and {\tt pcnt}.
+region of two or more bits) are their own inverse.
 
 \begin{table}[h]
 \begin{small}
@@ -531,20 +529,20 @@ Pseudo-Instruction \\
 \hline
 
  0: 0000 & 0 & no-op                            & ---                    \\
-    0000 & 1 & no-op                            & {\it reserved}         \\
+    0000 & 1 & no-op                            & ---                    \\
  1: 0001 & 0 & {\tt i[1] -> i[0]}               & {\tt zip.n, unzip.n}   \\
-    0001 & 1 & {\it equivalent to 0001 0}       & {\it reserved}         \\
+    0001 & 1 & {\it equivalent to 0001 0}       & ---                    \\
  2: 0010 & 0 & {\tt i[2] -> i[1]}               & {\tt zip2.b, unzip2.b} \\
-    0010 & 1 & {\it equivalent to 0010 0}       & {\it reserved}         \\
+    0010 & 1 & {\it equivalent to 0010 0}       & ---                    \\
  3: 0011 & 0 & {\tt i[2] -> i[0]}               & {\tt zip.b}            \\
     0011 & 1 & {\tt i[2] <- i[0]}               & {\tt unzip.b}          \\
 
 \hline
 
  4: 0100 & 0 & {\tt i[3] -> i[2]}               & {\tt zip4.h, unzip4.h} \\
-    0100 & 1 & {\it equivalent to 0100 0}       & {\it reserved}         \\
+    0100 & 1 & {\it equivalent to 0100 0}       & ---                    \\
  5: 0101 & 0 & {\tt i[3] -> i[2], i[1] -> i[0]} & ---                    \\
-    0101 & 1 & {\it equivalent to 0101 0}       & {\it reserved}         \\
+    0101 & 1 & {\it equivalent to 0101 0}       & ---                    \\
  6: 0110 & 0 & {\tt i[3] -> i[1]}               & {\tt zip2.h}           \\
     0110 & 1 & {\tt i[3] <- i[1]}               & {\tt unzip2.h}         \\
  7: 0111 & 0 & {\tt i[3] -> i[0]}               & {\tt zip.h}            \\
@@ -553,11 +551,11 @@ Pseudo-Instruction \\
 \hline
 
  8: 1000 & 0 & {\tt i[4] -> i[3]}               & {\tt zip8, unzip8}     \\
-    1000 & 1 & {\it equivalent to 1000 0}       & {\it reserved}         \\
+    1000 & 1 & {\it equivalent to 1000 0}       & ---                    \\
  9: 1001 & 0 & {\tt i[4] -> i[3], i[1] -> i[0]} & ---                    \\
-    1001 & 1 & {\it equivalent to 1001 0}       & {\it reserved}         \\
+    1001 & 1 & {\it equivalent to 1001 0}       & ---                    \\
 10: 1010 & 0 & {\tt i[4] -> i[3], i[2] -> i[1]} & ---                    \\
-    1010 & 1 & {\it equivalent to 1010 0}       & {\it reserved}         \\
+    1010 & 1 & {\it equivalent to 1010 0}       & ---                    \\
 11: 1011 & 0 & {\tt i[4] -> i[3], i[2] -> i[0]} & ---                    \\
     1011 & 1 & {\tt i[4] <- i[3], i[2] <- i[0]} & ---                    \\
 
@@ -594,11 +592,11 @@ Pseudo-Instruction \\
 \cline{5-7}
 
  0: 00000 & 0 & ---                      &   &   16: 10000 & 0 & {\tt zip16, unzip16}    \\
-    00000 & 1 & {\it reserved}           &   &       10000 & 1 & {\it reserved}          \\
+    00000 & 1 & ---                      &   &       10000 & 1 & ---                     \\
  1: 00001 & 0 & {\tt zip.n, unzip.n}     &   &   17: 10001 & 0 & ---                     \\
-    00001 & 1 & {\it reserved}           &   &       10001 & 1 & {\it reserved}          \\
+    00001 & 1 & ---                      &   &       10001 & 1 & ---                     \\
  2: 00010 & 0 & {\tt zip2.b, unzip2.b}   &   &   18: 10010 & 0 & ---                     \\
-    00010 & 1 & {\it reserved}           &   &       10010 & 1 & {\it reserved}          \\
+    00010 & 1 & ---                      &   &       10010 & 1 & ---                     \\
  3: 00011 & 0 & {\tt zip.b}              &   &   19: 10011 & 0 & ---                     \\
     00011 & 1 & {\tt unzip.b}            &   &       10011 & 1 & ---                     \\
 
@@ -606,9 +604,9 @@ Pseudo-Instruction \\
 \cline{5-7}
 
  4: 00100 & 0 & {\tt zip4.h, unzip4.h}   &   &   20: 10100 & 0 & ---                     \\
-    00100 & 1 & {\it reserved}           &   &       10100 & 1 & {\it reserved}          \\
+    00100 & 1 & ---                      &   &       10100 & 1 & ---                     \\
  5: 00101 & 0 & ---                      &   &   21: 10101 & 0 & ---                     \\
-    00101 & 1 & {\it reserved}           &   &       10101 & 1 & {\it reserved}          \\
+    00101 & 1 & ---                      &   &       10101 & 1 & ---                     \\
  6: 00110 & 0 & {\tt zip2.h}             &   &   22: 10110 & 0 & ---                     \\
     00110 & 1 & {\tt unzip2.h}           &   &       10110 & 1 & ---                     \\
  7: 00111 & 0 & {\tt zip.h}              &   &   23: 10111 & 0 & ---                     \\
@@ -618,11 +616,11 @@ Pseudo-Instruction \\
 \cline{5-7}
 
  8: 01000 & 0 & {\tt zip8.w, unzip8.w}   &   &   24: 11000 & 0 & {\tt zip8}              \\
-    01000 & 1 & {\it reserved}           &   &       11000 & 1 & {\tt unzip8}            \\
+    01000 & 1 & ---                      &   &       11000 & 1 & {\tt unzip8}            \\
  9: 01001 & 0 & ---                      &   &   25: 11001 & 0 & ---                     \\
-    01001 & 1 & {\it reserved}           &   &       11001 & 1 & ---                     \\
+    01001 & 1 & ---                      &   &       11001 & 1 & ---                     \\
 10: 01010 & 0 & ---                      &   &   26: 11010 & 0 & ---                     \\
-    01010 & 1 & {\it reserved}           &   &       11010 & 1 & ---                     \\
+    01010 & 1 & ---                      &   &       11010 & 1 & ---                     \\
 11: 01011 & 0 & ---                      &   &   27: 11011 & 0 & ---                     \\
     01011 & 1 & ---                      &   &       11011 & 1 & ---                     \\
 
