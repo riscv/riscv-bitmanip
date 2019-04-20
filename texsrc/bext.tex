@@ -205,6 +205,17 @@ XLEN/2 bits (e.g. for mask creation), and loading unsigned 32 constants on RV64.
 \end{verbatim}
 \end{minipage}
 
+Paired with {\tt shfli/unshfli} and the other bit permutation instructions,
+pack can interleave arbitrary power-of-two chunks of {\tt rs1} and {\tt rs2}. For
+example, interleaving the bytes in the lower halves of {\tt rs1} and {\tt rs2}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  pack rd, rs1, rs2
+  zip8 rd, rd
+\end{verbatim}
+\end{minipage}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
