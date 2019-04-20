@@ -1373,19 +1373,19 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
 |  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
 |---------------------------------------------------------------|
-|  0110000       00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
-|  0110000       00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
-|  0110000       00010  |   rs1   | 001 |    rd   |   0010011   |  PCNT
-|  0110000       00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
+|  0110000    |  00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
+|  0110000    |  00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
+|  0110000    |  00010  |   rs1   | 001 |    rd   |   0010011   |  PCNT
+|  0110000    |  00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
 |---------------------------------------------------------------|
-|  0110000       10000  |   rs1   | 001 |    rd   |   0010011   |  CRC32.B
-|  0110000       10001  |   rs1   | 001 |    rd   |   0010011   |  CRC32.H
-|  0110000       10010  |   rs1   | 001 |    rd   |   0010011   |  CRC32.W
-|  0110000       10011  |   rs1   | 001 |    rd   |   0010011   |  CRC32.D
-|  0110000       11000  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.B
-|  0110000       11001  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.H
-|  0110000       11010  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.W
-|  0110000       11011  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.D
+|  0110000    |  10000  |   rs1   | 001 |    rd   |   0010011   |  CRC32.B
+|  0110000    |  10001  |   rs1   | 001 |    rd   |   0010011   |  CRC32.H
+|  0110000    |  10010  |   rs1   | 001 |    rd   |   0010011   |  CRC32.W
+|  0110000    |  10011  |   rs1   | 001 |    rd   |   0010011   |  CRC32.D
+|  0110000    |  11000  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.B
+|  0110000    |  11001  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.H
+|  0110000    |  11010  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.W
+|  0110000    |  11011  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.D
 |---------------------------------------------------------------|
 |   rs3   | 11|   rs2   |   rs1   | 001 |    rd   |   0110011   |  CMIX
 |   rs3   | 11|   rs2   |   rs1   | 101 |    rd   |   0110011   |  CMOV
@@ -1431,9 +1431,9 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |  0010000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLOIW
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
-|  0110000       00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
-|  0110000       00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
-|  0110000       00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
+|  0110000    |  00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
+|  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
+|  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  CLMULW
 |  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  PACKW
 |  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
@@ -1445,27 +1445,3 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Fast C reference implementations}
-\label{fastc}
-
-GCC has intrinsics for the bit counting instructions {\tt clz}, {\tt ctz}, and
-{\tt pcnt}.  So a performance-sensitive application (such as an emulator)
-should probably just use those:
-
-\input{bextcref-fast-bitcnt}
-
-For processors with BMI2 support GCC has intrinsics for bit extract and bit
-deposit instructions (compile with {\tt -mbmi2} and include {\tt <x86intrin.h>}):
-
-\input{bextcref-fast-bext-bmi2}
-
-For other processors we need to provide our own implementations. The following
-implementation is a good compromise between code complexity and runtime:
-
-\input{bextcref-fast-bext}
-
-For the other Bitmanip instructions the C reference functions given in Chapter~\ref{bext}
-are already reasonably efficient.
