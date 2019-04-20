@@ -134,10 +134,13 @@ uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
-// --REF-BEGIN-- packw
-uint64_t packw(uint32_t rs1, uint32_t rs2)
+// --REF-BEGIN-- pack
+uint_xlen_t pack(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	return ((uint64_t)rs1 << 32) | rs2;
+	uint_xlen_t mask = (1LL << XLEN/2) - 1;
+	uint_xlen_t upper = rs1 & mask;
+	uint_xlen_t lower = rs2 & mask;
+	return (upper << XLEN/2) | lower;
 }
 // --REF-END--
 

@@ -16,12 +16,12 @@ this will look like, but a guess could look like this:
 \begin{center}
 \begin{tikzpicture}
  \node (clz) { \texttt{clz, ctz, pcnt} };
- \node (andc) [below=0.5cm of clz.west,anchor=west] { \texttt{andc, packw} };
- \node (cnot) [right=4.0cm of andc.west,anchor=west] { \texttt{c.not} };
- \node (slo) [below=0.5cm of andc.west,anchor=west] { \texttt{slo[i], sro[i]} };
+ \node (cnot) [right=4.0cm of clz.west,anchor=west] { \texttt{c.not} };
+ \node (slo) [below=0.5cm of clz.west,anchor=west] { \texttt{slo[i], sro[i]} };
  \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
 
- \node (rol) [below=1.0cm of min.west,anchor=west] { \texttt{rol, ror[i]} };
+ \node (andc) [below=1.0cm of min.west,anchor=west] { \texttt{andc, pack} };
+ \node (rol) [below=0.5cm of andc.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
  \node (brevp) [right=4.0cm of bswap.west,anchor=west] { \texttt{brev.p} };
  \node (grev) [right=6.5cm of bswap.west,anchor=west] { \texttt{grev[i]} };
@@ -49,8 +49,8 @@ this will look like, but a guess could look like this:
    \node (bmini) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbmini$^?$} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
 
-   \node (bperm) at ($ (rol.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (rol.north west) + (-0.2cm,0) $) rectangle ($ (shuffle.south east) + (0,0) $);
+   \node (bperm) at ($ (andc.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (andc.north west) + (-0.2cm,0) $) rectangle ($ (shuffle.south east) + (0,0) $);
 
    \node (bextdep) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbextdep} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
@@ -163,41 +163,45 @@ occurs frequently enough to warrant a dedicated instruction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Pack 32-bit words (\texttt{packw}, RV64 only)}
+\subsection{Pack two XLEN/2 words in one register (\texttt{pack})}
 
 \begin{rvb}
+  RV32, RV64:
+    pack rd, rs1, rs2
+
   RV64 only:
     packw rd, rs1, rs2
 \end{rvb}
 
-This RV64-only instruction packs the 32-bit lower halves of rs1 and rs2 into
+This instruction packs the XLEN/2-bit lower halves of rs1 and rs2 into
 rd, with rs1 in the upper half and rs2 in the lower half.
 
-\input{bextcref-packw}
+\input{bextcref-pack}
 
-Applications include 32-bit funnel shifts, zero-extend 32 bit values, duplicate the lower
-32 bits (e.g. for mask creation), and loading unsigned 32 constants.
+Applications include XLEN/2-bit funnel shifts, zero-extend XLEN/2 bit values, duplicate the lower
+XLEN/2 bits (e.g. for mask creation), and loading unsigned 32 constants on RV64.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  ; Load 0xffff0000ffff0000
+  ; Load 0xffff0000ffff0000 on RV64
   lui rd, 0xffff0
-  packw rd, rd, rd
+  pack rd, rd, rd
 \end{verbatim}
 \end{minipage}
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  ; Same as FSLW
-  packw rd, rs1, rs3
-  rolw rd, rd, rs2
+  ; Same as FSLW on RV64
+  pack rd, rs3, rs1
+  rol rd, rd, rs2
+  addiw rd, rd, 0
 \end{verbatim}
 \end{minipage}
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  ; Clear the upper 32 bits of rd
-  packw rd, zero, rd
+  ; Clear the upper half of rd
+  pack rd, zero, rd
 \end{verbatim}
 \end{minipage}
 
@@ -1316,6 +1320,7 @@ opcodes.
 |  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMUL
 |  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMULH
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  PACK
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -1341,7 +1346,6 @@ opcodes.
 |  0110000       00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BMATXOR
 |  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BMATOR
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  PACKW
 |---------------------------------------------------------------|
 |  0110000       00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
 |  0110000       00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
@@ -1368,6 +1372,7 @@ opcodes.
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  MAXW
 |  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  MAXUW
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMULW
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  PACKW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}

@@ -8,6 +8,7 @@ cbmc   --trace --function clmul_gray2    misc.cc
 cbmc   --trace --function crc_equiv_h_bb misc.cc
 # cbmc --trace --function crc_equiv_w_hh misc.cc
 # cbmc --trace --function crc_equiv_d_ww misc.cc
+cbmc   --trace --function pack_test      misc.cc
 
 gcc -Wall -o misc misc.cc
 ./misc

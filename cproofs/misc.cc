@@ -89,6 +89,27 @@ void crc_equiv_d_ww(uint64_t x)
 
 // ---------------------------------------------------------
 
+void pack_test(uint64_t x1, uint64_t x2, uint64_t x3)
+{
+	uint64_t rd, ref;
+
+	rd = int32_t(0xffff0 << 12);
+	rd = rv64b::pack(rd, rd);
+	ref = 0xffff0000ffff0000UL;
+	assert(rd == ref);
+
+	rd = rv64b::pack(x3, x1);
+	rd = int32_t(rv64b::rol(rd, x2));
+	ref = int32_t(rv32b::fsl(x1, x2, x3));
+	assert(rd == ref);
+
+	rd = rv64b::pack(0, x1);
+	ref = (x1 << 32) >> 32;
+	assert(rd == ref);
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	for (int i = 0; i < 1000; i++) {
