@@ -1292,25 +1292,25 @@ contains the MSB of the immediate. (There is no FSLI/FSRI instruction.)
 \end{verbatim}
 \end{minipage}
 
-Only an encoding for RORI exists, as ROLI can be implemented with RORI by inverting
+Only an encoding for RORI exists, as ROLI can be implemented with RORI by negating
 the immediate. Unary functions are encoded in the spot that would correspond to ROLI,
-with the function encoded in the immediate.
+with the function encoded in the 5 LSB bits of the immediate.
 
 The CRC instructions are encoded as unary instructions with {\tt op[24]} set. The
-polynomial is selected with {\tt op[23]}, with {\tt op[23]=0} for CRC32 and
+polynomial is selected via {\tt op[23]}, with {\tt op[23]=0} for CRC32 and
 {\tt op[23]=1} for CRC32C. The width is selected with {\tt op[22:20]}, using
-the same encoding as is used in {\tt funct3} for the load/store operations.
+the same encoding as is used in {\tt funct3} for load/store operations.
 
-{\tt cmix} and {\tt cmov} is encoded using the two remaining ternary operator
+{\tt cmix} and {\tt cmov} are encoded using the two remaining ternary operator
 encodings in {\tt funct3=001} and {\tt funct3=101}. (There are two ternary
 operator encodings per minor opcode using the {\tt op[26]=1} scheme for
 marking ternary OPs.)
 
-The remaining instructions are encoded with {\tt funct7=0000100} or
+The remaining instructions are encoded within {\tt funct7=0000100} and
 {\tt funct7=0000101}.
 
-The {\tt funct7=0000101} contains {\tt clmul[h]}, {\tt bmat[x]or},
-and {\tt min[u]}/{\tt max[u]}.
+The {\tt funct7=0000101} block contains {\tt clmul[h]},
+{\tt min[u]}/{\tt max[u]}, and {\tt bmat[x]or}.
 
 The encoding of {\tt clmul[h]} is identical to the encoding of {\tt mul[h]},
 except that {\tt op[27]=1}.
@@ -1318,16 +1318,21 @@ except that {\tt op[27]=1}.
 The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
 {\tt funct3} encoding matches {\tt op[31:29]} of the AMO min/max functions.
 
-The {\tt bmat[x]or} use the remaining slots in {\tt funct7=0000101} with {\tt
+{\tt bmat[x]or} uses the remaining slots in {\tt funct7=0000101} with {\tt
 funct3=010} and {\tt funct3=011}. (For what it's worth, this matches the funct3
 for the corresponding {\tt or/xor} instruction, shifted to right by one.)
 
-The remaining instructions are encoded with {\tt funct7=0000100}. The
-shift-like {\tt shfl}/{\tt unshfl} instructions uses the same minor opcodes
-as the shift operations. {\tt bdep} and {\tt bext} are encoded in a way so that
-{\tt funct3[2]} selects the ``direction'', similar to shift operations.
+The remaining instructions are encoded within {\tt funct7=0000100}. The
+shift-like {\tt shfl}/{\tt unshfl} instructions uses the same {\tt funct3}
+values as the shift operations. {\tt bdep} and {\tt bext} are encoded in a
+way so that {\tt funct3[2]} selects the ``direction'', similar to shift
+operations.
 
-RV64 has {\tt *W} instructions for all bitmanip instructions, with the
+{\tt pack} occupies {\tt funct3=000} in {\tt funct7=0000100}. The minor
+opcodes {\tt 001}, {\tt 011}, and {\tt 100} in {\tt funct7=0000100}
+are unoccupied.
+
+Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
 
 {\tt andc}, {\tt cmix}, {\tt cmov}, {\tt min[u]}, {\tt max[u]} have no {\tt *W}
@@ -1338,7 +1343,7 @@ when presented with sign-exteded 32-bit arguments.
 they are 64-bit only instructions.
 
 {\tt crc32.[bhwd]}, {\tt crc32c.[bhwd]} have no {\tt *W} variants because {\tt
-crc32[c].w} is sufficient.
+crc32[c].w} is deemed sufficient.
 
 {\tt clmulh} has no {\tt *W} variant because, similar to {\tt mulh}, one
 doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
