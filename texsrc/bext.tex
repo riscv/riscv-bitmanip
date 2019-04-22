@@ -1128,6 +1128,77 @@ bit manipulation code.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Fused load-immediate sequences}
+
+Bit manipulation code, even more than other code, requires a lot of ``magic numbers'',
+bitmasks, and other (usually large) constants. On some microarchitectures those
+can easily be loaded from a nearby data section using load instructions. On other
+microarchitectures however this comes at a high cost, and it is more efficient
+to load immediates using a sequence of instructions.
+
+Loading a 32-bit constant:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addi rd, rd, imm
+\end{verbatim}
+\end{minipage}
+
+On RV64 a 64 bit constant can be loaded by loading two 32-bit constants anmd combining them
+with a {\tt PACK} instruction:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui tmp, imm
+  addi tmp, tmp, imm
+  lui rd, imm
+  addi rd, rd, imm
+  pack rd, rd, tmp
+\end{verbatim}
+\end{minipage}
+
+(Without the temporary register and without the {\tt PACK} instruction more complex/diverse
+sequences are used to load 64-bit immediates. But the {\tt PACK} instruction streamlines
+the pattern and thus simplifies macro-op fusion.)
+
+A 32-bit core should be capable of fusing the {\tt lui}+{\tt addi} pattern.
+
+In addition to that, a 64 bit core may consider fusing the following sequences as well:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addi rd, rd, imm
+  pack rd, rd, rs2
+
+  lui rd, imm
+  pack rd, rd, rs2
+
+  addi rd, zero, imm
+  pack rd, rd, rs2
+\end{verbatim}
+\end{minipage}
+
+Furthermore, a core may consider fusing 32-bit immediate loads with any ALU
+instruction, not just {\tt pack}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addi rd, rd, imm
+  alu_op rd, rd, rs2
+
+  lui rd, imm
+  alu_op rd, rd, rs2
+
+  addi rd, zero, imm
+  alu_op rd, rd, rs2
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Fused {\tt *-not} sequences}
 
 Preliminary experiments have shown that NOT instructions make up approximately
