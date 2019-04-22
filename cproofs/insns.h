@@ -137,10 +137,9 @@ uint_xlen_t andc(uint_xlen_t rs1, uint_xlen_t rs2)
 // --REF-BEGIN-- pack
 uint_xlen_t pack(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	uint_xlen_t mask = (1LL << XLEN/2) - 1;
-	uint_xlen_t upper = rs1 & mask;
-	uint_xlen_t lower = rs2 & mask;
-	return (upper << XLEN/2) | lower;
+	uint_xlen_t upper = rs1 << XLEN/2;
+	uint_xlen_t lower = (rs2 << XLEN/2) >> XLEN/2;
+	return upper | lower;
 }
 // --REF-END--
 
