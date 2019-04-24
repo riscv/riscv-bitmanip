@@ -40,6 +40,18 @@ void fsl_via_fsr(uint32_t A, uint32_t B, uint32_t C)
 	assert(ref == res);
 }
 
+void fsl_imm(uint32_t x, int shamt, uint32_t y)
+{
+	uint32_t ref = rv32b::fsl(x, shamt, y);
+	int sh6 = shamt & 63;
+	if (sh6 >= 32) {
+		uint32_t t = x;
+		x = y, y = t;
+		sh6 -= 32;
+	}
+	assert(ref == rv32b::fsl(x, sh6, y));
+}
+
 uint32_t shift32(uint32_t x, int shamt, uint32_t y)
 {
 	return rv32b::fsr(x, shamt, y);
