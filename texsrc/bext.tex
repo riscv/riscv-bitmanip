@@ -34,7 +34,7 @@ this will look like, but a guess could look like this:
  \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[h]} };
 
  \node (cmov) [right=3.5cm of bext.west,anchor=north west] { \texttt{cmov, cmix} };
- \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr} };
+ \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
 
  \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \texttt{crc32.[bhwd]} };
  \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \texttt{crc32c.[bhwd]} };
@@ -989,7 +989,7 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 \begin{rvb}
   RV32, RV64:
-    cmix rd, rs1, rs2, rs2
+    cmix rd, rs1, rs2, rs3
 \end{rvb}
 
 The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
@@ -1015,7 +1015,7 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \begin{rvb}
   RV32, RV64:
-    cmov rd, rs1, rs2, rs2
+    cmov rd, rs1, rs2, rs3
 \end{rvb}
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
@@ -1023,16 +1023,18 @@ word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \input{bextcref-cmov}
 
-\subsection{Funnel shift ({\tt fsl}, {\tt fsr})}
+\subsection{Funnel shift ({\tt fsl}, {\tt fsr}, {\tt fsri})}
 
 \begin{rvb}
   RV32, RV64:
-    fsl rd, rs1, rs2, rs2
-    fsr rd, rs1, rs2, rs2
+    fsl rd, rs1, imm, rs3
+    fsr rd, rs1, imm, rs3
+    fsri rd, rs1, imm, rs3
 
   RV64 only:
-    fslw rd, rs1, rs2, rs2
-    fsrw rd, rs1, rs2, rs2
+    fslw rd, rs1, imm, rs3
+    fsrw rd, rs1, imm, rs3
+    fsriw rd, rs1, imm, rs3
 \end{rvb}
 
 The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
@@ -1078,6 +1080,8 @@ And for any values {\tt x} and $0 \le \texttt{shamt} < \texttt{XLEN}$:
 Furthermore an RV64 implementation of either {\tt fsl} or {\tt fsr} is capable
 of performing the *W versions of all shift operations with only a few gates
 of additional control logic.
+
+On RV128 there is no {\tt fsri} instruction. But there is {\tt fsriw} and {\tt fsrid}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1350,8 +1354,17 @@ left shift).
 
 {\tt op[26]=1} selects funnel shifts. For funnel shifts {\tt op[30:29]} is part
 if the 3rd operand and therefore unused for encoding the operation. For all other
-shift operations {\tt op[26]=0}, except for immedate shifts on RV128 where {\tt op[26]}
-contains the MSB of the immediate. (There is no FSLI/FSRI instruction.)
+shift operations {\tt op[26]=0}.
+
+FSRI is also encoded with {\tt op[26]=1}, leaving a 6 bit immediate. The 7th
+bit, that is necessary to perform a 128 bit funnel shift on RV64, can be
+emulated by swapping rs1 and rs3.
+
+There is no FSLI instruction, as it can be easily emulated with FSRI by taking the
+two's complement of the shift amount.
+
+On RV128 {\tt op[26]} contains the MSB of the immediate for the shift instructions.
+Therefore there is no FSRI instruction on RV128. (But there is FSRIW/FSRID.)
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1448,6 +1461,7 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |  00100  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLOI
 |  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
 |  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
+|   rs3   |1|    imm    |   rs1   | 101 |    rd   |   0010011   |  FSRI
 |---------------------------------------------------------------|
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
@@ -1507,6 +1521,7 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |  0010000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLOIW
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
+|   rs3   |1|     imm   |   rs1   | 101 |    rd   |   0011011   |  FSRIW
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
