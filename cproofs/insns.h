@@ -473,14 +473,14 @@ uint32_t unshfl32alt(uint32_t rs1, uint32_t rs2)
 // --REF-END--
 
 // --REF-BEGIN-- minmax
-int_xlen_t min(int_xlen_t rs1, int_xlen_t rs2)
+uint_xlen_t min(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	return rs1 < rs2 ? rs1 : rs2;
+	return (int_xlen_t)rs1 < (int_xlen_t)rs2 ? rs1 : rs2;
 }
 
-int_xlen_t max(int_xlen_t rs1, int_xlen_t rs2)
+uint_xlen_t max(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	return rs1 > rs2 ? rs1 : rs2;
+	return (int_xlen_t)rs1 > (int_xlen_t)rs2 ? rs1 : rs2;
 }
 
 uint_xlen_t minu(uint_xlen_t rs1, uint_xlen_t rs2)

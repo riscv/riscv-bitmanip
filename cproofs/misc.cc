@@ -110,6 +110,25 @@ void pack_test(uint64_t x1, uint64_t x2, uint64_t x3)
 
 // ---------------------------------------------------------
 
+void min_max_test(uint32_t u1, uint32_t u2)
+{
+	int32_t s1 = u1, s2 = u2;
+
+	if (s1 >= s2) assert(u1 == rv32b::max(u1, u2));
+	if (s1 <= s2) assert(u2 == rv32b::max(u1, u2));
+
+	if (s1 >= s2) assert(u2 == rv32b::min(u1, u2));
+	if (s1 <= s2) assert(u1 == rv32b::min(u1, u2));
+
+	if (u1 >= u2) assert(u1 == rv32b::maxu(u1, u2));
+	if (u1 <= u2) assert(u2 == rv32b::maxu(u1, u2));
+
+	if (u1 >= u2) assert(u2 == rv32b::minu(u1, u2));
+	if (u1 <= u2) assert(u1 == rv32b::minu(u1, u2));
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	for (int i = 0; i < 1000; i++) {
