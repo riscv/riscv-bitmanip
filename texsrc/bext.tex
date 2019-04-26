@@ -954,7 +954,7 @@ crc32_w:
 \end{rvb}
 
 These are 64-bit-only instruction that are not available on RV32. On RV128 they
-ignore the upper half of operands and set the upper half of the results to zero.
+ignore the upper half of operands and sign extend the results.
 
 This instructions interpret a 64-bit value as 8x8 binary matrix.
 
