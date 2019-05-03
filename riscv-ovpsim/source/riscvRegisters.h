@@ -44,6 +44,7 @@
 #define RISCV_FPR(_I)           RISCV_CPU_REG(f[_I])
 #define RISCV_LR                RISCV_CPU_REG(x[RV_REG_X_RA])
 #define RISCV_EA_TAG            RISCV_CPU_REG(exclusiveTag)
-#define RISCV_ACTIVE_RM         RISCV_CPU_REG(fpActiveRM)
+#define RISCV_INVALID_RM        RISCV_CPU_REG(fpInvalidRM)
 #define RISCV_FP_FLAGS          RISCV_CPU_REG(fpFlags)
 #define RISCV_JUMP_BASE         RISCV_CPU_REG(jumpBase)
+#define RISCV_VTYPE_KEY         RISCV_CPU_REG(vTypeKey)

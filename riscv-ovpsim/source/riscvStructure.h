@@ -119,6 +119,28 @@ typedef struct riscvNetPortS {
 } riscvNetPort;
 
 //
+// Maximum supported value of VLEN and number of vector registers (vector
+// extension)
+//
+#define VLEN_MAX        2048
+#define VREG_NUM        32
+#define ELEN_MIN        32
+#define ELEN_MAX        64
+#define SLEN_MIN        32
+#define ELEN_DEFAULT    64
+#define SLEN_DEFAULT    64
+#define VLEN_DEFAULT    512
+#define SEW_MIN         8
+#define LMUL_MAX        8
+
+//
+// This defines sufficient 64-bit aligned space for VREG_NUM vector registers
+// of up to VLEN_MAX bits. The assignment of the storage depends on the
+// configured VLEN
+//
+typedef Uns64 riscvVRegBank[(VLEN_MAX*VREG_NUM)/64];
+
+//
 // Processor model structure
 //
 typedef struct riscvS {
@@ -140,12 +162,12 @@ typedef struct riscvS {
     Bool               artifactAccess;  // whether current access is an artifact
     Bool               externalActive;  // whether external CSR access active
     Bool               inSaveRestore;   // is save/restore active?
+    Bool               fpInvalidRM;     // is current rounding mode invalid?
     Uns32              flags;           // model control flags
     Uns32              flagsRestore;    // saved flags during restore
     riscvConfig        configInfo;      // model configuration
     memEndian          dendian;         // data endianness
     memEndian          iendian;         // instruction endianness
-    riscvRMDesc        fpActiveRM;      // active floating-point rounding mode
     vmiFPFlags         fpFlags;         // floating point flags
     Uns64              jumpBase;        // address of jump instruction
     Uns32              writtenXMask;    // mask of written X registers
@@ -209,6 +231,10 @@ typedef struct riscvS {
 
     // Enhanced model support callbacks
     riscvModelCB       cb;
+
+    // Vector extension
+    riscvVRegBank      v;               // vector registers (configurable size)
+    Uns8               vTypeKey;        // vector polymorphic configuration
 
 } riscv;
 

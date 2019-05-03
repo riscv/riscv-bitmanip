@@ -68,6 +68,7 @@ typedef struct riscvCSRAttrsS {
     void             *object;           // client-specific object
     Uns32             csrNum;           // CSR number (includes privilege and r/w access)
     riscvArchitecture arch;             // required architecture
+    riscvPrivVer      version;          // minimum specification version
     Bool              wEndBlock;        // whether write terminates this block
     Bool              wEndRM;           // whether write invalidates RM assumption
     Bool              noTraceChange;    // whether to exclude from trace change

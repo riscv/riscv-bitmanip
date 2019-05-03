@@ -660,6 +660,22 @@
 }
 
 //
+// Attribute entries for 32-bit instructions like ATTR32_VSETVLI
+//
+#define ATTR32_VSETVLI(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_VTYPE,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_X_11_7,           \
+    r2       : RS_X_19_15,          \
+    vsew     : VSEW_24_22,          \
+    vlmul    : VLMUL_21_20,         \
+    wX       : WX_3,                \
+}
+
+//
 // Attribute entries for 32-bit instructions like LAST
 //
 #define ATTR32_LAST(_NAME, _GENERIC, _OPCODE) [IT32_##_NAME] = { \

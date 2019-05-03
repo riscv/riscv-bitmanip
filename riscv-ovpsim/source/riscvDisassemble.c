@@ -242,6 +242,17 @@ static void putRM(char ** result, riscvRMDesc rm, Bool uncooked) {
 }
 
 //
+// Emit VType argument
+//
+static void putVType(char ** result, Uns8 vsew, Uns8 vlmul) {
+
+    putChar(result, 'e');
+    putD(result, 8<<vsew);
+    putString(result, ",m");
+    putD(result, 1<<vlmul);
+}
+
+//
 // Emit opcode modifier based on argument type
 //
 static riscvRegDesc putType(
@@ -425,6 +436,10 @@ static void disassembleFormat(
                 case EMIT_SUCC:
                     putUncookedKey(result, " SUCC", uncooked);
                     putFence(result, info->succ, info->pred, uncooked);
+                    break;
+                case EMIT_VTYPE:
+                    putUncookedKey(result, " VTYPE", uncooked);
+                    putVType(result, info->vsew, info->vlmul);
                     break;
                 case '*':
                     nextOpt = True;

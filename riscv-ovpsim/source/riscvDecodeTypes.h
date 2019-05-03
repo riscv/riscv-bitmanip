@@ -154,6 +154,12 @@ typedef enum riscvITypeE {
     // X-extension instructions
     RV_IT_CUSTOM,
 
+    // V-extension R-type instructions
+    RV_IT_VSETVL_R,
+
+    // V-extension I-type instructions
+    RV_IT_VSETVL_I,
+
     // KEEP LAST
     RV_IT_LAST
 
@@ -229,6 +235,8 @@ typedef struct riscvInstrInfoS {
     riscvRMDesc       rm;               // rounding mode
     riscvCSRUDesc     csrUpdate;        // CSR update semantics
     Uns32             csr;              // CSR index
+    Uns8              vsew;             // vsew value
+    Uns8              vlmul;            // vmul value
 
 } riscvInstrInfo;
 

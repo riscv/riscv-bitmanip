@@ -4,6 +4,24 @@
 # This CHANGELOG contains information specific to the RISCV processor model   #
 ###############################################################################
 
+- Various changes have been made to implement conformance with Privileged
+  Architecture specification 20190405-Priv-MSU-Ratification, as follows:
+  - The priority order of synchronous exceptions has been modified;
+  - A new parameter, xret_preserves_lr, allows specification that xRET
+    instructions should preserve the current value of LR (if False, LR is
+    cleared by these instructions);
+  - Behavior of misa and xepc registers on systems with variable IALIGN has been
+    changed to match the specification;
+  - misa.I is now writable if the write mask permits it. misa.E is read only and
+    always the complement of misa.I;
+  - The mcountinhibit CSR has been implemented.
+- Various changes have been made to implement conformance with Base Architecture
+  specification 20190303-User-Ratification, as follows:
+  - A new parameter, unalignedAMO, controls whether AMO instructions support
+    unaligned addresses. LR/SC instructions now never support unaligned
+    addresses.
+  - RV32E may now be used in conjunction with other extensions. misa.E is now
+    always a read-only complement of misa.I.
 - The SFENCE.VMA instruction is now only supported if Supervisor mode is
   implemented.
 - When Privileged Level version 1.11 is enabled (see the priv_version parameter)
@@ -13,6 +31,8 @@
 - A bug has been fixed which caused PMP privileges to be incorrectly set in some
   cases (where a high priority unlocked region was disabled and covered the same
   address range as a lower priority locked region).
+- The model has been simplified to use the built-in VMI RMM rounding mode
+  support.
 
 ###############################################################################
 ## Date 2019-March-06                                                        ##

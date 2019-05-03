@@ -61,9 +61,13 @@ typedef struct riscvConfigS {
     Uns32             Sv_modes;         // bit mask of valid Sv modes
     Uns32             numHarts;         // number of hart contexts if MPCore
     Uns32             tvec_align;       // trap vector alignment (vectored mode)
+    Uns32             ELEN;             // ELEN (vector extension)
+    Uns32             SLEN;             // SLEN (vector extension)
+    Uns32             VLEN;             // VLEN (vector extension)
     Bool              updatePTEA;       // hardware update of PTE A bit?
     Bool              updatePTED;       // hardware update of PTE D bit?
     Bool              unaligned;        // whether unaligned accesses supported
+    Bool              unalignedAMO;     // whether AMO supports unaligned
     Bool              wfi_is_nop;       // whether WFI is treated as NOP
     Bool              mtvec_is_ro;      // whether mtvec is read-only
     Bool              cycle_undefined;  // whether cycle CSR is undefined
@@ -71,6 +75,7 @@ typedef struct riscvConfigS {
     Bool              instret_undefined;// whether instret CSR is undefined
     Bool              d_requires_f;     // when misa D requires F to be set
     Bool              fs_always_dirty;  // if mstatus.FS!=0, force it to 3
+    Bool              xret_preserves_lr;// whether xRET preserves current LR
     Bool              enable_CSR_bus;   // enable CSR implementation bus
     Bool              tval_ii_code;     // instruction bits in [sm]tval for
                                         // illegal instruction exception?

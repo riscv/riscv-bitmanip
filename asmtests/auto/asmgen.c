@@ -60,9 +60,9 @@ int get_cr(char *buf) {
     return id;
 }
 // Compare register (not rD, rs1 or rs2)
-void get_cmp(char *buf, char *rd, char *rs1, char *rs2) {
+void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     strcpy(buf, rd);
-    while(!strcmp(buf, rd) || !strcmp(buf, rs1) || !strcmp(buf, rs2)) {
+    while(!strcmp(buf, rd) || !strcmp(buf, rs1) || !strcmp(buf, rs2) || !strcmp(buf, rs3)) {
         int id = getnum(1,31);
         sprintf(buf, "x%d", id);
     }
@@ -72,7 +72,7 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2) {
     char rdN[8], rdRef[8]; \
     uint_xlen_t rdVi, rdVo; \
     int rd  = get_cr(rdN); \
-    get_cmp(rdRef, rdN, rdN, rdN); \
+    get_cmp(rdRef, rdN, rdN, rdN, rdN); \
     rdVi = 0; \
     rdVi = random(); \
     if (rd) rdVo = FUNC(rdVi); \
@@ -87,7 +87,7 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2) {
     char rdN[8], rdRef[8]; \
     uint_xlen_t rdVi, rdVo; \
     int rd  = get_cr(rdN); \
-    get_cmp(rdRef, rdN, rdN, rdN); \
+    get_cmp(rdRef, rdN, rdN, rdN, rdN); \
     rdVi = 0; \
     rdVi = random(); \
     if (rd) rdVo = FUNC(rdVi); \
@@ -103,7 +103,7 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2) {
     uint_xlen_t rs1V, rdV; \
     int rd  = get_r(rdN); \
     int rs1 = get_r(rs1N); \
-    get_cmp(rdRef, rdN, rs1N, rs1N); \
+    get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
     rs1V = 0; \
     rdV  = 0; \
     if (rs1) rs1V = random(); \
@@ -121,22 +121,57 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2) {
     int rd  = get_r(rdN); \
     int rs1 = get_r(rs1N); \
     int rs2 = get_r(rs2N); \
-    get_cmp(rdRef, rdN, rs1N, rs2N); \
+    get_cmp(rdRef, rdN, rs1N, rs2N, rs2N); \
     rs1V = 0; \
     rs2V = 0; \
     rdV  = 0; \
     if (rs1) rs1V = random(); \
-    if (rs1 == rs2) { \
+    if (rs2) rs2V = random(); \
+    \
+    if (rs1 == rs2 ) { \
         rs2V = rs1V; \
-    } else if (rs2) { \
-        rs2V = random(); \
     } \
     if (rd)  rdV = FUNC(rs1V, rs2V); \
-    printf("# Test %d: (ref=%s) (rs1=%s/0x%08X) %s (rs2=%s/0x%08X) => (rd=%s/0x%08X)\n", TEST, rdRef, rs1N, rs1V, #FUNC, rs2N, rs2V, rdN, rdV); \
+    printf("# Test %d: (ref=%s) %s(rs1=%s/0x%08X)(rs2=%s/0x%08X) => (rd=%s/0x%08X)\n", TEST, rdRef, #FUNC, rs1N, rs1V, rs2N, rs2V, rdN, rdV); \
     printf(".l_" #FUNC "_%d_Start:\n", TEST); \
     printf("    %-8s %3s, 0x%08X\n",   "li",  rs1N,  rs1V); \
     printf("    %-8s %3s, 0x%08X\n",   "li",  rs2N,  rs2V); \
     printf("    %-8s %d %d %d\n",      #FUNC, rd,    rs1,   rs2); \
+    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdV); \
+    printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
+
+#define PROLOG_RRRR(FUNC,TEST) \
+    char rdN[8], rdRef[8], rs1N[8], rs2N[8], rs3N[8]; \
+    uint_xlen_t rs1V, rs2V, rs3V, rdV; \
+    int rd  = get_r(rdN); \
+    int rs1 = get_r(rs1N); \
+    int rs2 = get_r(rs2N); \
+    int rs3 = get_r(rs3N); \
+    get_cmp(rdRef, rdN, rs1N, rs2N, rs3N); \
+    rs1V = 0; \
+    rs2V = 0; \
+    rs3V = 0; \
+    rdV  = 0; \
+    if (rs1) rs1V = random(); \
+    if (rs2) rs2V = random(); \
+    if (rs3) rs3V = random(); \
+    \
+    if (rs1 == rs2 ) { \
+        rs2V = rs1V; \
+    } \
+    if (rs1 == rs3) { \
+        rs3V = rs1V; \
+    } \
+    if (rs2 == rs3) { \
+        rs2V = rs3V; \
+    } \
+    if (rd)  rdV = FUNC(rs1V, rs2V, rs3V); \
+    printf("# Test %d: (ref=%s) %s(rs1=%s/0x%08X)(rs2=%s/0x%08X)(rs3=%s/0x%08X) => (rd=%s/0x%08X)\n", TEST, rdRef, #FUNC, rs1N, rs1V, rs2N, rs2V, rs3N, rs3V, rdN, rdV); \
+    printf(".l_" #FUNC "_%d_Start:\n", TEST); \
+    printf("    %-8s %3s, 0x%08X\n",   "li",  rs1N,  rs1V); \
+    printf("    %-8s %3s, 0x%08X\n",   "li",  rs2N,  rs2V); \
+    printf("    %-8s %3s, 0x%08X\n",   "li",  rs3N,  rs3V); \
+    printf("    %-8s %d %d %d %d\n",    #FUNC, rd,    rs1,   rs2,  rs3); \
     printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
@@ -146,7 +181,7 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2) {
     int rd  = get_r(rdN); \
     int rs1 = get_r(rs1N); \
     int imm = getnum(0,63); \
-    get_cmp(rdRef, rdN, rs1N, rs1N); \
+    get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
     rs1V = 0; \
     rdV  = 0; \
     if (rs1) rs1V = random(); \
@@ -291,6 +326,70 @@ void do_bmatflip(int test) {
     EPILOG(bmatflip, test);
 }
 
+// TODO - check side effect t0 register
+void do_cmix(int test) {
+    PROLOG_RRRR(cmix, test);
+    EPILOG(cmix, test);
+}
+
+void do_cmov(int test) {
+    PROLOG_RRRR(cmov, test);
+    EPILOG(cmov, test);
+}
+
+void do_fsl(int test) {
+    PROLOG_RRRR(fsl, test);
+    EPILOG(fsl, test);
+}
+
+void do_fsr(int test) {
+    PROLOG_RRRR(fsr, test);
+    EPILOG(fsr, test);
+}
+
+void do_min(int test) {
+    PROLOG_RRR(min, test);
+    EPILOG(min, test);
+}
+
+void do_max(int test) {
+    PROLOG_RRR(max, test);
+    EPILOG(max, test);
+}
+
+void do_minu(int test) {
+    PROLOG_RRR(minu, test);
+    EPILOG(minu, test);
+}
+
+void do_maxu(int test) {
+    PROLOG_RRR(maxu, test);
+    EPILOG(maxu, test);
+}
+
+void do_clmul(int test) {
+    PROLOG_RRR(clmul, test);
+    EPILOG(clmul, test);
+}
+
+void do_clmulh(int test) {
+    PROLOG_RRR(clmulh, test);
+    EPILOG(clmulh, test);
+}
+
+//void do_bmatxor(int test) {
+//    PROLOG_RRR(bmatxor, test);
+//    EPILOG(bmatxor, test);
+//}
+//void do_bmator(int test) {
+//    PROLOG_RRR(bmator, test);
+//    EPILOG(bmator, test);
+//}
+//void do_bmatflip(int test) {
+//    PROLOG_RRR(bmatflip, test);
+//    EPILOG(bmatflip, test);
+//}
+
 // arg1 = num instructions
 int main(int argc, char **argv) {
     printf(".include \"extB.S.include\"\n");
@@ -301,10 +400,14 @@ int main(int argc, char **argv) {
     printf("    sw x1, 0(x2)\n");
     printf("\n");
 
-    int iter = 100;
+    int iter = 1000;
     if (argc > 1) iter = atoi(argv[1]);
 
     int test = 0;
+//    while (test < iter) {
+//        do_bmatxor(++test);
+//        do_bmator(++test);
+//    }
     while (test < iter) {
         do_clz(++test);
         do_ctz(++test);
@@ -325,16 +428,16 @@ int main(int argc, char **argv) {
         do_unshfli(++test);
         do_bext(++test);
         do_bdep(++test);
-//        do_cmix(++test);
-//        do_cmov(++test);
-//        do_fsl(++test);
-//        do_fsr(++test);
-//        do_min(++test);
-//        do_max(++test);
-//        do_minu(++test);
-//        do_manu(++test);
-//        do_clmul(++test);
-//        do_clmulh(++test);
+        do_cmix(++test);
+        do_cmov(++test);
+        do_fsl(++test);
+        do_fsr(++test);
+        do_min(++test);
+        do_max(++test);
+        do_minu(++test);
+        do_maxu(++test);
+        do_clmul(++test);
+        do_clmulh(++test);
         do_crc32_b(++test);
         do_crc32_h(++test);
         do_crc32_w(++test);
@@ -372,6 +475,8 @@ int main(int argc, char **argv) {
     printf("    EXIT_TEST\n");
     printf("\n");
 
+    printf(".align 8\n");
+    printf("\n");
     printf("test_result:\n");
     printf("    .fill 1, 4, -1\n");
 

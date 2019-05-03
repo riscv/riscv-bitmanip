@@ -24,6 +24,32 @@
 #include "riscvTypeRefs.h"
 
 //
+// This indicates the known active vector standard element width (SEW)
+//
+typedef enum riscvSEWMtE {
+    SEWMT_UNKNOWN =    0,
+    SEWMT_8       =    8,
+    SEWMT_16      =   16,
+    SEWMT_32      =   32,
+    SEWMT_64      =   64,
+    SEWMT_128     =  128,
+    SEWMT_256     =  256,
+    SEWMT_512     =  512,
+    SEWMT_1024    = 1024
+} riscvSEWMt;
+
+//
+// This indicates the known active vector length multiplier (VLMUL)
+//
+typedef enum riscvVLMULMtE {
+    VLMULMT_UNKNOWN = 0,
+    VLMULMT_1       = 1,
+    VLMULMT_2       = 2,
+    VLMULMT_4       = 4,
+    VLMULMT_8       = 8,
+} riscvVLMULMt;
+
+//
 // This structure holds state for a code block as it is morphed
 //
 typedef struct riscvBlockStateS {
@@ -31,7 +57,9 @@ typedef struct riscvBlockStateS {
     riscvBlockStateP prevState;     // previous block state
     Uns32            fpNaNBoxMask;  // mask of known single-precision FP registers
     Bool             fpInstDone;    // floating-point instruction already seen?
-    riscvRMDesc      fpActiveRMMT;  // active floating-point rounding mode
+    Bool             fpRMChecked;   // floating-point rounding mode checked?
+    riscvSEWMt       SEWMt;         // known active vector SEW
+    riscvVLMULMt     VLMULMt;       // known active vector VLMUL
 
 } riscvBlockState;
 

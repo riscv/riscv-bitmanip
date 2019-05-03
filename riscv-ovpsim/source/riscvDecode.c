@@ -144,8 +144,10 @@ static riscvArchitecture getXLenArch(riscvP riscv) {
 #define U_19_15(_I)         UBITS(5, (_I)>>15)
 #define U_20(_I)            UBITS(1, (_I)>>20)
 #define U_21(_I)            UBITS(1, (_I)>>21)
+#define U_21_20(_I)         UBITS(2, (_I)>>20)
 #define U_23_20(_I)         UBITS(4, (_I)>>20)
 #define U_24_20(_I)         UBITS(5, (_I)>>20)
+#define U_24_22(_I)         UBITS(3, (_I)>>22)
 #define U_25(_I)            UBITS(1, (_I)>>25)
 #define U_25_20(_I)         UBITS(6, (_I)>>20)
 #define U_26_25(_I)         UBITS(2, (_I)>>25)
@@ -304,6 +306,22 @@ typedef enum rmSpecE {
 } rmSpec;
 
 //
+// Define the encoding of vector vsew specifier in an instruction
+//
+typedef enum vsewSpecE {
+    VSEW_NA,            // no vsew
+    VSEW_24_22,         // vsew in bits 24:22
+} vsewSpec;
+
+//
+// Define the encoding of vector vlmul specifier in an instruction
+//
+typedef enum vlmulSpecE {
+    VLMUL_NA,           // no vlmul
+    VLMUL_21_20,        // vlmul in bits 21:20
+} vlmulSpec;
+
+//
 // Structure defining characteristics of each opcode type
 //
 typedef struct opAttrsS {
@@ -321,13 +339,15 @@ typedef struct opAttrsS {
     csrUpdateSpec     csrUpdate:  4;    // location of CSR update specification
     wxSpec            wX       :  4;    // X register width specification
     wfSpec            wF       :  4;    // F register width specification
-    aqrlSpec          aqrl     :  4;    // acquire/release specification
     fenceSpec         pred     :  4;    // predecessor fence specification
     fenceSpec         succ     :  4;    // successor fence specification
     memBitsSpec       memBits  :  4;    // load/store size specification
     unsExtSpec        unsExt   :  4;    // unsigned extend specification
-    rmSpec            rm       :  4;    // rounding mode specification
     Uns32             priDelta :  4;    // decode priority delta
+    aqrlSpec          aqrl     :  1;    // acquire/release specification
+    rmSpec            rm       :  1;    // rounding mode specification
+    vsewSpec          vsew     :  1;    // vsew specification
+    vlmulSpec         vlmul    :  1;    // vlmul specification
     Bool              csrInOp  :  1;    // whether to emit CSR as part of opcode
     Bool              xQuiet   :  1;    // are X registers type-quiet?
 } opAttrs;
@@ -521,6 +541,12 @@ typedef enum riscvIType32E {
     IT32_CUSTOM3,
     IT32_CUSTOM4,
 
+    // V-extension R-type instructions
+    IT32_VSETVL_R,
+
+    // V-extension I-type instructions
+    IT32_VSETVL_I,
+
     // KEEP LAST
     IT32_LAST
 
@@ -707,6 +733,12 @@ const static opAttrs attrsArray32[] = {
     ATTR32_CUSTOM    (    CUSTOM2,      CUSTOM, RVANY,  "custom2",    "|............|.....|...|.....|0101011|"),
     ATTR32_CUSTOM    (    CUSTOM3,      CUSTOM, RVANY,  "custom3",    "|............|.....|...|.....|1011011|"),
     ATTR32_CUSTOM    (    CUSTOM4,      CUSTOM, RVANY,  "custom4",    "|............|.....|...|.....|1111011|"),
+
+    // V-extension R-type                                              | funct7|  rs2|  rs1|fun|   rd| opcode|
+    ATTR32_ADD       (   VSETVL_R,    VSETVL_R, RVANYV, "vsetvl",     "|1000000|.....|.....|111|.....|1010111|"),
+
+    // V-extension I-type                                              |       imm32|  rs1|fun|   rd| opcode|
+    ATTR32_VSETVLI   (   VSETVL_I,    VSETVL_I, RVANYV, "vsetvli",    "|0000000.....|.....|111|.....|1010111|"),
 
     // dummy entry for undecoded instruction
     ATTR32_LAST      (       LAST,      LAST,           "undef")
@@ -1465,6 +1497,50 @@ static riscvRMDesc getRM(riscvInstrInfoP info, rmSpec rm) {
 }
 
 //
+// Return vector VSEW encoded in the instruction
+//
+static Uns8 getVSEW(riscvInstrInfoP info, vsewSpec vsew) {
+
+    Uns8  result = 0;
+    Uns32 instr  = info->instruction;
+
+    switch(vsew) {
+        case VSEW_NA:
+            break;
+        case VSEW_24_22:
+            result = U_24_22(instr);
+            break;
+        default:
+            VMI_ABORT("unimplemented case"); // LCOV_EXCL_LINE
+            break;
+    }
+
+    return result;
+}
+
+//
+// Return vector VLMUL encoded in the instruction
+//
+static Uns8 getVLMUL(riscvInstrInfoP info, vlmulSpec vlmul) {
+
+    Uns8  result = 0;
+    Uns32 instr  = info->instruction;
+
+    switch(vlmul) {
+        case VLMUL_NA:
+            break;
+        case VLMUL_21_20:
+            result = U_21_20(instr);
+            break;
+        default:
+            VMI_ABORT("unimplemented case"); // LCOV_EXCL_LINE
+            break;
+    }
+
+    return result;
+}
+
+//
 // Fix floating point instructions that cannot be determined by decode alone
 //
 static void fixFPPseudoInstructions(riscvInstrInfoP info) {
@@ -1541,6 +1617,8 @@ static void interpretInstruction(
     info->pred      = getFence(info, attrs->pred);
     info->succ      = getFence(info, attrs->succ);
     info->rm        = getRM(info, attrs->rm);
+    info->vsew      = getVSEW(info, attrs->vsew);
+    info->vlmul     = getVLMUL(info, attrs->vlmul);
 
     // fix up floating point pseudo-instructions
     fixFPPseudoInstructions(info);
