@@ -406,6 +406,25 @@ void riscvDoc(riscvP riscv) {
             );
         }
 
+        // document unaligned access behavior for AMO instructions
+        if(!(cfg->arch&ISA_A)) {
+            // no action
+        } else if(cfg->unalignedAMO) {
+            vmidocAddText(
+                Features,
+                "Unaligned memory accesses are supported for AMO instructions "
+                "by this variant. Set parameter \"unalignedAMO\" to \"F\" to "
+                "disable such accesses."
+            );
+        } else {
+            vmidocAddText(
+                Features,
+                "Unaligned memory accesses are not supported for AMO "
+                "instructions by this variant. Set parameter \"unalignedAMO\" "
+                "to \"T\" to enable such accesses."
+            );
+        }
+
         // document PMP regions
         if(cfg->PMP_registers) {
 

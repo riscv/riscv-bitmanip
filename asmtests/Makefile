@@ -34,8 +34,8 @@ verify:
 	@ bash verify.sh
 
 %.log: %.elf FORCE
-	$(RUN_TARGET) --program $(<) --logfile $(@).tmp
 	$(RUN_TARGET) --program $(<) --logfile $(@).trc --trace --tracechange >/dev/null
+	$(RUN_TARGET) --program $(<) --logfile $(@).tmp
 	@ grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 

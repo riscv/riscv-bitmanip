@@ -150,7 +150,14 @@ inline static Uns64 getPC(riscvP riscv) {
 //
 // Set current PC
 //
-inline static void setPC(riscvP riscv, Uns64 newPC) {
+inline static void setPCxRET(riscvP riscv, Uns64 newPC) {
+
+    // mask exception return address to 32 bits if compressed instructions
+    // are not currently enabled
+    if(!(riscv->currentArch & ISA_C)) {
+        newPC &= -4;
+    }
+
     vmirtSetPC((vmiProcessorP)riscv, newPC);
 }
 
@@ -166,6 +173,15 @@ inline static Bool isHalted(riscvP riscv) {
 //
 inline static void clearEA(riscvP riscv) {
     riscv->exclusiveTag = RISCV_NO_TAG;
+}
+
+//
+// Clear any active exclusive access on an xRET, if required
+//
+inline static void clearEAxRET(riscvP riscv) {
+    if(!riscv->configInfo.xret_preserves_lr) {
+        clearEA(riscv);
+    }
 }
 
 
@@ -347,8 +363,8 @@ void riscvTakeException(
     Uns8      mode;
 
     // adjust baseInstructions based on the exception code to take into account
-    // whether the previous instruction has retired
-    if(!retiredCode(exception)) {
+    // whether the previous instruction has retired, unless inhibited
+    if(!retiredCode(exception) && !RD_CSR_FIELD(riscv, mcountinhibit, IR)) {
         riscv->baseInstructions++;
     }
 
@@ -472,7 +488,7 @@ void riscvMRET(riscvP riscv) {
     riscvMode newMode = getERETMode(riscv, MPP, minMode);
 
     // clear any active exclusive access
-    clearEA(riscv);
+    clearEAxRET(riscv);
 
     // restore previous MIE
     WR_CSR_FIELD(riscv, mstatus, MIE, RD_CSR_FIELD(riscv, mstatus, MPIE))
@@ -487,7 +503,7 @@ void riscvMRET(riscvP riscv) {
     riscvSetMode(riscv, newMode);
 
     // jump to exception address
-    setPC(riscv, RD_CSR_FIELD(riscv, mepc, value));
+    setPCxRET(riscv, RD_CSR_FIELD(riscv, mepc, value));
 
     // notify derived model of exception return if required
     notifyERETDerived(riscv, RISCV_MODE_MACHINE);
@@ -506,7 +522,7 @@ void riscvSRET(riscvP riscv) {
     riscvMode newMode = getERETMode(riscv, SPP, minMode);
 
     // clear any active exclusive access
-    clearEA(riscv);
+    clearEAxRET(riscv);
 
     // restore previous SIE
     WR_CSR_FIELD(riscv, mstatus, SIE, RD_CSR_FIELD(riscv, mstatus, SPIE))
@@ -521,7 +537,7 @@ void riscvSRET(riscvP riscv) {
     riscvSetMode(riscv, newMode);
 
     // jump to exception address
-    setPC(riscv, RD_CSR_FIELD(riscv, sepc, value));
+    setPCxRET(riscv, RD_CSR_FIELD(riscv, sepc, value));
 
     // notify derived model of exception return if required
     notifyERETDerived(riscv, RISCV_MODE_SUPERVISOR);
@@ -538,7 +554,7 @@ void riscvURET(riscvP riscv) {
     riscvMode newMode = RISCV_MODE_USER;
 
     // clear any active exclusive access
-    clearEA(riscv);
+    clearEAxRET(riscv);
 
     // restore previous UIE
     WR_CSR_FIELD(riscv, mstatus, UIE, RD_CSR_FIELD(riscv, mstatus, UPIE))
@@ -550,7 +566,7 @@ void riscvURET(riscvP riscv) {
     riscvSetMode(riscv, newMode);
 
     // jump to exception address
-    setPC(riscv, RD_CSR_FIELD(riscv, uepc, value));
+    setPCxRET(riscv, RD_CSR_FIELD(riscv, uepc, value));
 
     // notify derived model of exception return if required
     notifyERETDerived(riscv, RISCV_MODE_USER);
@@ -781,24 +797,70 @@ static Uns64 getPendingAndEnabledInterrupts(riscvP riscv) {
 }
 
 //
+// Descriptor for pending-and-enabled interrupt
+//
+typedef struct intDescS {
+    Uns32     ecode;    // exception code
+    riscvMode emode;    // mode to which taken
+} intDesc;
+
+#define INT_INDEX(_NAME) (riscv_E_##_NAME-riscv_E_Interrupt)
+
+//
 // Process highest-priority interrupt in the given mask of pending-and-enabled
 // interrupts
 //
 static void doInterrupt(riscvP riscv, Uns64 intMask) {
 
-    Uns32 ecode = -1;
+    Uns32   ecode    = 0;
+    intDesc selected = {ecode:-1};
 
     // sanity check there are pending-and-enabled interrupts
     VMI_ASSERT(intMask, "expected pending-and-enabled interrupts");
 
-    // find the highest priority pending interrupt
-    while(intMask) {
+    // static table of priority mappings (NOTE: custom interrupts are assumed
+    // to be lowest priority, indicated by default value 0 in this table)
+    static const Uns8 intPri[INT_INDEX(Last)] = {
+        [INT_INDEX(UTimerInterrupt)]    = 1,
+        [INT_INDEX(USWInterrupt)]       = 2,
+        [INT_INDEX(UExternalInterrupt)] = 3,
+        [INT_INDEX(STimerInterrupt)]    = 4,
+        [INT_INDEX(SSWInterrupt)]       = 5,
+        [INT_INDEX(SExternalInterrupt)] = 6,
+        [INT_INDEX(MTimerInterrupt)]    = 7,
+        [INT_INDEX(MSWInterrupt)]       = 8,
+        [INT_INDEX(MExternalInterrupt)] = 9,
+    };
+
+    // find the highest priority pending-and-enabled interrupt
+    do {
+
+        if(intMask&1) {
+
+            intDesc try = {ecode:ecode, emode:getInterruptModeX(riscv, ecode)};
+
+            if(selected.ecode==-1) {
+                // first pending-and-enabled interrupt
+                selected = try;
+            } else if(selected.emode < try.emode) {
+                // higher destination privilege mode
+                selected = try;
+            } else if(selected.emode > try.emode) {
+                // lower destination privilege mode
+            } else if(intPri[selected.emode] <= intPri[try.emode]) {
+                // higher fixed priority order and same destination mode
+                selected = try;
+            }
+        }
+
+        // step to next potential pending-and-enabled interrupt
         intMask >>= 1;
         ecode++;
-    }
+
+    } while(intMask);
 
     // take the interrupt
-    riscvTakeException(riscv, riscv_E_Interrupt+ecode, 0);
+    riscvTakeException(riscv, riscv_E_Interrupt+selected.ecode, 0);
 }
 
 //

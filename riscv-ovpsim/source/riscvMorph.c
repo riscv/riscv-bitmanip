@@ -32,7 +32,6 @@
 #include "riscvMessage.h"
 #include "riscvMorph.h"
 #include "riscvRegisters.h"
-#include "riscvSoftFloat.h"
 #include "riscvStructure.h"
 #include "riscvTypeRefs.h"
 #include "riscvUtils.h"
@@ -63,29 +62,6 @@ typedef enum riscvFPCtrlE {
     RVFP_FMIN_2_3,  // special for FMIN (2.3 specification)
     RVFP_FMAX_2_3,  // special for FMAX (2.3 specification)
 
-    // Emulated operations (FMM rounding)
-    RVFP_FADD,
-    RVFP_FSUB,
-    RVFP_FMUL,
-    RVFP_FDIV,
-    RVFP_FSQRT,
-    RVFP_FMADD,
-    RVFP_FMSUB,
-    RVFP_FNMADD,
-    RVFP_FNMSUB,
-
-    // Emulated conversion operations (FMM rounding)
-    RVFP_CVT,       // generic control value
-    RVFP_CVTIF32,   // convert from F32 to I32/I64
-    RVFP_CVTUF32,   // convert from F32 to U32/U64
-    RVFP_CVTFF64,   // convert from F64 to F32
-    RVFP_CVTIF64,   // convert from F64 to I32/I64
-    RVFP_CVTUF64,   // convert from F64 to U32/U64
-    RVFP_CVTFI32,   // convert from I32 to F32/F64
-    RVFP_CVTFI64,   // convert from I64 to F32/F64
-    RVFP_CVTFU32,   // convert from U32 to F32/F64
-    RVFP_CVTFU64,   // convert from U64 to F32/F64
-
     RVFP_LAST       // KEEP LAST
 
 } riscvFPCtrl;
@@ -101,7 +77,6 @@ typedef struct riscvMorphAttrS {
     vmiFBinop             fpBinop  : 8; // floating-point binary operation
     vmiFTernop            fpTernop : 8; // floating-point ternary operation
     riscvFPCtrl           fpConfig : 8; // floating point configuration
-    riscvFPCtrl           fpRMMCfg : 8; // floating point configuration (RMM)
     vmiFPRelation         fpRel    : 4; // floating point comparison relation
     vmiCondition          cond     : 4; // comparison condition
     Bool                  fpQNaNOk : 1; // allow QNaN in floating point compare?
@@ -239,26 +214,6 @@ static void illegalInstructionAbsentArch(
 }
 
 //
-// Take Illegal Instruction exception when feature is present
-//
-static void illegalInstructionPresentArch(
-    riscvP            riscv,
-    riscvArchitecture present
-) {
-    // report the absent or disabled feature by name
-    if(riscv->verbose) {
-        vmiMessage("W", CPU_PREFIX "_EFE",
-            SRCREF_FMT "Illegal instruction - %s present",
-            SRCREF_ARGS(riscv, getPC(riscv)),
-            getFeatureDesc(present)
-        );
-    }
-
-    // take Illegal Instruction exception
-    riscvIllegalInstruction(riscv);
-}
-
-//
 // Emit code to take Illegal Instruction exception when feature is absent or not
 // enabled
 //
@@ -266,15 +221,6 @@ static void emitIllegalInstructionAbsentArch(riscvArchitecture missing) {
     vmimtArgProcessor();
     vmimtArgUns32(missing);
     vmimtCallAttrs((vmiCallFn)illegalInstructionAbsentArch, VMCA_EXCEPTION);
-}
-
-//
-// Emit code to take Illegal Instruction exception when feature is present
-//
-static void emitIllegalInstructionPresentArch(riscvArchitecture present) {
-    vmimtArgProcessor();
-    vmimtArgUns32(present);
-    vmimtCallAttrs((vmiCallFn)illegalInstructionPresentArch, VMCA_EXCEPTION);
 }
 
 //
@@ -340,23 +286,6 @@ Bool riscvRequireArchPresentMT(riscvP riscv, riscvArchitecture feature) {
     }
 
     return !absent;
-}
-
-//
-// Validate that the given required feature is absent
-//
-Bool riscvRequireArchAbsentMT(riscvP riscv, riscvArchitecture feature) {
-
-    riscvArchitecture current = getCurrentArch(riscv);
-    riscvArchitecture actual  = current & feature;
-    riscvArchitecture present = feature & actual;
-
-    // handle present feature
-    if(present) {
-        emitIllegalInstructionPresentArch(present);
-    }
-
-    return !present;
 }
 
 //
@@ -608,10 +537,9 @@ vmiReg riscvGetVMIReg(riscvP riscv, riscvRegDesc r) {
             riscvRequireArchPresentMT(riscv, ISA_XLEN_64);
         }
 
-        // register indices >= 15 are illegal for E extension (this does not
-        // conform to other features, because E actually indicates a *reduced*
-        // capability)
-        if((index<16) || riscvRequireArchAbsentMT(riscv, ISA_E)) {
+        // register indices >= 15 are illegal for E extension (the inverse of
+        // the I feature)
+        if((index<16) || riscvRequireArchPresentMT(riscv, ISA_I)) {
             result = index ? RISCV_GPR(index) : VMI_NOREG;
         }
 
@@ -992,7 +920,8 @@ static RISCV_MORPH_FN(emitCmpopRRC) {
 //
 static memConstraint getLoadStoreConstraint(riscvMorphStateP state) {
 
-    Bool unaligned = state->riscv->configInfo.unaligned;
+    riscvP riscv     = state->riscv;
+    Bool   unaligned = riscv->configInfo.unaligned;
 
     return unaligned ? MEM_CONSTRAINT_NONE : MEM_CONSTRAINT_ALIGNED;
 }
@@ -1001,18 +930,21 @@ static memConstraint getLoadStoreConstraint(riscvMorphStateP state) {
 // Get alignment constraint for atomic operations (must be aligned prior to
 // version 2.3)
 //
-static memConstraint getLoadStoreConstraintA(riscvMorphStateP state) {
+static memConstraint getLoadStoreConstraintAMO(riscvMorphStateP state) {
 
-    riscvP riscv = state->riscv;
+    riscvP riscv        = state->riscv;
+    Bool   unaligned    = riscv->configInfo.unaligned;
+    Bool   unalignedAMO = riscv->configInfo.unalignedAMO && unaligned;
 
-    if(
-        (RISCV_USER_VERSION(riscv) >= RVUV_2_3) ||
-        (RISCV_PRIV_VERSION(riscv) >= RVPV_1_11)
-    ) {
-        return getLoadStoreConstraint(state);
-    } else {
-        return MEM_CONSTRAINT_ALIGNED;
-    }
+    return unalignedAMO ? MEM_CONSTRAINT_NONE : MEM_CONSTRAINT_ALIGNED;
+}
+
+//
+// Get alignment constraint for LR/SC operations (always aligned)
+//
+static memConstraint getLoadStoreConstraintLR(riscvMorphStateP state) {
+
+    return MEM_CONSTRAINT_ALIGNED;
 }
 
 //
@@ -1255,7 +1187,7 @@ static void emitAMOCommonRRR(riscvMorphStateP state, amoCB opCB) {
     vmiReg        rs         = getVMIReg(riscv, rsA);
     vmiReg        ra         = getVMIReg(riscv, raA);
     Uns32         bits       = getRBits(rdA);
-    memConstraint constraint = getLoadStoreConstraintA(state);
+    memConstraint constraint = getLoadStoreConstraintAMO(state);
     vmiReg        tmp1       = getTmp(0);
     vmiReg        tmp2       = getTmp(1);
 
@@ -1442,7 +1374,7 @@ static RISCV_MORPH_FN(emitLR) {
     vmiReg        rd         = getVMIReg(riscv, rdA);
     vmiReg        ra         = getVMIReg(riscv, raA);
     Uns32         rdBits     = getRBits(rdA);
-    memConstraint constraint = getLoadStoreConstraintA(state);
+    memConstraint constraint = getLoadStoreConstraintLR(state);
 
     // for this instruction, memBits is rdBits
     state->info.memBits = rdBits;
@@ -1469,7 +1401,7 @@ static RISCV_MORPH_FN(emitSC) {
     vmiReg        rs         = getVMIReg(riscv, rsA);
     vmiReg        ra         = getVMIReg(riscv, raA);
     Uns32         rdBits     = getRBits(rdA);
-    memConstraint constraint = getLoadStoreConstraintA(state);
+    memConstraint constraint = getLoadStoreConstraintLR(state);
 
     // for this instruction, memBits is rsBits
     state->info.memBits = getRBits(rsA);
@@ -1733,12 +1665,6 @@ static void emitCSRRCommon(riscvMorphStateP state, vmiReg rs1, Bool write) {
             // do the write and update mstatus.FS if required
             if(riscvEmitCSRWrite(attrs, riscv, rs1Tmp, cbTmp) & ISA_DF) {
                 updateFS(riscv);
-            }
-
-            // handle writes that invalidate any morph-time assumptions about
-            // the currently-active rounding mode (e.g. frm or fcsr)
-            if(attrs->wEndRM) {
-                riscv->blockState->fpActiveRMMT = RV_RM_NA;
             }
         }
 
@@ -2323,28 +2249,6 @@ const static vmiFPConfig fpConfigs[RVFP_LAST] = {
     [RVFP_FMAX]     = FPU_CONFIG(0, 0, doFMax32_2_2, doFMax64_2_2),
     [RVFP_FMIN_2_3] = FPU_CONFIG(0, 0, doFMin32_2_3, doFMin64_2_3),
     [RVFP_FMAX_2_3] = FPU_CONFIG(0, 0, doFMax32_2_3, doFMax64_2_3),
-
-    // Emulated operations (FMM rounding)
-    [RVFP_FADD]     = FPU_CONFIG(0, 0, riscvFADD32,    riscvFADD64  ),
-    [RVFP_FSUB]     = FPU_CONFIG(0, 0, riscvFSUB32,    riscvFSUB64  ),
-    [RVFP_FMUL]     = FPU_CONFIG(0, 0, riscvFMUL32,    riscvFMUL64  ),
-    [RVFP_FDIV]     = FPU_CONFIG(0, 0, riscvFDIV32,    riscvFDIV64  ),
-    [RVFP_FSQRT]    = FPU_CONFIG(0, 0, riscvFSQRT32,   riscvFSQRT64 ),
-    [RVFP_FMADD]    = FPU_CONFIG(0, 0, riscvFMADD32,   riscvFMADD64 ),
-    [RVFP_FMSUB]    = FPU_CONFIG(0, 0, riscvFMSUB32,   riscvFMSUB64 ),
-    [RVFP_FNMADD]   = FPU_CONFIG(0, 0, riscvFNMADD32,  riscvFNMADD64),
-    [RVFP_FNMSUB]   = FPU_CONFIG(0, 0, riscvFNMSUB32,  riscvFNMSUB64),
-
-    // Emulated conversion operations (FMM rounding)
-    [RVFP_CVTIF32]  = FPU_CONFIG(0, 0, riscvFCVTI32F32, riscvFCVTI64F32),
-    [RVFP_CVTUF32]  = FPU_CONFIG(0, 0, riscvFCVTU32F32, riscvFCVTU64F32),
-    [RVFP_CVTFF64]  = FPU_CONFIG(0, 0, riscvFCVTF32F64, 0              ),
-    [RVFP_CVTIF64]  = FPU_CONFIG(0, 0, riscvFCVTI32F64, riscvFCVTI64F64),
-    [RVFP_CVTUF64]  = FPU_CONFIG(0, 0, riscvFCVTU32F64, riscvFCVTU64F64),
-    [RVFP_CVTFI32]  = FPU_CONFIG(0, 0, riscvFCVTF32I32, 0              ),
-    [RVFP_CVTFI64]  = FPU_CONFIG(0, 0, riscvFCVTF32I64, riscvFCVTF64I64),
-    [RVFP_CVTFU32]  = FPU_CONFIG(0, 0, riscvFCVTF32U32, 0              ),
-    [RVFP_CVTFU64]  = FPU_CONFIG(0, 0, riscvFCVTF32U64, riscvFCVTF64U64),
 };
 
 //
@@ -2357,7 +2261,7 @@ void riscvConfigureFPU(riscvP riscv) {
 //
 // Return rounding control for riscvRMDesc
 //
-static vmiFPRC mapRMDescToRC(riscvRMDesc rm) {
+inline static vmiFPRC mapRMDescToRC(riscvRMDesc rm) {
 
     static const vmiFPRC map[] = {
         [RV_RM_CURRENT] = vmi_FPR_CURRENT,
@@ -2376,7 +2280,7 @@ static vmiFPRC mapRMDescToRC(riscvRMDesc rm) {
 //
 // Return rounding control for rounding mode in FPSR
 //
-static vmiFPRC mapFRMToRC(Uns8 frm) {
+inline static vmiFPRC mapFRMToRC(Uns8 frm) {
 
     static const vmiFPRC map[] = {
         [0] = vmi_FPR_NEAREST,
@@ -2393,70 +2297,25 @@ static vmiFPRC mapFRMToRC(Uns8 frm) {
 }
 
 //
-// Update floating point control word to use the given rounding control
+// Update current rounding mode
 //
-static void setFPCW(riscvP riscv, vmiFPRC rc) {
+void riscvSetRM(riscvP riscv, Uns8 newRM) {
 
-    if(rc!=vmi_FPR_AWAY) {
+    vmiFPRC rc = mapFRMToRC(newRM);
 
-        vmiFPControlWord cw = {
-            .IM = 1,
-            .DM = 1,
-            .ZM = 1,
-            .OM = 1,
-            .UM = 1,
-            .PM = 1,
-            .RC = rc
-        };
+    if(rc==-1) {
 
-        vmirtSetFPControlWord((vmiProcessorP)riscv, cw);
-    }
-}
-
-//
-// Set simulator floating point control word
-//
-static void refreshFPCW(riscvP riscv, riscvRMDesc rm) {
-
-    if(rm == RV_RM_CURRENT) {
-
-        // switch to use current rounding mode (if valid)
-        Uns8    frm = RD_CSR_FIELD(riscv, fcsr, frm);
-        vmiFPRC rc  = mapFRMToRC(frm);
-
-        if(rc==-1) {
-
-            // invalid current rounding mode
-            if(riscv->verbose) {
-                vmiMessage("W", CPU_PREFIX "_IRM",
-                    SRCREF_FMT "Invalid rounding mode %u",
-                    SRCREF_ARGS(riscv, getPC(riscv)),
-                    frm
-                );
-            }
-
-            // take Illegal Instruction exception
-            riscvIllegalInstruction(riscv);
-
-        } else {
-
-            // update model floating point control word
-            setFPCW(riscv, rc);
-
-            // indicate current rounding mode is in force
-            riscv->fpActiveRM = RV_RM_CURRENT;
-        }
+        riscv->fpInvalidRM = True;
 
     } else {
 
-        // switch to use specified rounding mode
-        vmiFPRC rc = mapRMDescToRC(rm);
+        vmiFPControlWord cw = {
+            .IM = 1, .DM = 1, .ZM = 1, .OM = 1, .UM = 1, .PM = 1, .RC = rc
+        };
 
-        // update model floating point control word
-        setFPCW(riscv, rc);
+        vmirtSetFPControlWord((vmiProcessorP)riscv, cw);
 
-        // indicate current rounding mode is in force
-        riscv->fpActiveRM = rm;
+        riscv->fpInvalidRM = False;
     }
 }
 
@@ -2466,219 +2325,49 @@ static void refreshFPCW(riscvP riscv, riscvRMDesc rm) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// This forces use of SoftFloat floating point for all operations
-//
-#define FORCE_SOFT_FLOAT 0
-
-//
-// Is RMM rounding mode required for the current instruction?
-//
-static Bool isRMMActive(riscvMorphStateP state) {
-
-    Bool result;
-
-    if(!state->attrs->fpRMMCfg) {
-        result = False;
-    } else if(FORCE_SOFT_FLOAT || (state->info.rm==RV_RM_RMM)) {
-        result = True;
-    } else if(state->info.rm!=RV_RM_CURRENT) {
-        result = False;
-    } else {
-        result = (RD_CSR_FIELD(state->riscv, fcsr, frm)==4);
-    }
-
-    return result;
-}
-
-//
 // Validate the given rounding mode is legal and emit an Illegal Instruction
 // exception call if not
 //
 static Bool emitCheckLegalRM(riscvP riscv, riscvRMDesc rm) {
 
-    Bool ok = (rm < RV_RM_BAD5);
+    riscvBlockStateP blockState = riscv->blockState;
+    Bool             validRM    = True;
 
-    if(!ok) {
+    if(rm >= RV_RM_BAD5) {
+
+        // static check for illegal mode
         ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IRM", "Illegal rounding mode");
+        validRM = False;
+
+    } else if((rm==RV_RM_CURRENT) && !blockState->fpRMChecked) {
+
+        // dynamic check of current mode required (first time in block only)
+        vmiLabelP ok = vmimtNewLabel();
+        vmimtTestRCJumpLabel(8, vmi_COND_Z, RISCV_INVALID_RM, rm, ok);
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IRM", "Illegal rounding mode");
+        vmimtInsertLabel(ok);
+
+        // subsequent operations do not require a mode check
+        blockState->fpRMChecked = True;
     }
 
-    return ok;
+    return validRM;
 }
 
 //
 // Update current rounding mode if required
 //
-static void emitSetRM(riscvMorphStateP state) {
+static Bool emitSetOperationRM(riscvMorphStateP state) {
 
-    riscvP           riscv      = state->riscv;
-    riscvBlockStateP blockState = riscv->blockState;
-    riscvRMDesc      rm         = state->info.rm;
+    riscvP      riscv   = state->riscv;
+    riscvRMDesc rm      = state->info.rm;
+    Bool        validRM = emitCheckLegalRM(riscv, rm);
 
-    if(emitCheckLegalRM(riscv, rm) && (blockState->fpActiveRMMT!=rm)) {
-
-        // if using current rounding mode 0-3, use blockMask to detect if
-        // emulation is required if the rounding mode ever switches to RMM
-        if((rm==RV_RM_CURRENT) && (RD_CSR_FIELD(riscv, fcsr, frm)<4)) {
-            vmimtValidateBlockMaskR(8, CSR_REG_MT(fcsr), WM32_fcsr_frm_msb);
-        }
-
-        // action is only required if required rounding mode differs from that
-        // known to be in force at this point
-        vmiLabelP ok = vmimtNewLabel();
-
-        // skip update of rounding mode if it is known to match
-        vmimtCompareRCJumpLabel(8, vmi_COND_EQ, RISCV_ACTIVE_RM, rm, ok);
-
-        // emit call to refresh the current floating point control word using
-        // the specified rounding mode
-        vmimtArgProcessor();
-        vmimtArgUns32(rm);
-        vmimtCallAttrs((vmiCallFn)refreshFPCW, VMCA_NO_INVALIDATE);
-
-        // here if rounding mode matches currently-selected mode
-        vmimtInsertLabel(ok);
-
-        // update the known rounding mode
-        blockState->fpActiveRMMT = rm;
-    }
-}
-
-//
-// Refine floating point control when converting from F32
-//
-static riscvFPCtrl refineFPCtrlF32(vmiFType typeD) {
-
-    switch(typeD) {
-        case vmi_FT_32_INT:
-        case vmi_FT_64_INT:
-            return RVFP_CVTIF32;
-        case vmi_FT_32_UNS:
-        case vmi_FT_64_UNS:
-            return RVFP_CVTUF32;
-        default:
-            VMI_ABORT("unexpected typeD %u", typeD);    // LCOV_EXCL_LINE
-            return RVFP_NORMAL;                         // LCOV_EXCL_LINE
-    }
-}
-
-//
-// Refine floating point control when converting from F64
-//
-static riscvFPCtrl refineFPCtrlF64(vmiFType typeD) {
-
-    switch(typeD) {
-        case vmi_FT_32_IEEE_754:
-            return RVFP_CVTFF64;
-        case vmi_FT_32_INT:
-        case vmi_FT_64_INT:
-            return RVFP_CVTIF64;
-        case vmi_FT_32_UNS:
-        case vmi_FT_64_UNS:
-            return RVFP_CVTUF64;
-        default:
-            VMI_ABORT("unexpected typeD %u", typeD);    // LCOV_EXCL_LINE
-            return RVFP_NORMAL;                         // LCOV_EXCL_LINE
-    }
-}
-
-//
-// Refine floating point control when converting from I32
-//
-static riscvFPCtrl refineFPCtrlI32(vmiFType typeD) {
-
-    switch(typeD) {
-        case vmi_FT_32_IEEE_754:
-            return RVFP_CVTFI32;
-        default:
-            VMI_ABORT("unexpected typeD %u", typeD);    // LCOV_EXCL_LINE
-            return RVFP_NORMAL;                         // LCOV_EXCL_LINE
-    }
-}
-
-//
-// Refine floating point control when converting from I64
-//
-static riscvFPCtrl refineFPCtrlI64(vmiFType typeD) {
-
-    switch(typeD) {
-        case vmi_FT_32_IEEE_754:
-        case vmi_FT_64_IEEE_754:
-            return RVFP_CVTFI64;
-        default:
-            VMI_ABORT("unexpected typeD %u", typeD);    // LCOV_EXCL_LINE
-            return RVFP_NORMAL;                         // LCOV_EXCL_LINE
-    }
-}
-
-//
-// Refine floating point control when converting from U32
-//
-static riscvFPCtrl refineFPCtrlU32(vmiFType typeD) {
-
-    switch(typeD) {
-        case vmi_FT_32_IEEE_754:
-            return RVFP_CVTFU32;
-        default:
-            VMI_ABORT("unexpected typeD %u", typeD);    // LCOV_EXCL_LINE
-            return RVFP_NORMAL;                         // LCOV_EXCL_LINE
-    }
-}
-
-//
-// Refine floating point control when converting from U64
-//
-static riscvFPCtrl refineFPCtrlU64(vmiFType typeD) {
-
-    switch(typeD) {
-        case vmi_FT_32_IEEE_754:
-        case vmi_FT_64_IEEE_754:
-            return RVFP_CVTFU64;
-        default:
-            VMI_ABORT("unexpected typeD %u", typeD);    // LCOV_EXCL_LINE
-            return RVFP_NORMAL;                         // LCOV_EXCL_LINE
-    }
-}
-
-//
-// If the given floating point control specification is the generic RVFP_CVT
-// control, refine it to a specific control for the conversion argument types
-//
-static riscvFPCtrl refineFPCtrl(riscvMorphStateP state, riscvFPCtrl ctrl) {
-
-    if(ctrl==RVFP_CVT) {
-
-        riscvRegDesc fdA   = getRVReg(state, 0);
-        riscvRegDesc fsA   = getRVReg(state, 1);
-        vmiFType     typeD = getRegFType(fdA);
-        vmiFType     typeS = getRegFType(fsA);
-        Uns32        bitsD = getRBits(fdA);
-        Uns32        bitsS = getRBits(fsA);
-
-        if((bitsD>bitsS) && VMI_FTYPE_IS_IEEE_754(typeD)) {
-
-            // conversion to F64 from shorter type never causes rounding
-            ctrl = RVFP_NORMAL;
-
-        } else switch(typeS) {
-
-            case vmi_FT_32_IEEE_754:
-                return refineFPCtrlF32(typeD);
-            case vmi_FT_64_IEEE_754:
-                return refineFPCtrlF64(typeD);
-            case vmi_FT_32_INT:
-                return refineFPCtrlI32(typeD);
-            case vmi_FT_64_INT:
-                return refineFPCtrlI64(typeD);
-            case vmi_FT_32_UNS:
-                return refineFPCtrlU32(typeD);
-            case vmi_FT_64_UNS:
-                return refineFPCtrlU64(typeD);
-            default:
-                VMI_ABORT("unexpected typeS %u", typeS); // LCOV_EXCL_LINE
-        }
+    if(validRM) {
+        vmimtFSetRounding(mapRMDescToRC(rm));
     }
 
-    return ctrl;
+    return validRM;
 }
 
 //
@@ -2686,16 +2375,10 @@ static riscvFPCtrl refineFPCtrl(riscvMorphStateP state, riscvFPCtrl ctrl) {
 //
 static vmiFPConfigCP getFPControl(riscvMorphStateP state) {
 
-    riscvFPCtrl   ctrlRMM = state->attrs->fpRMMCfg;
-    riscvFPCtrl   ctrl    = state->attrs->fpConfig;
-    vmiFPConfigCP result  = 0;
+    riscvFPCtrl   ctrl   = state->attrs->fpConfig;
+    vmiFPConfigCP result = 0;
 
-    if(isRMMActive(state)) {
-
-        // use emulation if RMM rounding is active
-        ctrl = refineFPCtrl(state, ctrlRMM);
-
-    } else if(ctrl) {
+    if(ctrl) {
 
         // fmin/fmax result handling changes from version 2.3
         if(RISCV_USER_VERSION(state->riscv) <= RVUV_2_2) {
@@ -2745,14 +2428,13 @@ static RISCV_MORPH_FN(emitFUnop) {
     vmiReg        fd    = getVMIReg(riscv, fdA);
     vmiReg        fs1   = getVMIRegFS(riscv, fs1A, getTmp(1));
     vmiFType      type  = getRegFType(fdA);
-    vmiFUnop      op    = isRMMActive(state) ? vmi_FUNUD : state->attrs->fpUnop;
+    vmiFUnop      op    = state->attrs->fpUnop;
     vmiFPConfigCP ctrl  = getFPControl(state);
 
-    emitSetRM(state);
-
-    vmimtFUnopRR(type, op, fd, fs1, RISCV_FP_FLAGS, ctrl);
-
-    writeReg(riscv, fdA);
+    if(emitSetOperationRM(state)) {
+        vmimtFUnopRR(type, op, fd, fs1, RISCV_FP_FLAGS, ctrl);
+        writeReg(riscv, fdA);
+    }
 }
 
 //
@@ -2768,14 +2450,13 @@ static RISCV_MORPH_FN(emitFBinop) {
     vmiReg        fs1   = getVMIRegFS(riscv, fs1A, getTmp(1));
     vmiReg        fs2   = getVMIRegFS(riscv, fs2A, getTmp(2));
     vmiFType      type  = getRegFType(fdA);
-    vmiFBinop     op    = isRMMActive(state) ? vmi_FBINUD : state->attrs->fpBinop;
+    vmiFBinop     op    = state->attrs->fpBinop;
     vmiFPConfigCP ctrl  = getFPControl(state);
 
-    emitSetRM(state);
-
-    vmimtFBinopRRR(type, op, fd, fs1, fs2, RISCV_FP_FLAGS, ctrl);
-
-    writeReg(riscv, fdA);
+    if(emitSetOperationRM(state)) {
+        vmimtFBinopRRR(type, op, fd, fs1, fs2, RISCV_FP_FLAGS, ctrl);
+        writeReg(riscv, fdA);
+    }
 }
 
 //
@@ -2793,14 +2474,13 @@ static RISCV_MORPH_FN(emitFTernop) {
     vmiReg        fs2   = getVMIRegFS(riscv, fs2A, getTmp(2));
     vmiReg        fs3   = getVMIRegFS(riscv, fs3A, getTmp(3));
     vmiFType      type  = getRegFType(fdA);
-    vmiFTernop    op    = isRMMActive(state) ? vmi_FTERNUD : state->attrs->fpTernop;
+    vmiFTernop    op    = state->attrs->fpTernop;
     vmiFPConfigCP ctrl  = getFPControl(state);
 
-    emitSetRM(state);
-
-    vmimtFTernopRRRR(type, op, fd, fs1, fs2, fs3, RISCV_FP_FLAGS, False, ctrl);
-
-    writeReg(riscv, fdA);
+    if(emitSetOperationRM(state)) {
+        vmimtFTernopRRRR(type, op, fd, fs1, fs2, fs3, RISCV_FP_FLAGS, False, ctrl);
+        writeReg(riscv, fdA);
+    }
 }
 
 //
@@ -2815,28 +2495,13 @@ static RISCV_MORPH_FN(emitFConvert) {
     vmiReg        fs    = getVMIRegFS(riscv, fsA, getTmp(1));
     vmiFType      typeD = getRegFType(fdA);
     vmiFType      typeS = getRegFType(fsA);
-    Uns32         bitsD = getRBits(fdA);
-    Uns32         bitsS = getRBits(fsA);
     vmiFPRC       rc    = mapRMDescToRC(state->info.rm);
     vmiFPConfigCP ctrl  = getFPControl(state);
 
-    // indicate operation must be emulated if required
-    if(ctrl) {
-        rc |= vmi_FPR_USER;
+    if(emitCheckLegalRM(riscv, state->info.rm)) {
+        vmimtFConvertRR(typeD, fd, typeS, fs, rc, RISCV_FP_FLAGS, ctrl);
+        writeReg(riscv, fdA);
     }
-
-    // don't set rounding mode if destination type is floating point and wider
-    // than source (conversion will be exact in this case) or if non-current
-    // mode is specified (can be passed to the conversion primitive)
-    if(((bitsD<=bitsS) || !VMI_FTYPE_IS_IEEE_754(typeD)) && (rc==vmi_FPR_CURRENT)) {
-        emitSetRM(state);
-    } else {
-        emitCheckLegalRM(riscv, state->info.rm);
-    }
-
-    vmimtFConvertRR(typeD, fd, typeS, fs, rc, RISCV_FP_FLAGS, ctrl);
-
-    writeReg(riscv, fdA);
 }
 
 //
@@ -2999,6 +2664,144 @@ static RISCV_MORPH_FN(emitFClass) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// VECTOR INSTRUCTIONS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Is the specified SEW valid?
+//
+inline static riscvSEWMt validSEW(riscvP riscv, Uns8 vsew) {
+
+    Uns32 SEW = 8<<vsew;
+
+    return (SEW<=riscv->configInfo.ELEN) ? SEW : SEWMT_UNKNOWN;
+}
+
+//
+// VSetVL to specified size
+//
+static Uns32 setVL(riscvP riscv, Uns32 vl, Uns32 vtypeBits) {
+
+    CSR_REG_DECL(vtype) = {u32 : {bits:vtypeBits}};
+
+    if(!validSEW(riscv, vtype.u32.fields.vsew)) {
+
+        // report invalid SEW
+        if(riscv->verbose) {
+            vmiMessage("W", CPU_PREFIX "_ADF",
+                SRCREF_FMT "Illegal instruction - Unsupported SEW e%u",
+                SRCREF_ARGS(riscv, getPC(riscv)),
+                8<<vtype.u32.fields.vsew
+            );
+        }
+
+        // take Illegal Instruction exception
+        riscvIllegalInstruction(riscv);
+
+    } else {
+
+        // maximum supported vl
+        Uns32 maxVL = riscv->configInfo.VLEN * (LMUL_MAX/SEW_MIN);
+
+        // update vtype CSR
+        WR_CSR_FIELD(riscv, vtype, vsew,  vtype.u32.fields.vsew);
+        WR_CSR_FIELD(riscv, vtype, vlmul, vtype.u32.fields.vlmul);
+
+        // clamp rs1 to maximum supported number of elements
+        if(vl > maxVL) {
+            vl = maxVL;
+        }
+
+        // update vl CSR
+        WR_CSR(riscv, vl, vl);
+    }
+
+    return RD_CSR(riscv, vl);
+}
+
+//
+// VSetVL to maximum supported size
+//
+static Uns32 setMaxVL(riscvP riscv, Uns32 rs2) {
+    return setVL(riscv, riscv->configInfo.ELEN, rs2);
+}
+
+//
+// Handle the first source argument of VSetVL
+//
+static vmiCallFn handleVSetVLArg1(Uns32 bits, vmiReg rs1) {
+
+    if(VMI_ISNOREG(rs1)) {
+        return (vmiCallFn)setMaxVL;
+    } else {
+        vmimtArgReg(bits, rs1);
+        return (vmiCallFn)setVL;
+    }
+}
+
+//
+// Implement VSetVL <rd>, <rs1>, <rs2> operation
+//
+static RISCV_MORPH_FN(emitVSetVLRRR) {
+
+    riscvP       riscv = state->riscv;
+    riscvRegDesc rdA   = getRVReg(state, 0);
+    riscvRegDesc rs1A  = getRVReg(state, 1);
+    riscvRegDesc rs2A  = getRVReg(state, 2);
+    vmiReg       rd    = getVMIReg(riscv, rdA);
+    vmiReg       rs1   = getVMIReg(riscv, rs1A);
+    vmiReg       rs2   = getVMIReg(riscv, rs2A);
+    Uns32        bits  = 32;
+
+    // call function (may cause exception for invalid SEW)
+    vmimtArgProcessor();
+    vmiCallFn cb = handleVSetVLArg1(bits, rs1);
+    vmimtArgReg(bits, rs2);
+    vmimtCallResultAttrs(cb, bits, rd, VMCA_EXCEPTION|VMCA_NO_INVALIDATE);
+    writeRegSize(riscv, rdA, bits);
+
+    // terminate the block after this instruction because SEW is now unknown
+    vmimtEndBlock();
+}
+
+//
+// Implement VSetVL <rd>, <rs1>, <vtypei> operation
+//
+static RISCV_MORPH_FN(emitVSetVLRRC) {
+
+    riscvP       riscv = state->riscv;
+    riscvRegDesc rdA   = getRVReg(state, 0);
+    riscvRegDesc rs1A  = getRVReg(state, 1);
+    vmiReg       rd    = getVMIReg(riscv, rdA);
+    vmiReg       rs1   = getVMIReg(riscv, rs1A);
+    Uns32        bits  = 32;
+    Uns8         vsew  = state->info.vsew;
+    Uns8         vlmul = state->info.vlmul;
+    riscvSEWMt   SEW   = validSEW(riscv, vsew);
+
+    if(!SEW) {
+
+        // take Illegal Instruction exception
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "ISEW", "Unsupported SEW");
+
+    } else {
+
+        // call function (invalid SEW is checked here and therefore does not
+        // cause exceptions from within the callback)
+        vmimtArgProcessor();
+        vmiCallFn cb = handleVSetVLArg1(bits, rs1);
+        vmimtArgUns32((vsew<<2)+vlmul);
+        vmimtCallResultAttrs(cb, bits, rd, VMCA_NO_INVALIDATE);
+        writeRegSize(riscv, rdA, bits);
+
+        // update morph-time SEW and VLMUL, which are now known
+        riscv->blockState->SEWMt   = SEW;
+        riscv->blockState->VLMULMt = 1<<vlmul;
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // INSTRUCTION TABLE
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3098,33 +2901,39 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_SC_R]        = {morph:emitSC, iClass:OCL_IC_EXCLUSIVE   },
 
     // F-extension and D-extension R-type instructions
-    [RV_IT_FMV_R]       = {                                            morph:emitFMoveRR                                                      },
-    [RV_IT_FABS_R]      = {fpConfig:RVFP_NORMAL,                       morph:emitFUnop,    fpUnop  : vmi_FQABS                                },
-    [RV_IT_FADD_R]      = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FADD,   morph:emitFBinop,   fpBinop : vmi_FADD                                 },
-    [RV_IT_FCLASS_R]    = {fpConfig:RVFP_NORMAL,                       morph:emitFClass,                         iClass:OCL_IC_FLOAT          },
-    [RV_IT_FCVT_R]      = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_CVT,    morph:emitFConvert                                                     },
-    [RV_IT_FDIV_R]      = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FDIV,   morph:emitFBinop,   fpBinop : vmi_FDIV,   iClass:OCL_IC_DIVIDE         },
-    [RV_IT_FEQ_R]       = {fpConfig:RVFP_NORMAL,                       morph:emitFCompare, fpRel   : vmi_FPRL_EQUAL,               fpQNaNOk: 1},
-    [RV_IT_FLE_R]       = {fpConfig:RVFP_NORMAL,                       morph:emitFCompare, fpRel   : vmi_FPRL_LESS|vmi_FPRL_EQUAL, fpQNaNOk: 0},
-    [RV_IT_FLT_R]       = {fpConfig:RVFP_NORMAL,                       morph:emitFCompare, fpRel   : vmi_FPRL_LESS,                fpQNaNOk: 0},
-    [RV_IT_FMAX_R]      = {fpConfig:RVFP_FMAX,                         morph:emitFBinop,   fpBinop : vmi_FMAX                                 },
-    [RV_IT_FMIN_R]      = {fpConfig:RVFP_FMIN,                         morph:emitFBinop,   fpBinop : vmi_FMIN                                 },
-    [RV_IT_FMUL_R]      = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FMUL,   morph:emitFBinop,   fpBinop : vmi_FMUL,   iClass:OCL_IC_MULTIPLY       },
-    [RV_IT_FNEG_R]      = {fpConfig:RVFP_NORMAL,                       morph:emitFUnop,    fpUnop  : vmi_FQNEG                                },
-    [RV_IT_FSGNJ_R]     = {fpConfig:RVFP_NORMAL,                       morph:emitFSgn,     clearFS1:1, negFS2:0, iClass:OCL_IC_FLOAT          },
-    [RV_IT_FSGNJN_R]    = {fpConfig:RVFP_NORMAL,                       morph:emitFSgn,     clearFS1:1, negFS2:1, iClass:OCL_IC_FLOAT          },
-    [RV_IT_FSGNJX_R]    = {fpConfig:RVFP_NORMAL,                       morph:emitFSgn,     clearFS1:0, negFS2:0, iClass:OCL_IC_FLOAT          },
-    [RV_IT_FSQRT_R]     = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FSQRT,  morph:emitFUnop,    fpUnop  : vmi_FSQRT,  iClass:OCL_IC_SQRT           },
-    [RV_IT_FSUB_R]      = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FSUB,   morph:emitFBinop,   fpBinop : vmi_FSUB                                 },
+    [RV_IT_FMV_R]       = {                      morph:emitFMoveRR                                                      },
+    [RV_IT_FABS_R]      = {fpConfig:RVFP_NORMAL, morph:emitFUnop,    fpUnop  : vmi_FQABS                                },
+    [RV_IT_FADD_R]      = {fpConfig:RVFP_NORMAL, morph:emitFBinop,   fpBinop : vmi_FADD                                 },
+    [RV_IT_FCLASS_R]    = {fpConfig:RVFP_NORMAL, morph:emitFClass,                         iClass:OCL_IC_FLOAT          },
+    [RV_IT_FCVT_R]      = {fpConfig:RVFP_NORMAL, morph:emitFConvert                                                     },
+    [RV_IT_FDIV_R]      = {fpConfig:RVFP_NORMAL, morph:emitFBinop,   fpBinop : vmi_FDIV,   iClass:OCL_IC_DIVIDE         },
+    [RV_IT_FEQ_R]       = {fpConfig:RVFP_NORMAL, morph:emitFCompare, fpRel   : vmi_FPRL_EQUAL,               fpQNaNOk: 1},
+    [RV_IT_FLE_R]       = {fpConfig:RVFP_NORMAL, morph:emitFCompare, fpRel   : vmi_FPRL_LESS|vmi_FPRL_EQUAL, fpQNaNOk: 0},
+    [RV_IT_FLT_R]       = {fpConfig:RVFP_NORMAL, morph:emitFCompare, fpRel   : vmi_FPRL_LESS,                fpQNaNOk: 0},
+    [RV_IT_FMAX_R]      = {fpConfig:RVFP_FMAX,   morph:emitFBinop,   fpBinop : vmi_FMAX                                 },
+    [RV_IT_FMIN_R]      = {fpConfig:RVFP_FMIN,   morph:emitFBinop,   fpBinop : vmi_FMIN                                 },
+    [RV_IT_FMUL_R]      = {fpConfig:RVFP_NORMAL, morph:emitFBinop,   fpBinop : vmi_FMUL,   iClass:OCL_IC_MULTIPLY       },
+    [RV_IT_FNEG_R]      = {fpConfig:RVFP_NORMAL, morph:emitFUnop,    fpUnop  : vmi_FQNEG                                },
+    [RV_IT_FSGNJ_R]     = {fpConfig:RVFP_NORMAL, morph:emitFSgn,     clearFS1:1, negFS2:0, iClass:OCL_IC_FLOAT          },
+    [RV_IT_FSGNJN_R]    = {fpConfig:RVFP_NORMAL, morph:emitFSgn,     clearFS1:1, negFS2:1, iClass:OCL_IC_FLOAT          },
+    [RV_IT_FSGNJX_R]    = {fpConfig:RVFP_NORMAL, morph:emitFSgn,     clearFS1:0, negFS2:0, iClass:OCL_IC_FLOAT          },
+    [RV_IT_FSQRT_R]     = {fpConfig:RVFP_NORMAL, morph:emitFUnop,    fpUnop  : vmi_FSQRT,  iClass:OCL_IC_SQRT           },
+    [RV_IT_FSUB_R]      = {fpConfig:RVFP_NORMAL, morph:emitFBinop,   fpBinop : vmi_FSUB                                 },
 
     // F-extension and D-extension R4-type instructions
-    [RV_IT_FMADD_R4]    = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FMADD,  morph:emitFTernop,  fpTernop: vmi_FMADD,  iClass:OCL_IC_FMA            },
-    [RV_IT_FMSUB_R4]    = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FMSUB,  morph:emitFTernop,  fpTernop: vmi_FMSUB,  iClass:OCL_IC_FMA            },
-    [RV_IT_FNMADD_R4]   = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FNMADD, morph:emitFTernop,  fpTernop: vmi_FNMADD, iClass:OCL_IC_FMA            },
-    [RV_IT_FNMSUB_R4]   = {fpConfig:RVFP_NORMAL, fpRMMCfg:RVFP_FNMSUB, morph:emitFTernop,  fpTernop: vmi_FNMSUB, iClass:OCL_IC_FMA            },
+    [RV_IT_FMADD_R4]    = {fpConfig:RVFP_NORMAL, morph:emitFTernop,  fpTernop: vmi_FMADD,  iClass:OCL_IC_FMA            },
+    [RV_IT_FMSUB_R4]    = {fpConfig:RVFP_NORMAL, morph:emitFTernop,  fpTernop: vmi_FMSUB,  iClass:OCL_IC_FMA            },
+    [RV_IT_FNMADD_R4]   = {fpConfig:RVFP_NORMAL, morph:emitFTernop,  fpTernop: vmi_FNMADD, iClass:OCL_IC_FMA            },
+    [RV_IT_FNMSUB_R4]   = {fpConfig:RVFP_NORMAL, morph:emitFTernop,  fpTernop: vmi_FNMSUB, iClass:OCL_IC_FMA            },
 
     // X-extension instructions
     [RV_IT_CUSTOM]      = {morph:emitCustomAbsent },
+
+    // V-extension R-type instructions
+    [RV_IT_VSETVL_R]    = {morph:emitVSetVLRRR},
+
+    // V-extension I-type
+    [RV_IT_VSETVL_I]    = {morph:emitVSetVLRRC},
 
     // KEEP LAST
     [RV_IT_LAST]        = {0}
@@ -3149,8 +2958,12 @@ VMI_START_END_BLOCK_FN(riscvStartBlock) {
     // of floating point state using mstatus.FS is required
     thisState->fpInstDone = riscv->configInfo.fs_always_dirty;
 
-    // active floating point rounding mode is initially unknown
-    thisState->fpActiveRMMT = RV_RM_NA;
+    // current rounding mode is not checked initially
+    thisState->fpRMChecked = False;
+
+    // current vector element width and multiplier are not known initially
+    thisState->SEWMt   = SEWMT_UNKNOWN;
+    thisState->VLMULMt = VLMULMT_UNKNOWN;
 }
 
 //

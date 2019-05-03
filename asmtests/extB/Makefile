@@ -15,7 +15,7 @@ object/%.elf: %.S
 	mkdir -p $(@D)
 	cat ../common/log.S $(^) > $(@D)/concat.S
 	$(RISCV_CC) $(OPT_CC) -o $@ $(@D)/concat.S $(INCLUDE)
-	#$(RISCV_OBJDUMP) -D $(@) > $(*).objdump
+	$(RISCV_OBJDUMP) -D $(@) > $(@).objdump
 
 clean:
 	- rm -rf object

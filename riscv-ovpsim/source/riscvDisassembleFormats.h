@@ -33,6 +33,7 @@
 #define EMIT_CSR        '\011'
 #define EMIT_PRED       '\012'
 #define EMIT_SUCC       '\013'
+#define EMIT_VTYPE      '\014'
 
 //
 // These are placeholders in disassembly format strings
@@ -48,6 +49,7 @@
 #define EMIT_CSR_S      "\011"
 #define EMIT_PRED_S     "\012"
 #define EMIT_SUCC_S     "\013"
+#define EMIT_VTYPE_S    "\014"
 
 //
 // These are disassembly format strings
@@ -63,6 +65,7 @@
 #define FMT_R1_R2_SIMM  EMIT_R1_S "," EMIT_R2_S "," EMIT_CS_S
 #define FMT_R1_R2_XIMM  EMIT_R1_S "," EMIT_R2_S "," EMIT_CX_S
 #define FMT_R1_R2_TGT   EMIT_R1_S "," EMIT_R2_S "," EMIT_TGT_S
+#define FMT_R1_R2_VTYPE EMIT_R1_S "," EMIT_R2_S "," EMIT_VTYPE_S
 #define FMT_R1_MEM2     EMIT_R1_S ",(" EMIT_R2_S ")"
 #define FMT_R1_R2_MEM3  EMIT_R1_S "," EMIT_R2_S ",(" EMIT_R3_S ")"
 #define FMT_R1_OFF_R2   EMIT_R1_S "," EMIT_CS_S "(" EMIT_R2_S ")"
