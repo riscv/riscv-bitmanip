@@ -805,7 +805,9 @@ using a longer sequence of much simpler operations.
 The \texttt{bext} and \texttt{bdep} instructions are equivalent to the x86 BMI2
 instructions PEXT and PDEP. But there is much older prior art. For example, the
 soviet BESM-6 mainframe computer, designed and built in the 1960s, had APX/AUX
-instructions with the same semantics.~\cite{BESM6}
+instructions with almost the same semantics.~\cite{BESM6} (The BESM-6 APX/AUX
+instructions packed/unpacked at the MSB end instead of the LSB end. Otherwise
+it is the same instruction.)
 
 % \subsection{Justification}
 %
