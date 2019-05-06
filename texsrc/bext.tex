@@ -802,6 +802,11 @@ concrete processor it is optimizing for. This is similar to the decision
 whether to use MUL or DIV with a constant, or to perform the same operation
 using a longer sequence of much simpler operations.
 
+The \texttt{bext} and \texttt{bdep} instructions are equivalent to the x86 BMI2
+instructions PEXT and PDEP. But there is much older prior art. For example, the
+soviet BESM-6 mainframe computer, designed and built in the 1960s, had APX/AUX
+instructions with the same semantics.~\cite{BESM6}
+
 % \subsection{Justification}
 %
 % http://svn.clifford.at/handicraft/2017/permsyn/
