@@ -346,7 +346,7 @@ static vmiRegInfoCP getRegisters(riscvP riscv, Bool normal) {
             dst->bits     = riscv->configInfo.VLEN;
             dst->gdbIndex = i+RISCV_V0_INDEX;
             dst->access   = vmi_RA_RW;
-            dst->raw      = riscvGetExtReg(riscv, riscvGetVRegValue(riscv, i));
+            dst->raw      = riscvGetVReg(riscv, i);
             dst++;
         }
 
@@ -531,6 +531,14 @@ VMI_REG_IMPL_FN(riscvRegImpl) {
 
     // exclude artifact registers
     RISCV_FIELD_IMPL_IGNORE(fpInvalidRM);
+    RISCV_FIELD_IMPL_IGNORE(vTypeKey);
+    RISCV_FIELD_IMPL_IGNORE(vFirstFault);
+    RISCV_FIELD_IMPL_IGNORE(vBase);
+    RISCV_FIELD_IMPL_IGNORE(offsetBase);
+    RISCV_FIELD_IMPL_IGNORE(offsetsLMULx1);
+    RISCV_FIELD_IMPL_IGNORE(offsetsLMULx2);
+    RISCV_FIELD_IMPL_IGNORE(offsetsLMULx4);
+    RISCV_FIELD_IMPL_IGNORE(offsetsLMULx8);
 }
 
 

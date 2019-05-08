@@ -433,18 +433,14 @@ const char *riscvGetVRegName(Uns32 index) {
 }
 
 //
-// Return the value address for the indexed V register
+// Utility function returning a vmiReg object to access the indexed vector
+// register
 //
-void *riscvGetVRegValue(riscvP riscv, Uns32 index) {
-    return &riscv->v[riscv->configInfo.VLEN/64];
-}
+vmiReg riscvGetVReg(riscvP riscv, Uns32 index) {
 
-//
-// Utility function returning a vmiReg object to access the given address as
-// a register when executing in the processor context
-//
-vmiReg riscvGetExtReg(riscvP riscv, void *pointer) {
-    return vmimtGetExtReg((vmiProcessorP)riscv, pointer);
+    void *value = &riscv->v[index*riscv->configInfo.VLEN/64];
+
+    return vmimtGetExtReg((vmiProcessorP)riscv, value);
 }
 
 //

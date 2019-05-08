@@ -28,6 +28,7 @@
 #include "vmi/vmiRt.h"
 
 // model header files
+#include "riscvCSR.h"
 #include "riscvDecode.h"
 #include "riscvExceptions.h"
 #include "riscvExceptionDefinitions.h"
@@ -182,6 +183,38 @@ inline static void clearEAxRET(riscvP riscv) {
     if(!riscv->configInfo.xret_preserves_lr) {
         clearEA(riscv);
     }
+}
+
+//
+// Return a Boolean indicating whether an active first-only-fault exception has
+// been encountered, in which case no exception should be taken
+//
+static Bool handleFF(riscvP riscv) {
+
+    Bool suppress = False;
+
+    // is first-only-fault mode active?
+    if(riscv->vFirstFault) {
+
+        // deactivate first-only-fault mode (whether or not exception is to be
+        // taken)
+        riscv->vFirstFault = False;
+
+        // special action required only if not the first element
+        if(RD_CSR(riscv, vstart)) {
+
+            // suppress the exception
+            suppress = True;
+
+            // clamp vl to current vstart
+            riscvSetVL(riscv, RD_CSR(riscv, vstart));
+
+            // set matching polymorphic key and clamped vl
+            riscvRefreshVectorKey(riscv);
+        }
+    }
+
+    return suppress;
 }
 
 
@@ -425,6 +458,20 @@ void riscvTakeException(
 }
 
 //
+// Take processor exception because of memory access error which could be
+// suppressed for a fault-only-first instruction
+//
+void riscvTakeMemoryException(
+    riscvP         riscv,
+    riscvException exception,
+    Uns64          tval
+) {
+    if(!handleFF(riscv)) {
+        riscvTakeException(riscv, exception, tval);
+    }
+}
+
+//
 // Take Illegal Instruction exception
 //
 void riscvIllegalInstruction(riscvP riscv) {
@@ -611,7 +658,7 @@ VMI_RD_ALIGN_EXCEPT_FN(riscvRdAlignExcept) {
 
     riscvP riscv = (riscvP)processor;
 
-    riscvTakeException(riscv, riscv_E_LoadAddressMisaligned, address);
+    riscvTakeMemoryException(riscv, riscv_E_LoadAddressMisaligned, address);
 
     return 0;
 }
@@ -623,7 +670,7 @@ VMI_WR_ALIGN_EXCEPT_FN(riscvWrAlignExcept) {
 
     riscvP riscv = (riscvP)processor;
 
-    riscvTakeException(riscv, riscv_E_StoreAMOAddressMisaligned, address);
+    riscvTakeMemoryException(riscv, riscv_E_StoreAMOAddressMisaligned, address);
 
     return 0;
 }
@@ -638,7 +685,7 @@ VMI_RD_ABORT_EXCEPT_FN(riscvRdAbortExcept) {
     if(riscv->PTWActive) {
         riscv->PTWBadAddr = True;
     } else {
-        riscvTakeException(riscv, riscv_E_LoadAccessFault, address);
+        riscvTakeMemoryException(riscv, riscv_E_LoadAccessFault, address);
     }
 }
 
@@ -652,7 +699,7 @@ VMI_WR_ABORT_EXCEPT_FN(riscvWrAbortExcept) {
     if(riscv->PTWActive) {
         riscv->PTWBadAddr = True;
     } else {
-        riscvTakeException(riscv, riscv_E_StoreAMOAccessFault, address);
+        riscvTakeMemoryException(riscv, riscv_E_StoreAMOAccessFault, address);
     }
 }
 

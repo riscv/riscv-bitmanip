@@ -36,7 +36,7 @@
 
 #define MT_CALLBACK 1
 
-#define CPU_PREFIX "RISCV_EXTB"
+#define CPU_PREFIX "Bit Manipulation"
 
 #define EXTB_REVISION "extB Version(0.37-Draft) March 22 2019"
 
@@ -67,6 +67,7 @@ static const char *map[32] = {
 #define RS3(_I)   WIDTH(5,(_I)>>27) // TBD
 #define CU5(_I)   WIDTH(5,(_I)>>20)
 #define CU7(_I)   WIDTH(7,(_I)>>20)
+#define CU6(_I)   WIDTH(6,(_I)>>20)
 
 DEFINE_S (riscv);
 
@@ -173,10 +174,10 @@ typedef enum riscvExtBInstrType {
     EXTB_BREV,
 
     // RISC-V XTernarybits Extension all
-    EXT_CMIX,
-    EXT_CMOV,
-    EXT_FSL,
-    EXT_FSR,
+    EXTB_CMIX,
+    EXTB_CMOV,
+    EXTB_FSL,
+    EXTB_FSR,
 
     // Additional Instructions all
     EXTB_MIN,
@@ -220,46 +221,47 @@ static vmidDecodeTableP createDecodeTable32(void) {
 //    |---------------------------------------------------------------|
 
     //                         F7      RS2   RS1   F3  RD    OP
-    DECODE_ENTRY(0, CLZ,      "|0110000|00000|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CTZ,      "|0110000|00001|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, PCNT,     "|0110000|00010|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, ANDC,     "|0000000|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, SLO,      "|0010000|.....|.....|001|.....|0110011|"); // R-type
-    DECODE_ENTRY(0, SRO,      "|0010000|.....|.....|101|.....|0110011|"); // R-type
-    DECODE_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|"); // I-type
-    DECODE_ENTRY(0, SROI,     "|00100|.......|.....|101|.....|0010011|"); // I-type
-    DECODE_ENTRY(0, ROL,      "|0110000|.....|.....|001|.....|0110011|"); // R-type
-    DECODE_ENTRY(0, ROR,      "|0110000|.....|.....|101|.....|0110011|"); // R-type
-    DECODE_ENTRY(0, RORI,     "|01100|.......|.....|101|.....|0010011|"); // I-type
-    DECODE_ENTRY(0, GREV,     "|0100000|.....|.....|001|.....|0110011|"); // R-type
-    DECODE_ENTRY(0, GREVI,    "|01000|.......|.....|001|.....|0010011|"); // I-type
-    DECODE_ENTRY(0, SHFL,     "|0000110|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, UNSHFL,   "|0000111|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, SHFLI,    "|10...|.......|.....|100|.....|0001011|"); // I-type (UNDEF)
-    DECODE_ENTRY(0, UNSHFLI,  "|10...|.......|.....|101|.....|0001011|"); // I-type (UNDEF)
-    DECODE_ENTRY(0, BEXT,     "|0001000|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, BDEP,     "|0001001|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-  //DECODE_ENTRY(0, CMIX,     "|.....|00|.....|.....|???|.....|???????|"); // R4-type (UNDEF)
-  //DECODE_ENTRY(0, CMOV,     "|.....|01|.....|.....|???|.....|???????|"); // R4-type (UNDEF)
-  //DECODE_ENTRY(0, FSL,      "|.....|10|.....|.....|???|.....|???????|"); // R4-type (UNDEF)
-  //DECODE_ENTRY(0, FSR,      "|.....|11|.....|.....|???|.....|???????|"); // R4-type (UNDEF)
-    DECODE_ENTRY(0, MIN,      "|0001010|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, MAX,      "|0001011|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, MINU,     "|0001100|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, MAXU,     "|0001101|.....|.....|000|.....|0101011|"); // R-type (UNDEF)
-  //DECODE_ENTRY(0, CLMUL,    "|???????|.....|.....|???|.....|0110011|"); // R-type (UNDEF)
-  //DECODE_ENTRY(0, CLMULH,   "|???????|.....|.....|???|.....|0110011|"); // R-type (UNDEF)
-    DECODE_ENTRY(0, CRC32_B,  "|0110000|10000|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32_H,  "|0110000|10001|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32_W,  "|0110000|10010|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32_D,  "|0110000|10011|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32C_B, "|0110000|11000|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32C_H, "|0110000|11001|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32C_W, "|0110000|11010|.....|001|.....|0010011|"); // R-type
-    DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|"); // R-type
-  //DECODE_ENTRY(0, BMATXOR,  "|???????|.....|.....|???|.....|0110011|"); // R-type
-  //DECODE_ENTRY(0, BMATOR,   "|???????|.....|.....|???|.....|0110011|"); // R-type
-    DECODE_ENTRY(0, BMATFLIP, "|0110000|00011|.....|001|.....|0010011|"); // R-type
+    DECODE_ENTRY(0, CLZ,      "|0110000|00000|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CTZ,      "|0110000|00001|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, PCNT,     "|0110000|00010|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, ANDC,     "|0100000|.....|.....|111|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SLO,      "|0010000|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SRO,      "|0010000|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SROI,     "|00100|.......|.....|101|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, ROL,      "|0110000|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, ROR,      "|0110000|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, RORI,     "|01100|.......|.....|101|.....|0010011|");  // I-type
+    // FSRI
+    DECODE_ENTRY(0, GREV,     "|0100000|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, GREVI,    "|01000|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SHFL,     "|0000100|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, UNSHFL,   "|0000100|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SHFLI,    "|000010|......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, UNSHFLI,  "|000010|......|.....|101|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, BEXT,     "|0000100|.....|.....|000|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BDEP,     "|0000100|.....|.....|100|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CMIX,     "|.....|11|.....|.....|010|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, CMOV,     "|.....|11|.....|.....|011|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSL,      "|.....|10|.....|.....|001|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSR,      "|.....|10|.....|.....|101|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, MIN,      "|0000101|.....|.....|100|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, MINU,     "|0000101|.....|.....|110|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, MAX,      "|0000101|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, MAXU,     "|0000101|.....|.....|111|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CLMUL,    "|0000101|.....|.....|000|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CLMULH,   "|0000101|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CRC32_B,  "|0110000|10000|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32_H,  "|0110000|10001|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32_W,  "|0110000|10010|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32_D,  "|0110000|10011|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32C_B, "|0110000|11000|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32C_H, "|0110000|11001|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32C_W, "|0110000|11010|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|");  // R-type
+    DECODE_ENTRY(0, BMATXOR,  "|0000101|.....|.....|010|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BMATOR,   "|0000101|.....|.....|011|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BMATFLIP, "|0110000|00011|.....|001|.....|0010011|");  // R-type
 
     return table;
 }
@@ -322,6 +324,11 @@ static riscvExtBInstrType getInstrType(
 static VMIOS_CONSTRUCTOR_FN(constructor) {
 
     vmiMessage("I", CPU_PREFIX, "%s", EXTB_REVISION);
+    vmiMessage("I", CPU_PREFIX, "These RISC-V Bitmanip instructions are a work in progress\n");
+    vmiMessage("I", CPU_PREFIX, "These instructions and their specification may change before being accepted as\n");
+    vmiMessage("I", CPU_PREFIX, "a standard by the RISC-V Foundation and so it is highly likely that implementations\n");
+    vmiMessage("I", CPU_PREFIX, "made using this draft specification will not conform to the future standard.\n");
+
     Uns32 i;
 
     paramValuesP params = parameterValues;
@@ -348,11 +355,10 @@ typedef enum bitmaskRegE {
     BM_RS3  = 0x04,
     BM_TMP1 = 0x10,
     BM_TMP2 = 0x20,
-    BM_COMP = 0x40,
+    BM_COMP = 0x40,     // Compressed Instruction Format
 
-    BM_MIN  = BM_RS1 | BM_RS2,
-    BM_TERN = BM_RS1 | BM_RS2 | BM_RS3,
-    BM_ALL  = BM_RS1 | BM_RS2 | BM_TMP1 | BM_TMP2
+    BM_RR   = BM_RS1 | BM_RS2,
+    BM_RRR  = BM_RR  | BM_RS3
 } bitmaskReg;
 
 static void regProlog (
@@ -378,19 +384,19 @@ static void regProlog (
     object->reg_rs1  = vmimtGetExtReg(processor,  &object->rs1);
     object->reg_rs2  = vmimtGetExtReg(processor,  &object->rs2);
     object->reg_rd   = vmimtGetExtReg(processor,  &object->rd);
-    if ((mask & BM_ALL) == BM_ALL) {
-        object->reg_tmp1 = vmimtGetExtTemp(processor, &object->tmp1);
-        object->reg_tmp2 = vmimtGetExtTemp(processor, &object->tmp2);
-    }
-    if ((mask & BM_TERN) == BM_TERN) {
-        object->reg_rs3 = vmimtGetExtTemp(processor, &object->rs3);
-        object->reg_t0  = vmimtGetExtTemp(processor, &object->t0);
+    object->reg_tmp1 = vmimtGetExtTemp(processor, &object->tmp1);
+    object->reg_tmp2 = vmimtGetExtTemp(processor, &object->tmp2);
+
+    if ((mask & BM_RRR) == BM_RRR) {
+        object->reg_rs3  = vmimtGetExtReg(processor, &object->rs3);
+        object->reg_t0   = vmimtGetExtReg(processor, &object->t0);
     }
 
     vmimtGetR(processor, object->xlen, object->reg_rd,  object->riscvRegs[object->rd]);
     vmimtGetR(processor, object->xlen, object->reg_rs1, object->riscvRegs[object->rs1]);
     vmimtGetR(processor, object->xlen, object->reg_rs2, object->riscvRegs[object->rs2]);
     vmimtGetR(processor, object->xlen, object->reg_rs3, object->riscvRegs[object->rs3]);
+    vmimtGetR(processor, object->xlen, object->reg_t0,  object->riscvRegs[object->t0]);
 }
 
 static void regEpilog (
@@ -413,31 +419,31 @@ static void regEpilog (
     )
 
 EXTB_MORPH_FN(emitCLZ) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(object->xlen, vmi_CLZ, object->reg_rd, object->reg_rs1, 0);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitCTZ) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(object->xlen, vmi_CTZ, object->reg_rd, object->reg_rs1, 0);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitPCNT) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(object->xlen, vmi_CNTO, object->reg_rd, object->reg_rs1, 0);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitANDC) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_ANDN, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitSLO) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_SHL, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
     // tmp1 = FFFFFFFF
     vmimtMoveRC(object->xlen, object->reg_tmp1, -1);
@@ -453,7 +459,7 @@ EXTB_MORPH_FN(emitSLO) {
 }
 
 EXTB_MORPH_FN(emitSLOI) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
 
     // SH and ONES
     Uns32 shamt = (object->xlen == 32) ? (object->cu7 & 0x1f) : object->cu7;
@@ -472,7 +478,7 @@ EXTB_MORPH_FN(emitSLOI) {
 }
 
 EXTB_MORPH_FN(emitSRO) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_SHR, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
     // tmp1 = FFFFFFFF
     vmimtMoveRC(object->xlen, object->reg_tmp1, -1);
@@ -488,7 +494,7 @@ EXTB_MORPH_FN(emitSRO) {
 }
 
 EXTB_MORPH_FN(emitSROI) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
 
     // SH and ONES
     Uns32 shamt = (object->xlen == 32) ? (object->cu7 & 0x1f) : object->cu7;
@@ -507,19 +513,19 @@ EXTB_MORPH_FN(emitSROI) {
 }
 
 EXTB_MORPH_FN(emitROL) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_ROL, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitROR) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_ROR, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitRORI) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRC(object->xlen, vmi_ROR, object->reg_rd, object->reg_rs1, object->cu7, 0);
     regEpilog(processor, object, instruction);
 }
@@ -550,7 +556,7 @@ static Uns64 grev64_c(Uns64 rs1, Uns64 rs2) {
 }
 
 EXTB_MORPH_FN(emitGREV) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -562,7 +568,7 @@ EXTB_MORPH_FN(emitGREV) {
 }
 
 EXTB_MORPH_FN(emitGREVI) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     if (object->xlen == 32) {
         vmimtArgUns32(object->cu7);
@@ -628,7 +634,7 @@ static Uns64 unshfl64_c(Uns64 rs1, Uns64 rs2) {
 }
 
 EXTB_MORPH_FN(emitSHFL) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -640,7 +646,7 @@ EXTB_MORPH_FN(emitSHFL) {
 }
 
 EXTB_MORPH_FN(emitUNSHFL) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -652,7 +658,7 @@ EXTB_MORPH_FN(emitUNSHFL) {
 }
 
 EXTB_MORPH_FN(emitSHFLI) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     if (object->xlen == 32) {
         vmimtArgUns32(object->cu7);
@@ -665,7 +671,7 @@ EXTB_MORPH_FN(emitSHFLI) {
 }
 
 EXTB_MORPH_FN(emitUNSHFLI) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     if (object->xlen == 32) {
         vmimtArgUns32(object->cu7);
@@ -734,7 +740,7 @@ Uns64 bdep64_c(Uns64 rs1, Uns64 rs2) {
 }
 
 EXTB_MORPH_FN(emitBEXT) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -746,7 +752,7 @@ EXTB_MORPH_FN(emitBEXT) {
 }
 
 EXTB_MORPH_FN(emitBDEP) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -783,19 +789,22 @@ EXTB_MORPH_FN(emitCBREV) {
 }
 
 EXTB_MORPH_FN(emitCMIX) {
-    regProlog(processor, object, instruction, BM_TERN);
-    vmimtBinopRRR(object->xlen, vmi_AND,  object->reg_rd, object->reg_rs1, object->reg_rs3, 0);
-    vmimtBinopRRR(object->xlen, vmi_ANDN, object->reg_t0, object->reg_rs1, object->reg_rs3, 0);
-    vmimtBinopRR(object->xlen,  vmi_OR,   object->reg_rd, object->reg_t0, 0);
+    regProlog(processor, object, instruction, BM_RRR);
+    vmimtBinopRRR(object->xlen, vmi_AND,  object->reg_tmp1, object->reg_rs1,  object->reg_rs2,  0); // save to tmp to not clobber next
+    vmimtBinopRRR(object->xlen, vmi_ANDN, object->reg_tmp2, object->reg_rs3,  object->reg_rs2,  0);
+    vmimtBinopRRR(object->xlen, vmi_OR,   object->reg_rd,   object->reg_tmp1, object->reg_tmp2, 0);
+    // TODO - What to assign to t0
+    if (object->rd != object->t0) {
+        //vmimtBinopRR(object->xlen, vmi_MOV, object->reg_t0, object->reg_tmp2, 0);
+        vmimtSetR(processor, object->xlen, object->riscvRegs[object->t0], object->reg_tmp2);
+    }
     regEpilog(processor, object, instruction);
-
-    vmimtSetR(processor, object->xlen, object->riscvRegs[object->t0], object->reg_t0);
 }
 
 EXTB_MORPH_FN(emitCMOV) {
-    regProlog(processor, object, instruction, BM_TERN);
-    vmimtCompareRC(object->xlen, vmi_COND_EQ, object->reg_rs3, 0, object->reg_tmp1);
-    vmimtCondMoveRRR(object->xlen, object->reg_tmp1, True, object->reg_rd, object->reg_rs1, object->reg_rs2);
+    regProlog(processor, object, instruction, BM_RRR);
+    vmimtCompareRC(object->xlen, vmi_COND_NE, object->reg_rs2, 0, object->reg_tmp1);
+    vmimtCondMoveRRR(object->xlen, object->reg_tmp1, True, object->reg_rd, object->reg_rs1, object->reg_rs3);
     regEpilog(processor, object, instruction);
 }
 
@@ -821,7 +830,7 @@ Uns64 fsl64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
 
 // TBD - need pseudo code
 EXTB_MORPH_FN(emitFSL) {
-    regProlog(processor, object, instruction, BM_TERN);
+    regProlog(processor, object, instruction, BM_RRR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     vmimtArgReg(object->xlen, object->reg_rs3);
@@ -855,7 +864,7 @@ Uns64 fsr64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
 
 // TBD - need pseudo code
 EXTB_MORPH_FN(emitFSR) {
-    regProlog(processor, object, instruction, BM_TERN);
+    regProlog(processor, object, instruction, BM_RRR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     vmimtArgReg(object->xlen, object->reg_rs3);
@@ -868,28 +877,28 @@ EXTB_MORPH_FN(emitFSR) {
 }
 
 EXTB_MORPH_FN(emitMIN) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtCompareRR(object->xlen, vmi_COND_L, object->reg_rs1, object->reg_rs2, object->reg_tmp1);
     vmimtCondMoveRRR(object->xlen, object->reg_tmp1, True, object->reg_rd, object->reg_rs1, object->reg_rs2);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitMAX) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtCompareRR(object->xlen, vmi_COND_NL, object->reg_rs1, object->reg_rs2, object->reg_tmp1);
     vmimtCondMoveRRR(object->xlen, object->reg_tmp1, True, object->reg_rd, object->reg_rs1, object->reg_rs2);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitMINU) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtCompareRR(object->xlen, vmi_COND_B, object->reg_rs1, object->reg_rs2, object->reg_tmp1);
     vmimtCondMoveRRR(object->xlen, object->reg_tmp1, True, object->reg_rd, object->reg_rs1, object->reg_rs2);
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitMAXU) {
-    regProlog(processor, object, instruction, BM_ALL);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtCompareRR(object->xlen, vmi_COND_NB, object->reg_rs1, object->reg_rs2, object->reg_tmp1);
     vmimtCondMoveRRR(object->xlen, object->reg_tmp1, True, object->reg_rd, object->reg_rs1, object->reg_rs2);
     regEpilog(processor, object, instruction);
@@ -916,7 +925,7 @@ Uns64 clmul64_c(Uns64 rs1, Uns64 rs2) {
     return x;
 }
 EXTB_MORPH_FN(emitCLMUL) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -948,7 +957,7 @@ Uns64 clmulh64_c(Uns64 rs1, Uns64 rs2) {
     return x;
 }
 EXTB_MORPH_FN(emitCLMULH) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 32) {
@@ -979,7 +988,7 @@ static void emitCRC32(
         Uns32         instruction,
         Uns32         size
 ) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgUns32(size);
     if (object->xlen == 32) {
@@ -1025,7 +1034,7 @@ static void emitCRC32C(
         Uns32         instruction,
         Uns32         size
 ) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgUns32(size);
     if (object->xlen == 32) {
@@ -1081,7 +1090,7 @@ Uns64 bmatxor64_c(Uns64 rs1, Uns64 rs2) {
     return x;
 }
 EXTB_MORPH_FN(emitBMATXOR) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 64) {
@@ -1109,7 +1118,7 @@ Uns64 bmator64_c(Uns64 rs1, Uns64 rs2) {
     return x;
 }
 EXTB_MORPH_FN(emitBMATOR) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     vmimtArgReg(object->xlen, object->reg_rs2);
     if (object->xlen == 64) {
@@ -1119,7 +1128,7 @@ EXTB_MORPH_FN(emitBMATOR) {
 }
 
 EXTB_MORPH_FN(emitBMATFLIP) {
-    regProlog(processor, object, instruction, BM_MIN);
+    regProlog(processor, object, instruction, BM_RR);
     vmimtArgReg(object->xlen, object->reg_rs1);
     if (object->xlen == 64) {
         vmimtCallResult((vmiCallFn)bmatflip64_c, object->xlen, object->reg_rd);
@@ -1201,13 +1210,13 @@ static VMIOS_MORPH_FN(doMorph) {
     //
     // RISC-V XTernarybits Extension all
     //
-    } else if (type==EXT_CMIX  ) {
+    } else if (type==EXTB_CMIX  ) {
         emitCMIX(processor, object, instruction);
-    } else if (type==EXT_CMOV  ) {
+    } else if (type==EXTB_CMOV  ) {
         emitCMOV(processor, object, instruction);
-    } else if (type==EXT_FSL   ) {
+    } else if (type==EXTB_FSL   ) {
         emitFSL(processor, object, instruction);
-    } else if (type==EXT_FSR   ) {
+    } else if (type==EXTB_FSR   ) {
         emitFSR(processor, object, instruction);
 
     //
@@ -1317,6 +1326,16 @@ static void diss_rd_rs1_imm7(vmiosObjectP object, Addr thisPC, char *buffer, cha
 }
 #define DISS_RD_RS1_IMM7(NAME) diss_rd_rs1_imm7(object, thisPC, buffer, NAME, instruction, attrs)
 
+static void diss_rd_rs1_imm6(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, vmiDisassAttrs attrs) {
+    Uns32 rd  = RD(instruction);
+    Uns32 rs1 = RS1(instruction);
+    Uns32 cu6 = CU6(instruction);
+
+    diss_addr(object->xlen, thisPC, &buffer, instruction, attrs);
+    sprintf(buffer, "%-7s %s,%s,%u", name, map[rd], map[rs1], cu6);
+}
+#define DISS_RD_RS1_IMM6(NAME) diss_rd_rs1_imm6(object, thisPC, buffer, NAME, instruction, attrs)
+
 static VMIOS_DISASSEMBLE_FN(doDisass) {
 
     // decode the instruction to get the type
@@ -1360,9 +1379,9 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
         } else if (type==EXTB_UNSHFL ) {
             DISS_RD_RS1_RS2("unshfl");
         } else if (type==EXTB_SHFLI  ) {
-            DISS_RD_RS1_IMM7("shfli");
+            DISS_RD_RS1_IMM6("shfli");
         } else if (type==EXTB_UNSHFLI) {
-            DISS_RD_RS1_IMM7("unshfli");
+            DISS_RD_RS1_IMM6("unshfli");
         } else if (type==EXTB_BEXT   ) {
             DISS_RD_RS1_RS2("bext");
         } else if (type==EXTB_BDEP   ) {
@@ -1381,13 +1400,13 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
         //
         // RISC-V XTernarybits Extension all
         //
-        } else if (type==EXT_CMIX  ) {
+        } else if (type==EXTB_CMIX  ) {
             DISS_RD_RS1_RS2_RS3("cmix");
-        } else if (type==EXT_CMOV  ) {
+        } else if (type==EXTB_CMOV  ) {
             DISS_RD_RS1_RS2_RS3("cmov");
-        } else if (type==EXT_FSL   ) {
+        } else if (type==EXTB_FSL   ) {
             DISS_RD_RS1_RS2_RS3("fsl");
-        } else if (type==EXT_FSR   ) {
+        } else if (type==EXTB_FSR   ) {
             DISS_RD_RS1_RS2_RS3("fsr");
 
         //

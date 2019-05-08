@@ -50,6 +50,16 @@ typedef enum riscvVLMULMtE {
 } riscvVLMULMt;
 
 //
+// This indicates the known active vector length zero/non-zero state
+//
+typedef enum riscvVLClassE {
+    VLCLASSMT_UNKNOWN = 0,
+    VLCLASSMT_ZERO    = 1,
+    VLCLASSMT_NONZERO = 2,
+    VLCLASSMT_MAX     = 3,
+} riscvVLClassMt;
+
+//
 // This structure holds state for a code block as it is morphed
 //
 typedef struct riscvBlockStateS {
@@ -60,6 +70,9 @@ typedef struct riscvBlockStateS {
     Bool             fpRMChecked;   // floating-point rounding mode checked?
     riscvSEWMt       SEWMt;         // known active vector SEW
     riscvVLMULMt     VLMULMt;       // known active vector VLMUL
+    riscvVLClassMt   VLClassMt;     // known active vector VL zero/non-zero/max
+    Uns32            VZeroTopMt;    // known vector registers with zero top parts
+    Bool             VStartZeroMt;  // vstart known to be zero?
 
 } riscvBlockState;
 

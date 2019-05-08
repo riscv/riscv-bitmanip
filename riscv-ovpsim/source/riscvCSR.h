@@ -246,9 +246,9 @@ void riscvEmitCSRRead(
 );
 
 //
-// Emit code to write a CSR, returning any architectural constraints
+// Emit code to write a CSR
 //
-riscvArchitecture riscvEmitCSRWrite(
+void riscvEmitCSRWrite(
     riscvCSRAttrsCP attrs,
     riscvP          riscv,
     vmiReg          rs,
@@ -306,6 +306,26 @@ void riscvCSRRestore(
     vmiRestoreContextP  cxt,
     vmiSaveRestorePhase phase
 );
+
+
+////////////////////////////////////////////////////////////////////////////////
+// POLYMORPHIC VECTOR BLOCK CONTROL
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Refresh the polymorphic vector block key
+//
+void riscvRefreshVectorKey(riscvP riscv);
+
+//
+// Update vtype CSR
+//
+void riscvSetVType(riscvP riscv, Uns32 vsew, Uns32 vlmul);
+
+//
+// Update vl CSR and aliases of it
+//
+void riscvSetVL(riscvP riscv, Uns32 vl);
 
 
 ////////////////////////////////////////////////////////////////////////////////
