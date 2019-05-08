@@ -676,6 +676,366 @@
 }
 
 //
+// Attribute entries for 32-bit instructions like VLB
+//
+#define ATTR32_VL(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN, _UNS) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_MEM2_RM,      \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_X_19_15,          \
+    mask     : RS_V_M_25,           \
+    memBits  : MBS_14_12_V,         \
+    unsExt   : _UNS ? USX_28 : 0,   \
+    ff       : FF_24,               \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VLSB
+//
+#define ATTR32_VLS(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN, _UNS) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_MEM2_R3_RM,   \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_X_19_15,          \
+    r3       : RS_X_24_20,          \
+    mask     : RS_V_M_25,           \
+    memBits  : MBS_14_12_V,         \
+    unsExt   : _UNS ? USX_28 : 0,   \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VLXB
+//
+#define ATTR32_VLX(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN, _UNS) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_MEM2_R3_RM,   \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_X_19_15,          \
+    r3       : RS_V_24_20,          \
+    mask     : RS_V_M_25,           \
+    memBits  : MBS_14_12_V,         \
+    unsExt   : _UNS ? USX_28 : 0,   \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFSQRT.V
+//
+#define ATTR32_V(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_RM,        \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADD.VV
+//
+#define ATTR32_VV(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VV,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VCOMPRESS.VM
+//
+#define ATTR32_VM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3,        \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    VIType   : RV_VIT_VM,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VREDSUM.VS
+//
+#define ATTR32_VS(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VS,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMADD.MM
+//
+#define ATTR32_MM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3,        \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    VIType   : RV_VIT_MM,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMPOPC.M
+//
+#define ATTR32_MX(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_RM,        \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_X_11_7,           \
+    r2       : RS_V_24_20,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_M,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMSBF.M
+//
+#define ATTR32_MV(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_RM,        \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_M,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADD.WV
+//
+#define ATTR32_WV(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_WV,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADD.VX
+//
+#define ATTR32_VX(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_X_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VX,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFADD.VF
+//
+#define ATTR32_VF(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_F_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VF,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFWADD.WF
+//
+#define ATTR32_WF(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_F_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_WF,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADD.VI
+//
+#define ATTR32_VI(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_SIMM_RM,   \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    cs       : CS_S_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VI,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VSRL.VI
+//
+#define ATTR32_VU(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_SIMM_RM,   \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    cs       : CS_U_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VI,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADD.WV
+//
+#define ATTR32_WV(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_WV,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADD.WX
+//
+#define ATTR32_WX(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_X_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_WX,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VID.V
+//
+#define ATTR32_VID(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_RM,           \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VEXT.X.V
+//
+#define ATTR32_VEXT(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3,        \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_X_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_X_19_15,          \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMV.S.X
+//
+#define ATTR32_VMV_S_X(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2,           \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_X_19_15,          \
+    VIType   : RV_VIT_NA,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFMV.F.S
+//
+#define ATTR32_VFMV_F_S(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2,           \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_F_11_7,           \
+    r2       : RS_V_24_20,          \
+    VIType   : RV_VIT_NA,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFMV.S.F
+//
+#define ATTR32_VFMV_S_F(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2,           \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_F_19_15,          \
+    VIType   : RV_VIT_NA,           \
+}
+
+//
 // Attribute entries for 32-bit instructions like LAST
 //
 #define ATTR32_LAST(_NAME, _GENERIC, _OPCODE) [IT32_##_NAME] = { \

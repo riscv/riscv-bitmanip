@@ -396,6 +396,9 @@ VMI_CONSTRUCTOR_FN(riscvConstructor) {
         // initialize FPU
         riscvConfigureFPU(riscv);
 
+        // initialize vector unit
+        riscvConfigureVector(riscv);
+
         // allocate net port descriptions
         riscvNewNetPorts(riscv);
 

@@ -176,8 +176,29 @@ static void putReg(char **result, riscvRegDesc r, Bool opt, Bool uncooked) {
         putString(result, riscvGetXRegName(index));
     } else if(isFReg(r)) {
         putString(result, riscvGetFRegName(index));
+    } else if(isVReg(r)) {
+        putString(result, riscvGetVRegName(index));
     } else {
         VMI_ABORT("Bad register specifier 0x%x", r); // LCOV_EXCL_LINE
+    }
+}
+
+//
+// Emit mask register argument
+//
+static void putMask(char **result, riscvRegDesc r, Bool uncooked) {
+
+    if(r) {
+
+        putString(result, riscvGetVRegName(getRIndex(r)));
+
+        if(!uncooked) {
+            putString(result, ".t");
+        }
+
+    } else if(uncooked) {
+
+        putChar(result, 'F');
     }
 }
 
@@ -322,6 +343,7 @@ static void putOpcode(char **result, riscvP riscv, riscvInstrInfoP info) {
         case 16: putChar(result, 'h'); break;
         case 32: putChar(result, 'w'); break;
         case 64: putChar(result, 'd'); break;
+        case -1: putChar(result, 'e'); break;
     }
 
     // emit unsigned modifier if required
@@ -334,8 +356,41 @@ static void putOpcode(char **result, riscvP riscv, riscvInstrInfoP info) {
         putCSR(result, riscv, info->csr);
     }
 
+    // emit ff suffix if required
+    if(info->isFF) {
+        putString(result, "ff");
+    }
+
+    // vector suffixes
+    static const char *viDescs[] = {
+        [RV_VIT_NA] = "",
+        [RV_VIT_V]  = ".v",
+        [RV_VIT_VV] = ".vv",
+        [RV_VIT_VI] = ".vi",
+        [RV_VIT_VX] = ".vx",
+        [RV_VIT_WV] = ".wv",
+        [RV_VIT_WX] = ".wx",
+        [RV_VIT_VF] = ".vf",
+        [RV_VIT_WF] = ".wf",
+        [RV_VIT_VS] = ".vs",
+        [RV_VIT_M]  = ".m",
+        [RV_VIT_MM] = ".mm",
+        [RV_VIT_VM] = ".vm",
+    };
+
+    // emit vector suffix
+    VMI_ASSERT(info->VIType<NUM_MEMBERS(viDescs), "bad VIType (%u)", info->VIType);
+    putString(result, viDescs[info->VIType]);
+
+    // acquire/release modifier suffixes
+    static const char *aqrlDescs[] = {
+        [RV_AQRL_NA]   = "",
+        [RV_AQRL_RL]   = ".rl",
+        [RV_AQRL_AQ]   = ".aq",
+        [RV_AQRL_AQRL] = ".aqrl"
+    };
+
     // emit acquire/release modifier
-    static const char *aqrlDescs[] = {"", ".rl", ".aq", ".aqrl"};
     VMI_ASSERT(info->aqrl<NUM_MEMBERS(aqrlDescs), "bad aqrl (%u)", info->aqrl);
     putString(result, aqrlDescs[info->aqrl]);
 }
@@ -440,6 +495,10 @@ static void disassembleFormat(
                 case EMIT_VTYPE:
                     putUncookedKey(result, " VTYPE", uncooked);
                     putVType(result, info->vsew, info->vlmul);
+                    break;
+                case EMIT_RM:
+                    putUncookedKey(result, " RM", uncooked);
+                    putMask(result, info->mask, uncooked);
                     break;
                 case '*':
                     nextOpt = True;
