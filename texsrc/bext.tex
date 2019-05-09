@@ -254,14 +254,14 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
 
 \begin{rvb}
   RV32, RV64:
-    slo rd, rs1, rs2
-    sro rd, rs1, rs2
+    slo  rd, rs1, rs2
+    sro  rd, rs1, rs2
     sloi rd, rs1, imm
     sroi rd, rs1, imm
 
   RV64 only:
-    slow rd, rs1, rs2
-    srow rd, rs1, rs2
+    slow  rd, rs1, rs2
+    srow  rd, rs1, rs2
     sloiw rd, rs1, imm
     sroiw rd, rs1, imm
 \end{rvb}
@@ -292,13 +292,13 @@ zero-shifts and logical ones-shifts.
 
 \begin{rvb}
   RV32, RV64:
-    ror rd, rs1, rs2
-    rol rd, rs1, rs2
+    ror  rd, rs1, rs2
+    rol  rd, rs1, rs2
     rori rd, rs1, imm
 
   RV64 only:
-    rorw rd, rs1, rs2
-    rolw rd, rs1, rs2
+    rorw  rd, rs1, rs2
+    rolw  rd, rs1, rs2
     roriw rd, rs1, imm
 \end{rvb}
 
@@ -346,11 +346,11 @@ Bit 31 & Bit 30 & Meaning \\
 
 \begin{rvb}
   RV32, RV64:
-    grev rd, rs1, rs2
+    grev  rd, rs1, rs2
     grevi rd, rs1, imm
 
   RV64 only:
-    grevw rd, rs1, rs2
+    grevw  rd, rs1, rs2
     greviw rd, rs1, imm
 \end{rvb}
 
@@ -475,15 +475,15 @@ use the instruction encoding for ``arithmetic shift left''.
 
 \begin{rvb}
   RV32, RV64:
-    shfl rd, rs1, rs2
-    unshfl rd, rs1, rs2
-    shfli rd, rs1, imm
+    shfl    rd, rs1, rs2
+    unshfl  rd, rs1, rs2
+    shfli   rd, rs1, imm
     unshfli rd, rs1, imm
 
   RV64 only:
-    shflw rd, rs1, rs2
-    unshflw rd, rs1, rs2
-    shfliw rd, rs1, imm
+    shflw    rd, rs1, rs2
+    unshflw  rd, rs1, rs2
+    shfliw   rd, rs1, imm
     unshfliw rd, rs1, imm
 \end{rvb}
 
@@ -996,10 +996,14 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 \begin{rvb}
   RV32, RV64:
-    cmix rd, rs1, rs2, rs3
+    cmix rd, rs2, rs1, rs3
 \end{rvb}
 
-The {\tt cmix rd, rs1, rs2, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
+(Note that the assembler syntax of {\tt cmix} has the {\tt rs2} argument first
+to make assembler code more readable. But the reference C code code below uses
+the ``architecturally correct'' argument order {\tt rs1, rs2, rs3}.)
+
+The {\tt cmix rd, rs2, rs1, rs3} instruction selects bits from {\tt rs1} and {\tt rs3} based
 on the bits in the control word {\tt rs2}.
 
 \input{bextcref-cmix}
@@ -1022,8 +1026,12 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 
 \begin{rvb}
   RV32, RV64:
-    cmov rd, rs1, rs2, rs3
+    cmov rd, rs2, rs1, rs3
 \end{rvb}
+
+(Note that the assembler syntax of {\tt cmov} has the {\tt rs2} argument first
+to make assembler code more readable. But the reference C code code below uses
+the ``architecturally correct'' argument order {\tt rs1, rs2, rs3}.)
 
 The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
@@ -1034,22 +1042,26 @@ word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \begin{rvb}
   RV32, RV64:
-    fsl rd, rs1, rs2, rs3
-    fsr rd, rs1, rs2, rs3
-    fsri rd, rs1, imm, rs3
+    fsl  rd, rs1, rs3, rs2
+    fsr  rd, rs1, rs3, rs2
+    fsri rd, rs1, rs3, imm
 
   RV64 only:
-    fslw rd, rs1, rs2, rs3
-    fsrw rd, rs1, rs2, rs3
-    fsriw rd, rs1, imm, rs3
+    fslw  rd, rs1, rs3, rs2
+    fsrw  rd, rs1, rs3, rs2
+    fsriw rd, rs1, rs3, imm
 \end{rvb}
 
-The {\tt fsl rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
+(Note that the assembler syntax for funnel shifts has the {\tt rs2} argument
+last to make assembler code more readable. But the reference C code code below
+uses the ``architecturally correct'' argument order {\tt rs1, rs2, rs3}.)
+
+The {\tt fsl rd, rs1, rs3, rs2} instruction creates a $2\cdot\textrm{XLEN}$ word
 by concatenating rs1 and rs3 (with rs1 in the MSB half), rotate-left-shifts that
 word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs2, and
 then writes the MSB half of the result to rd.
 
-The {\tt fsr rd, rs1, rs2, rs3} instruction creates a $2\cdot\textrm{XLEN}$ word
+The {\tt fsr rd, rs1, rs3, rs2} instruction creates a $2\cdot\textrm{XLEN}$ word
 by concatenating rs1 and rs3 (with rs1 in the LSB half), rotate-right-shifts that
 word by the amount indicated in the $log_2(\textrm{XLEN})+1$ LSB bits in rs2, and
 then writes the LSB half of the result to rd.
