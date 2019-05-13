@@ -126,6 +126,7 @@ typedef struct riscvNetPortS {
 //
 #define VLEN_MAX        2048
 #define VBYTES_MAX      (VLEN_MAX/8)
+#define VDWORDS_MAX     (VLEN_MAX/64)
 #define VREG_NUM        32
 #define ELEN_MIN        32
 #define ELEN_MAX        64
@@ -142,7 +143,7 @@ typedef struct riscvNetPortS {
 // of up to VLEN_MAX bits. The assignment of the storage depends on the
 // configured VLEN
 //
-typedef Uns64 riscvVRegBank[(VLEN_MAX*VREG_NUM)/64];
+typedef Uns64 riscvVRegBank[VDWORDS_MAX*VREG_NUM];
 
 //
 // This defines the type of elements of the stride tables used to handle
@@ -249,7 +250,6 @@ typedef struct riscvS {
     riscvVRegBank      v;                           // vector registers (configurable size)
     UnsPS              vBase[NUM_BASE_REGS];        // indexed base registers
     UnsPS              offsetBase;                  // offset table base register
-    riscvStrideOffset  offsetsLMULx1[VBYTES_MAX*1]; // LMULx1 stride offsets
     riscvStrideOffset  offsetsLMULx2[VBYTES_MAX*2]; // LMULx2 stride offsets
     riscvStrideOffset  offsetsLMULx4[VBYTES_MAX*4]; // LMULx4 stride offsets
     riscvStrideOffset  offsetsLMULx8[VBYTES_MAX*8]; // LMULx8 stride offsets

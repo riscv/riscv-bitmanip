@@ -72,47 +72,71 @@
     WRITE_NL
 .endm
 
-.macro test_OP imm1
+.macro test_CRC32C_D imm1
+    WRITE_LOG_N str4
+    WRITE_S sep
+    li s2, 0
+    li s3, \imm1
+    CRC32C_D 18 19
+    WRITE_S op
+    WRITE_RAW s3
+    WRITE_S gives
+    WRITE_RAW s2
+    WRITE_NL
+.endm
+
+.macro test_OP1 imm1
     test_CRC32C_B \imm1
     test_CRC32C_H \imm1
     test_CRC32C_W \imm1
+#if defined(XLEN64)
+    test_CRC32C_D \imm1
+#endif
 .endm
 
-START_TEST:
-    test_OP 0x00000000
+#if defined(XLEN64)
+    #define test_OP(i1) \
+        test_OP1 0x ## i1; \
+        test_OP1 0x ## i1 ## i1;
+#else
+    #define test_OP(i1) \
+        test_OP1 0x ## i1;
+#endif
 
-    test_OP 0x00000001
-    test_OP 0x00000002
-    test_OP 0x00000004
-    test_OP 0x00000008
-    test_OP 0x00000010
-    test_OP 0x00000020
-    test_OP 0x00000040
-    test_OP 0x00000080
-    test_OP 0x00000100
-    test_OP 0x00000200
-    test_OP 0x00000400
-    test_OP 0x00000800
-    test_OP 0x00001000
-    test_OP 0x00002000
-    test_OP 0x00004000
-    test_OP 0x00008000
-    test_OP 0x00010000
-    test_OP 0x00020000
-    test_OP 0x00040000
-    test_OP 0x00080000
-    test_OP 0x00100000
-    test_OP 0x00200000
-    test_OP 0x00400000
-    test_OP 0x00800000
-    test_OP 0x01000000
-    test_OP 0x02000000
-    test_OP 0x04000000
-    test_OP 0x08000000
-    test_OP 0x10000000
-    test_OP 0x20000000
-    test_OP 0x40000000
-    test_OP 0x80000000
+START_TEST:
+    test_OP(00000000)
+    test_OP(00000001)
+    test_OP(00000002)
+    test_OP(00000004)
+    test_OP(00000008)
+    test_OP(00000010)
+    test_OP(00000020)
+    test_OP(00000040)
+    test_OP(00000080)
+    test_OP(00000100)
+    test_OP(00000200)
+    test_OP(00000400)
+    test_OP(00000800)
+    test_OP(00001000)
+    test_OP(00002000)
+    test_OP(00004000)
+    test_OP(00008000)
+    test_OP(00010000)
+    test_OP(00020000)
+    test_OP(00040000)
+    test_OP(00080000)
+    test_OP(00100000)
+    test_OP(00200000)
+    test_OP(00400000)
+    test_OP(00800000)
+    test_OP(01000000)
+    test_OP(02000000)
+    test_OP(04000000)
+    test_OP(08000000)
+    test_OP(10000000)
+    test_OP(20000000)
+    test_OP(40000000)
+    test_OP(80000000)
 
     EXIT_TEST
 
@@ -124,6 +148,9 @@ str2:
 
 str3:
     .string "Testing CRC32C_W"
+
+str4:
+    .string "Testing CRC32C_D"
 
 sep:
     .string " "

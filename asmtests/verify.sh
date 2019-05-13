@@ -14,16 +14,20 @@ for g in ${golden}; do
     d1=$(dirname $g)
     d2=$(dirname $d1)
     b1=$(basename $d1)
-    t=${d2}/object/${b1}/test.log
+
     diff=${d2}/object/${b1}/diff.log
-    diff $g $t | tee ${diff}
+    t=${d2}/object/${b1}/test.log
+    
+    cat ${d2}/object/${b1}/test.64.log ${d2}/object/${b1}/test.32.log > ${t}
+        
+    diff $g ${d2}/object/${b1}/test.log > ${diff}
     rc=${PIPESTATUS[0]}
     if [ $rc -eq 0 ]; then
-        echo "Test Passed ${b1}"
+        echo "Test Passed ${bit}Bit ${b1}"
         rm ${diff}
     else
-        echo "Test Failed ${b1}"
-        sdiff $g $t > ${diff}
+        echo "Test Failed ${bit}Bit ${b1}"
+        sdiff -w 180 $g $t > ${diff}
     fi
     status=$(($status + $rc))
 done

@@ -1,5 +1,12 @@
-ELF = $(wildcard extB/object/*/test.elf)
-LOG = $(ELF:.elf=.log)
+ELF32 = $(wildcard extB/object/*/test.32.elf)
+LOG32 = $(ELF32:.32.elf=.32.log)
+ELF64 = $(wildcard extB/object/*/test.64.elf)
+LOG64 = $(ELF64:.64.elf=.64.log)
+
+ELF   = $(ELF32) $(ELF64)
+LOG   = $(LOG32) $(LOG64)
+
+REDIR = >/dev/null
 
 ifeq ($(OS),Windows_NT)
     TARGET_SIM ?= ../riscv-ovpsim/bin/Windows64/riscvOVPsim.exe
@@ -13,15 +20,11 @@ endif
 
 RUN_TARGET = \
     $(TARGET_SIM) \
-        --variant RV32GC --customcontrol --extensionb \
+        --customcontrol --extensionb \
         --override riscvOVPsim/cpu/simulateexceptions=T \
         --override riscvOVPsim/cpu/defaultsemihost=F \
         --override riscvOVPsim/cpu/user_version=2.3 \
         --override riscvOVPsim/cpu/priv_version=1.11
-
-export RISCV_PREFIX  ?= riscv-none-embed-
-export RISCV_CC      ?= $(RISCV_PREFIX)gcc
-export RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
 
 all: 
 	$(MAKE) -C extB $@
@@ -33,10 +36,16 @@ run: $(LOG)
 verify:
 	@ bash verify.sh
 
-%.log: %.elf FORCE
-	$(RUN_TARGET) --program $(<) --logfile $(@).trc --trace --tracechange >/dev/null
-	$(RUN_TARGET) --program $(<) --logfile $(@).tmp
-	@ grep "^LOG: " $(@).tmp > $@
+%.32.log: %.32.elf FORCE
+	$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).tmp
+	#$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).trc --trace --tracechange $(REDIR)
+	@ -grep "^LOG: " $(@).tmp > $@
+	@ rm -f $(@).tmp
+
+%.64.log: %.64.elf FORCE
+	$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).tmp
+	#$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).trc --trace --tracechange $(REDIR)
+	@ -grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 
 clean:

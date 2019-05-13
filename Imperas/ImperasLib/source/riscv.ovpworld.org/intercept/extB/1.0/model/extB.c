@@ -79,8 +79,12 @@ typedef struct vmiosObjectS {
 
     Bool enable;
 
-    // handles for the RISCV GPRs
-    vmiRegInfoCP riscvRegs[RISCV_GPR_NUM];
+    // handles for the RISCV GPRs/SPRs
+    vmiRegInfoCP gprCP[RISCV_GPR_NUM];
+    vmiRegInfoCP misaCP;
+
+    // SPR
+    Uns64 misa;
 
     // 32-bit temporaries
     Uns64  rs1, rs2, rs3, rd, tmp1, tmp2;
@@ -241,10 +245,10 @@ static vmidDecodeTableP createDecodeTable32(void) {
     DECODE_ENTRY(0, UNSHFLI,  "|000010|......|.....|101|.....|0010011|");  // I-type
     DECODE_ENTRY(0, BEXT,     "|0000100|.....|.....|000|.....|0110011|");  // R-type
     DECODE_ENTRY(0, BDEP,     "|0000100|.....|.....|100|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, CMIX,     "|.....|11|.....|.....|010|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, CMOV,     "|.....|11|.....|.....|011|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, FSL,      "|.....|10|.....|.....|001|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, FSR,      "|.....|10|.....|.....|101|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, CMIX,     "|.....11|.....|.....|010|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, CMOV,     "|.....11|.....|.....|011|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSL,      "|.....10|.....|.....|001|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSR,      "|.....10|.....|.....|101|.....|0110011|"); // R4-type
     DECODE_ENTRY(0, MIN,      "|0000101|.....|.....|100|.....|0110011|");  // R-type
     DECODE_ENTRY(0, MINU,     "|0000101|.....|.....|110|.....|0110011|");  // R-type
     DECODE_ENTRY(0, MAX,      "|0000101|.....|.....|101|.....|0110011|");  // R-type
@@ -323,22 +327,45 @@ static riscvExtBInstrType getInstrType(
 //
 static VMIOS_CONSTRUCTOR_FN(constructor) {
 
-    vmiMessage("I", CPU_PREFIX, "%s", EXTB_REVISION);
-    vmiMessage("I", CPU_PREFIX, "These RISC-V Bitmanip instructions are a work in progress\n");
-    vmiMessage("I", CPU_PREFIX, "These instructions and their specification may change before being accepted as\n");
-    vmiMessage("I", CPU_PREFIX, "a standard by the RISC-V Foundation and so it is highly likely that implementations\n");
-    vmiMessage("I", CPU_PREFIX, "made using this draft specification will not conform to the future standard.\n");
-
-    Uns32 i;
-
     paramValuesP params = parameterValues;
     object->enable = params->enable;
 
-    object->xlen = 32;  // TBD
+    if (object->enable) {
+        vmiMessage("I", CPU_PREFIX, "%s", EXTB_REVISION);
+        vmiMessage("I", CPU_PREFIX, "These RISC-V Bitmanip instructions are a work in progress\n");
+        vmiMessage("I", CPU_PREFIX, "These instructions and their specification may change before being accepted as\n");
+        vmiMessage("I", CPU_PREFIX, "a standard by the RISC-V Foundation and so it is highly likely that implementations\n");
+        vmiMessage("I", CPU_PREFIX, "made using this draft specification will not conform to the future standard.\n");
+    }
+
+    //
+    // Determine the XLEN
+    //
+    object->misaCP = vmiosGetRegDesc(processor, "misa");
+    vmiosRegRead(processor, object->misaCP, &(object->misa));
+
+    //
+    // Are we connected to a 32, 64 or 128 bit processor
+    //
+    object->xlen = 0;
+    Uns8 mxl = (object->misa >> 30);
+    if (mxl == 0) {
+        // Must be in the 64 bit position
+        mxl = (object->misa >> 62);
+    }
+    if (mxl == 1) {
+        object->xlen = 32;
+    } else if (mxl == 2) {
+        object->xlen = 64;
+    } else {
+        vmiMessage("F", CPU_PREFIX, "MISA register error = " FMT_640Nx , object->misa);
+    }
+    vmiMessage("I", CPU_PREFIX, "%dbit Mode\n", object->xlen);
 
     // get handles to the RISCV GPRs
+    Uns32 i;
     for(i=0; i<RISCV_GPR_NUM; i++) {
-        object->riscvRegs[i] = vmiosGetRegDesc(processor, map[i]);
+        object->gprCP[i] = vmiosGetRegDesc(processor, map[i]);
     }
 
     // create enhanced instruction decoder
@@ -392,11 +419,11 @@ static void regProlog (
         object->reg_t0   = vmimtGetExtReg(processor, &object->t0);
     }
 
-    vmimtGetR(processor, object->xlen, object->reg_rd,  object->riscvRegs[object->rd]);
-    vmimtGetR(processor, object->xlen, object->reg_rs1, object->riscvRegs[object->rs1]);
-    vmimtGetR(processor, object->xlen, object->reg_rs2, object->riscvRegs[object->rs2]);
-    vmimtGetR(processor, object->xlen, object->reg_rs3, object->riscvRegs[object->rs3]);
-    vmimtGetR(processor, object->xlen, object->reg_t0,  object->riscvRegs[object->t0]);
+    vmimtGetR(processor, object->xlen, object->reg_rd,  object->gprCP[object->rd]);
+    vmimtGetR(processor, object->xlen, object->reg_rs1, object->gprCP[object->rs1]);
+    vmimtGetR(processor, object->xlen, object->reg_rs2, object->gprCP[object->rs2]);
+    vmimtGetR(processor, object->xlen, object->reg_rs3, object->gprCP[object->rs3]);
+    vmimtGetR(processor, object->xlen, object->reg_t0,  object->gprCP[object->t0]);
 }
 
 static void regEpilog (
@@ -404,7 +431,7 @@ static void regEpilog (
     vmiosObjectP  object,
     Uns32         instruction
 ) {
-    vmimtSetR(processor, object->xlen, object->riscvRegs[object->rd], object->reg_rd);
+    vmimtSetR(processor, object->xlen, object->gprCP[object->rd], object->reg_rd);
 }
 
 //
@@ -796,7 +823,7 @@ EXTB_MORPH_FN(emitCMIX) {
     // TODO - What to assign to t0
     if (object->rd != object->t0) {
         //vmimtBinopRR(object->xlen, vmi_MOV, object->reg_t0, object->reg_tmp2, 0);
-        vmimtSetR(processor, object->xlen, object->riscvRegs[object->t0], object->reg_tmp2);
+        vmimtSetR(processor, object->xlen, object->gprCP[object->t0], object->reg_tmp2);
     }
     regEpilog(processor, object, instruction);
 }
@@ -1250,11 +1277,11 @@ static VMIOS_MORPH_FN(doMorph) {
         emitCRC32C_W(processor, object, instruction);
     } else if (type==EXTB_CRC32C_D   ) {
         emitCRC32C_D(processor, object, instruction);
-    } else if (type==EXTB_BMATXOR    ) {
+    } else if (type==EXTB_BMATXOR && (object->xlen==64)) {
         emitBMATXOR(processor, object, instruction);
-    } else if (type==EXTB_BMATOR     ) {
+    } else if (type==EXTB_BMATOR && (object->xlen==64)) {
         emitBMATOR(processor, object, instruction);
-    } else if (type==EXTB_BMATFLIP ) {
+    } else if (type==EXTB_BMATFLIP && (object->xlen==64)) {
         emitBMATFLIP(processor, object, instruction);
 
     } else {

@@ -165,7 +165,10 @@
     .int 0x61201013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
 .endm
 
-# DECODE_ENTRY(0, CRC32_D,  "|0110000|10011|.....|001|.....|0010011|"); // R-type
+# DECODE_ENTRY(0, CRC32_D,  "|0110000|10011|.....|001|.....|0010011|");  // R-type
+.macro CRC32_D rd rs1
+    .int 0x61301013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
 
 # DECODE_ENTRY(0, CRC32C_B, "|0110000|11000|.....|001|.....|0010011|"); // R-type
 .macro CRC32C_B rd rs1
@@ -180,6 +183,11 @@
 # DECODE_ENTRY(0, CRC32C_W, "|0110000|11010|.....|001|.....|0010011|"); // R-type
 .macro CRC32C_W rd rs1
     .int 0x61A01013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|");  // R-type
+.macro CRC32C_D rd rs1
+    .int 0x61B01013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
 .endm
 
 # DECODE_ENTRY(0, BMATXOR,    "|0000101|.....|.....|010|.....|0110011|"); // OP

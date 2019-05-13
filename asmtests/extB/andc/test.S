@@ -44,16 +44,24 @@
     WRITE_NL
 .endm
 
-START_TEST:
-    test_ANDC 0x00000000 0x00000000
-    test_ANDC 0x00000000 0xFFFFFFFF
-    test_ANDC 0xFFFFFFFF 0xFFFFFFFF
-    test_ANDC 0xFFFFFFFF 0x00000000
+#if defined(XLEN64)
+    #define test_OP(i1, i2) \
+        test_ANDC 0x ## i1 0x ## i2; \
+        test_ANDC 0x ## i1 ## i1 0x ## i2 ## i2;
+#else
+    #define test_OP(i1, i2) \
+        test_ANDC 0x ## i1 0x ## i2;
+#endif
 
-    test_ANDC 0xF0F0F0F0 0x00000000
-    test_ANDC 0xF0F0F0F0 0x0F0F0F0F
-    test_ANDC 0xF0F0F0F0 0xFFFFFFFF
-    test_ANDC 0xF0F0F0F0 0xF0F0F0F0
+START_TEST:
+    test_OP(00000000, 00000000)
+    test_OP(00000000, FFFFFFFF)
+    test_OP(FFFFFFFF, FFFFFFFF)
+    test_OP(FFFFFFFF, 00000000)
+    test_OP(F0F0F0F0, 00000000)
+    test_OP(F0F0F0F0, 0F0F0F0F)
+    test_OP(F0F0F0F0, FFFFFFFF)
+    test_OP(F0F0F0F0, F0F0F0F0)
 
     EXIT_TEST
 

@@ -490,7 +490,7 @@ const char *riscvGetFeatureName(riscvArchitecture feature) {
         [RISCV_FEATURE_INDEX('N')]         = "extension N (user-level interrupts)",
         [RISCV_FEATURE_INDEX('S')]         = "extension S (Supervisor mode)",
         [RISCV_FEATURE_INDEX('U')]         = "extension U (User mode)",
-        [RISCV_FEATURE_INDEX('V')]         = "extension V (vector instructions)",
+        [RISCV_FEATURE_INDEX('V')]         = "extension V (vector instructions) - UNDER DEVELOPMENT",
         [RISCV_FEATURE_INDEX('X')]         = "extension X (non-standard extensions present)"
     };
 
