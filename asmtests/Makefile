@@ -20,11 +20,12 @@ endif
 
 RUN_TARGET = \
     $(TARGET_SIM) \
-        --customcontrol --extensionb \
+        --customcontrol \
         --override riscvOVPsim/cpu/simulateexceptions=T \
         --override riscvOVPsim/cpu/defaultsemihost=F \
         --override riscvOVPsim/cpu/user_version=2.3 \
-        --override riscvOVPsim/cpu/priv_version=1.11
+        --override riscvOVPsim/cpu/priv_version=1.11 \
+        --override riscvOVPsim/cpu/misa_Extensions=0x14112f 
 
 all: 
 	$(MAKE) -C extB $@

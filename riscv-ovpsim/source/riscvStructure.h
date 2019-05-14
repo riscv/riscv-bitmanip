@@ -61,7 +61,9 @@
 //
 // Number of temporaries
 //
-#define NUM_TEMPS 4
+#define NUM_TEMPS_WIDE  3
+#define NUM_TEMPS_BASIC 4
+#define NUM_TEMPS       (NUM_TEMPS_WIDE+NUM_TEMPS_BASIC)
 
 //
 // Container for net values
@@ -245,6 +247,8 @@ typedef struct riscvS {
 
     // Vector extension
     Uns8               vTypeKey;                    // vector polymorphic configuration
+    Uns8               vFieldMask;                  // vector field mask
+    Uns8               vActiveMask;                 // vector active element mask
     Bool               vFirstFault;                 // vector first fault active?
     Uns32              vlMax;                       // maximum vl element number
     riscvVRegBank      v;                           // vector registers (configurable size)

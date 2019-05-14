@@ -102,37 +102,6 @@ typedef struct vmiosObjectS {
 
 } vmiosObject;
 
-// Define the attributes value structure
-typedef struct paramValuesS {
-    VMI_BOOL_PARAM(enable);
-} paramValues, *paramValuesP;
-
-//
-// Define formals
-//
-static vmiParameter formals[] = {
-    VMI_BOOL_PARAM_SPEC(paramValues, enable, 0, "Enable usage of the Bit Manipulation Instruction Extension"),
-    VMI_END_PARAM
-};
-
-//
-// Iterate formals
-//
-static VMIOS_PARAM_SPEC_FN(getParamSpecs) {
-    if(!prev) {
-        prev = formals;
-    } else {
-        prev++;
-    }
-    return prev->name ? prev : 0;
-}
-
-//
-// Return size of parameter structure
-//
-static VMIOS_PARAM_TABLE_SIZE_FN(getParamTableSize) {
-    return sizeof(paramValues);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENHANCED DECODER
@@ -327,8 +296,19 @@ static riscvExtBInstrType getInstrType(
 //
 static VMIOS_CONSTRUCTOR_FN(constructor) {
 
-    paramValuesP params = parameterValues;
-    object->enable = params->enable;
+//    paramValuesP params = parameterValues;
+//
+//    // Is the B bit set in the misa register ?
+//    object->enable = params->enable;
+//
+
+    //
+    // Determine the XLEN & MISA.B
+    //
+    object->misaCP = vmiosGetRegDesc(processor, "misa");
+    vmiosRegRead(processor, object->misaCP, &(object->misa));
+
+    object->enable = (object->misa >> 1) & 0x1;
 
     if (object->enable) {
         vmiMessage("I", CPU_PREFIX, "%s", EXTB_REVISION);
@@ -339,16 +319,10 @@ static VMIOS_CONSTRUCTOR_FN(constructor) {
     }
 
     //
-    // Determine the XLEN
-    //
-    object->misaCP = vmiosGetRegDesc(processor, "misa");
-    vmiosRegRead(processor, object->misaCP, &(object->misa));
-
-    //
     // Are we connected to a 32, 64 or 128 bit processor
     //
     object->xlen = 0;
-    Uns8 mxl = (object->misa >> 30);
+    Uns8 mxl = (object->misa >> 30) & 0x3;
     if (mxl == 0) {
         // Must be in the 64 bit position
         mxl = (object->misa >> 62);
@@ -846,8 +820,8 @@ Uns32 fsl32_c(Uns32 rs1, Uns32 rs2, Uns32 rs3) {
 }
 
 Uns64 fsl64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
-    Int64 XLEN = 64;
-    Int64 shamt = rs2 & (2*XLEN - 1);
+    Int32 XLEN = 64;
+    Int32 shamt = rs2 & (2*XLEN - 1);
     Uns64 A = rs1, B = rs3;
     if (shamt >= XLEN) {
         shamt -= XLEN; A = rs3; B = rs1;
@@ -880,8 +854,8 @@ Uns32 fsr32_c(Uns32 rs1, Uns32 rs2, Uns32 rs3) {
 }
 
 Uns64 fsr64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
-    Int64 XLEN = 32;
-    Int64 shamt = rs2 & (2*XLEN - 1);
+    Int32 XLEN = 64;
+    Int32 shamt = rs2 & (2*XLEN - 1);
     Uns64 A = rs1, B = rs3;
     if (shamt >= XLEN) {
         shamt -= XLEN; A = rs3; B = rs1;
@@ -932,9 +906,10 @@ EXTB_MORPH_FN(emitMAXU) {
 }
 
 Uns32 clmul32_c(Uns32 rs1, Uns32 rs2) {
+    Int32 XLEN = 32;
     Uns32 x = 0;
     Uns32 i;
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < XLEN; i++) {
         if ((rs2 >> i) & 1) {
             x ^= rs1 << i;
         }
@@ -942,9 +917,10 @@ Uns32 clmul32_c(Uns32 rs1, Uns32 rs2) {
     return x;
 }
 Uns64 clmul64_c(Uns64 rs1, Uns64 rs2) {
+    Int32 XLEN = 64;
     Uns64 x = 0;
     Uns32 i;
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < XLEN; i++) {
         if ((rs2 >> i) & 1) {
             x ^= rs1 << i;
         }
@@ -964,21 +940,23 @@ EXTB_MORPH_FN(emitCLMUL) {
 }
 
 Uns32 clmulh32_c(Uns32 rs1, Uns32 rs2) {
+    Int32 XLEN = 32;
     Uns32 x = 0;
     Uns32 i;
-    for (i = 1; i < 32; i++) {
+    for (i = 1; i < XLEN; i++) {
         if ((rs2 >> i) & 1) {
-            x ^= rs1 >> (32-i);
+            x ^= rs1 >> (XLEN-i);
         }
     }
     return x;
 }
 Uns64 clmulh64_c(Uns64 rs1, Uns64 rs2) {
+    Int32 XLEN = 64;
     Uns64 x = 0;
     Uns32 i;
-    for (i = 1; i < 32; i++) {
+    for (i = 1; i < XLEN; i++) {
         if ((rs2 >> i) & 1) {
-            x ^= rs1 >> (32-i);
+            x ^= rs1 >> (XLEN-i);
         }
     }
     return x;
@@ -1297,11 +1275,7 @@ static VMIOS_MORPH_FN(doMorph) {
 //
 static void diss_addr(Uns32 xlen, Addr thisPC, char **bufferP, Uns32 instruction, vmiDisassAttrs attrs) {
     if (!(attrs & DSA_UNCOOKED)) {
-        if (xlen == 32) {
-            *bufferP += sprintf(*bufferP, FMT_6408x " ", thisPC);
-        } else {
-            *bufferP += sprintf(*bufferP, FMT_640Nx " ", thisPC);
-        }
+        *bufferP += sprintf(*bufferP, FMT_6408x " ", thisPC);
     }
 }
 
@@ -1492,7 +1466,7 @@ VMIOS_DOC_FN(doDoc) {
     vmidocAddText(
         extb,
         "This is an  extension library to implement the initial definition of the Bit Manipulation instructions.");
-    vmidocAddText(extb,"In order to enable the B extension library, the enable parameter must be set to True");
+    vmidocAddText(extb,"In order to enable the B extension library, the MISA.B bit must be set to 1");
 
     vmidocAddText(extb,"The Bit Manipulation defines the following:");
 
@@ -1546,13 +1520,6 @@ vmiosAttr modelAttrs = {
     ////////////////////////////////////////////////////////////////////////
 
     .constructorCB = constructor,           // object constructor
-
-    ////////////////////////////////////////////////////////////////////////
-    // PARAMETER CALLBACKS
-    ////////////////////////////////////////////////////////////////////////
-
-    .paramSpecsCB     = getParamSpecs,          // iterate parameter declarations
-    .paramValueSizeCB = getParamTableSize,      // get parameter table size
 
     ////////////////////////////////////////////////////////////////////////
     // INSTRUCTION INTERCEPT ROUTINES

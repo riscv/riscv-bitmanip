@@ -4,7 +4,7 @@ RISCV_PREFIX  ?= riscv-none-embed-
 RISCV_CC      ?= $(RISCV_PREFIX)gcc
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
 
-SRC     = $(wildcard */*.S)
+SRC     = $(wildcard */test.S)
 ELF32   = $(foreach f,$(SRC:.S=.32.elf),object/$(f))
 ELF64   = $(foreach f,$(SRC:.S=.64.elf),object/$(f))
 ELF     = $(ELF32) $(ELF64)

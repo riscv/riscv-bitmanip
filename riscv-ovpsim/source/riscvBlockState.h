@@ -71,7 +71,7 @@ typedef struct riscvBlockStateS {
     riscvSEWMt       SEWMt;         // known active vector SEW
     riscvVLMULMt     VLMULMt;       // known active vector VLMUL
     riscvVLClassMt   VLClassMt;     // known active vector VL zero/non-zero/max
-    Uns32            VZeroTopMt;    // known vector registers with zero top parts
+    Uns32            VZeroTopMt[2]; // known vector registers with zero top
     Bool             VStartZeroMt;  // vstart known to be zero?
 
 } riscvBlockState;

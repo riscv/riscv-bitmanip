@@ -49,6 +49,8 @@
 #define RISCV_FP_FLAGS          RISCV_CPU_REG(fpFlags)
 #define RISCV_JUMP_BASE         RISCV_CPU_REG(jumpBase)
 #define RISCV_VTYPE_KEY         RISCV_CPU_REG(vTypeKey)
+#define RISCV_VPRED_MASK        RISCV_CPU_REG(vFieldMask)
+#define RISCV_VACTIVE_MASK      RISCV_CPU_REG(vActiveMask)
 #define RISCV_FF                RISCV_CPU_REG(vFirstFault)
 #define RISCV_VLMAX             RISCV_CPU_TEMP(vlMax)
 #define RISCV_OFFSET_BASE       RISCV_CPU_TEMP(offsetBase)

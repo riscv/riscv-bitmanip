@@ -124,6 +124,13 @@ inline static Uns32 getRBits(riscvRegDesc r) {
 }
 
 //
+// Set register size in bits
+//
+inline static riscvRegDesc setRBits(riscvRegDesc r, Uns32 bits) {
+    return (r&~RV_RD_BITS_MASK) | (bits<<2);
+}
+
+//
 // Return register type
 //
 inline static riscvRegDesc getRType(riscvRegDesc r) {
