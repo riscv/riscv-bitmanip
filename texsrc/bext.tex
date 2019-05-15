@@ -1110,16 +1110,16 @@ The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
 and arithmetic inverse (\texttt{neg}). Instead \texttt{not} is implemented as
 \texttt{xori\ rd,\ rs,\ -1} and \texttt{neg} is implemented as \texttt{sub\ rd,\ x0,\ rs}.
 
-In bitmanipulation code \texttt{not} is a very common operations. But there are
-no compressed encodings for those operations because there is no
-\texttt{c.xori} instruction.
+In bitmanipulation code \texttt{not} is a very common operation. But there is
+no compressed encoding for those operation because there is no \texttt{c.xori}
+instruction.
 
 Many bit manipulation operations that have dedicated opcodes in other ISAs
 must be constructed from smaller atoms in RISC-V Bitmanip code. But
 implementations might choose to implement them in a single micro-op using
 macro-op-fusion. For this it can be helpful when the fused sequences are short.
 \texttt{not} is a good candidate for macro-op-fusion, so it can be helpful to
-have compressed opcodes for them.
+have compressed opcodes for it.
 
 The compressed instructions \texttt{c.not} must be supported by all
 implementations that support the C extension and Bitmanip.
