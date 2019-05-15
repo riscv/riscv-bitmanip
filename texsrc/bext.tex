@@ -31,7 +31,7 @@ this will look like, but a guess could look like this:
 
  \node (bext) [below=1.0cm of zip.west,anchor=west] { \texttt{bext, bdep} };
 
- \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[h]} };
+ \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[h[x]]} };
 
  \node (cmov) [right=3.5cm of bext.west,anchor=north west] { \texttt{cmov, cmix} };
  \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
@@ -843,12 +843,13 @@ it is the same instruction.)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Carry-less multiply (\texttt{clmul, clmulh})}
+\section{Carry-less multiply (\texttt{clmul, clmulh, clmulhx})}
 
 \begin{rvb}
   RV32, RV64:
     clmul rd, rs1, rs2
     clmulh rd, rs1, rs2
+    clmulhx rd, rs1, rs2
 
   RV64 only:
     clmulw rd, rs1, rs2
@@ -856,15 +857,15 @@ it is the same instruction.)
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
 produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
-of the carry-less product.
+of the 2$\cdot$XLEN carry-less product.
 
-We need to coordinate with the crypto extension work group if carry-less multiply should
-be part of the B-extension or crypto-extension. (One possible option is to have a vectorized
-clmul instruction in the crypto-extension and a scalar version in the B-extension.)
+\texttt{clmulhx} produces the upper half of the 2$\cdot$XLEN carry-less product after appending
+a 1-bit to {\tt rs2}, which is equivalent to XOR'ing {\tt rs1} with the {\tt clmulh} result.
+In CRC calculations {\tt clmulhx} eliminates those additional XORs.
 
 \input{bextcref-clmul}
 
-The classic applications for \texttt{clmul} are the GCM and CRC~\cite{FastCRC,Wolf18A}, but more
+The classic applications for \texttt{clmul} are CRC~\cite{FastCRC,Wolf18A} and GCM, but more
 applications exist, including the following examples.
 
 There are obvious applications in hashing and pseudo random number generations. For
@@ -1429,15 +1430,14 @@ The remaining instructions are encoded within {\tt funct7=0000100} and
 The {\tt funct7=0000101} block contains {\tt clmul[h]},
 {\tt min[u]}/{\tt max[u]}, and {\tt bmat[x]or}.
 
-The encoding of {\tt clmul[h]} is identical to the encoding of {\tt mul[h]},
+The encoding of {\tt clmul[h[x]]} is identical to the encoding of {\tt mul[h[su]]},
 except that {\tt op[27]=1}.
 
 The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
 {\tt funct3} encoding matches {\tt op[31:29]} of the AMO min/max functions.
 
-{\tt bmat[x]or} uses the remaining slots in {\tt funct7=0000101} with {\tt
-funct3=010} and {\tt funct3=011}. (For what it's worth, this matches the funct3
-for the corresponding {\tt or/xor} instruction, shifted to right by one.)
+{\tt bmat[x]or} uses the remaining slots in {\tt funct7=0000100} with {\tt
+funct3=011} and {\tt funct3=111}.
 
 The remaining instructions are encoded within {\tt funct7=0000100}. The
 shift-like {\tt shfl}/{\tt unshfl} instructions uses the same {\tt funct3}
@@ -1527,8 +1527,7 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |===============================================================|
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMUL
 |  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMULH
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BMATXOR
-|  0000101    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  CLMULHX
 |  0000101    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  MIN
 |  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  MAX
 |  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MINU
@@ -1539,6 +1538,8 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
+|  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATXOR
+|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BMATOR
 |---------------------------------------------------------------|
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI

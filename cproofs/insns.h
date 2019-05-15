@@ -512,6 +512,11 @@ uint_xlen_t clmulh(uint_xlen_t rs1, uint_xlen_t rs2)
 			x ^= rs1 >> (XLEN-i);
 	return x;
 }
+
+uint_xlen_t clmulhx(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return clmulhx(rs1, rs2) ^ rs1;
+}
 // --REF-END--
 
 // --REF-BEGIN-- bmat
