@@ -41,125 +41,132 @@
     WRITE_NL
 .endm
 
+#if defined(XLEN64)
+    #define test_OP(i1) \
+        test_PCNT 0x ## i1; \
+        test_PCNT 0x ## i1 ## i1; \
+        test_PCNT ~0x ## i1; \
+        test_PCNT ~0x ## i1 ## i1;
+#else
+    #define test_OP(i1) \
+        test_PCNT 0x ## i1; \
+        test_PCNT ~0x ## i1;
+#endif
+
 START_TEST:
-    test_PCNT 0x00000000
-
-    test_PCNT 0x00000001
-    test_PCNT 0x00000002
-    test_PCNT 0x00000004
-    test_PCNT 0x00000008
-    test_PCNT 0x00000010
-    test_PCNT 0x00000020
-    test_PCNT 0x00000040
-    test_PCNT 0x00000080
-    test_PCNT 0x00000100
-    test_PCNT 0x00000200
-    test_PCNT 0x00000400
-    test_PCNT 0x00000800
-    test_PCNT 0x00001000
-    test_PCNT 0x00002000
-    test_PCNT 0x00004000
-    test_PCNT 0x00008000
-    test_PCNT 0x00010000
-    test_PCNT 0x00020000
-    test_PCNT 0x00040000
-    test_PCNT 0x00080000
-    test_PCNT 0x00100000
-    test_PCNT 0x00200000
-    test_PCNT 0x00400000
-    test_PCNT 0x00800000
-    test_PCNT 0x01000000
-    test_PCNT 0x02000000
-    test_PCNT 0x04000000
-    test_PCNT 0x08000000
-    test_PCNT 0x10000000
-    test_PCNT 0x20000000
-    test_PCNT 0x40000000
-    test_PCNT 0x80000000
-
-    test_PCNT 0x00000001
-    test_PCNT 0x00000003
-    test_PCNT 0x00000007
-    test_PCNT 0x0000000F
-    test_PCNT 0x0000001F
-    test_PCNT 0x0000003F
-    test_PCNT 0x0000007F
-    test_PCNT 0x000000FF
-    test_PCNT 0x000001FF
-    test_PCNT 0x000003FF
-    test_PCNT 0x000007FF
-    test_PCNT 0x00000FFF
-    test_PCNT 0x00001FFF
-    test_PCNT 0x00003FFF
-    test_PCNT 0x00007FFF
-    test_PCNT 0x0000FFFF
-    test_PCNT 0x0001FFFF
-    test_PCNT 0x0003FFFF
-    test_PCNT 0x0007FFFF
-    test_PCNT 0x000FFFFF
-    test_PCNT 0x001FFFFF
-    test_PCNT 0x003FFFFF
-    test_PCNT 0x007FFFFF
-    test_PCNT 0x00FFFFFF
-    test_PCNT 0x01FFFFFF
-    test_PCNT 0x03FFFFFF
-    test_PCNT 0x07FFFFFF
-    test_PCNT 0x0FFFFFFF
-    test_PCNT 0x1FFFFFFF
-    test_PCNT 0x3FFFFFFF
-    test_PCNT 0x7FFFFFFF
-    test_PCNT 0xFFFFFFFF
-
-    test_PCNT 0xFFFFFFFF
-    test_PCNT 0xFFFFFFFE
-    test_PCNT 0xFFFFFFFC
-    test_PCNT 0xFFFFFFF8
-    test_PCNT 0xFFFFFFF0
-    test_PCNT 0xFFFFFFE0
-    test_PCNT 0xFFFFFFC0
-    test_PCNT 0xFFFFFF80
-    test_PCNT 0xFFFFFF00
-    test_PCNT 0xFFFFFE00
-    test_PCNT 0xFFFFFC00
-    test_PCNT 0xFFFFF800
-    test_PCNT 0xFFFFF000
-    test_PCNT 0xFFFFE000
-    test_PCNT 0xFFFFC000
-    test_PCNT 0xFFFF8000
-    test_PCNT 0xFFFF0000
-    test_PCNT 0xFFFE0000
-    test_PCNT 0xFFFC0000
-    test_PCNT 0xFFF80000
-    test_PCNT 0xFFF00000
-    test_PCNT 0xFFE00000
-    test_PCNT 0xFFC00000
-    test_PCNT 0xFF800000
-    test_PCNT 0xFF000000
-    test_PCNT 0xFE000000
-    test_PCNT 0xFC000000
-    test_PCNT 0xF8000000
-    test_PCNT 0xF0000000
-    test_PCNT 0xE0000000
-    test_PCNT 0xC0000000
-    test_PCNT 0x80000000
-
-    test_PCNT 0x0000000a
-    test_PCNT 0x000000aa
-    test_PCNT 0x00000aaa
-    test_PCNT 0x0000aaaa
-    test_PCNT 0x000aaaaa
-    test_PCNT 0x00aaaaaa
-    test_PCNT 0x0aaaaaaa
-    test_PCNT 0xaaaaaaaa
-
-    test_PCNT 0x00000001
-    test_PCNT 0x00000011
-    test_PCNT 0x00000111
-    test_PCNT 0x00001111
-    test_PCNT 0x00011111
-    test_PCNT 0x00111111
-    test_PCNT 0x01111111
-    test_PCNT 0x11111111
+    test_OP(00000000)
+    test_OP(00000001)
+    test_OP(00000002)
+    test_OP(00000004)
+    test_OP(00000008)
+    test_OP(00000010)
+    test_OP(00000020)
+    test_OP(00000040)
+    test_OP(00000080)
+    test_OP(00000100)
+    test_OP(00000200)
+    test_OP(00000400)
+    test_OP(00000800)
+    test_OP(00001000)
+    test_OP(00002000)
+    test_OP(00004000)
+    test_OP(00008000)
+    test_OP(00010000)
+    test_OP(00020000)
+    test_OP(00040000)
+    test_OP(00080000)
+    test_OP(00100000)
+    test_OP(00200000)
+    test_OP(00400000)
+    test_OP(00800000)
+    test_OP(01000000)
+    test_OP(02000000)
+    test_OP(04000000)
+    test_OP(08000000)
+    test_OP(10000000)
+    test_OP(20000000)
+    test_OP(40000000)
+    test_OP(80000000)
+    test_OP(00000001)
+    test_OP(00000003)
+    test_OP(00000007)
+    test_OP(0000000F)
+    test_OP(0000001F)
+    test_OP(0000003F)
+    test_OP(0000007F)
+    test_OP(000000FF)
+    test_OP(000001FF)
+    test_OP(000003FF)
+    test_OP(000007FF)
+    test_OP(00000FFF)
+    test_OP(00001FFF)
+    test_OP(00003FFF)
+    test_OP(00007FFF)
+    test_OP(0000FFFF)
+    test_OP(0001FFFF)
+    test_OP(0003FFFF)
+    test_OP(0007FFFF)
+    test_OP(000FFFFF)
+    test_OP(001FFFFF)
+    test_OP(003FFFFF)
+    test_OP(007FFFFF)
+    test_OP(00FFFFFF)
+    test_OP(01FFFFFF)
+    test_OP(03FFFFFF)
+    test_OP(07FFFFFF)
+    test_OP(0FFFFFFF)
+    test_OP(1FFFFFFF)
+    test_OP(3FFFFFFF)
+    test_OP(7FFFFFFF)
+    test_OP(FFFFFFFF)
+    test_OP(FFFFFFFF)
+    test_OP(FFFFFFFE)
+    test_OP(FFFFFFFC)
+    test_OP(FFFFFFF8)
+    test_OP(FFFFFFF0)
+    test_OP(FFFFFFE0)
+    test_OP(FFFFFFC0)
+    test_OP(FFFFFF80)
+    test_OP(FFFFFF00)
+    test_OP(FFFFFE00)
+    test_OP(FFFFFC00)
+    test_OP(FFFFF800)
+    test_OP(FFFFF000)
+    test_OP(FFFFE000)
+    test_OP(FFFFC000)
+    test_OP(FFFF8000)
+    test_OP(FFFF0000)
+    test_OP(FFFE0000)
+    test_OP(FFFC0000)
+    test_OP(FFF80000)
+    test_OP(FFF00000)
+    test_OP(FFE00000)
+    test_OP(FFC00000)
+    test_OP(FF800000)
+    test_OP(FF000000)
+    test_OP(FE000000)
+    test_OP(FC000000)
+    test_OP(F8000000)
+    test_OP(F0000000)
+    test_OP(E0000000)
+    test_OP(C0000000)
+    test_OP(80000000)
+    test_OP(0000000a)
+    test_OP(000000aa)
+    test_OP(00000aaa)
+    test_OP(0000aaaa)
+    test_OP(000aaaaa)
+    test_OP(00aaaaaa)
+    test_OP(0aaaaaaa)
+    test_OP(aaaaaaaa)
+    test_OP(00000001)
+    test_OP(00000011)
+    test_OP(00000111)
+    test_OP(00001111)
+    test_OP(00011111)
+    test_OP(00111111)
+    test_OP(01111111)
+    test_OP(11111111)
 
     EXIT_TEST
 

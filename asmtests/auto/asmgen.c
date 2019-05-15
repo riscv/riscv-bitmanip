@@ -32,15 +32,35 @@
 #include <string.h>
 #include <assert.h>
 
-#define XLEN 32
-#define LOG2_XLEN 5
-typedef uint32_t uint_xlen_t;
-typedef int32_t int_xlen_t;
+//#define XLEN 32
+//#define LOG2_XLEN 5
+
+#if (XLEN==32)
+    typedef uint32_t uint_xlen_t;
+    typedef  int32_t  int_xlen_t;
+#   define FMT_CONST "0x%08X"
+
+    uint_xlen_t randomV() {
+        uint_xlen_t value =random();
+        return value;
+    }
+#else
+    typedef uint64_t uint_xlen_t;
+    typedef  int64_t  int_xlen_t;
+#   define FMT_CONST "0x%016LX"
+
+    uint_xlen_t randomV() {
+        uint_xlen_t value = (random() << 32) | random();
+        return value;
+    }
+#endif
+
 #include "insns.h"
-#undef XLEN
-#undef LOG2_XLEN
+//#undef XLEN
+//#undef LOG2_XLEN
 
 #include "../auto/asmgen.h"
+
 
 int getnum(int lo, int hi) {
     int id = lo + (random() % (1+hi-lo));
@@ -74,13 +94,13 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     int rd  = get_cr(rdN); \
     get_cmp(rdRef, rdN, rdN, rdN, rdN); \
     rdVi = 0; \
-    rdVi = random(); \
+    rdVi = randomV(); \
     if (rd) rdVo = FUNC(rdVi); \
-    printf("# Test %d: (ref=%s) %s(rd=%s/0x%08X)=>0x%08X\n", TEST, rdRef, #FUNC, rdN, rdVi, rdVo); \
+    printf("# Test %d: (ref=%s) %s(rd=%s/" FMT_CONST ")=>" FMT_CONST "\n", TEST, rdRef, #FUNC, rdN, rdVi, rdVo); \
     printf(".l_" #FUNC "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdN,   rdVi); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdN,   rdVi); \
     printf("    c%-7s %d\n",            #FUNC, rd); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdVo); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdVo); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
 #define PROLOG_CR2(FUNC,ALIAS,TEST) \
@@ -89,13 +109,13 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     int rd  = get_cr(rdN); \
     get_cmp(rdRef, rdN, rdN, rdN, rdN); \
     rdVi = 0; \
-    rdVi = random(); \
+    rdVi = randomV(); \
     if (rd) rdVo = FUNC(rdVi); \
-    printf("# Test %d: (ref=%s) %s(rd=%s/0x%08X)=>0x%08X\n", TEST, rdRef, #ALIAS, rdN, rdVi, rdVo); \
+    printf("# Test %d: (ref=%s) %s(rd=%s/" FMT_CONST ")=>" FMT_CONST "\n", TEST, rdRef, #ALIAS, rdN, rdVi, rdVo); \
     printf(".l_" #ALIAS "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdN,   rdVi); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdN,   rdVi); \
     printf("    c%-7s %d\n",            #ALIAS, rd); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdVo); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdVo); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
 #define PROLOG_RR(FUNC,TEST) \
@@ -106,13 +126,13 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
     rs1V = 0; \
     rdV  = 0; \
-    if (rs1) rs1V = random(); \
+    if (rs1) rs1V = randomV(); \
     if (rd)  rdV = FUNC(rs1V); \
-    printf("# Test %d: (ref=%s) %s(rs1=%s/0x%08X) => (rd=%s/0x%08X)\n", TEST, rdRef, #FUNC, rs1N, rs1V, rdN, rdV); \
+    printf("# Test %d: (ref=%s) %s(rs1=%s/" FMT_CONST ") => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, #FUNC, rs1N, rs1V, rdN, rdV); \
     printf(".l_" #FUNC "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs1N,  rs1V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs1N,  rs1V); \
     printf("    %-8s %d %d\n",         #FUNC, rd,    rs1); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdV); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
 #define PROLOG_RRR(FUNC,TEST) \
@@ -125,19 +145,19 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     rs1V = 0; \
     rs2V = 0; \
     rdV  = 0; \
-    if (rs1) rs1V = random(); \
-    if (rs2) rs2V = random(); \
+    if (rs1) rs1V = randomV(); \
+    if (rs2) rs2V = randomV(); \
     \
     if (rs1 == rs2 ) { \
         rs2V = rs1V; \
     } \
     if (rd)  rdV = FUNC(rs1V, rs2V); \
-    printf("# Test %d: (ref=%s) %s(rs1=%s/0x%08X)(rs2=%s/0x%08X) => (rd=%s/0x%08X)\n", TEST, rdRef, #FUNC, rs1N, rs1V, rs2N, rs2V, rdN, rdV); \
+    printf("# Test %d: (ref=%s) %s(rs1=%s/" FMT_CONST ")(rs2=%s/" FMT_CONST ") => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, #FUNC, rs1N, rs1V, rs2N, rs2V, rdN, rdV); \
     printf(".l_" #FUNC "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs1N,  rs1V); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs2N,  rs2V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs1N,  rs1V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs2N,  rs2V); \
     printf("    %-8s %d %d %d\n",      #FUNC, rd,    rs1,   rs2); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdV); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
 #define PROLOG_RRRR(FUNC,TEST) \
@@ -152,9 +172,9 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     rs2V = 0; \
     rs3V = 0; \
     rdV  = 0; \
-    if (rs1) rs1V = random(); \
-    if (rs2) rs2V = random(); \
-    if (rs3) rs3V = random(); \
+    if (rs1) rs1V = randomV(); \
+    if (rs2) rs2V = randomV(); \
+    if (rs3) rs3V = randomV(); \
     \
     if (rs1 == rs2 ) { \
         rs2V = rs1V; \
@@ -166,13 +186,13 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
         rs2V = rs3V; \
     } \
     if (rd)  rdV = FUNC(rs1V, rs2V, rs3V); \
-    printf("# Test %d: (ref=%s) %s(rs1=%s/0x%08X)(rs2=%s/0x%08X)(rs3=%s/0x%08X) => (rd=%s/0x%08X)\n", TEST, rdRef, #FUNC, rs1N, rs1V, rs2N, rs2V, rs3N, rs3V, rdN, rdV); \
+    printf("# Test %d: (ref=%s) %s(rs1=%s/" FMT_CONST ")(rs2=%s/" FMT_CONST ")(rs3=%s/" FMT_CONST ") => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, #FUNC, rs1N, rs1V, rs2N, rs2V, rs3N, rs3V, rdN, rdV); \
     printf(".l_" #FUNC "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs1N,  rs1V); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs2N,  rs2V); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs3N,  rs3V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs1N,  rs1V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs2N,  rs2V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs3N,  rs3V); \
     printf("    %-8s %d %d %d %d\n",    #FUNC, rd,    rs1,   rs2,  rs3); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdV); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
 #define PROLOG_RRI(FUNC,FUNCI,TEST) \
@@ -184,13 +204,13 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
     rs1V = 0; \
     rdV  = 0; \
-    if (rs1) rs1V = random(); \
+    if (rs1) rs1V = randomV(); \
     if (rd)  rdV = FUNC(rs1V, imm); \
-    printf("# Test %d: (ref=%s) (rs1=%s/0x%08X) %s (imm=%d) => (rd=%s/0x%08X)\n", TEST, rdRef, rs1N, rs1V, #FUNCI, imm, rdN, rdV); \
+    printf("# Test %d: (ref=%s) (rs1=%s/" FMT_CONST ") %s (imm=%d) => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, rs1N, rs1V, #FUNCI, imm, rdN, rdV); \
     printf(".l_" #FUNCI "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rs1N,  rs1V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs1N,  rs1V); \
     printf("    %-8s %d %d %d\n",      #FUNCI, rd,    rs1,   imm); \
-    printf("    %-8s %3s, 0x%08X\n",   "li",  rdRef, rdV); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
 #define EPILOG(FUNC,TEST) \
@@ -321,11 +341,6 @@ void do_crc32c_w(int test) {
     EPILOG(crc32c_w, test);
 }
 
-void do_bmatflip(int test) {
-    PROLOG_RR(bmatflip, test);
-    EPILOG(bmatflip, test);
-}
-
 // TODO - check side effect t0 register
 void do_cmix(int test) {
     PROLOG_RRRR(cmix, test);
@@ -377,18 +392,28 @@ void do_clmulh(int test) {
     EPILOG(clmulh, test);
 }
 
-//void do_bmatxor(int test) {
-//    PROLOG_RRR(bmatxor, test);
-//    EPILOG(bmatxor, test);
-//}
-//void do_bmator(int test) {
-//    PROLOG_RRR(bmator, test);
-//    EPILOG(bmator, test);
-//}
-//void do_bmatflip(int test) {
-//    PROLOG_RRR(bmatflip, test);
-//    EPILOG(bmatflip, test);
-//}
+#if (XLEN==64)
+void do_crc32_d(int test) {
+    PROLOG_RR(crc32_d, test);
+    EPILOG(crc32_d, test);
+}
+void do_crc32c_d(int test) {
+    PROLOG_RR(crc32c_d, test);
+    EPILOG(crc32c_d, test);
+}
+void do_bmatxor(int test) {
+    PROLOG_RRR(bmatxor, test);
+    EPILOG(bmatxor, test);
+}
+void do_bmator(int test) {
+    PROLOG_RRR(bmator, test);
+    EPILOG(bmator, test);
+}
+void do_bmatflip(int test) {
+    PROLOG_RR(bmatflip, test);
+    EPILOG(bmatflip, test);
+}
+#endif
 
 // arg1 = num instructions
 int main(int argc, char **argv) {
@@ -405,8 +430,7 @@ int main(int argc, char **argv) {
 
     int test = 0;
 //    while (test < iter) {
-//        do_bmatxor(++test);
-//        do_bmator(++test);
+//        do_fsr(++test);
 //    }
     while (test < iter) {
         do_clz(++test);
@@ -441,14 +465,16 @@ int main(int argc, char **argv) {
         do_crc32_b(++test);
         do_crc32_h(++test);
         do_crc32_w(++test);
-//        do_crc32_d(++test);
         do_crc32c_b(++test);
         do_crc32c_h(++test);
         do_crc32c_w(++test);
-//        do_crc32c_d(++test);
-//        do_bmatxor(++test);
-//        do_bmator(++test);
-//        do_bmatflip(++test);
+#if (XLEN==64)
+        do_crc32_d(++test);
+        do_crc32c_d(++test);
+        do_bmatxor(++test);
+        do_bmator(++test);
+        do_bmatflip(++test);
+#endif
         do_neg(++test);
         do_not(++test);
         do_cbrev(++test);

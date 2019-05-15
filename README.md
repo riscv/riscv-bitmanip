@@ -26,9 +26,9 @@ The [cproofs](cproofs) directory contains a few proofs for the reference C model
 ## riscvOVPsim Reference Simulation
 Included in this repository in the directory [riscv-ovpsim](riscv-ovpsim) is a version of the Imperas [riscvOVPsim](riscv-ovpsim/README.md) simulator that includes a full implementation of the RISC-V 32 & 64 Bit ISA specification and an implementation of these new bitmanip instructions. 
 
-To enable the new instructions, just add a command line option:
+To enable the new instructions, enable the B bit in the MISA register
 
-    riscvOVPsim.exe --extensionb
+    riscvOVPsim.exe --override riscvOVPsim/cpu/misa_Extensions=0x14112f
 
 And in the log you will see it enabled, for example:
 

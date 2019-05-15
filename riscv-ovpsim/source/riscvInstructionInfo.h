@@ -761,6 +761,22 @@
 }
 
 //
+// Attribute entries for 32-bit instructions like VMACC.VV
+//
+#define ATTR32_VV3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R3_R2_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VV,           \
+}
+
+//
 // Attribute entries for 32-bit instructions like VCOMPRESS.VM
 //
 #define ATTR32_VM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
@@ -869,12 +885,44 @@
 }
 
 //
+// Attribute entries for 32-bit instructions like VMACC.VX
+//
+#define ATTR32_VX3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R3_R2_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_X_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VX,           \
+}
+
+//
 // Attribute entries for 32-bit instructions like VFADD.VF
 //
 #define ATTR32_VF(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
     opcode   : _OPCODE,             \
     pattern  : _PATTERN,            \
     format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_F_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VF,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFMADD.VF
+//
+#define ATTR32_VF3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R3_R2_RM,     \
     type     : RV_IT_##_GENERIC,    \
     arch     : _ARCH,               \
     r1       : RS_V_11_7,           \

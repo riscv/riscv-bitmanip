@@ -4,6 +4,9 @@
 # This CHANGELOG contains information specific to the RISCV processor model   #
 ###############################################################################
 
+- The Model Specific Information document for each variant now includes 
+  information on the extensions that are supported by the model but not enabled 
+  on the specific variant being documented. 
 - Various changes have been made to implement conformance with Privileged
   Architecture specification 20190405-Priv-MSU-Ratification, as follows:
   - The priority order of synchronous exceptions has been modified;

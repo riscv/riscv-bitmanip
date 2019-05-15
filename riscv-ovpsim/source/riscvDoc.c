@@ -137,42 +137,90 @@ void riscvDoc(riscvP riscv) {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // FEATURES
+    // EXTENSIONS
     ////////////////////////////////////////////////////////////////////////////
 
     {
-        vmiDocNodeP       Features = vmidocAddSection(Root, "Features");
-        riscvArchitecture arch     = cfg->arch;
+        vmiDocNodeP       Extensions = vmidocAddSection(Root, "Extensions");
+        riscvArchitecture arch    = cfg->arch;
 
         vmidocAddText(
-            Features,
-            "The model supports the following architectural features, defined "
-            "in the misa CSR:"
+            Extensions,
+            "The model has the following architectural extensions enabled, "
+            "and the following bits in the misa CSR Extensions field will "
+            "be set upon reset:"
         );
 
         while(arch) {
 
             riscvArchitecture feature     = arch & -arch;
             const char       *featureDesc = riscvGetFeatureName(feature);
+            Uns8              featureBit  = RISCV_FEATURE_INDEX(riscvGetFeatureChar(feature));
 
-            if(featureDesc) {
-                vmidocAddText(Features, featureDesc);
-            } else {
-                snprintf(SNPRINTF_TGT(string), "unknown feature %c", riscvGetFeatureChar(feature));
-                vmidocAddText(Features, string);
+            if(featureBit <= ('Z' - 'A')) {
+                snprintf(
+                    SNPRINTF_TGT(string),
+                    "misa bit %d: %s",
+                    featureBit,
+                    featureDesc ? featureDesc : "unknown feature"
+                );
+                vmidocAddText(Extensions, string);
             }
 
             arch = arch & ~feature;
         }
 
         vmidocAddText(
-            Features,
-            "If required, supported architectural features may be overridden "
-            "using parameter \"misa_Extensions\". Parameter "
-            "\"misa_Extensions_mask\" can be used to specify which features "
-            "can be dynamically enabled or disabled by writes to the misa "
-            "register."
+            Extensions,
+            "Parameter \"misa_Extensions_mask\" can be used to specify which "
+            "features can be dynamically enabled or disabled by writes to the "
+            "misa register."
         );
+
+        ////////////////////////////////////////////////////////////////////////////
+        // AVAILABLE EXTENSIONS
+        ////////////////////////////////////////////////////////////////////////////
+
+        {
+            vmiDocNodeP       AvailExt = vmidocAddSection(Extensions, "Available (But Not Enabled) Extensions");
+            riscvArchitecture arch     = cfg->arch;
+            riscvArchitecture featureBit;
+
+            vmidocAddText(
+                AvailExt,
+                "The parameter \"misa_Extensions\" may be used to change the "
+                "reset value for the misa CSR Extensions field. The following "
+                "extensions are supported by the model, but not enabled by "
+                "default in this variant:"
+            );
+
+            for (featureBit = 0; featureBit <= ('Z' - 'A'); featureBit++) {
+
+                riscvArchitecture feature = 1 << featureBit;
+
+                // report the extensions that are supported but not enabled
+                if((feature & arch) == 0) {
+                    const char *featureDesc = riscvGetFeatureName(feature);
+                    if(featureDesc) {
+                        snprintf(
+                            SNPRINTF_TGT(string),
+                            "misa bit %d: %s (NOT ENABLED)",
+                            featureBit,
+                            featureDesc
+                        );
+                        vmidocAddText(AvailExt, string);
+                    }
+                }
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // FEATURES
+    ////////////////////////////////////////////////////////////////////////////
+
+    {
+        vmiDocNodeP Features = vmidocAddSection(Root, "Features");
 
         // document multicore behavior
         if(isSMP) {

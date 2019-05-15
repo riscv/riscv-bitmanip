@@ -45,7 +45,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// Append the character to to the result
+// Append the character to the result
 //
 static void putChar(char **result, char ch) {
 
@@ -63,7 +63,7 @@ static void putChar(char **result, char ch) {
 }
 
 //
-// Append the string to to the result
+// Append the string to the result
 //
 static void putString(char **result, const char *string) {
 

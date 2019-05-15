@@ -74,6 +74,7 @@
 #define FMT_R1_RM           EMIT_R1_S "," EMIT_RM_S
 #define FMT_R1_R2_RM        EMIT_R1_S "," EMIT_R2_S "," EMIT_RM_S
 #define FMT_R1_R2_R3_RM     EMIT_R1_S "," EMIT_R2_S "," EMIT_R3_S "," EMIT_RM_S
+#define FMT_R1_R3_R2_RM     EMIT_R1_S "," EMIT_R3_S "," EMIT_R2_S "," EMIT_RM_S
 #define FMT_R1_R2_SIMM_RM   EMIT_R1_S "," EMIT_R2_S "," EMIT_CS_S "," EMIT_RM_S
 #define FMT_R1_R2_XIMM_RM   EMIT_R1_S "," EMIT_R2_S "," EMIT_CX_S "," EMIT_RM_S
 #define FMT_R1_R2_MEM3      EMIT_R1_S "," EMIT_R2_S ",(" EMIT_R3_S ")"
