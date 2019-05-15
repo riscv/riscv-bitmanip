@@ -216,6 +216,20 @@ example, interleaving the bytes in the lower halves of {\tt rs1} and {\tt rs2}:
 \end{verbatim}
 \end{minipage}
 
+{\tt pack} is most commonly used to zero-extend 32-bit and 64-bit words on
+RV32/RV64. For this purpose we define the following assembler pseudo-ops:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  RV64:
+    zextw rd, rs   ->    pack rd, rs, zero
+
+  RV128:
+    zextw rd, rs   ->    packd rd, rs, zero
+    zextd rd, rs   ->    pack  rd, rs, zero
+\end{verbatim}
+\end{minipage}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
