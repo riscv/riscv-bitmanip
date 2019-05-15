@@ -98,12 +98,12 @@ void pack_test(uint64_t x1, uint64_t x2, uint64_t x3)
 	ref = 0xffff0000ffff0000UL;
 	assert(rd == ref);
 
-	rd = rv64b::pack(x3, x1);
+	rd = rv64b::pack(x1, x3);
 	rd = int32_t(rv64b::rol(rd, x2));
 	ref = int32_t(rv32b::fsl(x1, x2, x3));
 	assert(rd == ref);
 
-	rd = rv64b::pack(0, x1);
+	rd = rv64b::pack(x1, 0);
 	ref = (x1 << 32) >> 32;
 	assert(rd == ref);
 }

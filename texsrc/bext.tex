@@ -174,7 +174,7 @@ occurs frequently enough to warrant a dedicated instruction.
 \end{rvb}
 
 This instruction packs the XLEN/2-bit lower halves of rs1 and rs2 into
-rd, with rs1 in the upper half and rs2 in the lower half.
+rd, with rs1 in the lower half and rs2 in the upper half.
 
 \input{bextcref-pack}
 
@@ -192,7 +192,7 @@ XLEN/2 bits (e.g. for mask creation), and loading unsigned 32 constants on RV64.
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   ; Same as FSLW on RV64
-  pack rd, rs3, rs1
+  pack rd, rs1, rs3
   rol rd, rd, rs2
   addiw rd, rd, 0
 \end{verbatim}
@@ -201,7 +201,7 @@ XLEN/2 bits (e.g. for mask creation), and loading unsigned 32 constants on RV64.
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   ; Clear the upper half of rd
-  pack rd, zero, rd
+  pack rd, rd, zero
 \end{verbatim}
 \end{minipage}
 

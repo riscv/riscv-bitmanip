@@ -474,7 +474,7 @@ void check_stages(uint32_t src)
 
 void check_pack(uint32_t x1, uint32_t x2)
 {
-	uint32_t res = pack(x2, x1);
+	uint32_t res = pack(x1, x2);
 	res = zip8(res);
 	assert(((res >>  0) & 255) == ((x1 >> 0) & 255));
 	assert(((res >>  8) & 255) == ((x2 >> 0) & 255));
