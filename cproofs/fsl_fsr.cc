@@ -126,3 +126,100 @@ void shift64w_ids(uint64_t x, int shamt, uint64_t y)
 	assert(rv32b::fsl(x, sh6, y) == shift64w(x, -sh6, y));
 	assert(rv32b::fsr(x, sh6, y) == shift64w(x,  sh6, y));
 }
+
+// ------------------------------------------------------------------
+
+void bigint_rol(uint32_t data[], int n, int shamt)
+{
+	if (n <= 0)
+		return;
+
+	uint32_t buffer = data[n-1];
+	for (int i = n-1; i > 0; i--)
+		data[i] = rv32b::fsl(data[i], shamt, data[i-1]);
+	data[0] = rv32b::fsl(data[0], shamt, buffer);
+}
+
+void bigint_ror(uint32_t data[], int n, int shamt)
+{
+	if (n <= 0)
+		return;
+
+	uint32_t buffer = data[0];
+	for (int i = 0; i < n-1; i++)
+		data[i] = rv32b::fsr(data[i], shamt, data[i+1]);
+	data[n-1] = rv32b::fsr(data[n-1], shamt, buffer);
+}
+
+void test_bigint_sll_srl(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
+{
+	uint32_t data[4] = {a, b, c, d};
+
+	bigint_rol(data, 4, 10);
+	bigint_rol(data, 4, 7);
+	bigint_rol(data, 4, 4);
+	bigint_rol(data, 4, 12);
+	bigint_rol(data, 4, 18);
+	bigint_rol(data, 4, 28);
+	bigint_rol(data, 4, 1);
+
+	bigint_ror(data, 4, 10);
+	bigint_ror(data, 4, 7);
+	bigint_ror(data, 4, 4);
+	bigint_ror(data, 4, 12);
+	bigint_ror(data, 4, 18);
+	bigint_ror(data, 4, 28);
+	bigint_ror(data, 4, 1);
+
+	assert(data[0] == a);
+	assert(data[1] == b);
+	assert(data[2] == c);
+	assert(data[3] == d);
+}
+
+// ------------------------------------------------------------------
+
+void parse_27bit(uint32_t *idata, uint32_t *odata, int n)
+{
+	uint32_t lower = 0, upper = 0;
+	int reserve = 0;
+
+	while (n--) {
+		if (reserve < 27) {
+			uint32_t buf = *(idata++);
+			lower |= rv32b::sll(buf, reserve);
+			upper = reserve ? rv32b::srl(buf, -reserve) : 0;
+			reserve += 32;
+		}
+		*(odata++) = lower & 127;
+		lower = rv32b::fsr(lower, 27, upper);
+		upper = rv32b::srl(upper, 27);
+		reserve -= 27;
+	}
+}
+
+void test_parse_27bit(const uint32_t refdata[10])
+{
+	uint32_t idata[10] = { /* zeros */ };
+	uint32_t odata[10];
+
+	for (int i = 0; i < 10; i++) {
+		bigint_rol(idata, 10, 27);
+		idata[0] &= ~127;
+		idata[0] |= refdata[9-i];
+	}
+
+	parse_27bit(idata, odata, 10);
+
+	for (int i = 0; i < 10; i++)
+		assert(odata[i] == refdata[i]);
+}
+
+// ------------------------------------------------------------------
+
+int main()
+{
+	const uint32_t refdata[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	test_parse_27bit(refdata);
+	printf("Okay.\n");
+}

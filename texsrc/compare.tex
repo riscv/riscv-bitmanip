@@ -1,0 +1,468 @@
+\chapter{Comparison with othert ISAs}
+
+\hrulefill
+
+\textbf{IMPORTANT NOTE:} Some of the discussions below refer to an older draft of the
+RISC-V Bitmanip extension and are now out-of-date.
+
+\hrulefill
+
+\section{Comparison with x86 Bit Manipulation ISAs}
+\label{x86comp}
+
+The following code snippets implement all instructions from the x86 bit manipulation
+ISA extensions ABM, BMI1, BMI2, and TBM using RISC-V code that does not spill any
+registers and thus could easily be implemented in a single instruction using macro-op
+fusion. (Some of them simply map directly to instructions in this spec and so no
+macro-op fusion is needed.) Note that shorter RISC-V code sequences are
+sometimes possible if we allow spilling to temporary registers.
+
+ABM added x86 encodings for POPCNT, LZCNT, and TZCNT.\footnote{Depending on if
+you ask Intel or AMD you will get different opinion regarding whether LZCNT
+and/or TZCNT are part of ABM or BMI1.} The difference between LZCNT and the
+80386 instruction BSR, and between TZCNT and the 80386 instruction BSF, is that
+the new instructions return the operand size when the input operand is zero,
+while BSR and BSF were undefined in that case. The ABM instructions map 1:1 to
+Bitmanip instructions. Table~\ref{abm-comp} lists ABM instructions and regular
+x86 bit manipulation instructions.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+POPCNT       &   5 &  4 & {\tt pcnt a0, a0} \\
+\hline
+LZCNT / BSR  &   5 &  4 & {\tt clz a0, a0} \\
+\hline
+TZCNT / BSF  &   5 &  4 & {\tt ctz a0, a0} \\
+\hline
+BSWAP        &   3 &  4 & {\tt bswap} \\
+\hline
+ROL          &   4 &  4 & {\tt roli} \\
+\hline
+ROR          &   4 &  4 & {\tt rori} \\
+\hline
+BT           &   5 &  4 & {\tt c.srl a0, N} \\
+             &     &    & {\tt c.andi a0, 1} \\
+\hline
+BTC          &   5 & 16 & {\tt rori a0, N} \\
+             &     &    & {\tt andi a1, a0, 1} \\
+             &     &    & {\tt xori a0, a0, 1} \\
+             &     &    & {\tt rori a0, XLEN-N} \\
+\hline
+BTR          &   5 & 16 & {\tt rori a0, N} \\
+             &     &    & {\tt andi a1, a0, 1} \\
+             &     &    & {\tt andi a0, a0, -2} \\
+             &     &    & {\tt rori a0, XLEN-N} \\
+\hline
+BTS          &   5 & 16 & {\tt rori a0, N} \\
+             &     &    & {\tt andi a1, a0, 1} \\
+             &     &    & {\tt ori a0, a0, 1} \\
+             &     &    & {\tt rori a0, XLEN-N} \\
+\end{tabular}
+\caption{Comparison of x86+ABM with Bitmanip}
+\label{abm-comp}
+\end{table}
+
+BMI1 adds some instructions for trailing bit manipulations, an add-complement instruction,
+and a bit field extract instruction that expects the length and start position packed in one
+register operand. Our version expects the length in a0, start position in a1, and source
+value in a2. See Table~\ref{bmi1-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+ANDN    & 5 &  4 & {\tt andc a0, a2, a1} \\
+\hline
+BEXTR (regs)  & 5 & 12 & {\tt c.add a0, a1} \\
+              &   &    & {\tt slo a0, zero, a0} \\
+              &   &    & {\tt c.and a0, a2} \\
+              &   &    & {\tt srl a0, a0, a1} \\
+\hline
+BLSI          & 5 &  6 & {\tt neg a0, a1} \\
+              &   &    & {\tt c.and a0, a1} \\
+\hline
+BLSMSK        & 5 &  6 & {\tt addi a0, a1, -1} \\
+              &   &    & {\tt c.xor a0, a1} \\
+\hline
+BLSR          & 5 &  6 & {\tt addi a0, a1, -1} \\
+              &   &    & {\tt c.and a0, a1} \\
+\end{tabular}
+\caption{Comparison of x86 BMI1 with Bitmanip}
+\label{bmi1-comp}
+\end{table}
+
+BMI2 adds a few \texttt{*X} instructions that just perform the indicated
+operation without changing any flags. RISC-V does not use flags, so this
+instructions trivially just map to their regular RISC-V counterparts. In
+addition to those instructions, BMI2 adds bit extract and deposit instructions
+and an instruction to clear high bits above a given bit index. See Table~\ref{bmi2-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+BZHI     & 5 &  6 & {\tt slo a0, zero, a2} \\
+         &   &    & {\tt c.and a0, a1} \\
+\hline
+PDEP     & 5 &  4 & {\tt bdep} \\
+\hline
+PEXT     & 5 &  4 & {\tt bext} \\
+\hline
+MULX     & 5 &  4 & {\tt mul} \\
+\hline
+RORX     & 6 &  4 & {\tt rori} \\
+\hline
+SARX     & 5 &  4 & {\tt sra} \\
+\hline
+SHRX     & 5 &  4 & {\tt srl} \\
+\hline
+SHLX     & 5 &  4 & {\tt sll} \\
+\end{tabular}
+\caption{Comparison of x86 BMI2 with Bitmanip}
+\label{bmi2-comp}
+\end{table}
+
+Finally, TBM was a short-lived x86 ISA extension introduced by AMD in
+Piledriver processors, complementing the trailing bit manipulation instructions
+from BMI1. See Table~\ref{tbm-comp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrl}
+\multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
+& x86 & RV & \\
+\hline
+BEXTR (imm)  & 7 &  4 & {\tt c.slli a0, (32-START-LEN)} \\
+             &   &    & {\tt c.srli a0, (32-LEN)} \\
+\hline
+BLCFILL      & 5 &  6 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.and a0, a1} \\
+\hline
+BLCI         & 5 &  8 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.not a0} \\
+             &   &    & {\tt c.or a0, a1} \\
+\hline
+BLCIC        & 5 & 10 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt c.not a0} \\
+\hline
+BLCMSK       & 5 &  6 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.xor a0, a1} \\
+\hline
+BLCS         & 5 &  6 & {\tt addi a0, a1, 1} \\
+             &   &    & {\tt c.or a0, a1} \\
+\hline
+BLSFILL      & 5 &  6 & {\tt addi a0, a1, -1} \\
+             &   &    & {\tt c.or a0, a1} \\
+\hline
+BLSIC        & 5 & 10 & {\tt addi a0, a1, -1} \\
+             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt c.not a0} \\
+\hline
+T1MSKC       & 5 & 10 & {\tt addi a0, a1, +1} \\
+             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt c.not a0} \\
+\hline
+T1MSK        & 5 &  8 & {\tt addi a0, a1, -1} \\
+             &   &    & {\tt andc a0, a0, a1} \\
+\end{tabular}
+\caption{Comparison of x86 TBM with Bitmanip}
+\label{tbm-comp}
+\end{table}
+
+\section{Comparison with RI5CY Bit Manipulation ISA}
+
+The following section compares Bitmanip with the RI5CY bit manipulation
+instructions as documented in~\cite{Ri5cy}. All RI5CY bit manipulation
+instructions (or something very close to their behavior) can be emulated with
+Bitmanip using 3 instructions or less.
+
+\subsubsection{RI5CY Instructions {\tt p.extract}, {\tt p.extractu}, {\tt p.extractr}, and {\tt p.extractur}}
+
+These four RI5CY instructions extract bit-fields. The non-{\tt u}-versions sign-extend
+the extracted bit-field. This operations can be performed with two shift-immediate
+operations. It even fits in a 32-bit word when using compressed instructions (requires
+{\tt rd} $=$ {\tt rs}).
+
+\begin{verbatim}
+  p.extract rd, rs, len, pos:
+    slli rd, rs, (XLEN-pos-len)
+    srai rd, rd, (XLEN-len)
+
+  p.extractu rd, rs, len, pos:
+    slli rd, rs, (XLEN-pos-len)
+    srli rd, rd, (XLEN-len)
+\end{verbatim}
+
+The {\tt r}-versions expect the bit-field size in bits 9:5 of the second source
+register and the bit-field start in bits 4:0. Instead we use two registers,
+$\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
+
+\begin{verbatim}
+  p.extractr:
+    sll rd, rs, rx
+    sra rd, rd, ry
+
+  p.extractur:
+    sll rd, rs, rx
+    srl rd, rd, ry
+\end{verbatim}
+
+Alternatively, instead of packing length and position into a register, we
+can create a mask in a register and then use this mask with {\tt bext}. This
+has the advantage over the {\tt sll}+{\tt srl} sequence that the mask only needs
+to be generated once and can then be re-used many times, effectively implementing
+{\tt p.extractur} in a single instruction.
+
+\begin{verbatim}
+  p.extractur:
+    slo rMask, zero, rLen
+    sll rMask, rMask, rPos
+    bext rd, rs, rMask
+\end{verbatim}
+
+{\tt p.extractu} can be efficiently emulated with a single XBitfield {\tt bfxp}
+instruction (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.extract rd, rs, len, pos:
+    bfxp rd, rs, zero, pos, len, 0
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.insert} and {\tt p.insertr}}
+
+These instructions OR the destination register with the {\tt len} LSB bits
+from the source register, shifted up by {\tt pos} bits. This can easily
+be achieved using three instructions and a temporary register {\tt rt}:
+
+\begin{verbatim}
+  p.insert rd, rs, len, pos, rt:
+    slli rt, rs, (XLEN-len)
+    srli rt, rt, (XLEN-len-pos)
+    or rd, rd, rt
+\end{verbatim}
+
+The {\tt r}-version of the instruction expects {\tt len} in bits 9:5 of the
+second source register and {\tt pos} in bits 4:0. Instead we use two registers,
+$\texttt{rx} = XLEN-pos-len$ and $\texttt{ry} = XLEN-len$.
+
+\begin{verbatim}
+  p.insertr:
+    slli rt, rs, ry
+    srli rt, rt, rx
+    or rd, rd, rt
+\end{verbatim}
+
+Alternatively, instead of packing length and position into a register, we
+can create a mask in a register and then use this mask with {\tt bdep}. This
+has the advantage over the {\tt sll}+{\tt srl} sequence that the mask only needs
+to be generated once and can then be re-used many times.
+
+\begin{verbatim}
+  p.extractur:
+    slo rMask, zero, rLen
+    sll rMask, rMask, rPos
+    bdep rt, rs, rMask
+    or rd, rd, rt
+\end{verbatim}
+
+{\tt p.insert} can be efficiently emulated with a single XBitfield {\tt bfxp}
+instruction (see Chapter~\ref{bfxp}), if target region in {\tt rd} contains
+only zeros ({\tt bfxp} clears the target region before performing the OR):
+
+\begin{verbatim}
+  p.insert rd, rs, len, pos:
+    bfxp rd, rs, rd, 0, len, pos
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.bclr} and {\tt p.bclrr}}
+
+These instructions clear {\tt len} bits starting with bit {\tt pos}. Using a
+temporary register {\tt rt}:
+
+\begin{verbatim}
+  p.bclr rd, rs, len, pos, rt:
+    sloi rt, zero, len
+    slli rt, rt, pos
+    andc rd, rs, rt
+\end{verbatim}
+
+Or using two registers {\tt rLen} and {\tt rPos}:
+
+\begin{verbatim}
+  p.bclrr rd, rs, rLen, rPos, rt:
+    slo rt, zero, rLen
+    sll rt, rt, rPos
+    andc rd, rs, rt
+\end{verbatim}
+
+If the mask in {\tt rt} can be pre-computed then a single {\tt andc} instruction
+can emulate {\tt p.bclrr}, or a single {\tt and}/{\tt c.and} instruction if the
+mask is already inverted.
+
+Or using {\tt bfxp} with $\texttt{rd} = \texttt{rs}$ (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.bclr rd, len, pos:
+    bfxp rd, zero, rd, 0, len, pos
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.bset} and {\tt p.bsetr}}
+
+These instructions set {\tt len} bits starting with bit {\tt pos}. They can be
+implemented similar to {\tt p.bclr} and {\tt p.bclrr} by replacing {\tt andc}
+with {\tt or}:
+
+\begin{verbatim}
+  p.bset rd, rs, len, pos, rt:
+    sloi rt, zero, len
+    slli rt, rt, pos
+    or rd, rs, rt
+
+  p.bsetr rd, rs, rLen, rPos, rt:
+    slo rt, zero, rLen
+    sll rt, rt, rPos
+    or rd, rs, rt
+\end{verbatim}
+
+If the mask in {\tt rt} can be pre-computed then a single {\tt or}/{\tt c.or} instruction
+can emulate {\tt p.bsetr}.
+
+Or using {\tt bfxpc} with $\texttt{rd} = \texttt{rs}$ (see Chapter~\ref{bfxp}):
+
+\begin{verbatim}
+  p.bset rd, len, pos:
+    bfxpc rd, zero, rd, 0, len, pos
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.ff1}, {\tt p.cnt}, and {\tt p.ror}}
+
+These instructions map directly to the Bitmanip instructions {\tt ctz}, {\tt pcnt}, and {\tt ror}.
+
+\subsubsection{RI5CY Instructions {\tt p.fl1}}
+
+This instruction returns the index of the last set bit in {\tt rs}. If {\tt rs} is 0, {\tt rd} will be 0.
+
+Using the arguably more useful definition that the operation should return -1 when {\tt rs} is 0:
+
+\begin{verbatim}
+  p.fl1 rd, rs:
+    clz rd, rs
+    neg rd, rd
+    addi rd, rd, 31
+\end{verbatim}
+
+Converting a -1 result to 0 to match the exact {\tt p.fl1} behavior:
+
+\begin{verbatim}
+    slt rt, rd, zero
+    add rd, rd, rt
+\end{verbatim}
+
+\subsubsection{RI5CY Instructions {\tt p.clb}}
+
+This instruction counts the number of consecutive 1s or 0s from MSB. If {\tt rs} is 0, {\tt rd} will be 0.
+
+Using the arguably more useful definition that the operation should return XLEN when {\tt rs} is 0 or -1,
+and assuming {\tt rd} $\ne$ {\tt rs1}:
+
+\begin{verbatim}
+  p.clb:
+    srai rd, rs, XLEN-1
+    xor rd, rd, rs
+    clz rd, rd
+\end{verbatim}
+
+Simply add {\tt andi rd, rd, XLEN-1} if {\tt rd} should be 0 when {\tt rs} is 0 or -1.
+
+\section{Comparison with Cray XMT bit operations}
+
+Cray XMT is the 3rd generation of the Cray MTA architecture, a supercomputer
+using a barrel processor architecture. The Cray XMT instruction set contains
+a few bit manipulation instructions~\cite{CrayXMT}. In this section we compare
+the Cray XMT bit manipulation instructions with Bitmanip.
+
+\subsubsection{Bitwise boolean operations}
+
+Cray XMT provides the following instructions for bitwise boolean operations:
+{\tt BIT\_AND}, {\tt BIT\_IMP}, {\tt BIT\_NAND}, {\tt BIT\_NIMP}, {\tt
+BIT\_NOR}, {\tt BIT\_OR}, {\tt BIT\_XNOR}, and {\tt BIT\_XOR}.
+
+These can trivially emulated using basic RISC-V instructions. (Some of those
+XMT instructions have a direct RISC-V equivalent. The others can be emulated
+by combining the {\tt not} pseudoinstruction with {\tt and}, {\tt or}, or {\tt xor}.)
+
+\subsubsection{Count Leading/Trailing Zeros/Ones}
+
+The Cray XMT instructions {\tt BIT\_LEFT\_ZEORS} and {\tt BIT\_RIGHT\_ZEORS} are
+equivalent to the Bitmanip {\tt clz} and {\tt ctz} instructions.
+
+The {\tt BIT\_LEFT\_ONES} and {\tt BIT\_RIGHT\_ONES} instructions can be emulated
+by combining the {\tt not} pseudoinstruction with {\tt clz} and {\tt ctz}.
+
+\subsubsection{Mask generation}
+
+The Cray XMT instruction {\tt BIT\_MASK dest top bot} generates a bitmask
+that has the bits in the range $[\texttt{bot} \dots \texttt{top}]$ set
+and the rest cleared iff $\texttt{bot} \le \texttt{top}$, and those
+bits cleared and the rest set otherwise.
+
+Similar masks can be generated using two instructions in Bitmanip,
+using the regular shift instructions and the ``shift ones'' instructions.
+
+\subsubsection{Cmix equivalent}
+
+The Cray XMT {\tt BIT\_MERGE} instruction is equivalent to the XTernarybits
+{\tt cmix} instruction, or the {\tt and-andc-or} MIX pattern.
+
+\subsubsection{Population count}
+
+The Cray XMT {\tt BIT\_TALLY} instruction and the Bitmanip {\tt pcnt}
+instruction are equivalent.
+
+\subsubsection{Parity instructions}
+
+The Cray XMT {\tt BIT\_ODD\_AND}, {\tt BIT\_ODD\_NIMP}, {\tt BIT\_ODD\_OR},
+and {\tt BIT\_ODD\_XOR} instruction perform the indicated bitwise boolean
+operation and then compute the parity of the result.
+
+With Bitmanip the parity can be calculated with {\tt pcnt dst, src} followed
+by {\tt andi dst, dst, 1}.
+
+\subsubsection{Bit pack/unpack instruction}
+
+The Cray XMT {\tt BIT\_PACK} instruction and the Bitmanip {\tt bext}
+instruction are equivalent.
+
+The Cray XMT {\tt BIT\_UNPACK\_1}, {\tt BIT\_UNPACK\_2}, {\tt BIT\_UNPACK\_3},
+instruction sequence, when used as intended, is equivalent to the Bitmanip
+{\tt bdep} instruction.
+
+\subsubsection{Bit matrix instructions}
+
+The Cray XMT {\tt BIT\_MAT\_} instructions treat a 64-bit value as a 8x8 bit
+matrix.
+
+{\tt BIT\_MAT\_TRANSPOSE} is used to transpose such a bit matrix. With
+Bitmanip instructions on RV64 this bit permutation can be performed by
+applying the {\tt zip} operation three times to the register holding the
+matrix (see also~\ref{transposebitboard}).
+
+The Cray XMT instructions {\tt BIT\_MAT\_OR} and {\tt BIT\_MAT\_XOR} perform a
+matrix-matrix multiply between such bit matrices, where AND replaces scalar
+multiply and OR/XOR replaces scalar addition.
+
+Bitmanip does not provide a similar operation. However, the two example
+applications given in the Cray XMT documentation~\cite[p.~81]{CrayXMT}
+are reversing the byte order in a word and reversing the bit order in
+each byte. In Bitmanip those operations are performed by the {\tt bswap}
+and the {\tt brev.b} {\tt grevi}-pseudoinstructions.
+
