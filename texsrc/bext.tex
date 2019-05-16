@@ -216,17 +216,25 @@ example, interleaving the bytes in the lower halves of {\tt rs1} and {\tt rs2}:
 \end{verbatim}
 \end{minipage}
 
-{\tt pack} is most commonly used to zero-extend 32-bit and 64-bit words on
-RV32/RV64. For this purpose we define the following assembler pseudo-ops:
+{\tt pack} is most commonly used to zero-extend words $<$XLEN.
+For this purpose we define the following assembler pseudo-ops:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  RV64:
-    zextw rd, rs   ->    pack rd, rs, zero
+  RV32:
+    zext.b rd, rs   ->    andi  rd, rs, 255
+    zext.h rd, rs   ->    pack  rd, rs, zero
 
-  RV128:
-    zextw rd, rs   ->    packd rd, rs, zero
-    zextd rd, rs   ->    pack  rd, rs, zero
+  RV64:
+    zext.b rd, rs   ->    andi  rd, rs, 255
+    zext.h rd, rs   ->    packw rd, rs, zero
+    zext.w rd, rs   ->    pack  rd, rs, zero
+
+  RV128:.
+    zext.b rd, rs   ->    andi  rd, rs, 255
+    zext.h rd, rs   ->    packw rd, rs, zero
+    zext.w rd, rs   ->    packd rd, rs, zero
+    zext.d rd, rs   ->    pack  rd, rs, zero
 \end{verbatim}
 \end{minipage}
 
