@@ -675,6 +675,23 @@ uint_xlen_t fsr(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
 }
 // --REF-END--
 
+// --REF-BEGIN-- addiwu
+uint64_t addiwu(uint64_t rs1, uint64_t imm)
+{
+	uint64_t x = rs1 + imm;
+	return (x << 32) >> 32;
+}
+// --REF-END--
+
+// --REF-BEGIN-- slliuw
+uint64_t slliuw(uint64_t rs1, int imm)
+{
+	uint64_t x = (rs1 << 32) >> 32;
+	int shamt = imm & (XLEN - 1);
+	return x << shamt;
+}
+// --REF-END--
+
 uint_xlen_t sll(uint_xlen_t x, int k)
 {
 	int shamt = k & (XLEN - 1);

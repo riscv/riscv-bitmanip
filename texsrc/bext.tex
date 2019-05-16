@@ -1127,6 +1127,65 @@ On RV128 there is no {\tt fsri} instruction. But there is {\tt fsriw} and {\tt f
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Unsigned address calculation instructions ({\tt addiwu, slliuw})}
+
+\begin{rvb}
+  RV64:
+    addiwu rd, rs1, imm
+    slliuw rd, rs1, imm
+\end{rvb}
+
+{\tt addiwu} is identlical to {\tt addiw}, except that bits XLEN-1:32 of the
+result are cleared after the addition. I.e. this instruction zero-extends instead
+of sign-extends the 32-bit result.
+
+\input{bextcref-addiwu}
+
+{\tt slliuw} is identlical to {\tt slliw}, except that bits XLEN-1:32 of the
+argument are cleared before the shift.
+
+\input{bextcref-slliuw}
+
+These two RV64-only instructions help in cases such as the following:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  char addiwu_demo(char *p, unsigned int i) {
+    return p[i-1];
+  }
+
+  int slliuw_demo(int *p, unsigned int i, unsigned int j) {
+    return p[i^j];
+  }
+\end{verbatim}
+\end{minipage}
+
+In both cases the expression within {\tt p[\dots]} must overflow according to
+32-bit arithmetic, then be zero-extended, and then this zero-extended result
+must be used in the address calculation.
+
+Using {\tt addiwu} and {\tt slliuw} the above C code translates to the
+following RV64 assembler code:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  addiwu_demo:
+    addiwu a1, a1, -1
+    add a0, a0, a1
+    lbu a0, 0(a1)
+    ret
+
+  slliuw_demo:
+    xor a1 ,a1, a2
+    ssliuw a1,a1,2
+    add a0, a0, a1
+    lbu a0, 0(a0)
+    ret
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Compressed NOT instructions (\texttt{c.not})}
 
 The RISC-V ISA has no dedicated instructions for bitwise inverse (\texttt{not})
