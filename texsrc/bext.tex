@@ -1127,26 +1127,9 @@ On RV128 there is no {\tt fsri} instruction. But there is {\tt fsriw} and {\tt f
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Unsigned address calculation instructions ({\tt addiwu, slliuw})}
+\section{Unsigned address calculation instructions}
 
-\begin{rvb}
-  RV64:
-    addiwu rd, rs1, imm
-    slliuw rd, rs1, imm
-\end{rvb}
-
-{\tt addiwu} is identlical to {\tt addiw}, except that bits XLEN-1:32 of the
-result are cleared after the addition. I.e. this instruction zero-extends instead
-of sign-extends the 32-bit result.
-
-\input{bextcref-addiwu}
-
-{\tt slliuw} is identlical to {\tt slliw}, except that bits XLEN-1:32 of the
-argument are cleared before the shift.
-
-\input{bextcref-slliuw}
-
-These two RV64-only instructions help in cases such as the following:
+Consider C code that's using unsigned 32-bit ints as array indices. For example:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1164,25 +1147,42 @@ In both cases the expression within {\tt p[\dots]} must overflow according to
 32-bit arithmetic, then be zero-extended, and then this zero-extended result
 must be used in the address calculation.
 
-Using {\tt addiwu} and {\tt slliuw} the above C code translates to the
-following RV64 assembler code:
+The instructions below make sure that no explicit {\tt zext.w} instruction
+is needed in those cases, to make sure there is no systematic performance
+penalty for code like shown above on RV64 compared to RV32.
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  addiwu_demo:
-    addiwu a1, a1, -1
-    add a0, a0, a1
-    lbu a0, 0(a1)
-    ret
+\subsection{Add/sub with postfix zero-extend ({\tt addwu}, {\tt subwu}, {\tt addiwu})}
 
-  slliuw_demo:
-    xor a1 ,a1, a2
-    ssliuw a1,a1,2
-    add a0, a0, a1
-    lbu a0, 0(a0)
-    ret
-\end{verbatim}
-\end{minipage}
+\begin{rvb}
+  RV64:
+    addwu rd, rs1, rs2
+    subwu rd, rs1, rs2
+    addiwu rd, rs1, imm
+\end{rvb}
+
+These instructions are identlical to {\tt addw}, {\tt subw}, {\tt addiw},
+except that bits XLEN-1:32 of the result are cleared after the addition. I.e.
+these instructions zero-extends instead of sign-extends the 32-bit result.
+
+\input{bextcref-addwu}
+
+\subsection{Add/sub/shift with prefix zero-extend ({\tt adduw}, {\tt subuw}, {\tt ssliuw})}
+
+\begin{rvb}
+  RV64:
+    adduw rd, rs1, rs2
+    subuw rd, rs1, rs2
+    slliuw rd, rs1, imm
+\end{rvb}
+
+{\tt slliuw} is identlical to {\tt slli}, except that bits XLEN-1:32 of the
+{\tt rs1} argument are cleared before the shift.
+
+{\tt adduw} and {\tt subuw} are identlical to {\tt add} and {\tt sub}, except
+that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the shift.
+
+\input{bextcref-slliuw}
+\input{bextcref-adduw}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

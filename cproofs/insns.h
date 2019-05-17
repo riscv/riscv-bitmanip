@@ -675,20 +675,40 @@ uint_xlen_t fsr(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
 }
 // --REF-END--
 
-// --REF-BEGIN-- addiwu
-uint64_t addiwu(uint64_t rs1, uint64_t imm)
+// --REF-BEGIN-- addwu
+uint_xlen_t addwu(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	uint64_t x = rs1 + imm;
-	return (x << 32) >> 32;
+	uint_xlen_t result = rs1 + rs2;
+	return (uint32_t)result;
+}
+
+uint_xlen_t subwu(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t result = rs1 - rs2;
+	return (uint32_t)result;
+}
+// --REF-END--
+
+// --REF-BEGIN-- adduw
+uint_xlen_t adduw(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t rs2u = (uint32_t)rs2;
+	return rs1 + rs2u;
+}
+
+uint_xlen_t subuw(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t rs2u = (uint32_t)rs2;
+	return rs1 - rs2u;
 }
 // --REF-END--
 
 // --REF-BEGIN-- slliuw
-uint64_t slliuw(uint64_t rs1, int imm)
+uint_xlen_t slliuw(uint_xlen_t rs1, int imm)
 {
-	uint64_t x = (rs1 << 32) >> 32;
+	uint_xlen_t rs1u = (uint32_t)rs1;
 	int shamt = imm & (XLEN - 1);
-	return x << shamt;
+	return rs1u << shamt;
 }
 // --REF-END--
 
