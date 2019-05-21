@@ -304,17 +304,9 @@ void do_bdep(int test) {
     PROLOG_RRR(bdep, test);
     EPILOG(bdep, test);
 }
-void do_neg(int test) {
-    PROLOG_CR(neg, test);
-    EPILOG(neg, test);
-}
 void do_not(int test) {
     PROLOG_CR2(fnot, not, test);
     EPILOG(not, test);
-}
-void do_cbrev(int test) {
-    PROLOG_CR(brev, test);
-    EPILOG(brev, test);
 }
 void do_crc32_b(int test) {
     PROLOG_RR(crc32_b, test);
@@ -475,9 +467,7 @@ int main(int argc, char **argv) {
         do_bmator(++test);
         do_bmatflip(++test);
 #endif
-        do_neg(++test);
         do_not(++test);
-        do_cbrev(++test);
     }
 
     printf("test_complete:\n");

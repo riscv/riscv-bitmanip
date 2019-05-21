@@ -175,7 +175,7 @@ typedef struct riscvS {
     Bool               artifactAccess;  // whether current access is an artifact
     Bool               externalActive;  // whether external CSR access active
     Bool               inSaveRestore;   // is save/restore active?
-    Bool               fpInvalidRM;     // is current rounding mode invalid?
+    Uns8               pmKey;           // polymorphic key
     Uns32              flags;           // model control flags
     Uns32              flagsRestore;    // saved flags during restore
     riscvConfig        configInfo;      // model configuration
@@ -246,14 +246,13 @@ typedef struct riscvS {
     riscvModelCB       cb;
 
     // Vector extension
-    Uns8               vTypeKey;                    // vector polymorphic configuration
     Uns8               vFieldMask;                  // vector field mask
     Uns8               vActiveMask;                 // vector active element mask
     Bool               vFirstFault;                 // vector first fault active?
     Uns32              vlMax;                       // maximum vl element number
+    Uns64              vState;                      // vector mask operation state
     riscvVRegBank      v;                           // vector registers (configurable size)
     UnsPS              vBase[NUM_BASE_REGS];        // indexed base registers
-    UnsPS              offsetBase;                  // offset table base register
     riscvStrideOffset  offsetsLMULx2[VBYTES_MAX*2]; // LMULx2 stride offsets
     riscvStrideOffset  offsetsLMULx4[VBYTES_MAX*4]; // LMULx4 stride offsets
     riscvStrideOffset  offsetsLMULx8[VBYTES_MAX*8]; // LMULx8 stride offsets

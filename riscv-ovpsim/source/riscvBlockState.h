@@ -60,6 +60,12 @@ typedef enum riscvVLClassE {
 } riscvVLClassMt;
 
 //
+// This defines a bit in the polymorphic key indicating whether the current
+// rounding mode is valid
+//
+#define RM_VALID_MASK   (1<<6)
+
+//
 // This structure holds state for a code block as it is morphed
 //
 typedef struct riscvBlockStateS {
@@ -67,7 +73,6 @@ typedef struct riscvBlockStateS {
     riscvBlockStateP prevState;     // previous block state
     Uns32            fpNaNBoxMask;  // mask of known single-precision FP registers
     Bool             fpInstDone;    // floating-point instruction already seen?
-    Bool             fpRMChecked;   // floating-point rounding mode checked?
     riscvSEWMt       SEWMt;         // known active vector SEW
     riscvVLMULMt     VLMULMt;       // known active vector VLMUL
     riscvVLClassMt   VLClassMt;     // known active vector VL zero/non-zero/max

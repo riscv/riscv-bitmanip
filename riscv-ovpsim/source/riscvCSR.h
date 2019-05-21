@@ -313,9 +313,9 @@ void riscvCSRRestore(
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// Refresh the polymorphic vector block key
+// Refresh the polymorphic block key
 //
-void riscvRefreshVectorKey(riscvP riscv);
+void riscvRefreshPMKey(riscvP riscv);
 
 //
 // Update vtype CSR
