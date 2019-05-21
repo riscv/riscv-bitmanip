@@ -140,6 +140,41 @@ static RISCV_CSR_WRITEFN(misaW) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
+// Return rounding control for rounding mode in FPSR
+//
+inline static vmiFPRC mapFRMToRC(Uns8 frm) {
+
+    static const vmiFPRC map[] = {
+        [0] = vmi_FPR_NEAREST,
+        [1] = vmi_FPR_ZERO,
+        [2] = vmi_FPR_NEG_INF,
+        [3] = vmi_FPR_POS_INF,
+        [4] = vmi_FPR_AWAY,
+        [5] = -1,
+        [6] = -1,
+        [7] = -1
+    };
+
+    return map[frm];
+}
+
+//
+// Update polymorphic key to indicate whether current rounding mode is valid
+//
+static vmiFPRC updateCurrentRMValid(riscvP riscv) {
+
+    vmiFPRC rc = mapFRMToRC(RD_CSR_FIELD(riscv, fcsr, frm));
+
+    if(rc==-1) {
+        riscv->pmKey &= ~RM_VALID_MASK;
+    } else {
+        riscv->pmKey |= RM_VALID_MASK;
+    }
+
+    return rc;
+}
+
+//
 // Read fflags
 //
 static RISCV_CSR_READFN(fflagsR) {
@@ -193,12 +228,22 @@ static RISCV_CSR_READFN(frmR) {
 // Force reload of floating point control word if active mode is dynamic and RM
 // has changed
 //
-inline static void refreshFPCR(riscvP riscv, Uns8 oldRM) {
+static void refreshFPCR(riscvP riscv, Uns8 oldRM) {
 
     Uns8 newRM = RD_CSR_FIELD(riscv, fcsr, frm);
 
     if(oldRM!=newRM) {
-        riscvSetRM(riscv, newRM);
+
+        vmiFPRC rc = updateCurrentRMValid(riscv);
+
+        if(rc!=-1) {
+
+            vmiFPControlWord cw = {
+                .IM = 1, .DM = 1, .ZM = 1, .OM = 1, .UM = 1, .PM = 1, .RC = rc
+            };
+
+            vmirtSetFPControlWord((vmiProcessorP)riscv, cw);
+        }
     }
 }
 
@@ -1270,7 +1315,7 @@ static RISCV_CSR_WRITEFN(vtypeW) {
         WR_CSR(riscv, vtype, newValue);
 
         // set matching polymorphic key
-        riscvRefreshVectorKey(riscv);
+        riscvRefreshPMKey(riscv);
 
     } else {
 
@@ -1282,34 +1327,38 @@ static RISCV_CSR_WRITEFN(vtypeW) {
 }
 
 //
-// Refresh the polymorphic vector block key
+// Refresh the polymorphic block key
 //
-void riscvRefreshVectorKey(riscvP riscv) {
+void riscvRefreshPMKey(riscvP riscv) {
 
     Uns32 vl    = RD_CSR(riscv, vl);
     Uns32 SEW   = 8<<RD_CSR_FIELD(riscv, vtype, vsew);
     Uns32 VLMUL = 1<<RD_CSR_FIELD(riscv, vtype, vlmul);
     Uns32 vlMax = riscv->configInfo.VLEN*VLMUL/SEW;
-    Uns32 vTypeKey;
+    Uns32 pmKey;
 
     // set current maximum vl for SEW/VLMUL combination
     riscv->vlMax = (vl>vlMax) ? vlMax : vl;
 
     // key always includes VLClass
     if(!vl) {
-        vTypeKey = VLCLASSMT_ZERO;
+        pmKey = VLCLASSMT_ZERO;
     } else if(riscv->vlMax==vlMax) {
-        vTypeKey = VLCLASSMT_MAX;
+        pmKey = VLCLASSMT_MAX;
     } else {
-        vTypeKey = VLCLASSMT_NONZERO;
+        pmKey = VLCLASSMT_NONZERO;
     }
 
     // key includes vsew and vlmul only if class is not VLCLASSMT_ZERO
-    if(vTypeKey!=VLCLASSMT_ZERO) {
-        vTypeKey |= (RD_CSR(riscv, vtype)<<2);
+    if(pmKey!=VLCLASSMT_ZERO) {
+        pmKey |= (RD_CSR(riscv, vtype)<<2);
     }
 
-    riscv->vTypeKey = vTypeKey;
+    // set initial polymorphic key
+    riscv->pmKey = pmKey;
+
+    // include rounding-mode-valid indication
+    updateCurrentRMValid(riscv);
 }
 
 //
@@ -2516,7 +2565,7 @@ void riscvCSRInit(riscvP riscv, Uns32 index) {
     SET_CSR_MASK_V(riscv, vstart, vstartMask);
 
     // set initial polymorphic key
-    riscvRefreshVectorKey(riscv);
+    riscvRefreshPMKey(riscv);
 }
 
 //

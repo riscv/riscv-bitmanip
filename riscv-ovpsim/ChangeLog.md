@@ -4,6 +4,11 @@
 # This CHANGELOG contains information specific to the RISCV processor model   #
 ###############################################################################
 
+- Newlib semihost library for RiscV processors now support the naming convention 
+  for defining the start of the heap that is used by the linker scripts in
+  the BSPs provided in the SiFive freedom-e-sdk.
+- Semihosting of the _sbrk() function will now report an error if it is called 
+  and cannot find the expected symbol that defines the start of the heap area.
 - The Model Specific Information document for each variant now includes 
   information on the extensions that are supported by the model but not enabled 
   on the specific variant being documented. 

@@ -108,11 +108,6 @@ void riscvWriteReg(riscvP riscv, riscvRegDesc r);
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// Update current rounding mode
-//
-void riscvSetRM(riscvP riscv, Uns8 newRM);
-
-//
 // Configure FPU
 //
 void riscvConfigureFPU(riscvP riscv);

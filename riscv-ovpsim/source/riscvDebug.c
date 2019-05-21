@@ -530,11 +530,9 @@ VMI_REG_IMPL_FN(riscvRegImpl) {
     RISCV_FIELD_IMPL_RAW(fflags, fpFlags);
 
     // exclude artifact registers
-    RISCV_FIELD_IMPL_IGNORE(fpInvalidRM);
-    RISCV_FIELD_IMPL_IGNORE(vTypeKey);
+    RISCV_FIELD_IMPL_IGNORE(pmKey);
     RISCV_FIELD_IMPL_IGNORE(vFirstFault);
     RISCV_FIELD_IMPL_IGNORE(vBase);
-    RISCV_FIELD_IMPL_IGNORE(offsetBase);
     RISCV_FIELD_IMPL_IGNORE(offsetsLMULx2);
     RISCV_FIELD_IMPL_IGNORE(offsetsLMULx4);
     RISCV_FIELD_IMPL_IGNORE(offsetsLMULx8);
