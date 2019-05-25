@@ -39,12 +39,9 @@ two shift operations (or equivalently using the {\tt bfext} pseudo instruction, 
 Section~\ref{bfext}).
 
 \begin{verbatim}
-  c.slli a0, (XLEN-pos-len)
-  c.srli a0, (XLEN-len)
+  slli a0, a0, (XLEN-len-pos)
+  srli a0, a0, (XLEN-len)
 \end{verbatim}
-
-The XBitfield {\tt bfxp} instruction (see Chapter~\ref{bfxp}) performs this operation
-plus one more left shift and an OR operation in a single instruction.
 
 \section{MIX/MUX pattern}
 \label{mixmux}
@@ -53,9 +50,9 @@ A MIX pattern selects bits from {\tt a0} and {\tt a1} based on the bits in
 the control word {\tt a2}.
 
 \begin{verbatim}
-  c.and a0, a2
+  and a0, a0, a2
   andc a1, a1, a2
-  c.or a0, a1
+  or a0, a0, a1
 \end{verbatim}
 
 A MUX operation selects word {\tt a0} or {\tt a1} based on if the control
@@ -63,44 +60,49 @@ word {\tt a2} is zero or nonzero, without branching.
 
 \begin{verbatim}
   snez a2, a2
-  c.neg a2
-  c.and a0, a2
+  neg a2, a2
+  and a0, a0, a2
   andc a1, a1, a2
-  c.or a0, a1
 \end{verbatim}
 
 Or when {\tt a2} is already either 0 or 1:
 
 \begin{verbatim}
-  c.neg a2
-  c.and a0, a2
+  neg a2, a2
+  and a0, a2
   andc a1, a1, a2
-  c.or a0, a1
+  or a0, a0, a1
 \end{verbatim}
 
 Alternatively, a core might fuse a conditional branch that just skips one
 instruction with that instruction to form a fused conditional macro-op.
+
+A core with support for ternary instructions provides dedicated instructions
+for those operations: {\tt cmix} and {\tt cmov}. All examples below use those
+dedicated instructions. For cores without support for ternary operations, those
+instances of {\tt cmix} and {\tt cmov} must be replaced by the above code
+patterns.
 
 \section{Bit scanning and counting}
 
 Counting leading ones:
 
 \begin{verbatim}
-  c.not a0
+  not a0, a0
   clz a0, a0
 \end{verbatim}
 
 Counting trailing ones:
 
 \begin{verbatim}
-  c.not a0
+  not a0, a0
   ctz a0, a0
 \end{verbatim}
 
 Counting bits cleared:
 
 \begin{verbatim}
-  c.not a0
+  not a0, a0
   pcnt a0, a0
 \end{verbatim}
 
@@ -110,15 +112,15 @@ Odd parity:
 
 \begin{verbatim}
   pcnt a0, a0
-  c.andi a0, 1
+  andi a0, a0, 1
 \end{verbatim}
 
 Even parity:
 
 \begin{verbatim}
   pcnt a0, a0
-  c.addi a0, 1
-  c.andi a0, 1
+  addi a0, a0, 1
+  andi a0, a0, 1
 \end{verbatim}
 
 (Using {\tt addi} here is better than using {\tt xori}, because there is
@@ -129,21 +131,21 @@ a compressed opcode for {\tt addi} but none for {\tt xori}.)
 Extracting bit N:
 
 \begin{verbatim}
-  c.srli a0, N
-  c.andi a0, 1
+  srli a0, a0, N
+  andi a0, a0, 1
 \end{verbatim}
 
 Branching on bit N set:
 
 \begin{verbatim}
-  c.slli a0, (XLEN-N-1)
+  slli a0, a0, (XLEN-N-1)
   bltz a0, <bit_n_set>
 \end{verbatim}
 
 Branching on bit N clear:
 
 \begin{verbatim}
-  c.slli a0, (XLEN-N-1)
+  slli a0, a0, (XLEN-N-1)
   bgez a0, <bit_n_clear>
 \end{verbatim}
 
@@ -151,14 +153,14 @@ Setting bit N (note that this {\tt li} is only one instruction on RV32, except w
 
 \begin{verbatim}
   li a1, (1 << N)
-  c.or a0, a1
+  or a0, a0, a1
 \end{verbatim}
 
 Setting bit N without spilling:
 
 \begin{verbatim}
   rori a0, a0, N
-  ori a0, 1
+  ori a0, a0, 1
   rori a0, a0, 32-N
 \end{verbatim}
 
@@ -168,14 +170,14 @@ Clearing bit N (note that this {\tt li} is only one instruction on RV32, except 
 
 \begin{verbatim}
   li a1, (1 << N)
-  andc a0, a1
+  andc a0, a0, a1
 \end{verbatim}
 
 Clearing bit N without spilling:
 
 \begin{verbatim}
   rori a0, a0, N
-  c.andi a0, -2
+  andi a0, a0, -2
   rori a0, a0, XLEN-N
 \end{verbatim}
 
@@ -185,9 +187,9 @@ Setting bit N to the value in {\tt a1} (assuming a1 already is either 0 or 1):
 
 \begin{verbatim}
   rori a0, a0, N
-  c.andi a0, -2
-  c.or a0, a1
-  rori a0, a0, 32-N
+  andi a0, a0, -2
+  or a0, a0, a1
+  rori a0, a0, XLEN-N
 \end{verbatim}
 
 \section{Funnel shifts}
@@ -306,6 +308,25 @@ Without ternary operators that would be 13 instructions and 22 instructions,
 i.e. assuming one cycle per instruction, that function would be about 30\%
 slower without ternary instructions.
 
+\subsection{Fixed-point multiply}
+
+A fixed-point multiply is simply an integer multiply, followed by a right
+shift. If the entire dynamic range of XLEN bits should be useable for the
+factors, then the product before shift must be 2*XLEN wide. Therefore {\tt
+mul}+{\tt mulh} is needed for the multiplication, and funnel shift instructions
+can help with the final right shift. For fixed-point numbers with N fraction
+bits:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  mul_fracN:
+    mulh a2, a0, a1
+    mul a0, a0, a1
+    fsri a0, N, a0, a2
+    ret
+\end{verbatim}
+\end{minipage}
+
 \section{Arbitrary bit permutations}
 
 This section lists code snippets for computing arbitrary bit permutations that
@@ -321,9 +342,7 @@ The following macro performs a stage-{\tt N} butterfly operation on the word in
 
 \begin{verbatim}
   grevi a2, a0, (1 << N)
-  c.and a2, a1
-  andc a0, a0, a1
-  c.or a0, a2
+  cmix a0, a1, a2, a0
 \end{verbatim}
 
 The bitmask in {\tt a1} must be preformatted correctly for the selected butterfly
@@ -335,17 +354,17 @@ on entry (preformatted mask in {\tt a1} on exit):
 bfly_msk_0:
   zip a1, a1
   slli a2, a1, 1
-  c.or a1, a2
+  or a1, a1, a2
 
 bfly_msk_1:
   zip2 a1, a1
   slli a2, a1, 2
-  c.or a1, a2
+  or a1, a1, a2
 
 bfly_msk_2:
   zip4 a1, a1
   slli a2, a1, 4
-  c.or a1, a2
+  or a1, a1, a2
 
 ...
 \end{verbatim}
@@ -384,18 +403,14 @@ The omega operation is a stage-0 butterfly preceded by a zip operation:
 \begin{verbatim}
   zip a0, a0
   grevi a2, a0, 1
-  c.and a2, a1
-  andc a0, a0, a1
-  c.or a0, a2
+  cmix a0, a1, a2, a0
 \end{verbatim}
 
 The flip operation is a stage-0 butterfly followed by an unzip operation:
 
 \begin{verbatim}
   grevi a2, a0, 1
-  c.and a2, a1
-  andc a0, a0, a1
-  c.or a0, a2
+  cmix a0, a1, a2, a0
   unzip a0, a0
 \end{verbatim}
 
@@ -465,11 +480,11 @@ mask in {\tt a1}):
 
 \begin{verbatim}
   bext a2, a0, a1
-  c.not a1
+  not a1, a1
   bext a0, a0, a1
   pcnt a1, a1
   ror a0, a0, a1
-  c.or a0, a2
+  or a0, a0, a2
 \end{verbatim}
 
 Any arbitrary bit permutation can be implemented in $log_2(\textrm{XLEN})$ SAG
