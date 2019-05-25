@@ -23,6 +23,7 @@ using namespace rv64b;
 void identity_check(uint64_t src)
 {
 	uint64_t p = 0x8040201008040201LL;
+	uint64_t q = bmatflip(p);
 	uint64_t a = bmatxor(src, p);
 	uint64_t b = bmatxor(p, src);
 	uint64_t c = bmator(src, p);
@@ -32,6 +33,7 @@ void identity_check(uint64_t src)
 	assert(b == src);
 	assert(c == src);
 	assert(d == src);
+	assert(p == q);
 }
 
 void bswap_check(uint64_t src)
@@ -54,6 +56,42 @@ void brevb_check(uint64_t src)
 
 	assert(a == c);
 	assert(b == c);
+}
+
+// ---------------------------------------------------------
+
+uint64_t rfill_ref(uint64_t x)
+{
+	x |= x >> 1;   // SLLI, OR
+	x |= x >> 2;   // SLLI, OR
+	x |= x >> 4;   // SLLI, OR
+	x |= x >> 8;   // SLLI, OR
+	x |= x >> 16;  // SLLI, OR
+	x |= x >> 32;  // SLLI, OR
+	return x;
+}
+
+uint64_t rfill_bmat(uint64_t x)
+{
+	uint64_t m0, m1, m2, t;
+
+	m0 = 0xFF7F3F1F0F070301LL;  // LD
+	m1 = bmatflip(m0 << 8);     // SLLI, BMATFLIP
+	m2 = -1LL;                  // LI
+
+	t = bmator(x, m0);          // BMATOR
+	x = bmator(x, m2);          // BMATOR
+	x = bmator(m1, x);          // BMATOR
+	x |= t;                     // OR
+
+	return x;
+}
+
+void rfill_check(uint64_t x)
+{
+	uint64_t p = rfill_ref(x);
+	uint64_t q = rfill_bmat(x);
+	assert(p == q);
 }
 
 // ---------------------------------------------------------
