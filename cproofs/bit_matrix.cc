@@ -62,12 +62,21 @@ void brevb_check(uint64_t src)
 
 uint64_t rfill_ref(uint64_t x)
 {
-	x |= x >> 1;   // SLLI, OR
-	x |= x >> 2;   // SLLI, OR
-	x |= x >> 4;   // SLLI, OR
-	x |= x >> 8;   // SLLI, OR
-	x |= x >> 16;  // SLLI, OR
-	x |= x >> 32;  // SLLI, OR
+	x |= x >> 1;   // SRLI, OR
+	x |= x >> 2;   // SRLI, OR
+	x |= x >> 4;   // SRLI, OR
+	x |= x >> 8;   // SRLI, OR
+	x |= x >> 16;  // SRLI, OR
+	x |= x >> 32;  // SRLI, OR
+	return x;
+}
+
+uint64_t rfill_clz(uint64_t x)
+{
+	uint64_t t;
+	t = clz(x);         // CLZ
+	x = (!x)-1;         // SLTIU, ADDI
+	x = x >> (t & 63);  // SRL
 	return x;
 }
 
@@ -107,12 +116,14 @@ uint64_t rfill_bmat(uint64_t x)
 void rfill_check(uint64_t x)
 {
 	uint64_t a = rfill_ref(x);
-	uint64_t b = rfill_brev(x);
-	uint64_t c = rfill_brev_orc(x);
-	uint64_t d = rfill_bmat(x);
+	uint64_t b = rfill_clz(x);
+	uint64_t c = rfill_brev(x);
+	uint64_t d = rfill_brev_orc(x);
+	uint64_t e = rfill_bmat(x);
 	assert(a == b);
 	assert(a == c);
 	assert(a == d);
+	assert(a == e);
 }
 
 // ---------------------------------------------------------
