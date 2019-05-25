@@ -71,13 +71,30 @@ uint64_t rfill_ref(uint64_t x)
 	return x;
 }
 
+uint64_t rfill_brev(uint64_t x)
+{
+	x = brev(x);        // GREVI
+	x = (x - 1) & ~x;   // ADDI, ANDC
+	x = ~x;             // NOT
+	x = brev(x);        // GREVI
+	return x;
+}
+
+uint64_t rfill_brev_orc(uint64_t x)
+{
+	x = brev(x);        // GREVI
+	x = x | ~(x - 1);   // ADDI, ORC
+	x = brev(x);        // GREVI
+	return x;
+}
+
 uint64_t rfill_bmat(uint64_t x)
 {
 	uint64_t m0, m1, m2, t;
 
 	m0 = 0xFF7F3F1F0F070301LL;  // LD
 	m1 = bmatflip(m0 << 8);     // SLLI, BMATFLIP
-	m2 = -1LL;                  // LI
+	m2 = -1LL;                  // ADDI
 
 	t = bmator(x, m0);          // BMATOR
 	x = bmator(x, m2);          // BMATOR
@@ -89,9 +106,13 @@ uint64_t rfill_bmat(uint64_t x)
 
 void rfill_check(uint64_t x)
 {
-	uint64_t p = rfill_ref(x);
-	uint64_t q = rfill_bmat(x);
-	assert(p == q);
+	uint64_t a = rfill_ref(x);
+	uint64_t b = rfill_brev(x);
+	uint64_t c = rfill_brev_orc(x);
+	uint64_t d = rfill_bmat(x);
+	assert(a == b);
+	assert(a == c);
+	assert(a == d);
 }
 
 // ---------------------------------------------------------
