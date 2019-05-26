@@ -774,6 +774,11 @@ An optimizing compiler could easily generate the clmul instructions and the magi
 constants from the C code for the na\"ive implementation. ({\tt 0x04002001 = (1 << 2*13) | (1 << 13) | 1}
 and {\tt 0x42108421 = (1 << 6*5) | (1 << 5*5) | \dots | (1 << 5) | 1})
 
+The obvious remaining question is ``if {\tt clmul(x, 0x42108421)} is the inverse of {\tt x \^ (x << 5)}, what's
+the inverse of {\tt x \^ (x >> 5)}?'' It's {\tt clmulhx(x, 0x08421084)}, where {\tt 0x08421084 == 0x42108421 << (clz(0x42108421)+1)} (mod $2^{32}$).
+
+A special case of xorshift is {\tt x \^ (x >> 1)}, which is a gray encoder. The corresponding gray decoder is {\tt clmulhx(x, 0xffffffff)}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Fill right of most significant set bit}

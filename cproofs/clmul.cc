@@ -16,12 +16,80 @@
  */
 
 #include "common.h"
-using namespace rv64b;
+
+// ---------------------------------------------------------
+
+uint32_t xorshift32_fwd(uint32_t x)
+{
+        x ^= x << 13;
+        x ^= x >> 17;
+        x ^= x << 5;
+        return x;
+}
+
+uint32_t xorshift32_inv(uint32_t x)
+{
+	x = rv32b::clmul(x, 0x42108421);
+	x = x ^ (x >> 17);
+	x = rv32b::clmul(x, 0x04002001);
+        return x;
+}
+
+void check_xorshift32_inv(uint32_t x)
+{
+	uint32_t y = xorshift32_fwd(x);
+	uint32_t z = xorshift32_inv(y);
+	assert(x == z);
+}
+
+// ---------------------------------------------------------
+
+uint32_t xorshift5_fwd(uint32_t x)
+{
+        x ^= x >> 5;
+        return x;
+}
+
+uint32_t xorshift5_inv(uint32_t x)
+{
+	x = rv32b::clmulhx(x, 0x08421084);
+        return x;
+}
+
+void check_xorshift5_inv(uint32_t x)
+{
+	uint32_t y = xorshift5_fwd(x);
+	uint32_t z = xorshift5_inv(y);
+	assert(x == z);
+}
+
+// ---------------------------------------------------------
+
+uint32_t gray_fwd(uint32_t x)
+{
+        x ^= x >> 1;
+        return x;
+}
+
+uint32_t gray_inv(uint32_t x)
+{
+	x = rv32b::clmulhx(x, 0xffffffff);
+        return x;
+}
+
+void check_gray_inv(uint32_t x)
+{
+	uint32_t y = gray_fwd(x);
+	uint32_t z = gray_inv(y);
+	assert(x == z);
+}
+
+// ---------------------------------------------------------
 
 void check(uint64_t a, uint64_t b, uint64_t ab_hi, uint64_t ab_lo)
 {
-	uint64_t x_hi = clmulh(a, b);
-	uint64_t x_lo = clmul(a, b);
+	uint64_t x_hi = rv64b::clmulh(a, b);
+	uint64_t x_lo = rv64b::clmul(a, b);
 
 	printf("0x%016llx 0x%016llx | 0x%016llx 0x%016llx | 0x%016llx 0x%016llx\n",
 			(long long)a, (long long)b, (long long)ab_hi, (long long)x_hi, (long long)ab_lo, (long long)x_lo);
