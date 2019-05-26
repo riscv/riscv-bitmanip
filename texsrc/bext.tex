@@ -1281,6 +1281,9 @@ crc32[c].w} is deemed sufficient.
 {\tt clmulh} has no {\tt *W} variant because, similar to {\tt mulh}, one
 doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 
+Relevant instruction encodings from the base ISA are included in the table below
+and are marked with a {\tt *}.
+
 % Opcodes:
 % 0010011 OP-IMM
 % 0110011 OP
@@ -1296,9 +1299,13 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
+|  0000000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  AND*
 |  0100000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  ANDC
 |---------------------------------------------------------------|
+|  0000000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLL*
+|  0000000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRL*
 |  0100000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  GREV
+|  0100000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRA*
 |  0010000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLO
 |  0010000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRO
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  ROL
@@ -1306,7 +1313,10 @@ doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 |   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0110011   |  FSL
 |   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0110011   |  FSR
 |---------------------------------------------------------------|
+|  00000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLLI*
+|  00000  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SRLI*
 |  01000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  GREVI
+|  01000  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SRAI*
 |  00100  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLOI
 |  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
 |  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
