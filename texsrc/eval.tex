@@ -292,7 +292,7 @@ And here the same thing in RISC-V assembler:
     bge t3, t4, output       ; if (reserve < 27)
     lw t6, 0(a0)                 ; buf = *(idata++)
     addi a0, a0, 4
-    ssl t7, t6, t3               ; lower |= sll(buf, reserve)
+    sll t7, t6, t3               ; lower |= sll(buf, reserve)
     or t1, t1, t7
     sub t7, zero, t3             ; upper = reserve ? srl(buf, -reserve) : 0
     srl t7, t6, t7
