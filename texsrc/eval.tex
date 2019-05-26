@@ -32,6 +32,8 @@ macro-op fusion. The macros listed here are merely for demonstrating that
 suitable sequences exist. We do not advocate for any of those sequences to
 become ``standard sequences'' for macro-op fusion.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Bitfield extract}
 
 Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
@@ -42,6 +44,8 @@ Section~\ref{bfext}).
   slli a0, a0, (XLEN-len-pos)
   srli a0, a0, (XLEN-len)
 \end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{MIX/MUX pattern}
 \label{mixmux}
@@ -82,6 +86,8 @@ for those operations: {\tt cmix} and {\tt cmov}. All examples below use those
 dedicated instructions. For cores without support for ternary operations, those
 instances of {\tt cmix} and {\tt cmov} must be replaced by the above code
 patterns.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Bit scanning and counting}
 
@@ -125,6 +131,8 @@ Even parity:
 
 (Using {\tt addi} here is better than using {\tt xori}, because there is
 a compressed opcode for {\tt addi} but none for {\tt xori}.)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Test, set, and clear individual bits}
 
@@ -191,6 +199,8 @@ Setting bit N to the value in {\tt a1} (assuming a1 already is either 0 or 1):
   or a0, a0, a1
   rori a0, a0, XLEN-N
 \end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Funnel shifts}
 \label{funnel}
@@ -326,6 +336,8 @@ bits:
     ret
 \end{verbatim}
 \end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Arbitrary bit permutations}
 
@@ -499,6 +511,8 @@ set.~\cite[p.~152f,~162f]{Seander05}
 % Knuth
 % Hackers Delight, Chapter 7-7
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Mirroring and rotating bitboards}
 
 Bitboards are 64-bit bitmasks that are used to represent part of the game state
@@ -659,6 +673,8 @@ rotate_z:
 \end{minipage}
 \end{multicols}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Rank and select}
 
 Rank and select are fundamental operations in succinct data structures~\cite{SelectX86}.
@@ -689,6 +705,8 @@ including position \texttt{a1}.
     ret
 \end{verbatim}
 \end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Inverting Xorshift RNGs}
 
@@ -755,6 +773,86 @@ constants, but not including the function call overhead.
 An optimizing compiler could easily generate the clmul instructions and the magic
 constants from the C code for the na\"ive implementation. ({\tt 0x04002001 = (1 << 2*13) | (1 << 13) | 1}
 and {\tt 0x42108421 = (1 << 6*5) | (1 << 5*5) | \dots | (1 << 5) | 1})
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Fill right of most significant set bit}
+
+The ``fill right'' or ``fold right'' operation is a pattern commonly used in bit manipulation code.~\cite{MAGIC}
+
+The straight-forward RV64 implementation requires 12 instructions:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill(uint64_t x)
+  {
+    x |= x >> 1;   // SRLI, OR
+    x |= x >> 2;   // SRLI, OR
+    x |= x >> 4;   // SRLI, OR
+    x |= x >> 8;   // SRLI, OR
+    x |= x >> 16;  // SRLI, OR
+    x |= x >> 32;  // SRLI, OR
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+With {\tt clz} it can be implemented in only 4 instructions. Notice the
+handling of the case where {\tt x=0} using {\tt sltiu+addi}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill_clz(uint64_t x)
+  {
+    uint64_t t;
+    t = clz(x);         // CLZ
+    x = (!x)-1;         // SLTIU, ADDI
+    x = x >> (t & 63);  // SRL
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+Alternatively, a Trailing Bit Manipulation (TBM) code pattern can be used
+together with {\tt brev} to implement this function in 5 instructions:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill_brev(uint64_t x)
+  {
+    x = brev(x);        // GREVI
+    x = (x - 1) & ~x;   // ADDI, ANDC
+    x = ~x;             // NOT
+    x = brev(x);        // GREVI
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+Finally, there is another implementation in 4 instructions using BMATOR, if we do
+not count the extra instructions for loading utility matrices.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill_bmat(uint64_t x)
+  {
+    uint64_t m0, m1, m2, t;
+
+    m0 = 0xFF7F3F1F0F070301LL;  // LD
+    m1 = bmatflip(m0 << 8);     // SLLI, BMATFLIP
+    m2 = -1LL;                  // ADDI
+
+    t = bmator(x, m0);          // BMATOR
+    x = bmator(x, m2);          // BMATOR
+    x = bmator(m1, x);          // BMATOR
+    x |= t;                     // OR
+
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Decoding RISC-V Immediates}
 
