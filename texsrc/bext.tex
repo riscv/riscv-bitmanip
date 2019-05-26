@@ -1206,12 +1206,13 @@ left shift).
 if the 3rd operand and therefore unused for encoding the operation. For all other
 shift operations {\tt op[26]=0}.
 
-FSRI is also encoded with {\tt op[26]=1}, leaving a 6 bit immediate. The 7th
+{\tt fsri} is also encoded with {\tt op[26]=1}, leaving a 6 bit immediate. The 7th
 bit, that is necessary to perform a 128 bit funnel shift on RV64, can be
 emulated by swapping rs1 and rs3.
 
-There is no FSLI instruction, as it can be easily emulated with FSRI by taking the
-two's complement of the shift amount.
+There is no {\tt fsli} instruction, as it can be easily emulated with {\tt
+fsri} by taking the two's complement of the shift amount. The {\tt sllu.w}
+instruction occupies the encoding slot that would be occupied by {\tt fsli}.
 
 On RV128 {\tt op[26]} contains the MSB of the immediate for the shift instructions.
 Therefore there is no FSRI instruction on RV128. (But there is FSRIW/FSRID.)
@@ -1411,6 +1412,7 @@ and are marked with a {\tt *}.
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
 |   rs3   |1|0|   imm   |   rs1   | 101 |    rd   |   0011011   |  FSRIW
+|  00000  |1|0|   imm   |   rs1   | 001 |    rd   |   0011011   |  SLLIU.W
 |---------------------------------------------------------------|
 |  000010000    |  imm  |   rs1   | 001 |    rd   |   0011011   |  SHFLIW
 |  000010000    |  imm  |   rs1   | 101 |    rd   |   0011011   |  UNSHFLIW
