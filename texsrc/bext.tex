@@ -1244,17 +1244,18 @@ marking ternary OPs.)
 The remaining instructions are encoded within {\tt funct7=0000100} and
 {\tt funct7=0000101}.
 
-The {\tt funct7=0000101} block contains {\tt clmul[h]},
+The {\tt funct7=0000101} block contains {\tt clmul[h[x]]},
 {\tt min[u]}/{\tt max[u]}, and {\tt bmat[x]or}.
 
-The encoding of {\tt clmul[h[x]]} is identical to the encoding of {\tt mul[h[su]]},
-except that {\tt op[27]=1}.
+The encoding of {\tt clmul[h[x]]} is identical to the encoding of {\tt mul[h]},
+except that {\tt op[27]=1} and {\tt funct3[0]} is inverted. {\tt op[30]} is used
+to turn {\tt clmulh} into {\tt clmulhx}.
 
 The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
 {\tt funct3} encoding matches {\tt op[31:29]} of the AMO min/max functions.
 
-{\tt bmat[x]or} uses the remaining slots in {\tt funct7=0000100} with {\tt
-funct3=011} and {\tt funct3=111}.
+{\tt bmat[x]or} uses {\tt funct3=000} in {\tt funct7=0000100} with {\tt
+op[30]} selecting the XOR variant of the instruction.
 
 The remaining instructions are encoded within {\tt funct7=0000100}. The
 shift-like {\tt shfl}/{\tt unshfl} instructions uses the same {\tt funct3}
@@ -1262,9 +1263,7 @@ values as the shift operations. {\tt bdep} and {\tt bext} are encoded in a
 way so that {\tt funct3[2]} selects the ``direction'', similar to shift
 operations.
 
-{\tt pack} occupies {\tt funct3=000} in {\tt funct7=0000100}. The minor
-opcodes {\tt 001}, {\tt 011}, and {\tt 100} in {\tt funct7=0000100}
-are unoccupied.
+{\tt pack} occupies {\tt funct3=001} in {\tt funct7=0000100}.
 
 Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
@@ -1352,21 +1351,21 @@ and are marked with a {\tt *}.
 |   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
-|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMUL
-|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMULH
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  CLMULHX
+|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMULH
+|  0100101    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  CLMULHX
+|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMUL
 |  0000101    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  MIN
 |  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  MAX
 |  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MINU
 |  0000101    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
 |---------------------------------------------------------------|
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  PACK
+|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  BMATOR
+|  0100100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  BMATXOR
+|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  PACK
 |  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BDEP
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
-|  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATXOR
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BMATOR
 |---------------------------------------------------------------|
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
@@ -1394,8 +1393,8 @@ and are marked with a {\tt *}.
 |   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0111011   |  FSLW
 |   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0111011   |  FSRW
 |---------------------------------------------------------------|
-|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  CLMULW
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  PACKW
+|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  CLMULW
+|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  PACKW
 |  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
