@@ -1166,19 +1166,19 @@ these instructions zero-extends instead of sign-extends the 32-bit result.
 
 \input{bextcref-addwu}
 
-\subsection{Add/sub/shift with prefix zero-extend ({\tt adduw}, {\tt subuw}, {\tt ssliuw})}
+\subsection{Add/sub/shift with prefix zero-extend ({\tt addu.w}, {\tt subu.w}, {\tt ssliu.w})}
 
 \begin{rvb}
   RV64:
-    adduw rd, rs1, rs2
-    subuw rd, rs1, rs2
-    slliuw rd, rs1, imm
+    addu.w rd, rs1, rs2
+    subu.w rd, rs1, rs2
+    slliu.w rd, rs1, imm
 \end{rvb}
 
-{\tt slliuw} is identlical to {\tt slli}, except that bits XLEN-1:32 of the
+{\tt slliu.w} is identlical to {\tt slli}, except that bits XLEN-1:32 of the
 {\tt rs1} argument are cleared before the shift.
 
-{\tt adduw} and {\tt subuw} are identlical to {\tt add} and {\tt sub}, except
+{\tt addu.w} and {\tt subu.w} are identlical to {\tt add} and {\tt sub}, except
 that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the shift.
 
 \input{bextcref-slliuw}
