@@ -470,6 +470,7 @@ void check_stages(uint32_t src)
 	assert(genzip32_stage4_ref(src) == genzip32_stage4(src));
 }
 
+
 // ---------------------------------------------------------
 
 void check_pack(uint32_t x1, uint32_t x2)
@@ -482,6 +483,21 @@ void check_pack(uint32_t x1, uint32_t x2)
 	assert(((res >> 24) & 255) == ((x2 >> 8) & 255));
 }
 
+// ---------------------------------------------------------
+
+void check_shflw(uint64_t src, int ctrl)
+{
+	uint64_t ref = rv64b::sextw(rv32b::shfl(src, ctrl));
+	uint64_t tst = rv64b::shfl(rv64b::sextw(src), ctrl & 15);
+	assert(ref == tst);
+}
+
+void check_unshflw(uint64_t src, int ctrl)
+{
+	uint64_t ref = rv64b::sextw(rv32b::unshfl(src, ctrl));
+	uint64_t tst = rv64b::unshfl(rv64b::sextw(src), ctrl & 15);
+	assert(ref == tst);
+}
 // ---------------------------------------------------------
 
 int main()

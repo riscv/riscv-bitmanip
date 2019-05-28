@@ -36,5 +36,7 @@ cbmc --trace --function check_gzip32           zip_unzip.cc
 cbmc --trace --function check_stages           zip_unzip.cc
 
 cbmc --trace --function check_pack             zip_unzip.cc
+cbmc --trace --function check_shflw            zip_unzip.cc
+cbmc --trace --function check_unshflw          zip_unzip.cc
 
 echo OK

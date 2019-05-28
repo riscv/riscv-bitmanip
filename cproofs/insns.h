@@ -731,3 +731,19 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 		return ~(~x >> shamt);
 	return x >> shamt;
 }
+
+#if XLEN == 64
+uint64_t zextw(uint64_t x)
+{
+	x = x << 32;
+	x = x >> 32;
+	return x;
+}
+
+uint64_t sextw(uint64_t x)
+{
+	x = x << 32;
+	x = int64_t(x) >> 32;
+	return x;
+}
+#endif
