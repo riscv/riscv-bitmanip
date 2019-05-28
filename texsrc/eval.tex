@@ -819,15 +819,14 @@ handling of the case where {\tt x=0} using {\tt sltiu+addi}.
 \end{minipage}
 
 Alternatively, a Trailing Bit Manipulation (TBM) code pattern can be used
-together with {\tt brev} to implement this function in 5 instructions:
+together with {\tt brev} to implement this function in 4 instructions:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   uint64_t rfill_brev(uint64_t x)
   {
     x = brev(x);        // GREVI
-    x = (x - 1) & ~x;   // ADDI, ANDN
-    x = ~x;             // NOT
+    x = x | ~(x - 1);   // ADDI, ORN
     x = brev(x);        // GREVI
     return x;
   }

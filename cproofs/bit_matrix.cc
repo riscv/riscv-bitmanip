@@ -83,15 +83,6 @@ uint64_t rfill_clz(uint64_t x)
 uint64_t rfill_brev(uint64_t x)
 {
 	x = brev(x);        // GREVI
-	x = (x - 1) & ~x;   // ADDI, ANDN
-	x = ~x;             // NOT
-	x = brev(x);        // GREVI
-	return x;
-}
-
-uint64_t rfill_brev_orn(uint64_t x)
-{
-	x = brev(x);        // GREVI
 	x = x | ~(x - 1);   // ADDI, ORN
 	x = brev(x);        // GREVI
 	return x;
@@ -118,7 +109,6 @@ void rfill_check(uint64_t x)
 	uint64_t a = rfill_ref(x);
 	uint64_t b = rfill_clz(x);
 	uint64_t c = rfill_brev(x);
-	uint64_t d = rfill_brev_orn(x);
 	uint64_t e = rfill_bmat(x);
 	assert(a == b);
 	assert(a == c);

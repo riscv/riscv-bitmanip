@@ -136,28 +136,25 @@ population count, popcount, sideways sum, bit summation, or Hamming weight.~\cit
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{And-with-complement (\texttt{andn})}
+\subsection{Logic-with-negate (\texttt{andn}, \texttt{orn}, \texttt{xnor})}
 
 \begin{rvb}
   RV32, RV64:
     andn rd, rs1, rs2
+    orn  rd, rs1, rs2
+    xnor rd, rs1, rs2
 \end{rvb}
 
-This instruction implements the and-with-complement operation.
+This instructions implement AND, OR, and XOR with the 2nd arument inverted.
 
 \input{bextcref-andn}
 
-Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
-by combining {\tt not} with the base ALU operation. Only and-with-complement
-occurs frequently enough to warrant a dedicated instruction.
+This can use the existing inverter on rs2 in the ALU that's already there to
+implement subtract.
 
-% \subsection{Justification}
-%
-% http://svn.clifford.at/handicraft/2017/bitcode/
-%
-% \subsection{References}
-%
-% http://www.hackersdelight.org/basics2.pdf
+Among other things, those instructions allow implementing the ``trailing bit
+manipulation'' code patterns in two instructions each. For example, {\tt (x -
+1) \& \textasciitilde{}x} produces a mask from trailing zero bits in {\tt x}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1193,8 +1190,9 @@ in this document. {\bf DO NOT IMPLEMENT THESE OPCODES YET.} We are trying to get
 official opcodes assigned and will update this chapter soon with the official
 opcodes.
 
-The {\tt andn} instruction is encoded the same way as {\tt and}, but with
-{\tt op[30]} set, mirroring the encoding scheme used for {\tt add} and {\tt sub}.
+The {\tt andn}, {\tt orn}, and {\tt xnor} instruction are encoded the same way
+as {\tt and}, {\tt or}, and {\tt xor}, but with {\tt op[30]} set, mirroring the
+encoding scheme used for {\tt add} and {\tt sub}.
 
 All shift instructions use {\tt funct3=001} for left shifts and {\tt funct3=101}
 for right shifts. GREV occupies the spot that would decode as SLA (arithmetic
@@ -1310,7 +1308,11 @@ and are marked with a {\tt *}.
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
 |  0000000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  AND*
+|  0000000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  OR*
+|  0000000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  XOR*
 |  0100000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  ANDN
+|  0100000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  ORN
+|  0100000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  XNOR
 |---------------------------------------------------------------|
 |  0000000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLL*
 |  0000000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRL*

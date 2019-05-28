@@ -132,6 +132,16 @@ uint_xlen_t andn(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	return rs1 & ~rs2;
 }
+
+uint_xlen_t orn(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 | ~rs2;
+}
+
+uint_xlen_t xnor(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 ^ ~rs2;
+}
 // --REF-END--
 
 // --REF-BEGIN-- pack
