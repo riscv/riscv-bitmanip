@@ -77,7 +77,7 @@ value in a2. See Table~\ref{bmi1-comp}.
 \multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
 & x86 & RV & \\
 \hline
-ANDN    & 5 &  4 & {\tt andc a0, a2, a1} \\
+ANDN    & 5 &  4 & {\tt andn a0, a2, a1} \\
 \hline
 BEXTR (regs)  & 5 & 12 & {\tt c.add a0, a1} \\
               &   &    & {\tt slo a0, zero, a0} \\
@@ -151,7 +151,7 @@ BLCI         & 5 &  8 & {\tt addi a0, a1, 1} \\
              &   &    & {\tt c.or a0, a1} \\
 \hline
 BLCIC        & 5 & 10 & {\tt addi a0, a1, 1} \\
-             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt andn a0, a1, a0} \\
              &   &    & {\tt c.not a0} \\
 \hline
 BLCMSK       & 5 &  6 & {\tt addi a0, a1, 1} \\
@@ -164,15 +164,15 @@ BLSFILL      & 5 &  6 & {\tt addi a0, a1, -1} \\
              &   &    & {\tt c.or a0, a1} \\
 \hline
 BLSIC        & 5 & 10 & {\tt addi a0, a1, -1} \\
-             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt andn a0, a1, a0} \\
              &   &    & {\tt c.not a0} \\
 \hline
 T1MSKC       & 5 & 10 & {\tt addi a0, a1, +1} \\
-             &   &    & {\tt andc a0, a1, a0} \\
+             &   &    & {\tt andn a0, a1, a0} \\
              &   &    & {\tt c.not a0} \\
 \hline
 T1MSK        & 5 &  8 & {\tt addi a0, a1, -1} \\
-             &   &    & {\tt andc a0, a0, a1} \\
+             &   &    & {\tt andn a0, a0, a1} \\
 \end{tabular}
 \caption{Comparison of x86 TBM with Bitmanip}
 \label{tbm-comp}
@@ -292,7 +292,7 @@ temporary register {\tt rt}:
   p.bclr rd, rs, len, pos, rt:
     sloi rt, zero, len
     slli rt, rt, pos
-    andc rd, rs, rt
+    andn rd, rs, rt
 \end{verbatim}
 
 Or using two registers {\tt rLen} and {\tt rPos}:
@@ -301,10 +301,10 @@ Or using two registers {\tt rLen} and {\tt rPos}:
   p.bclrr rd, rs, rLen, rPos, rt:
     slo rt, zero, rLen
     sll rt, rt, rPos
-    andc rd, rs, rt
+    andn rd, rs, rt
 \end{verbatim}
 
-If the mask in {\tt rt} can be pre-computed then a single {\tt andc} instruction
+If the mask in {\tt rt} can be pre-computed then a single {\tt andn} instruction
 can emulate {\tt p.bclrr}, or a single {\tt and}/{\tt c.and} instruction if the
 mask is already inverted.
 
@@ -318,7 +318,7 @@ Or using {\tt bfxp} with $\texttt{rd} = \texttt{rs}$ (see Chapter~\ref{bfxp}):
 \subsubsection{RI5CY Instructions {\tt p.bset} and {\tt p.bsetr}}
 
 These instructions set {\tt len} bits starting with bit {\tt pos}. They can be
-implemented similar to {\tt p.bclr} and {\tt p.bclrr} by replacing {\tt andc}
+implemented similar to {\tt p.bclr} and {\tt p.bclrr} by replacing {\tt andn}
 with {\tt or}:
 
 \begin{verbatim}
@@ -421,7 +421,7 @@ using the regular shift instructions and the ``shift ones'' instructions.
 \subsubsection{Cmix equivalent}
 
 The Cray XMT {\tt BIT\_MERGE} instruction is equivalent to the XTernarybits
-{\tt cmix} instruction, or the {\tt and-andc-or} MIX pattern.
+{\tt cmix} instruction, or the {\tt and-andn-or} MIX pattern.
 
 \subsubsection{Population count}
 

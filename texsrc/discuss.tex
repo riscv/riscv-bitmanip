@@ -87,16 +87,16 @@ space. We need to run proper experiments with compilers that support those
 instructions. So they are in for now and if future evaluations show that they
 are not worth the encoding space then we can still throw them out.
 
-\subsubsection{Why only \texttt{andc} and not any other complement operators?}
+\subsubsection{Why only \texttt{andn} and not any other complement operators?}
 
 Early versions of this spec also included other \texttt{*c} operators. But
-experiments have shown that \texttt{andc} is much more common in bit
+experiments have shown that \texttt{andn} is much more common in bit
 manipulation code than any other operators.~\cite{Wolf17A}
 Especially because it is commonly used in \texttt{mix} and \texttt{mux} operations.
 
-\subsubsection{Why \texttt{andc}? It can easily be emulated using \texttt{and} and \texttt{not}.}
+\subsubsection{Why \texttt{andn}? It can easily be emulated using \texttt{and} and \texttt{not}.}
 
-Yes, and we did not include any other ALU+complement operators. But \texttt{andc}
+Yes, and we did not include any other ALU+complement operators. But \texttt{andn}
 is so common (mostly because of the \texttt{mix} and \texttt{mux} patterns), and
 its implementation is so cheap, that we decided to dedicate an R-type instruction
 to the operation.
@@ -232,7 +232,7 @@ with rd$'$=0 still being an illegal instruction.
 2x & 15 & 5x & 15 & {\tt ror, rol, rorw, rolw, roriw} \\
 1x & 15 & 1x & 16 & {\tt rori} \\
 \hline
-3x & 15 & 3x & 15 & {\tt andc, bext, bdep} \\
+3x & 15 & 3x & 15 & {\tt andn, bext, bdep} \\
    &    & 2x & 15 & {\tt bextw, bdepw} \\
 \hline
 3x &  4 & 3x &  4 & {\tt c.neg, c.not, c.brev} \\

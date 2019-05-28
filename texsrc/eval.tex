@@ -55,7 +55,7 @@ the control word {\tt a2}.
 
 \begin{verbatim}
   and a0, a0, a2
-  andc a1, a1, a2
+  andn a1, a1, a2
   or a0, a0, a1
 \end{verbatim}
 
@@ -66,7 +66,7 @@ word {\tt a2} is zero or nonzero, without branching.
   snez a2, a2
   neg a2, a2
   and a0, a0, a2
-  andc a1, a1, a2
+  andn a1, a1, a2
 \end{verbatim}
 
 Or when {\tt a2} is already either 0 or 1:
@@ -74,7 +74,7 @@ Or when {\tt a2} is already either 0 or 1:
 \begin{verbatim}
   neg a2, a2
   and a0, a2
-  andc a1, a1, a2
+  andn a1, a1, a2
   or a0, a0, a1
 \end{verbatim}
 
@@ -178,7 +178,7 @@ Clearing bit N (note that this {\tt li} is only one instruction on RV32, except 
 
 \begin{verbatim}
   li a1, (1 << N)
-  andc a0, a0, a1
+  andn a0, a0, a1
 \end{verbatim}
 
 Clearing bit N without spilling:
@@ -826,7 +826,7 @@ together with {\tt brev} to implement this function in 5 instructions:
   uint64_t rfill_brev(uint64_t x)
   {
     x = brev(x);        // GREVI
-    x = (x - 1) & ~x;   // ADDI, ANDC
+    x = (x - 1) & ~x;   // ADDI, ANDN
     x = ~x;             // NOT
     x = brev(x);        // GREVI
     return x;

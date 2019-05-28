@@ -19,8 +19,8 @@ this will look like, but a guess could look like this:
  \node (slo) [below=0.5cm of clz.west,anchor=west] { \texttt{slo[i], sro[i]} };
  \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
 
- \node (andc) [below=1.0cm of min.west,anchor=west] { \texttt{andc, pack} };
- \node (rol) [below=0.5cm of andc.west,anchor=west] { \texttt{rol, ror[i]} };
+ \node (andn) [below=1.0cm of min.west,anchor=west] { \texttt{andn, pack} };
+ \node (rol) [below=0.5cm of andn.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
  \node (brevp) [right=4.0cm of bswap.west,anchor=west] { \texttt{brev.p} };
  \node (grev) [right=6.5cm of bswap.west,anchor=west] { \texttt{grev[i]} };
@@ -48,8 +48,8 @@ this will look like, but a guess could look like this:
    \node (bmini) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbmini$^?$} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
 
-   \node (bperm) at ($ (andc.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (andc.north west) + (-0.2cm,0) $) rectangle ($ (shuffle.south east) + (0,0) $);
+   \node (bperm) at ($ (andn.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) rectangle ($ (shuffle.south east) + (0,0) $);
 
    \node (bextdep) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbextdep} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
@@ -136,16 +136,16 @@ population count, popcount, sideways sum, bit summation, or Hamming weight.~\cit
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{And-with-complement (\texttt{andc})}
+\subsection{And-with-complement (\texttt{andn})}
 
 \begin{rvb}
   RV32, RV64:
-    andc rd, rs1, rs2
+    andn rd, rs1, rs2
 \end{rvb}
 
 This instruction implements the and-with-complement operation.
 
-\input{bextcref-andc}
+\input{bextcref-andn}
 
 Other with-complement operations ({\tt orc, nand, nor}, etc) can be implemented
 by combining {\tt not} with the base ALU operation. Only and-with-complement
@@ -1035,7 +1035,7 @@ It is equivalent to the following sequence.
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   and rd, rs1, rs2
-  andc t0, rs3, rs2
+  andn t0, rs3, rs2
   or rd, rd, t0
 \end{verbatim}
 \end{minipage}
@@ -1193,7 +1193,7 @@ in this document. {\bf DO NOT IMPLEMENT THESE OPCODES YET.} We are trying to get
 official opcodes assigned and will update this chapter soon with the official
 opcodes.
 
-The {\tt andc} instruction is encoded the same way as {\tt and}, but with
+The {\tt andn} instruction is encoded the same way as {\tt and}, but with
 {\tt op[30]} set, mirroring the encoding scheme used for {\tt add} and {\tt sub}.
 
 All shift instructions use {\tt funct3=001} for left shifts and {\tt funct3=101}
@@ -1273,7 +1273,7 @@ that {\tt op[27]=1}.
 Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
 
-{\tt andc}, {\tt cmix}, {\tt cmov}, {\tt min[u]}, {\tt max[u]} have no {\tt *W}
+{\tt andn}, {\tt cmix}, {\tt cmov}, {\tt min[u]}, {\tt max[u]} have no {\tt *W}
 variants because they already behave in the way a {\tt *W} instruction would
 when presented with sign-exteded 32-bit arguments.
 
@@ -1310,7 +1310,7 @@ and are marked with a {\tt *}.
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
 |  0000000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  AND*
-|  0100000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  ANDC
+|  0100000    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  ANDN
 |---------------------------------------------------------------|
 |  0000000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLL*
 |  0000000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRL*
