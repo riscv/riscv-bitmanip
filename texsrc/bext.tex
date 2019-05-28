@@ -503,8 +503,6 @@ use the instruction encoding for ``arithmetic shift left''.
   RV64 only:
     shflw    rd, rs1, rs2
     unshflw  rd, rs1, rs2
-    shfliw   rd, rs1, imm
-    unshfliw rd, rs1, imm
 \end{rvb}
 
 Shuffle is the third bit permutation instruction in the RISC-V Bitmanip
@@ -1210,9 +1208,8 @@ shift operations {\tt op[26]=0}.
 bit, that is necessary to perform a 128 bit funnel shift on RV64, can be
 emulated by swapping rs1 and rs3.
 
-There is no {\tt fsli} instruction, as it can be easily emulated with {\tt
-fsri} by taking the two's complement of the shift amount. The {\tt sllu.w}
-instruction occupies the encoding slot that would be occupied by {\tt fsli}.
+There is no {\tt shfliw} instruction. The {\tt slliu.w} instruction occupies
+the encoding slot that would be occupied by {\tt shfliw}.
 
 On RV128 {\tt op[26]} contains the MSB of the immediate for the shift instructions.
 Therefore there is no FSRI instruction on RV128. (But there is FSRIW/FSRID.)
@@ -1265,6 +1262,14 @@ operations.
 
 {\tt pack} occupies {\tt funct3=001} in {\tt funct7=0000100}.
 
+{\tt addwu} and {\tt subwu} are encoded like {\tt addw} and {\tt subw}, except
+that {\tt op[25]=1} and {\tt op[27]=1}.
+
+{\tt addu.w} and {\tt subu.w} are encoded like {\tt addw} and {\tt subw}, except
+that {\tt op[27]=1}.
+
+{\tt addiwu} is encoded using {\tt funct3=100} (XOR) instead of {\tt funct3=000} in OP-32.
+
 Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
 
@@ -1281,13 +1286,10 @@ crc32[c].w} is deemed sufficient.
 {\tt clmulh[x]} has no {\tt *W} variants because, similar to {\tt mulh}, one
 doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
 
-{\tt addwu} and {\tt subwu} are encoded like {\tt addw} and {\tt subw}, except
-that {\tt op[25]=1} and {\tt op[27]=1}.
-
-{\tt addu.w} and {\tt subu.w} are encoded like {\tt addw} and {\tt subw}, except
-that {\tt op[27]=1}.
-
-{\tt addiwu} is encoded using {\tt funct3=100} (XOR) instead of {\tt funct3=000} in OP-32.
+There is no {\tt [un]shfliw}, as a perfect outer shuffle always preserves the
+MSB bit, thus {\tt [un]shfli} preserves proper sign extension when the
+upper bit in the control word is set. There's still {\tt [un]shflw} that
+masks that upper control bit and sign-extends the output.
 
 Relevant instruction encodings from the base ISA are included in the table below
 and are marked with a {\tt *}.
@@ -1429,10 +1431,7 @@ and are marked with a {\tt *}.
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
 |   rs3   |1|0|   imm   |   rs1   | 101 |    rd   |   0011011   |  FSRIW
-|  00000  |1|0|   imm   |   rs1   | 001 |    rd   |   0011011   |  SLLIU.W
-|---------------------------------------------------------------|
-|  000010000    |  imm  |   rs1   | 001 |    rd   |   0011011   |  SHFLIW
-|  000010000    |  imm  |   rs1   | 101 |    rd   |   0011011   |  UNSHFLIW
+|  00001  |     imm     |   rs1   | 001 |    rd   |   0011011   |  SLLIU.W
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
