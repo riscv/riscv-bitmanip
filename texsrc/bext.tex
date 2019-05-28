@@ -6,12 +6,10 @@ illustration purposes only. They are not optimal implementations, but are
 intended to specify the desired functionality. See Section~\ref{fastc} for fast
 C code for use in emulators.
 
-The section on opcode encodings are mere placeholders.
-
 The final standard will likely define a range of Z-extensions for different bit
 manipulation instructions, with the ``B'' extension itself being a mix of
-instructions from those Z-extensions. It is completely unclear as of yet what
-this will look like, but a guess could look like this:
+instructions from those Z-extensions. It is unclear as of yet what this will
+look like exactly, but it will probably look something like this:
 
 \begin{center}
 \begin{tikzpicture}
@@ -19,8 +17,9 @@ this will look like, but a guess could look like this:
  \node (slo) [below=0.5cm of clz.west,anchor=west] { \texttt{slo[i], sro[i]} };
  \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
 
- \node (andn) [below=1.0cm of min.west,anchor=west] { \texttt{andn, pack} };
- \node (rol) [below=0.5cm of andn.west,anchor=west] { \texttt{rol, ror[i]} };
+ \node (andn) [below=1.0cm of min.west,anchor=west] { \texttt{andn, orn} };
+ \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
+ \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
  \node (brevp) [right=4.0cm of bswap.west,anchor=west] { \texttt{brev.p} };
  \node (grev) [right=6.5cm of bswap.west,anchor=west] { \texttt{grev[i]} };
@@ -74,7 +73,7 @@ included in ``B'', and what should or shouldn't be included in ``Zbmini''.
 These decisions will be informed in big part by evaluations of the cost and
 added value for the individual instructions.
 
-With regard to ``B'', the open questions are:
+With regard to ``B'', the main open questions are:
 \begin{itemize}
 \item Should {\tt clmul[h]} be included, or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
 \item Should Zbternary be included? It adds a large architectural cost by adding instructions with three source operands.
