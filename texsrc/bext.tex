@@ -16,8 +16,16 @@ look like exactly, but it will probably look something like this:
  \node (clz) { \texttt{clz, ctz, pcnt} };
  \node (slo) [below=0.5cm of clz.west,anchor=west] { \texttt{slo[i], sro[i]} };
  \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
+ \node (addwu) [below=0.5cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
+ \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
+ \node (ssliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
- \node (andn) [below=1.0cm of min.west,anchor=west] { \texttt{andn, orn} };
+ \node (sbs) [right=4.5cm of clz.west,anchor=west] { \texttt{sbs} };
+ \node (sbr) [right=4.5cm of slo.west,anchor=west] { \texttt{sbr} };
+ \node (sbc) [right=4.5cm of min.west,anchor=west] { \texttt{sbc} };
+ \node (sbt) [right=4.5cm of addwu.west,anchor=west] { \texttt{sbt} };
+
+ \node (andn) [below=1.0cm of ssliuw.west,anchor=west] { \texttt{andn, orn} };
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
@@ -42,43 +50,53 @@ look like exactly, but it will probably look something like this:
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
-   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) rectangle ($ (clmul.south west) + (6.0cm,-0.2cm) $);
+   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- ($ (clmul.south west) + (3.15cm,-0.2cm) $)
+     |- ($ (bext.north west) + (6.0cm,0) $) |- ($ (clz.north west) + (0,+0.2cm) $);
 
-   \node (bmini) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbmini$^?$} };
+   \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
+   \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
 
-   \node (bperm) at ($ (andn.north west) + (+6.5cm,0) $) [above right, text=blue] { \textbf{Zbperm} };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) rectangle ($ (shuffle.south east) + (0,0) $);
+   \node (bs) at ($ (sbs.west) + (2.0cm,0) $) [right, text=blue] { \textbf{Zbs} };
+   \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (sbs.north west) + (-0.2cm,0) $) rectangle ($ (sbt.south west) + (2.0cm,0) $);
 
-   \node (bextdep) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbextdep} };
+   \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
+   \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (bit permutation) };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) |- ($ (shuffle.south east) + (0,0) $)
+     |- ($ (brevp.north west) + (2.5cm,0.2cm) $) |- ($ (andn.north west) + (-0.2cm,0) $);
+
+   \node (be) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbe} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
 
-   \node (betrnary) at ($ (cmov.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbternary} };
+   \node (bt) at ($ (cmov.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbt} };
+   \node (bternary) [below=-0.1cm of bt.south west,anchor=north west] { (ternary) };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
 
-   \node (bclmul) at ($ (clmul.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbclmul} };
+   \node (bc) at ($ (clmul.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbc} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clmul.north west) + (-0.5cm,0) $) rectangle ($ (clmul.south west) + (3.0cm,0) $);
 
-   \node (bcrc) at ($ (crc32.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbcrc} };
+   \node (br) at ($ (crc32.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbr} };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.5cm,0) $) rectangle ($ (crc32c.south west) + (3.0cm,0) $);
 
-   \node (bmat) at ($ (bmatxor.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbmat} };
+   \node (bm) at ($ (bmatxor.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbm} };
+   \node (bmatrix) [below=-0.1cm of bm.south west,anchor=north west] { (bit matrix) };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
  \end{scope}
 \end{tikzpicture}
 \end{center}
 
 The main open questions of course relate to what should and shouldn't be
-included in ``B'', and what should or shouldn't be included in ``Zbmini''.
+included in ``B'', and what should or shouldn't be included in ``Zbb''.
 These decisions will be informed in big part by evaluations of the cost and
 added value for the individual instructions.
 
 With regard to ``B'', the main open questions are:
 \begin{itemize}
 \item Should {\tt clmul[h]} be included, or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
-\item Should Zbternary be included? It adds a large architectural cost by adding instructions with three source operands.
-\item Should Zbextdep be included? Should Zbmat be included?
-\item Which Zbperm pseudo-ops should be included in ``B''?
+\item Should Zbt be included? It adds a large architectural cost by adding instructions with three source operands.
+\item Should Zbe be included? Should Zbm be included?
+\item Which Zbp pseudo-ops should be included in ``B''?
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -238,8 +256,8 @@ For this purpose we define the following assembler pseudo-ops:
 
 \begin{rvb}
   RV32, RV64:
-    min rd, rs1, rs2
-    max rd, rs1, rs2
+    min  rd, rs1, rs2
+    max  rd, rs1, rs2
     minu rd, rs1, rs2
     maxu rd, rs1, rs2
 \end{rvb}
