@@ -896,12 +896,14 @@ it is the same instruction.)
 
 \begin{rvb}
   RV32, RV64:
-    clmul rd, rs1, rs2
-    clmulh rd, rs1, rs2
+    clmul   rd, rs1, rs2
+    clmulh  rd, rs1, rs2
     clmulhx rd, rs1, rs2
 
   RV64 only:
-    clmulw rd, rs1, rs2
+    clmulw   rd, rs1, rs2
+    clmulhw  rd, rs1, rs2
+    clmulhxw rd, rs1, rs2
 \end{rvb}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
@@ -911,6 +913,10 @@ of the 2$\cdot$XLEN carry-less product.
 \texttt{clmulhx} produces the upper half of the 2$\cdot$XLEN carry-less product after appending
 a 1-bit to {\tt rs2}, which is equivalent to XOR'ing {\tt rs1} with the {\tt clmulh} result.
 In CRC calculations {\tt clmulhx} eliminates those additional XORs.
+
+Unlike {\tt mulh[[s]u]}, we add *W variants of {\tt clmulh[x]}. This is because we expect
+some code to use 32-bit clmul intrisics, even on 64-bit architectures. For example in cases
+where data is processed in 32-bit chunks.
 
 \input{bextcref-clmul}
 
@@ -1508,11 +1514,14 @@ and are marked with a {\tt *}.
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
 |---------------------------------------------------------------|
 |  0000101    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  CLMULW
-|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  PACKW
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  CLMULHXW
+|  0000101    |   rs2   |   rs1   | 011 |    rd   |   0111011   |  CLMULHW
+|---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
+|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
+|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
+|  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
