@@ -1,203 +1,19 @@
 \chapter{Evaluation}
 
-\hrulefill
-
-\textbf{IMPORTANT NOTE:} Some of the discussions below refer to an older draft of the
-RISC-V Bitmanip extension and are now out-of-date.
-
-\hrulefill
-
 This chapter contains a collection of short code snippets and algorithms using
 the Bitmanip extension for evaluation purposes. For the sake of simplicity we
 assume RV32 for most examples in this chapter.
-
-Most assembler routines in this chapter are written as if they were ABI functions,
-i.e. arguments are passed in a0, a1,~\dots~and results are returned in a0. Registers
-a0, a1,~\dots~are also used for spilling Registers t0, t1,~\dots~are used for
-pre-computed masks to be used with {\tt bext}/{\tt bdep}.
-
-Some of the assembler routines below can not or should not overwrite their
-first argument. In those cases the arguments are passed in a1, a2,~\dots~and
-results are returned in a0.
-
-The main motivation behind this chapter is to show that all the common bit
-manipulation tasks can be performed in few instructions using Bitmanip. (In
-many cases RV32I/RV64I instructions are already sufficient.) In most cases the
-sequences are short enough to allow large cores to macro-op-fuse them into a
-single instruction. For this reason we also focus on code snippets that do
-not spill any registers, as this further simplifies macro-op fusion.
-
-There likely will be a separate RISC-V standard for recommended sequences for
-macro-op fusion. The macros listed here are merely for demonstrating that
-suitable sequences exist. We do not advocate for any of those sequences to
-become ``standard sequences'' for macro-op fusion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Bitfield extract}
 
 Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
-two shift operations (or equivalently using the {\tt bfext} pseudo instruction, see
-Section~\ref{bfext}).
+two shift operations.
 
 \begin{verbatim}
   slli a0, a0, (XLEN-len-pos)
   srli a0, a0, (XLEN-len)
-\end{verbatim}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{MIX/MUX pattern}
-\label{mixmux}
-
-A MIX pattern selects bits from {\tt a0} and {\tt a1} based on the bits in
-the control word {\tt a2}.
-
-\begin{verbatim}
-  and a0, a0, a2
-  andn a1, a1, a2
-  or a0, a0, a1
-\end{verbatim}
-
-A MUX operation selects word {\tt a0} or {\tt a1} based on if the control
-word {\tt a2} is zero or nonzero, without branching.
-
-\begin{verbatim}
-  snez a2, a2
-  neg a2, a2
-  and a0, a0, a2
-  andn a1, a1, a2
-\end{verbatim}
-
-Or when {\tt a2} is already either 0 or 1:
-
-\begin{verbatim}
-  neg a2, a2
-  and a0, a2
-  andn a1, a1, a2
-  or a0, a0, a1
-\end{verbatim}
-
-Alternatively, a core might fuse a conditional branch that just skips one
-instruction with that instruction to form a fused conditional macro-op.
-
-A core with support for ternary instructions provides dedicated instructions
-for those operations: {\tt cmix} and {\tt cmov}. All examples below use those
-dedicated instructions. For cores without support for ternary operations, those
-instances of {\tt cmix} and {\tt cmov} must be replaced by the above code
-patterns.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Bit scanning and counting}
-
-Counting leading ones:
-
-\begin{verbatim}
-  not a0, a0
-  clz a0, a0
-\end{verbatim}
-
-Counting trailing ones:
-
-\begin{verbatim}
-  not a0, a0
-  ctz a0, a0
-\end{verbatim}
-
-Counting bits cleared:
-
-\begin{verbatim}
-  not a0, a0
-  pcnt a0, a0
-\end{verbatim}
-
-(This is better than XLEN-pcnt because RISC-V has no ``reverse-subtract-immediate'' operation.)
-
-Odd parity:
-
-\begin{verbatim}
-  pcnt a0, a0
-  andi a0, a0, 1
-\end{verbatim}
-
-Even parity:
-
-\begin{verbatim}
-  pcnt a0, a0
-  addi a0, a0, 1
-  andi a0, a0, 1
-\end{verbatim}
-
-(Using {\tt addi} here is better than using {\tt xori}, because there is
-a compressed opcode for {\tt addi} but none for {\tt xori}.)
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Test, set, and clear individual bits}
-
-Extracting bit N:
-
-\begin{verbatim}
-  srli a0, a0, N
-  andi a0, a0, 1
-\end{verbatim}
-
-Branching on bit N set:
-
-\begin{verbatim}
-  slli a0, a0, (XLEN-N-1)
-  bltz a0, <bit_n_set>
-\end{verbatim}
-
-Branching on bit N clear:
-
-\begin{verbatim}
-  slli a0, a0, (XLEN-N-1)
-  bgez a0, <bit_n_clear>
-\end{verbatim}
-
-Setting bit N (note that this {\tt li} is only one instruction on RV32, except when N=11 which requires two instructions):
-
-\begin{verbatim}
-  li a1, (1 << N)
-  or a0, a0, a1
-\end{verbatim}
-
-Setting bit N without spilling:
-
-\begin{verbatim}
-  rori a0, a0, N
-  ori a0, a0, 1
-  rori a0, a0, 32-N
-\end{verbatim}
-
-(Or simply ``{\tt ori a0, 1 << N}'' if N is sufficiently small.)
-
-Clearing bit N (note that this {\tt li} is only one instruction on RV32, except when N=11 which requires two instructions):
-
-\begin{verbatim}
-  li a1, (1 << N)
-  andn a0, a0, a1
-\end{verbatim}
-
-Clearing bit N without spilling:
-
-\begin{verbatim}
-  rori a0, a0, N
-  andi a0, a0, -2
-  rori a0, a0, XLEN-N
-\end{verbatim}
-
-(Or simply ``{\tt andi a0, $\sim$(1 << N)}'' if N is sufficiently small.)
-
-Setting bit N to the value in {\tt a1} (assuming a1 already is either 0 or 1):
-
-\begin{verbatim}
-  rori a0, a0, N
-  andi a0, a0, -2
-  or a0, a0, a1
-  rori a0, a0, XLEN-N
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1030,44 +846,4 @@ sleeve''-examples for real-world bit permutations.
     ret
 \end{verbatim}
 \end{minipage}
-\end{multicols}
-
-Or using XBitfield:
-
-\begin{multicols}{2}
-\begin{verbatim}
-  decode_s:
-    bfxp a0, a1, zero, 7, 5, 20
-    bfxp a0, a1, a0, 25, 7, 25
-    c.srai a0, 20
-    ret
-
-  decode_b:
-    bfxp a0, a1, zero, 7, 1, 30
-    bfxp a0, a1, a0, 25, 6, 24
-    bfxp a0, a1, a0, 8, 4, 20
-    bfxp a0, a1, a0, 31, 1, 31
-    c.srai a0, 19
-    ret
-
-  decode_j:
-    bfxp a0, a1, zero, 21, 10, 12
-    bfxp a0, a1, a0, 20, 1, 22
-    bfxp a0, a1, a0, 12, 8, 23
-    bfxp a0, a1, a0, 31, 1, 31
-    c.srai a0, 11
-    ret
-
-  decode_cj:
-    bfxp a0, a1, zero, 11, 1, 24
-    bfxp a0, a1, a0, 9, 2, 28
-    bfxp a0, a1, a0, 8, 1, 30
-    bfxp a0, a1, a0, 7, 1, 26
-    bfxp a0, a1, a0, 6, 1, 27
-    bfxp a0, a1, a0, 3, 3, 21
-    bfxp a0, a1, a0, 2, 1, 25
-    bfxp a0, a1, a0, 12, 1, 31
-    c.srai a0, 20
-    ret
-\end{verbatim}
 \end{multicols}
