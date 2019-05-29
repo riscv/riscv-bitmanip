@@ -18,14 +18,14 @@ look like exactly, but it will probably look something like this:
  \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
  \node (addwu) [below=0.5cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
  \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
- \node (ssliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
+ \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
  \node (sbs) [right=4.5cm of clz.west,anchor=west] { \texttt{sbs} };
  \node (sbr) [right=4.5cm of slo.west,anchor=west] { \texttt{sbr} };
  \node (sbc) [right=4.5cm of min.west,anchor=west] { \texttt{sbc} };
  \node (sbt) [right=4.5cm of addwu.west,anchor=west] { \texttt{sbt} };
 
- \node (andn) [below=1.0cm of ssliuw.west,anchor=west] { \texttt{andn, orn} };
+ \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
@@ -51,7 +51,7 @@ look like exactly, but it will probably look something like this:
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
    \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- ($ (clmul.south west) + (3.15cm,-0.2cm) $)
-     |- ($ (bext.north west) + (6.0cm,0) $) |- ($ (clz.north west) + (0,+0.2cm) $);
+     |- ($ (zip.south west) + (6.0cm,-0.2cm) $) |- ($ (clz.north west) + (0,+0.2cm) $);
 
    \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
