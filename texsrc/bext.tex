@@ -1345,9 +1345,6 @@ they are 64-bit only instructions.
 {\tt crc32.[bhwd]}, {\tt crc32c.[bhwd]} have no {\tt *W} variants because {\tt
 crc32[c].w} is deemed sufficient.
 
-{\tt clmulh[x]} has no {\tt *W} variants because, similar to {\tt mulh}, one
-doesn't need a 32-bit mulh operator if a 64-bit mul operator is available.
-
 There is no {\tt [un]shfliw}, as a perfect outer shuffle always preserves the
 MSB bit, thus {\tt [un]shfli} preserves proper sign extension when the
 upper bit in the control word is set. There's still {\tt [un]shflw} that
