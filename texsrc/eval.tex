@@ -680,6 +680,137 @@ not count the extra instructions for loading utility matrices.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Cyclic redundency checks (CRC)}
+
+There are special instructions for performing CRCs using the two most
+widespread 32-bit CRC polynomials, CRC-32 and CRC-32C.
+
+CRCs with other polynomials can be computed efficiently using CLMUL.
+The following examples are using CRC32Q.
+
+The easiest way of implementing CRC32Q with clmul is using a Barrett reduction.
+On RV32:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t crc32q_simple(const uint32_t *data, int length)
+  {
+    uint32_t P  = 0x814141AB;  // CRC polynomial (implicit x^32)
+    uint32_t mu = 0xFEFF7F62;  // x^64 divided by CRC polynomial
+    uint32_t crc = 0;
+
+    for (int i = 0; i < length; i++) {
+      crc ^= bswap32(data[i]);
+      crc = clmulhx32(crc, mu);
+      crc = clmul32(crc, P);
+    }
+
+    return crc;
+  }
+\end{verbatim}
+\end{minipage}
+
+The following python code calculates the value of {\tt mu} for a given CRC
+polynomial:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  def polydiv(dividend, divisor):
+      quotient = 0
+      while dividend.bit_length() >= divisor.bit_length():
+          i = dividend.bit_length() - divisor.bit_length()
+          dividend = dividend ^ (divisor << i)
+          quotient |= 1 << i
+      return quotient
+
+  P = 0x1814141AB
+  print("0x%X" % (polydiv(1<<64, P)))   # prints 0x1FEFF7F62
+\end{verbatim}
+\end{minipage}
+
+A more efficient method would be the following, which processes 64-bit at a
+time (RV64):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint32_t crc32q_fast(const uint64_t *p, int len)
+  {
+    uint64_t P  = 0x1814141ABLL;   // CRC polynomial
+    uint64_t k1 =  0xA1FA6BECLL;   // rest of x^128 divided by CRC polynomial
+    uint64_t k2 =  0x9BE9878FLL;   // rest of x^96 divided by CRC polynomial
+    uint64_t k3 =  0xB1EFC5F6LL;   // rest of x^64 divided by CRC polynomial
+    uint64_t mu = 0x1FEFF7F62LL;   // x^64 divided by CRC polynomial
+
+    uint64_t a0, a1, a2, t1, t2;
+
+    assert(len >= 2);
+    a0 = bswap(p[0]);
+    a1 = bswap(p[1]);
+
+    // Main loop: Reduce to 2x 64 bits
+
+    for (const uint64_t *t0 = p+2; t0 != p+len; t0++)
+    {
+      a2 = bswap(*t0);
+      t1 = clmulh(a0, k1);
+      t2 = clmul(a0, k1);
+      a0 = a1 ^ t1;
+      a1 = a2 ^ t2;
+    }
+
+    // Reduce to 64 bit, add 32 bit zero padding
+
+    t1 = clmulh(a0, k2);
+    t2 = clmul(a0, k2);
+
+    a0 = (a1 >> 32) ^ t1;
+    a1 = (a1 << 32) ^ t2;
+
+    t2 = clmul(a0, k3);
+    a1 = a1 ^ t2;
+
+    // Barrett Reduction
+
+    t1 = clmul(a1 >> 32, mu);
+    t2 = clmul(t1 >> 32, P);
+    a0 = a1 ^ t2;
+
+    return a0;
+  }
+\end{verbatim}
+\end{minipage}
+
+The main idea is to transform an array of arbitrary length to an array with the
+same CRC that's only two 64-bit elements long. (That's the ``Main loop''
+portion of above code.)
+
+Then we further reduce it to just 64-bit. And then we use a Barrett
+reduction to get the final 32-bit result.
+
+The following python code can be used to calculate the ``magic constants'' {\tt
+k1}, {\tt k2}, and {\tt k3}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  def polymod(dividend, divisor):
+      quotient = 0
+      while dividend.bit_length() >= divisor.bit_length():
+          i = dividend.bit_length() - divisor.bit_length()
+          dividend = dividend ^ (divisor << i)
+          quotient |= 1 << i
+      return dividend
+
+  print("0x%X" % (polymod(1<<128, P)))   # prints 0xA1FA6BEC
+  print("0x%X" % (polymod(1<< 96, P)))   # prints 0x9BE9878F
+  print("0x%X" % (polymod(1<< 64, P)))   # prints 0xB1EFC5F6
+\end{verbatim}
+\end{minipage}
+
+The above example code is taken from~\cite{Wolf18A}. A more detailed descriptions of
+the algorithms employed can be found in~\cite{FastCRC}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Decoding RISC-V Immediates}
 
 The following code snippets decode and sign-extend the immediate from RISC-V

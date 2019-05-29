@@ -1008,8 +1008,7 @@ crc32_w:
   li t0, 0x04C11DB7
   li t1, 0x04D101DF
   brev a0, a0
-  clmulh a1, a0, t1
-  xor a1, a1, a0
+  clmulhx a1, a0, t1
   clmul a0, a1, t0
   brev a0, a0
   ret
