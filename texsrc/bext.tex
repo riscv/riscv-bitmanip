@@ -1502,18 +1502,10 @@ reserved space in \texttt{c.addi16sp/c.lui}.
 &
 \multicolumn{3}{|c|}{011} &
 \multicolumn{1}{c|}{0} &
-\multicolumn{5}{c|}{rs1/rd} &
-\multicolumn{5}{c|}{0} &
-\multicolumn{2}{c|}{01} & C.NOT {\em \tiny (RV32)} \\
-\cline{2-17}
-
-&
-\multicolumn{3}{|c|}{011} &
-\multicolumn{1}{c|}{0} &
 \multicolumn{2}{c|}{00} &
 \multicolumn{3}{c|}{rs1$'$/rd$'$} &
 \multicolumn{5}{c|}{0} &
-\multicolumn{2}{c|}{01} & C.NOT {\em \tiny (RV64/128)} \\
+\multicolumn{2}{c|}{01} & C.NOT \\
 \cline{2-17}
 
 &
@@ -1630,6 +1622,10 @@ instruction, not just {\tt pack}:
 \end{verbatim}
 \end{minipage}
 
+And finally, a 64-bit core should fuse sequences with {\tt addiwu} as well as
+{\tt addi}, for loading unsigned 32-bit numbers that have their MSB set. This is
+often the case with masks in bit manipulation code.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Fused {\tt *-not} sequences}
@@ -1705,6 +1701,58 @@ like the following can be used that would utilize postfix fusion of right shifts
 
 This can be a useful sequence on RV64, where loading an arbitrary 64-bit constant would usually
 require at least 96 bits (using \texttt{c.ld}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fused sequences for logic operations}
+
+RISC-V has dedicated instructions for branching on equal/not-equal. But C code
+such as the following would require set-equal and set-not-equal instructions, similar
+to {\tt slt}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int is_equal = (a == b);
+  int is_noteq = (c != d);
+\end{verbatim}
+\end{minipage}
+
+Those can be implemented using the following fuse-able sequences:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  sub rd, rs1, rs2
+  sltui rd, rd, 1
+
+  sub rd, rs1, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+Likewise for logic OR:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int logic_or  = (c || d);
+
+  or rd, rs1, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+And for logic AND, if {\tt rd == rs1}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int logic_and  = (c && d);
+
+  beq rd, zero, skip_sltu
+  sltu rd, zero, rs2
+skip_sltu:
+\end{verbatim}
+\end{minipage}
+
+Note that the first instruction can be compressed in all four cases if {\tt rd == rs1}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
