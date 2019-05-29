@@ -1301,7 +1301,7 @@ The remaining instructions are encoded within {\tt funct7=0000100} and
 {\tt funct7=0000101}.
 
 The {\tt funct7=0000101} block contains {\tt clmul[h[x]]},
-{\tt min[u]}/{\tt max[u]}, and {\tt bmat[x]or}.
+{\tt min[u]}, and {\tt max[u]}.
 
 The encoding of {\tt clmul, clmulhx, clmulh} is identical to the encoding of
 {\tt mulh, mulhsu, mulhu}, except that {\tt op[27]=1}.
@@ -1309,16 +1309,15 @@ The encoding of {\tt clmul, clmulhx, clmulh} is identical to the encoding of
 The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
 {\tt funct3} encoding matches {\tt op[31:29]} of the AMO min/max functions.
 
-{\tt bmat[x]or} uses {\tt funct3=000} in {\tt funct7=0000100} with {\tt
-op[30]} selecting the XOR variant of the instruction.
-
 The remaining instructions are encoded within {\tt funct7=0000100}. The
 shift-like {\tt shfl}/{\tt unshfl} instructions uses the same {\tt funct3}
 values as the shift operations. {\tt bdep} and {\tt bext} are encoded in a
 way so that {\tt funct3[2]} selects the ``direction'', similar to shift
 operations.
 
-{\tt pack} occupies {\tt funct3=001} in {\tt funct7=0000100}.
+{\tt bmat[x]or} use {\tt funct3=011} and {\tt funct3=111} in {\tt funct7=0000100}.
+
+{\tt pack} occupies {\tt funct3=100} in {\tt funct7=0000100}.
 
 {\tt addwu} and {\tt subwu} are encoded like {\tt addw} and {\tt subw}, except
 that {\tt op[25]=1} and {\tt op[27]=1}.
@@ -1441,13 +1440,13 @@ and are marked with a {\tt *}.
 |  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MINU
 |  0000101    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
 |---------------------------------------------------------------|
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  BMATOR
-|  0100100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  BMATXOR
-|  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  PACK
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BDEP
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
+|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BDEP
+|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
+|  0000100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACK
+|  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
+|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BMATXOR
 |---------------------------------------------------------------|
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
