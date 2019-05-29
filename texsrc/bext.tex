@@ -266,6 +266,37 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Single-bit instructions (\texttt{sbs, sbr, sbc, sbt})}
+
+\begin{rvb}
+  RV32, RV64:
+    sbs  rd, rs1, rs2
+    sbr  rd, rs1, rs2
+    sbc  rd, rs1, rs2
+    sbt  rd, rs1, rs2
+    sbsi rd, rs1, imm
+    sbri rd, rs1, imm
+    sbci rd, rs1, imm
+    sbti rd, rs1, imm
+
+  RV64:
+    sbsw  rd, rs1, rs2
+    sbrw  rd, rs1, rs2
+    sbcw  rd, rs1, rs2
+    sbtw  rd, rs1, rs2
+    sbsiw rd, rs1, imm
+    sbriw rd, rs1, imm
+    sbciw rd, rs1, imm
+\end{rvb}
+
+We define 4 single-bit instructions \texttt{sbs} (set), \texttt{sbr} (reset),
+\texttt{sbc} (complement), and \texttt{sbt} (test), and their immediate-variants,
+with the following semantics:
+
+\input{bextcref-sbx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
 
 \begin{rvb}
