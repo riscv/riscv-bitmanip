@@ -1885,6 +1885,15 @@ Assembler bitfield pseudo-ops for {\tt c.sr[la]i} postfix fusion:
 The names {\tt bfext}, {\tt bfextu}, and {\tt bfmak} are borrowed from m88k, that had
 dedicated instructions of those names (without {\tt bf}-prefix) with equivalent semantics.~\cite[p.~3-28]{m88k}
 
+Sign-extending bytes and half-words are special cases of {\tt bfext}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  sext.b rd, rs   ->   slli rd, rs, (XLEN-8);  c.srai rd, (XLEN-8)
+  sext.h rd, rs   ->   slli rd, rs, (XLEN-16); c.srai rd, (XLEN-16)
+\end{verbatim}
+\end{minipage}
+
 Endianness-swap pseudo-ops for {\tt c.sr[la]i} postfix fusion:
 
 \begin{minipage}{\linewidth}
