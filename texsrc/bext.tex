@@ -1891,12 +1891,14 @@ Endianness-swap pseudo-ops for {\tt c.sr[la]i} postfix fusion:
 \begin{verbatim}
   eswap.b rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-8)
   eswap.h rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-16)
-  eswap.w rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-32)   (OR   bswap[w] rd, rs   if applicable)
-  eswap.d rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-64)   (OR   bswap[d] rd, rs   if applicable)
+  eswap.w rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-32)
+  eswap.d rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-64)
 
   eswapu.b rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-8)
   eswapu.h rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-16)
-  eswapu.w rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-32)   (OR   bswap rd, rs   if applicable)
-  eswapu.d rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-64)   (OR   bswap rd, rs   if applicable)
+  eswapu.w rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-32)
+  eswapu.d rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-64)
+
+  (or simply bswap/bswapw/bswapd if applicable)
 \end{verbatim}
 \end{minipage}
