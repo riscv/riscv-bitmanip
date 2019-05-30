@@ -20,10 +20,10 @@ look like exactly, but it will probably look something like this:
  \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
  \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
- \node (sbs) [right=4.5cm of clz.west,anchor=west] { \texttt{sbs} };
- \node (sbr) [right=4.5cm of slo.west,anchor=west] { \texttt{sbr} };
- \node (sbc) [right=4.5cm of min.west,anchor=west] { \texttt{sbc} };
- \node (sbt) [right=4.5cm of addwu.west,anchor=west] { \texttt{sbt} };
+ \node (sbset) [right=4.5cm of clz.west,anchor=west] { \texttt{sbset} };
+ \node (sbclr) [right=4.5cm of slo.west,anchor=west] { \texttt{sbclr} };
+ \node (sbinv) [right=4.5cm of min.west,anchor=west] { \texttt{sbinv} };
+ \node (sbext) [right=4.5cm of addwu.west,anchor=west] { \texttt{sbext} };
 
  \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
@@ -57,9 +57,9 @@ look like exactly, but it will probably look something like this:
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
 
-   \node (bs) at ($ (sbs.west) + (2.0cm,0) $) [right, text=blue] { \textbf{Zbs} };
+   \node (bs) at ($ (sbset.west) + (2.0cm,0) $) [right, text=blue] { \textbf{Zbs} };
    \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (sbs.north west) + (-0.2cm,0) $) rectangle ($ (sbt.south west) + (2.0cm,0) $);
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (sbset.north west) + (-0.2cm,0) $) rectangle ($ (sbext.south west) + (2.0cm,0) $);
 
    \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
    \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (bit permutation) };
@@ -284,31 +284,31 @@ integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Single-bit instructions (\texttt{sbs, sbr, sbc, sbt})}
+\subsection{Single-bit instructions (\texttt{sbset, sbclr, sbinv, sbext})}
 
 \begin{rvb}
   RV32, RV64:
-    sbs  rd, rs1, rs2
-    sbr  rd, rs1, rs2
-    sbc  rd, rs1, rs2
-    sbt  rd, rs1, rs2
-    sbsi rd, rs1, imm
-    sbri rd, rs1, imm
-    sbci rd, rs1, imm
-    sbti rd, rs1, imm
+    sbset  rd, rs1, rs2
+    sbclr  rd, rs1, rs2
+    sbinv  rd, rs1, rs2
+    sbext  rd, rs1, rs2
+    sbseti rd, rs1, imm
+    sbclri rd, rs1, imm
+    sbinvi rd, rs1, imm
+    sbexti rd, rs1, imm
 
   RV64:
-    sbsw  rd, rs1, rs2
-    sbrw  rd, rs1, rs2
-    sbcw  rd, rs1, rs2
-    sbtw  rd, rs1, rs2
-    sbsiw rd, rs1, imm
-    sbriw rd, rs1, imm
-    sbciw rd, rs1, imm
+    sbsetw  rd, rs1, rs2
+    sbclrw  rd, rs1, rs2
+    sbinvw  rd, rs1, rs2
+    sbextw  rd, rs1, rs2
+    sbsetiw rd, rs1, imm
+    sbclriw rd, rs1, imm
+    sbinviw rd, rs1, imm
 \end{rvb}
 
-We define 4 single-bit instructions \texttt{sbs} (set), \texttt{sbr} (reset),
-\texttt{sbc} (complement), and \texttt{sbt} (test), and their immediate-variants,
+We define 4 single-bit instructions \texttt{sbset} (set), \texttt{sbclr} (clear),
+\texttt{sbinv} (invert), and \texttt{sbext} (extract), and their immediate-variants,
 with the following semantics:
 
 \input{bextcref-sbx}
@@ -1294,11 +1294,11 @@ The single-bit instructions are also encoded within the shift opcodes, with
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-         | SBS  SBR  SBC | SBT
-  op[30] |   0    1    1 |   1
-  op[29] |   1    0    1 |   0
-  op[27] |   1    1    1 |   1
-  funct3 | 001  001  001 | 101
+         | SBSET  SBCLR  SBINV | SBEXT
+  op[30] |     0      1      1 |     1
+  op[29] |     1      0      1 |     0
+  op[27] |     1      1      1 |     1
+  funct3 |   001    001    001 |   101
 \end{verbatim}
 \end{minipage}
 
@@ -1384,10 +1384,10 @@ and are marked with a {\tt *}.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  ROL
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  ROR
 |---------------------------------------------------------------|
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBS
-|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBR
-|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBC
-|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SBT
+|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBSET
+|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBCLR
+|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBINV
+|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SBEXT
 |---------------------------------------------------------------|
 |  00000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLLI*
 |  00000  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SRLI*
@@ -1397,10 +1397,10 @@ and are marked with a {\tt *}.
 |  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
 |  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
 |---------------------------------------------------------------|
-|  00101  |     imm     |   rs1   | 001 |    rd   |   0110011   |  SBSI
-|  01001  |     imm     |   rs1   | 001 |    rd   |   0110011   |  SBRI
-|  01101  |     imm     |   rs1   | 001 |    rd   |   0110011   |  SBCI
-|  01001  |     imm     |   rs1   | 101 |    rd   |   0110011   |  SBTI
+|  00101  |     imm     |   rs1   | 001 |    rd   |   0110011   |  SBSETI
+|  01001  |     imm     |   rs1   | 001 |    rd   |   0110011   |  SBCLRI
+|  01101  |     imm     |   rs1   | 001 |    rd   |   0110011   |  SBINVI
+|  01001  |     imm     |   rs1   | 101 |    rd   |   0110011   |  SBEXTI
 |---------------------------------------------------------------|
 |   rs3   | 11|   rs2   |   rs1   | 001 |    rd   |   0110011   |  CMIX
 |   rs3   | 11|   rs2   |   rs1   | 101 |    rd   |   0110011   |  CMOV
@@ -1485,10 +1485,10 @@ and are marked with a {\tt *}.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
 |---------------------------------------------------------------|
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSW
-|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBRW
-|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBCW
-|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SBTW
+|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSETW
+|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBCLRW
+|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBINVW
+|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SBEXTW
 |---------------------------------------------------------------|
 |  0000000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLLIW*
 |  0000000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SRLIW*
@@ -1498,9 +1498,9 @@ and are marked with a {\tt *}.
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
 |---------------------------------------------------------------|
-|  0010100    |   imm   |   rs1   | 001 |    rd   |   0110011   |  SBSIW
-|  0100100    |   imm   |   rs1   | 001 |    rd   |   0110011   |  SBRIW
-|  0110100    |   imm   |   rs1   | 001 |    rd   |   0110011   |  SBCIW
+|  0010100    |   imm   |   rs1   | 001 |    rd   |   0110011   |  SBSETIW
+|  0100100    |   imm   |   rs1   | 001 |    rd   |   0110011   |  SBCLRIW
+|  0110100    |   imm   |   rs1   | 001 |    rd   |   0110011   |  SBINVIW
 |---------------------------------------------------------------|
 |   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0111011   |  FSLW
 |   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0111011   |  FSRW

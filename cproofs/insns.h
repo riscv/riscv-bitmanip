@@ -723,25 +723,25 @@ uint_xlen_t slliuw(uint_xlen_t rs1, int imm)
 // --REF-END--
 
 // --REF-BEGIN-- sbx
-uint_xlen_t sbs(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t sbset(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return rs1 | (uint_xlen_t(1) << shamt);
 }
 
-uint_xlen_t sbr(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t sbclr(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return rs1 & ~(uint_xlen_t(1) << shamt);
 }
 
-uint_xlen_t sbc(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t sbinv(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return rs1 ^ (uint_xlen_t(1) << shamt);
 }
 
-uint_xlen_t sbt(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t sbext(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return 1 & (rs1 >> shamt);
