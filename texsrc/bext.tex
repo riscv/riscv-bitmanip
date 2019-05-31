@@ -1209,9 +1209,9 @@ penalty for code like shown above on RV64 compared to RV32.
     addiwu rd, rs1, imm
 \end{rvb}
 
-These instructions are identlical to {\tt addw}, {\tt subw}, {\tt addiw},
+These instructions are identical to {\tt addw}, {\tt subw}, {\tt addiw},
 except that bits XLEN-1:32 of the result are cleared after the addition. I.e.
-these instructions zero-extends instead of sign-extends the 32-bit result.
+these instructions zero-extend instead of sign-extend the 32-bit result.
 
 \input{bextcref-addwu}
 
@@ -1224,11 +1224,11 @@ these instructions zero-extends instead of sign-extends the 32-bit result.
     slliu.w rd, rs1, imm
 \end{rvb}
 
-{\tt slliu.w} is identlical to {\tt slli}, except that bits XLEN-1:32 of the
+{\tt slliu.w} is identical to {\tt slli}, except that bits XLEN-1:32 of the
 {\tt rs1} argument are cleared before the shift.
 
-{\tt addu.w} and {\tt subu.w} are identlical to {\tt add} and {\tt sub}, except
-that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the shift.
+{\tt addu.w} and {\tt subu.w} are identical to {\tt add} and {\tt sub}, except
+that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the add/subtract.
 
 \input{bextcref-slliuw}
 \input{bextcref-adduw}
