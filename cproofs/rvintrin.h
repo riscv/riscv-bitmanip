@@ -37,7 +37,7 @@ static inline int32_t _rv32_minu(int32_t rs1, int32_t rs2) { int32_t rd; __asm__
 static inline int32_t _rv32_max (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("max  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int32_t _rv32_maxu(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("maxu %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 
-#if __riscv_xlen == 64
+#if __riscv_xlen > 32
 static inline int64_t _rv64_min (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("min  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int64_t _rv64_minu(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("minu %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int64_t _rv64_max (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("max  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
@@ -169,7 +169,19 @@ static inline int64_t _rv64_clmulh (int64_t rs1, int64_t rs2) { int64_t rd; __as
 static inline int64_t _rv64_clmulhx(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulhx   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
-// TBD: crc32.[bhwd], crc32c.[bhwd]
+static inline long _rv_crc32_b (long rs1) { long rd; __asm__ ("crc32.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+static inline long _rv_crc32_h (long rs1) { long rd; __asm__ ("crc32.h  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+static inline long _rv_crc32_w (long rs1) { long rd; __asm__ ("crc32.w  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+
+static inline long _rv_crc32c_b(long rs1) { long rd; __asm__ ("crc32c.b %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+static inline long _rv_crc32c_h(long rs1) { long rd; __asm__ ("crc32c.h %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+static inline long _rv_crc32c_w(long rs1) { long rd; __asm__ ("crc32c.w %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+
+#if __riscv_xlen > 32
+static inline long _rv_crc32_d (long rs1) { long rd; __asm__ ("crc32.d  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+static inline long _rv_crc32c_d(long rs1) { long rd; __asm__ ("crc32c.d %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+#endif
+
 // TBD: bmatxor, bmator, bmatflip
 // TBD: cmix, cmov, fsl, fsr
 
@@ -446,7 +458,33 @@ static inline int64_t _rv64_clmulhx(int64_t rs1, int64_t rs2)
 	return _rv64_clmulh(rs1, rs2) ^ rs1;
 }
 
-// TBD: crc32.[bhwd], crc32c.[bhwd]
+static inline long _rvintrin_crc32(unsigned long x, int nbits)
+{
+	for (int i = 0; i < nbits; i++)
+		x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
+	return x;
+}
+
+static inline long _rvintrin_crc32c(unsigned long x x, int nbits)
+{
+	for (int i = 0; i < nbits; i++)
+		x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
+	return x;
+}
+
+static inline long _rv_crc32_b(long rs1) { return _rvintrin_crc32(rs1, 8); }
+static inline long _rv_crc32_h(long rs1) { return _rvintrin_crc32(rs1, 16); }
+static inline long _rv_crc32_w(long rs1) { return _rvintrin_crc32(rs1, 32); }
+
+static inline long _rv_crc32c_b(long rs1) { return _rvintrin_crc32c(rs1, 8); }
+static inline long _rv_crc32c_h(long rs1) { return _rvintrin_crc32c(rs1, 16); }
+static inline long _rv_crc32c_w(long rs1) { return _rvintrin_crc32c(rs1, 32); }
+
+#if UINT_MAX != ULONG_MAX
+static inline long crc32_d (long rs1) { return _rvintrin_crc32 (rs1, 64); }
+static inline long crc32c_d(long rs1) { return _rvintrin_crc32c(rs1, 64); }
+#endif
+
 // TBD: bmatxor, bmator, bmatflip
 // TBD: cmix, cmov, fsl, fsr
 
