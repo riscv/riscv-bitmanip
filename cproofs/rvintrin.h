@@ -4,7 +4,12 @@
 #include <limits.h>
 #include <stdint.h>
 
-#ifdef __riscv_xlen
+#if !defined(__riscv_xlen) && !defined(RVINTRIN_EMULATE)
+#  warning "Target is not RISC-V. Enabling <rvintrin.h> emulation mode."
+#  define RVINTRIN_EMULATE 1
+#endif
+
+#ifndef RVINTRIN_EMULATE
 
 #if __riscv_xlen == 32
 static inline int32_t _rv32_clz (int32_t rs1) { int32_t rd; __asm__ ("clz   %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
@@ -154,9 +159,7 @@ static inline int64_t _rv64_bdep(int64_t rs1, int64_t rs2) { int64_t rd; __asm__
 // TBD: bmatxor, bmator, bmatflip
 // TBD: cmix, cmov, fsl, fsr
 
-#else // __riscv_xlen
-
-#warning "Target is not RISC-V. Enabling <rvintrin.h> emulation mode."
+#else // RVINTRIN_EMULATE
 
 #if UINT_MAX != 0xffffffffU
 #  error "<rvintrin.h> emulation mode only supports systems with sizeof(int) = 4."
@@ -335,7 +338,7 @@ static inline int64_t _rv64_grevi  (int64_t rs1, int imm) { return _rv64_grev  (
 static inline int64_t _rv64_shfli  (int64_t rs1, int imm) { return _rv64_shfl  (rs1, imm); }
 static inline int64_t _rv64_unshfli(int64_t rs1, int imm) { return _rv64_unshfl(rs1, imm); }
 
-int32_t _rv32_bext(int32_t rs1, int32_t rs2)
+static inline int32_t _rv32_bext(int32_t rs1, int32_t rs2)
 {
 	uint32_t c = 0, i = 0, data = rs1, mask = rs2;
 	while (mask) {
@@ -347,7 +350,7 @@ int32_t _rv32_bext(int32_t rs1, int32_t rs2)
 	return c;
 }
 
-int32_t _rv32_bdep(int32_t rs1, int32_t rs2)
+static inline int32_t _rv32_bdep(int32_t rs1, int32_t rs2)
 {
 	uint32_t c = 0, i = 0, data = rs1, mask = rs2;
 	while (mask) {
@@ -359,7 +362,7 @@ int32_t _rv32_bdep(int32_t rs1, int32_t rs2)
 	return c;
 }
 
-int64_t _rv64_bext(int64_t rs1, int64_t rs2)
+static inline int64_t _rv64_bext(int64_t rs1, int64_t rs2)
 {
 	uint64_t c = 0, i = 0, data = rs1, mask = rs2;
 	while (mask) {
@@ -371,7 +374,7 @@ int64_t _rv64_bext(int64_t rs1, int64_t rs2)
 	return c;
 }
 
-int64_t _rv64_bdep(int64_t rs1, int64_t rs2)
+static inline int64_t _rv64_bdep(int64_t rs1, int64_t rs2)
 {
 	uint64_t c = 0, i = 0, data = rs1, mask = rs2;
 	while (mask) {
@@ -387,6 +390,5 @@ int64_t _rv64_bdep(int64_t rs1, int64_t rs2)
 // TBD: bmatxor, bmator, bmatflip
 // TBD: cmix, cmov, fsl, fsr
 
-#endif // __riscv_xlen
-
-#endif
+#endif // RVINTRIN_EMULATE
+#endif // RVINTRIN_H
