@@ -30,7 +30,7 @@ uint_xlen_t pcnt(uint_xlen_t rs1)
 uint32_t fast_clz32(uint32_t rs1)
 {
 	if (rs1 == 0)
-		return XLEN;
+		return 32;
 	assert(sizeof(int) == 4);
 	return __builtin_clz(rs1);
 }
@@ -38,7 +38,7 @@ uint32_t fast_clz32(uint32_t rs1)
 uint64_t fast_clz64(uint64_t rs1)
 {
 	if (rs1 == 0)
-		return XLEN;
+		return 64;
 	assert(sizeof(long long) == 8);
 	return __builtin_clzll(rs1);
 }
@@ -46,7 +46,7 @@ uint64_t fast_clz64(uint64_t rs1)
 uint32_t fast_ctz32(uint32_t rs1)
 {
 	if (rs1 == 0)
-		return XLEN;
+		return 32;
 	assert(sizeof(int) == 4);
 	return __builtin_ctz(rs1);
 }
@@ -54,7 +54,7 @@ uint32_t fast_ctz32(uint32_t rs1)
 uint64_t fast_ctz64(uint64_t rs1)
 {
 	if (rs1 == 0)
-		return XLEN;
+		return 64;
 	assert(sizeof(long long) == 8);
 	return __builtin_ctzll(rs1);
 }
