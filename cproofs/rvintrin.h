@@ -253,6 +253,16 @@ static inline int64_t _rv64_fsri(int64_t rs1, int64_t rs3, int imm) { int64_t rd
 #  error "<rvintrin.h> emulation mode only supports systems with sizeof(long long) = 8."
 #endif
 
+#ifdef RVINTRIN_NOBUILTINS
+static inline int32_t _rv32_clz(int32_t rs1) { for (int i=0; i < 32; i++) { if (1 & (rs1 >> (31-i))) return i; } return 32; }
+static inline int64_t _rv64_clz(int64_t rs1) { for (int i=0; i < 64; i++) { if (1 & (rs1 >> (63-i))) return i; } return 64; }
+
+static inline int32_t _rv32_ctz(int32_t rs1) { for (int i=0; i < 32; i++) { if (1 & (rs1 >> i)) return i; } return 32; }
+static inline int64_t _rv64_ctz(int64_t rs1) { for (int i=0; i < 64; i++) { if (1 & (rs1 >> i)) return i; } return 64; }
+
+static inline int32_t _rv32_pcnt(int32_t rs1) { int k=0; for (int i=0; i < 32; i++) { if (1 & (rs1 >> i)) k++; } return k; }
+static inline int64_t _rv64_pcnt(int64_t rs1) { int k=0; for (int i=0; i < 64; i++) { if (1 & (rs1 >> i)) k++; } return k; }
+#else
 static inline int32_t _rv32_clz(int32_t rs1) { return rs1 ? __builtin_clz(rs1)   : 32; }
 static inline int64_t _rv64_clz(int64_t rs1) { return rs1 ? __builtin_clzll(rs1) : 64; }
 
@@ -261,6 +271,7 @@ static inline int64_t _rv64_ctz(int64_t rs1) { return rs1 ? __builtin_ctzll(rs1)
 
 static inline int32_t _rv32_pcnt(int32_t rs1) { __builtin_popcount(rs1);   }
 static inline int64_t _rv64_pcnt(int64_t rs1) { __builtin_popcountll(rs1); }
+#endif
 
 static inline int32_t _rv32_pack(int32_t rs1, int32_t rs2) { return (rs1 & 0x0000ffff)   | (rs2 << 16); }
 static inline int64_t _rv64_pack(int64_t rs1, int64_t rs2) { return (rs1 & 0xffffffffLL) | (rs2 << 32); }
@@ -462,7 +473,7 @@ static inline int64_t _rv64_bdep(int64_t rs1, int64_t rs2)
 {
 	uint64_t c = 0, i = 0, data = rs1, mask = rs2;
 	while (mask) {
-		uint32_t b = mask & ~((mask | (mask-1)) + 1);
+		uint64_t b = mask & ~((mask | (mask-1)) + 1);
 		c |= (data << (_rv64_ctz(b) - i)) & b;
 		i += _rv64_pcnt(b);
 		mask -= b;
