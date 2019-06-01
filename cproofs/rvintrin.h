@@ -155,7 +155,21 @@ static inline int64_t _rv64_bext(int64_t rs1, int64_t rs2) { int64_t rd; __asm__
 static inline int64_t _rv64_bdep(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("bdep  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
-// TBD: clmul[h[x]], crc32.[bhwd], crc32c.[bhwd]
+#if __riscv_xlen == 32
+static inline int32_t _rv32_clmul  (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmul     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulh (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulh    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulhx(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhx   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+#else
+static inline int32_t _rv32_clmul  (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulh (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulhx(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhxw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+
+static inline int64_t _rv64_clmul  (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmul     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_clmulh (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulh    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_clmulhx(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulhx   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+#endif
+
+// TBD: crc32.[bhwd], crc32c.[bhwd]
 // TBD: bmatxor, bmator, bmatflip
 // TBD: cmix, cmov, fsl, fsr
 
@@ -386,7 +400,53 @@ static inline int64_t _rv64_bdep(int64_t rs1, int64_t rs2)
 	return c;
 }
 
-// TBD: clmul[h[x]], crc32.[bhwd], crc32c.[bhwd]
+static inline int32_t _rv32_clmul(int32_t rs1, int32_t rs2)
+{
+	uint32_t a = rs1, b = rs2, x = 0;
+	for (int i = 0; i < 32; i++)
+		if ((b >> i) & 1)
+			x ^= a << i;
+	return x;
+}
+
+static inline int32_t _rv32_clmulh(int32_t rs1, int32_t rs2)
+{
+	uint32_t a = rs1, b = rs2, x = 0;
+	for (int i = 1; i < 32; i++)
+		if ((b >> i) & 1)
+			x ^= a >> (32-i);
+	return x;
+}
+
+static inline int32_t _rv32_clmulhx(int32_t rs1, int32_t rs2)
+{
+	return _rv32_clmulh(rs1, rs2) ^ rs1;
+}
+
+static inline int64_t _rv64_clmul(int64_t rs1, int64_t rs2)
+{
+	uint64_t a = rs1, b = rs2, x = 0;
+	for (int i = 0; i < 64; i++)
+		if ((b >> i) & 1)
+			x ^= a << i;
+	return x;
+}
+
+static inline int64_t _rv64_clmulh(int64_t rs1, int64_t rs2)
+{
+	uint64_t a = rs1, b = rs2, x = 0;
+	for (int i = 1; i < 64; i++)
+		if ((b >> i) & 1)
+			x ^= a >> (64-i);
+	return x;
+}
+
+static inline int64_t _rv64_clmulhx(int64_t rs1, int64_t rs2)
+{
+	return _rv64_clmulh(rs1, rs2) ^ rs1;
+}
+
+// TBD: crc32.[bhwd], crc32c.[bhwd]
 // TBD: bmatxor, bmator, bmatflip
 // TBD: cmix, cmov, fsl, fsr
 
