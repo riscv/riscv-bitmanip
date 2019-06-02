@@ -31,6 +31,10 @@
  *  _rv64_*(...)
  *    RV64-only intrinsics that operate on the "int64_t" data type
  *
+ *  There are also *i-variants of some intrinsics that map direcly to
+ *  the *i-variants of the underlying instructions. Those intrinsics
+ *  will likely be depricated once there are compiler-supported
+ *  intrinsics that can infer *i-instructions automatically.
  */
 
 #ifndef RVINTRIN_H
