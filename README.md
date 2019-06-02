@@ -5,13 +5,6 @@ This is the repository for the RISC-V Foundations Bitmanip Extension working gro
 ### NOTE: These RISC-V Bitmanip instructions are a work in progress.
 These instructions and their specification may change before being accepted as a standard by the RISC-V Foundation and so it is highly likely that implementations made using this draft specification will not conform to the future standard.
 
-## Instructions
-The bitmanip instructions extend the RISC-V instruction set to enable efficent bit manipulation.
-This includes operations like:
- * counting bits, leading zeros, etc
- * bit extraction
- * rotations, shifting and reversing
-
 ## Specification 
 See [bitmanip-draft.pdf](bitmanip-draft.pdf) for a pre-built version
 of the PDF spec document.
@@ -21,10 +14,10 @@ The source of the PDF specification is in the [texsrc](texsrc) directory with sc
 See the [patches](patches) directory for patches for [riscv-opcodes](https://github.com/riscv/riscv-opcodes) and [binutils](https://www.gnu.org/software/binutils/). See [rvintrin.h](https://github.com/riscv/riscv-bitmanip/blob/master/cproofs/rvintrin.h) for compiler intrinsics.
 
 ## Verilog Reference
-The [verilog](verilog) directory includes Verilog reference implementations.
+The [verilog](verilog) directory includes various Verilog reference implementations.
 
 ## cproofs
-The [cproofs](cproofs) directory contains a few proofs for the reference C models.
+The [cproofs](cproofs) directory contains the reference C models and a few related formal proofs.
 
 ## riscvOVPsim Reference Simulation
 Included in this repository in the directory [riscv-ovpsim](riscv-ovpsim) is a version of the Imperas [riscvOVPsim](riscv-ovpsim/README.md) simulator that includes a full implementation of the RISC-V 32 & 64 Bit ISA specification and an implementation of these new bitmanip instructions. 
