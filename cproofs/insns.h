@@ -763,6 +763,8 @@ uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
 
 	uint_xlen_t src_mask = rol(slo(0, src_len), src_off);
 	uint_xlen_t dst_mask = rol(slo(0, dst_len), dst_off);
+	if (dst_len == 0) dst_mask = ~(uint_xlen_t)0;
+
 	uint_xlen_t value = ror((rs1 & src_mask), src_off);
 
 	// sign-extend
@@ -779,6 +781,8 @@ uint_xlen_t bfxpu(uint_xlen_t rs1, uint_xlen_t rs2,
 
 	uint_xlen_t src_mask = rol(slo(0, src_len), src_off);
 	uint_xlen_t dst_mask = rol(slo(0, dst_len), dst_off);
+	if (dst_len == 0) dst_mask = ~(uint_xlen_t)0;
+
 	uint_xlen_t value = ror((rs1 & src_mask), src_off);
 
 	return (rs2 & ~dst_mask) | (rol(value, dst_off) & dst_mask);

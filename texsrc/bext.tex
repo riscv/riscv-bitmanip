@@ -1647,7 +1647,8 @@ These instructions extract {\tt src\_len} bits at offset {\tt src\_off} from {\t
 and place them in the field of {\tt dst\_len} bits at offset {\tt dst\_off} in the
 value from {\tt rs2}. {\tt bfxp} sign-extends if {\tt dst\_len}$>${\tt src\_len},
 and {\tt bfxpu} zero-extends. When {\tt src\_len == 0} then {\tt bfxp} sets bits
-in the output and {\tt bfxpu} clears bits. When {\tt src\_len}$+${\tt src\_off} $>$ XLEN
+in the output and {\tt bfxpu} clears bits. {\tt dst\_len == 0} encodes for
+{\tt dst\_len == XLEN}. When {\tt src\_len}$+${\tt src\_off} $>$ XLEN
 or {\tt dst\_len}$+${\tt dst\_off} $>$ XLEN then the bit-field wraps around.
 
 \input{bextcref-bfxp}
