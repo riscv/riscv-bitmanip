@@ -117,7 +117,7 @@ uint32_t decode_cj_imm2(uint32_t b)
 
 // ---------------------------------------------------------
 
-void check_s_imm(insn_t insn)
+extern "C" void check_s_imm(insn_t insn)
 {
 	uint32_t ref = insn.s_imm();
 
@@ -132,7 +132,7 @@ void check_s_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_b_imm(insn_t insn)
+extern "C" void check_b_imm(insn_t insn)
 {
 	uint32_t ref = insn.sb_imm();
 
@@ -150,7 +150,7 @@ void check_b_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_j_imm(insn_t insn)
+extern "C" void check_j_imm(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
@@ -171,7 +171,7 @@ void check_j_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_j_imm2(insn_t insn)
+extern "C" void check_j_imm2(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
@@ -194,7 +194,7 @@ void check_j_imm2(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_cj_imm(insn_t insn)
+extern "C" void check_cj_imm(insn_t insn)
 {
 	uint32_t ref = insn.rvc_j_imm();
 
@@ -218,7 +218,7 @@ void check_cj_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_cj_imm2(insn_t insn)
+extern "C" void check_cj_imm2(insn_t insn)
 {
 	uint32_t ref = insn.rvc_j_imm();
 	uint32_t x = decode_cj_imm2(insn.b);
@@ -276,7 +276,7 @@ int main()
 
 // ---------------------------------------------------------
 
-void check_bfxp_s_imm(insn_t insn)
+extern "C" void check_bfxp_s_imm(insn_t insn)
 {
 	uint32_t ref = insn.s_imm();
 
@@ -290,7 +290,7 @@ void check_bfxp_s_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_bfxp_b_imm(insn_t insn)
+extern "C" void check_bfxp_b_imm(insn_t insn)
 {
 	uint32_t ref = insn.sb_imm();
 
@@ -306,7 +306,7 @@ void check_bfxp_b_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_bfxp_j_imm(insn_t insn)
+extern "C" void check_bfxp_j_imm(insn_t insn)
 {
 	uint32_t ref = insn.uj_imm();
 
@@ -322,7 +322,7 @@ void check_bfxp_j_imm(insn_t insn)
 	assert(ref == a0);
 }
 
-void check_bfxp_cj_imm(insn_t insn)
+extern "C" void check_bfxp_cj_imm(insn_t insn)
 {
 	uint32_t ref = insn.rvc_j_imm();
 

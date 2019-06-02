@@ -10,4 +10,5 @@ bash zip_unzip.sh
 bash bit_matrix.sh
 bash misc.sh
 bash fsl_fsr.sh
+bash rvintrin.sh
 echo ALL_TESTS_PASSED

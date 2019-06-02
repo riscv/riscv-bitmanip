@@ -20,7 +20,7 @@ using namespace rv32b;
 
 // ---------------------------------------------------------
 
-void rv32_bmi1_bextr(uint32_t src, uint32_t start, uint32_t len)
+extern "C" void rv32_bmi1_bextr(uint32_t src, uint32_t start, uint32_t len)
 {
 	if (start >= 32 || len >= 32 || start+len >= 32)
 		return;
@@ -35,7 +35,7 @@ void rv32_bmi1_bextr(uint32_t src, uint32_t start, uint32_t len)
 	assert(a == b);
 }
 
-void rv32_bmi1_blsi(uint32_t x)
+extern "C" void rv32_bmi1_blsi(uint32_t x)
 {
 	uint32_t a = x & -x;
 
@@ -45,7 +45,7 @@ void rv32_bmi1_blsi(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_bmi1_blsmsk(uint32_t x)
+extern "C" void rv32_bmi1_blsmsk(uint32_t x)
 {
 	uint32_t a = x ^ (x - 1);
 
@@ -55,7 +55,7 @@ void rv32_bmi1_blsmsk(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_bmi1_blsr(uint32_t x)
+extern "C" void rv32_bmi1_blsr(uint32_t x)
 {
 	uint32_t a = x & (x - 1);
 
@@ -67,7 +67,7 @@ void rv32_bmi1_blsr(uint32_t x)
 
 // ---------------------------------------------------------
 
-void rv32_bmi2_bzhi(uint32_t x, uint32_t k)
+extern "C" void rv32_bmi2_bzhi(uint32_t x, uint32_t k)
 {
 	if (k >= 32)
 		return;
@@ -82,7 +82,7 @@ void rv32_bmi2_bzhi(uint32_t x, uint32_t k)
 
 // ---------------------------------------------------------
 
-void rv32_tbm_bextr(uint32_t src, uint32_t start, uint32_t len)
+extern "C" void rv32_tbm_bextr(uint32_t src, uint32_t start, uint32_t len)
 {
 	if (start >= 32 || len >= 32 || start+len >= 32)
 		return;
@@ -95,7 +95,7 @@ void rv32_tbm_bextr(uint32_t src, uint32_t start, uint32_t len)
 	assert(a == b);
 }
 
-void rv32_tbm_blcfill(uint32_t x)
+extern "C" void rv32_tbm_blcfill(uint32_t x)
 {
 	uint32_t a = x & (x + 1);
 
@@ -105,7 +105,7 @@ void rv32_tbm_blcfill(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_blci(uint32_t x)
+extern "C" void rv32_tbm_blci(uint32_t x)
 {
 	uint32_t a = x | ~(x + 1);
 
@@ -116,7 +116,7 @@ void rv32_tbm_blci(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_blcic(uint32_t x)
+extern "C" void rv32_tbm_blcic(uint32_t x)
 {
 	uint32_t a = ~x | (x + 1);
 
@@ -127,7 +127,7 @@ void rv32_tbm_blcic(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_blcmsk(uint32_t x)
+extern "C" void rv32_tbm_blcmsk(uint32_t x)
 {
 	uint32_t a = x ^ (x + 1);
 
@@ -137,7 +137,7 @@ void rv32_tbm_blcmsk(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_blcs(uint32_t x)
+extern "C" void rv32_tbm_blcs(uint32_t x)
 {
 	uint32_t a = x | (x + 1);
 
@@ -147,7 +147,7 @@ void rv32_tbm_blcs(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_blsfill(uint32_t x)
+extern "C" void rv32_tbm_blsfill(uint32_t x)
 {
 	uint32_t a = x | (x - 1);
 
@@ -157,7 +157,7 @@ void rv32_tbm_blsfill(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_blsic(uint32_t x)
+extern "C" void rv32_tbm_blsic(uint32_t x)
 {
 	uint32_t a = ~x | (x - 1);
 
@@ -168,7 +168,7 @@ void rv32_tbm_blsic(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_t1mskc(uint32_t x)
+extern "C" void rv32_tbm_t1mskc(uint32_t x)
 {
 	uint32_t a = ~x | (x + 1);
 
@@ -179,7 +179,7 @@ void rv32_tbm_t1mskc(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_tbm_t1msk(uint32_t x)
+extern "C" void rv32_tbm_t1msk(uint32_t x)
 {
 	uint32_t a = ~x & (x - 1);
 

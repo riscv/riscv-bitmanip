@@ -20,7 +20,7 @@ using namespace rv64b;
 
 // ---------------------------------------------------------
 
-void identity_check(uint64_t src)
+extern "C" extern "C" void identity_check(uint64_t src)
 {
 	uint64_t p = 0x8040201008040201LL;
 	uint64_t q = bmatflip(p);
@@ -36,7 +36,7 @@ void identity_check(uint64_t src)
 	assert(p == q);
 }
 
-void bswap_check(uint64_t src)
+extern "C" extern "C" void bswap_check(uint64_t src)
 {
 	uint64_t p = 0x0102040810204080LL;
 	uint64_t a = bmatxor(p, src);
@@ -47,7 +47,7 @@ void bswap_check(uint64_t src)
 	assert(b == c);
 }
 
-void brevb_check(uint64_t src)
+extern "C" extern "C" void brevb_check(uint64_t src)
 {
 	uint64_t p = 0x0102040810204080LL;
 	uint64_t a = bmatxor(src, p);
@@ -104,16 +104,15 @@ uint64_t rfill_bmat(uint64_t x)
 	return x;
 }
 
-void rfill_check(uint64_t x)
+extern "C" void rfill_check(uint64_t x)
 {
 	uint64_t a = rfill_ref(x);
 	uint64_t b = rfill_clz(x);
 	uint64_t c = rfill_brev(x);
-	uint64_t e = rfill_bmat(x);
+	uint64_t d = rfill_bmat(x);
 	assert(a == b);
 	assert(a == c);
 	assert(a == d);
-	assert(a == e);
 }
 
 // ---------------------------------------------------------

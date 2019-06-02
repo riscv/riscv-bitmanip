@@ -35,7 +35,7 @@ uint32_t xorshift32_inv(uint32_t x)
         return x;
 }
 
-void check_xorshift32_inv(uint32_t x)
+extern "C" void check_xorshift32_inv(uint32_t x)
 {
 	uint32_t y = xorshift32_fwd(x);
 	uint32_t z = xorshift32_inv(y);
@@ -56,7 +56,7 @@ uint32_t xorshift5_inv(uint32_t x)
         return x;
 }
 
-void check_xorshift5_inv(uint32_t x)
+extern "C" void check_xorshift5_inv(uint32_t x)
 {
 	uint32_t y = xorshift5_fwd(x);
 	uint32_t z = xorshift5_inv(y);
@@ -77,7 +77,7 @@ uint32_t gray_inv(uint32_t x)
         return x;
 }
 
-void check_gray_inv(uint32_t x)
+extern "C" void check_gray_inv(uint32_t x)
 {
 	uint32_t y = gray_fwd(x);
 	uint32_t z = gray_inv(y);

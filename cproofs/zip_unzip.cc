@@ -82,7 +82,7 @@ uint_xlen_t bxchg(uint_xlen_t rs1, uint_xlen_t rs2)
 
 // ---------------------------------------------------------
 
-void zip_unzip_invcheck(uint32_t src)
+extern "C" void zip_unzip_invcheck(uint32_t src)
 {
 	uint32_t a = zip(unzip(src));
 	assert(a == src);
@@ -91,14 +91,14 @@ void zip_unzip_invcheck(uint32_t src)
 	assert(b == src);
 }
 
-void zip4_unzip_eqcheck(uint32_t src)
+extern "C" void zip4_unzip_eqcheck(uint32_t src)
 {
 	uint32_t a = zip(zip(zip(zip(src))));
 	uint32_t b = unzip(src);
 	assert(a == b);
 }
 
-void zip_unzip4_eqcheck(uint32_t src)
+extern "C" void zip_unzip4_eqcheck(uint32_t src)
 {
 	uint32_t a = zip(src);
 	uint32_t b = unzip(unzip(unzip(unzip(src))));
@@ -107,7 +107,7 @@ void zip_unzip4_eqcheck(uint32_t src)
 
 // ---------------------------------------------------------
 
-void zip_unzip_invcheck_N32(uint32_t src)
+extern "C" void zip_unzip_invcheck_N32(uint32_t src)
 {
 	uint32_t a = zipN(unzipN(src, 32), 32);
 	assert(a == src);
@@ -116,14 +116,14 @@ void zip_unzip_invcheck_N32(uint32_t src)
 	assert(b == src);
 }
 
-void zip4_unzip_eqcheck_N32(uint32_t src)
+extern "C" void zip4_unzip_eqcheck_N32(uint32_t src)
 {
 	uint32_t a = zipN(zipN(zipN(zipN(src, 32), 32), 32), 32);
 	uint32_t b = unzipN(src, 32);
 	assert(a == b);
 }
 
-void zip_unzip4_eqcheck_N32(uint32_t src)
+extern "C" void zip_unzip4_eqcheck_N32(uint32_t src)
 {
 	uint32_t a = zipN(src, 32);
 	uint32_t b = unzipN(unzipN(unzipN(unzipN(src, 32), 32), 32), 32);
@@ -132,7 +132,7 @@ void zip_unzip4_eqcheck_N32(uint32_t src)
 
 // ---------------------------------------------------------
 
-void zip_unzip_invcheck_N16(uint32_t src)
+extern "C" void zip_unzip_invcheck_N16(uint32_t src)
 {
 	uint32_t a = zipN(unzipN(src, 16), 16);
 	assert(a == src);
@@ -141,14 +141,14 @@ void zip_unzip_invcheck_N16(uint32_t src)
 	assert(b == src);
 }
 
-void zip3_unzip_eqcheck_N16(uint32_t src)
+extern "C" void zip3_unzip_eqcheck_N16(uint32_t src)
 {
 	uint32_t a = zipN(zipN(zipN(src, 16), 16), 16);
 	uint32_t b = unzipN(src, 16);
 	assert(a == b);
 }
 
-void zip_unzip3_eqcheck_N16(uint32_t src)
+extern "C" void zip_unzip3_eqcheck_N16(uint32_t src)
 {
 	uint32_t a = zipN(src, 16);
 	uint32_t b = unzipN(unzipN(unzipN(src, 16), 16), 16);
@@ -157,7 +157,7 @@ void zip_unzip3_eqcheck_N16(uint32_t src)
 
 // ---------------------------------------------------------
 
-void zip_unzip_invcheck_N8(uint32_t src)
+extern "C" void zip_unzip_invcheck_N8(uint32_t src)
 {
 	uint32_t a = zipN(unzipN(src, 8), 8);
 	assert(a == src);
@@ -166,14 +166,14 @@ void zip_unzip_invcheck_N8(uint32_t src)
 	assert(b == src);
 }
 
-void zip2_unzip_eqcheck_N8(uint32_t src)
+extern "C" void zip2_unzip_eqcheck_N8(uint32_t src)
 {
 	uint32_t a = zipN(zipN(src, 8), 8);
 	uint32_t b = unzipN(src, 8);
 	assert(a == b);
 }
 
-void zip_unzip2_eqcheck_N8(uint32_t src)
+extern "C" void zip_unzip2_eqcheck_N8(uint32_t src)
 {
 	uint32_t a = zipN(src, 8);
 	uint32_t b = unzipN(unzipN(src, 8), 8);
@@ -182,7 +182,7 @@ void zip_unzip2_eqcheck_N8(uint32_t src)
 
 // ---------------------------------------------------------
 
-void zip_unzip_invcheck_N4(uint32_t src)
+extern "C" void zip_unzip_invcheck_N4(uint32_t src)
 {
 	uint32_t a = zipN(unzipN(src, 4), 4);
 	assert(a == src);
@@ -191,7 +191,7 @@ void zip_unzip_invcheck_N4(uint32_t src)
 	assert(b == src);
 }
 
-void zip_unzip_eqcheck_N4(uint32_t src)
+extern "C" void zip_unzip_eqcheck_N4(uint32_t src)
 {
 	uint32_t a = zipN(src, 4);
 	uint32_t b = unzipN(src, 4);
@@ -200,7 +200,7 @@ void zip_unzip_eqcheck_N4(uint32_t src)
 
 // ---------------------------------------------------------
 
-void zip_bfly_0_check(uint32_t src, uint32_t mask)
+extern "C" void zip_bfly_0_check(uint32_t src, uint32_t mask)
 {
 	uint32_t a = src;
 	uint32_t b = bfly(a, mask, 0);
@@ -214,7 +214,7 @@ void zip_bfly_0_check(uint32_t src, uint32_t mask)
 	assert(a == b);
 }
 
-void zip_bfly_1_check(uint32_t src, uint32_t mask)
+extern "C" void zip_bfly_1_check(uint32_t src, uint32_t mask)
 {
 	uint32_t a = src;
 	uint32_t b = bfly(a, mask, 1);
@@ -231,7 +231,7 @@ void zip_bfly_1_check(uint32_t src, uint32_t mask)
 	assert(a == b);
 }
 
-void zip_bfly_2_check(uint32_t src, uint32_t mask)
+extern "C" void zip_bfly_2_check(uint32_t src, uint32_t mask)
 {
 	uint32_t a = src;
 	uint32_t b = bfly(a, mask, 2);
@@ -249,7 +249,7 @@ void zip_bfly_2_check(uint32_t src, uint32_t mask)
 	assert(a == b);
 }
 
-void zip_bfly_3_check(uint32_t src, uint32_t mask)
+extern "C" void zip_bfly_3_check(uint32_t src, uint32_t mask)
 {
 	uint32_t a = src;
 	uint32_t b = bfly(a, mask, 3);
@@ -264,7 +264,7 @@ void zip_bfly_3_check(uint32_t src, uint32_t mask)
 	assert(a == b);
 }
 
-void bxchg_bfly_4_check(uint32_t src, uint32_t mask)
+extern "C" void bxchg_bfly_4_check(uint32_t src, uint32_t mask)
 {
 	uint32_t a = bxchg(src, (mask & 0xffff) ^ (~mask << 16));
 	uint32_t b = bfly(src, mask, 4);
@@ -407,7 +407,7 @@ uint32_t genzip32(uint32_t rs1, uint32_t rs2)
 
 // ---------------------------------------------------------
 
-void check_zip_unzip_n(uint32_t src)
+extern "C" void check_zip_unzip_n(uint32_t src)
 {
 	uint32_t a = zipN(src, 4);
 	uint32_t b = unzipN(src, 4);
@@ -416,42 +416,42 @@ void check_zip_unzip_n(uint32_t src)
 	assert(a == c);
 }
 
-void check_zip_b(uint32_t src)
+extern "C" void check_zip_b(uint32_t src)
 {
 	uint32_t a = zipN(src, 8);
 	uint32_t b = genzip32(src, 6);
 	assert(a == b);
 }
 
-void check_unzip_b(uint32_t src)
+extern "C" void check_unzip_b(uint32_t src)
 {
 	uint32_t a = unzipN(src, 8);
 	uint32_t b = genzip32(src, 7);
 	assert(a == b);
 }
 
-void check_zip_h(uint32_t src)
+extern "C" void check_zip_h(uint32_t src)
 {
 	uint32_t a = zipN(src, 16);
 	uint32_t b = genzip32(src, 14);
 	assert(a == b);
 }
 
-void check_unzip_h(uint32_t src)
+extern "C" void check_unzip_h(uint32_t src)
 {
 	uint32_t a = unzipN(src, 16);
 	uint32_t b = genzip32(src, 15);
 	assert(a == b);
 }
 
-void check_zip(uint32_t src)
+extern "C" void check_zip(uint32_t src)
 {
 	uint32_t a = zip(src);
 	uint32_t b = genzip32(src, 30);
 	assert(a == b);
 }
 
-void check_gzip32(uint32_t src, uint32_t mode)
+extern "C" void check_gzip32(uint32_t src, uint32_t mode)
 {
 	uint32_t a = unshfl32(src, mode);
 	uint32_t b = unshfl32alt(src, mode);
@@ -461,7 +461,7 @@ void check_gzip32(uint32_t src, uint32_t mode)
 	assert(a == c);
 }
 
-void check_stages(uint32_t src)
+extern "C" void check_stages(uint32_t src)
 {
 	assert(genzip32_stage0_ref(src) == genzip32_stage0(src));
 	assert(genzip32_stage1_ref(src) == genzip32_stage1(src));
@@ -473,7 +473,7 @@ void check_stages(uint32_t src)
 
 // ---------------------------------------------------------
 
-void check_pack(uint32_t x1, uint32_t x2)
+extern "C" void check_pack(uint32_t x1, uint32_t x2)
 {
 	uint32_t res = pack(x1, x2);
 	res = zip8(res);
@@ -485,14 +485,14 @@ void check_pack(uint32_t x1, uint32_t x2)
 
 // ---------------------------------------------------------
 
-void check_shflw(uint64_t src, int ctrl)
+extern "C" void check_shflw(uint64_t src, int ctrl)
 {
 	uint64_t ref = rv64b::sextw(rv32b::shfl(src, ctrl));
 	uint64_t tst = rv64b::shfl(rv64b::sextw(src), ctrl & 15);
 	assert(ref == tst);
 }
 
-void check_unshflw(uint64_t src, int ctrl)
+extern "C" void check_unshflw(uint64_t src, int ctrl)
 {
 	uint64_t ref = rv64b::sextw(rv32b::unshfl(src, ctrl));
 	uint64_t tst = rv64b::unshfl(rv64b::sextw(src), ctrl & 15);

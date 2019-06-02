@@ -17,7 +17,7 @@
 
 #include "common.h"
 
-void test_fsl(uint64_t A, int B)
+extern "C" void test_fsl(uint64_t A, int B)
 {
 	uint32_t A_lo = A, A_hi = A >> 32;
 	uint32_t ref = rv64b::rol(A, B) >> 32;
@@ -25,7 +25,7 @@ void test_fsl(uint64_t A, int B)
 	assert(ref == res);
 }
 
-void test_fsr(uint64_t A, int B)
+extern "C" void test_fsr(uint64_t A, int B)
 {
 	uint32_t A_lo = A, A_hi = A >> 32;
 	uint32_t ref = rv64b::ror(A, B);
@@ -33,14 +33,14 @@ void test_fsr(uint64_t A, int B)
 	assert(ref == res);
 }
 
-void fsl_via_fsr(uint32_t A, uint32_t B, uint32_t C)
+extern "C" void fsl_via_fsr(uint32_t A, uint32_t B, uint32_t C)
 {
 	uint32_t ref = rv32b::fsl(A, +B, C);
 	uint32_t res = rv32b::fsr(A, -B, C);
 	assert(ref == res);
 }
 
-void fsl_imm(uint32_t x, int shamt, uint32_t y)
+extern "C" void fsl_imm(uint32_t x, int shamt, uint32_t y)
 {
 	uint32_t ref = rv32b::fsl(x, shamt, y);
 	int sh6 = shamt & 63;
@@ -57,7 +57,7 @@ uint32_t shift32(uint32_t x, int shamt, uint32_t y)
 	return rv32b::fsr(x, shamt, y);
 }
 
-void shift32_ids(uint32_t x, int shamt, uint32_t y)
+extern "C" void shift32_ids(uint32_t x, int shamt, uint32_t y)
 {
 	uint32_t sx = int32_t(x) >> 31;
 	int sh6 = shamt & 63;
@@ -80,7 +80,7 @@ uint64_t shift64(uint64_t x, int shamt, uint64_t y)
 	return rv64b::fsr(x, shamt, y);
 }
 
-void shift64_ids(uint64_t x, int shamt, uint64_t y)
+extern "C" void shift64_ids(uint64_t x, int shamt, uint64_t y)
 {
 	uint64_t sx = int64_t(x) >> 63;
 	int sh7 = shamt & 127;
@@ -108,7 +108,7 @@ uint32_t shift64w(uint64_t x, int shamt, uint64_t y)
 	return rv64b::fsr(x, shamt, y);
 }
 
-void shift64w_ids(uint64_t x, int shamt, uint64_t y)
+extern "C" void shift64w_ids(uint64_t x, int shamt, uint64_t y)
 {
 	uint64_t sx = int64_t(x << 32) >> 63;
 	int sh6 = shamt & 63;
@@ -151,7 +151,7 @@ void bigint_ror(uint32_t data[], int n, int shamt)
 	data[n-1] = rv32b::fsr(data[n-1], shamt, buffer);
 }
 
-void test_bigint_sll_srl(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
+extern "C" void test_bigint_sll_srl(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
 	uint32_t data[4] = {a, b, c, d};
 

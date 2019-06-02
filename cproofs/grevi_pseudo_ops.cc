@@ -31,7 +31,7 @@ uint64_t bitmove64(uint64_t x, int p, int q)
 
 // ---------------------------------------------------------
 
-void rv32_brev(uint32_t x)
+extern "C" void rv32_brev(uint32_t x)
 {
 	uint32_t a = grev32(x, 31);
 	uint32_t b = 0;
@@ -42,7 +42,7 @@ void rv32_brev(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_brev_h(uint32_t x)
+extern "C" void rv32_brev_h(uint32_t x)
 {
 	uint32_t a = grev32(x, 15);
 	uint32_t b = 0;
@@ -56,7 +56,7 @@ void rv32_brev_h(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_brev_b(uint32_t x)
+extern "C" void rv32_brev_b(uint32_t x)
 {
 	uint32_t a = grev32(x, 7);
 	uint32_t b = 0;
@@ -72,7 +72,7 @@ void rv32_brev_b(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_bswap(uint32_t x)
+extern "C" void rv32_bswap(uint32_t x)
 {
 	uint32_t a = grev32(x, 24);
 	uint32_t b = 0;
@@ -85,7 +85,7 @@ void rv32_bswap(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_bswap_h(uint32_t x)
+extern "C" void rv32_bswap_h(uint32_t x)
 {
 	uint32_t a = grev32(x, 8);
 	uint32_t b = 0;
@@ -98,7 +98,7 @@ void rv32_bswap_h(uint32_t x)
 	assert(a == b);
 }
 
-void rv32_hswap(uint32_t x)
+extern "C" void rv32_hswap(uint32_t x)
 {
 	uint32_t a = grev32(x, 16);
 	uint32_t b = 0;
@@ -111,7 +111,7 @@ void rv32_hswap(uint32_t x)
 
 // ---------------------------------------------------------
 
-void rv64_brev(uint64_t x)
+extern "C" void rv64_brev(uint64_t x)
 {
 	uint64_t a = grev64(x, 63);
 	uint64_t b = 0;
@@ -122,7 +122,7 @@ void rv64_brev(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_brev_w(uint64_t x)
+extern "C" void rv64_brev_w(uint64_t x)
 {
 	uint64_t a = grev64(x, 31);
 	uint64_t b = 0;
@@ -136,7 +136,7 @@ void rv64_brev_w(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_brev_h(uint64_t x)
+extern "C" void rv64_brev_h(uint64_t x)
 {
 	uint64_t a = grev64(x, 15);
 	uint64_t b = 0;
@@ -152,7 +152,7 @@ void rv64_brev_h(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_brev_b(uint64_t x)
+extern "C" void rv64_brev_b(uint64_t x)
 {
 	uint64_t a = grev64(x, 7);
 	uint64_t b = 0;
@@ -172,7 +172,7 @@ void rv64_brev_b(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_bswap(uint64_t x)
+extern "C" void rv64_bswap(uint64_t x)
 {
 	uint64_t a = grev64(x, 56);
 	uint64_t b = 0;
@@ -183,7 +183,7 @@ void rv64_bswap(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_bswap_h(uint64_t x)
+extern "C" void rv64_bswap_h(uint64_t x)
 {
 	uint64_t a = grev64(x, 8);
 	uint64_t b = 0;
@@ -196,7 +196,7 @@ void rv64_bswap_h(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_bswap_w(uint64_t x)
+extern "C" void rv64_bswap_w(uint64_t x)
 {
 	uint64_t a = grev64(x, 24);
 	uint64_t b = 0;
@@ -209,7 +209,7 @@ void rv64_bswap_w(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_hswap(uint64_t x)
+extern "C" void rv64_hswap(uint64_t x)
 {
 	uint64_t a = grev64(x, 48);
 	uint64_t b = 0;
@@ -222,7 +222,7 @@ void rv64_hswap(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_hswap_w(uint64_t x)
+extern "C" void rv64_hswap_w(uint64_t x)
 {
 	uint64_t a = grev64(x, 16);
 	uint64_t b = 0;
@@ -235,7 +235,7 @@ void rv64_hswap_w(uint64_t x)
 	assert(a == b);
 }
 
-void rv64_wswap(uint64_t x)
+extern "C" void rv64_wswap(uint64_t x)
 {
 	uint64_t a = grev64(x, 32);
 	uint64_t b = 0;

@@ -53,7 +53,7 @@ uint32_t prefix_byte_nibbles_impl(uint32_t src)
 	return a0;
 }
 
-void prefix_byte_nibbles_check(uint32_t src)
+extern "C" void prefix_byte_nibbles_check(uint32_t src)
 {
 	uint32_t a = prefix_byte_nibbles_reference(src);
 	uint32_t b = prefix_byte_nibbles_impl(src);
@@ -97,7 +97,7 @@ uint32_t index_byte_nibbles_impl(uint32_t src)
 	return a0;
 }
 
-void index_byte_nibbles_check(uint32_t src)
+extern "C" void index_byte_nibbles_check(uint32_t src)
 {
 	uint32_t a = index_byte_nibbles_reference(src);
 	uint32_t b = index_byte_nibbles_impl(src);
@@ -127,7 +127,7 @@ int tenth_bit_impl(uint32_t src)
 	return a0;
 }
 
-void tenth_bit_check(uint32_t src)
+extern "C" void tenth_bit_check(uint32_t src)
 {
 	uint32_t a = tenth_bit_reference(src);
 	uint32_t b = tenth_bit_impl(src);
@@ -136,7 +136,7 @@ void tenth_bit_check(uint32_t src)
 
 // ---------------------------------------------------------
 
-void zip_fanout()
+extern "C" void zip_fanout()
 {
 	uint64_t x = 0x0000000012345678LL;
 

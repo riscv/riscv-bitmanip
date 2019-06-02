@@ -19,21 +19,21 @@
 
 // ---------------------------------------------------------
 
-void clmul_gray1(uint16_t src)
+extern "C" void clmul_gray1(uint16_t src)
 {
 	uint16_t gray_encoded = src ^ (src >> 1);
 	uint16_t gray_decoded = rv32b::clmul(gray_encoded, 0x0000ffff) >> 15;
 	assert(gray_decoded == src);
 }
 
-void clmul_gray2(uint32_t src)
+extern "C" void clmul_gray2(uint32_t src)
 {
 	uint32_t gray_encoded = src ^ (src >> 1);
 	uint32_t gray_decoded = rv32b::clmulh(gray_encoded, -1) ^ gray_encoded;
 	assert(gray_decoded == src);
 }
 
-void clmul_gray3(uint32_t src)
+extern "C" void clmul_gray3(uint32_t src)
 {
 	uint32_t gray_encoded = src ^ (src >> 1);
 	uint32_t gray_decoded = rv32b::brev(rv32b::clmul(rv32b::brev(gray_encoded), -1));
@@ -42,7 +42,7 @@ void clmul_gray3(uint32_t src)
 
 // ---------------------------------------------------------
 
-void clmul_fanout(uint32_t src)
+extern "C" void clmul_fanout(uint32_t src)
 {
 	uint32_t result = rv32b::unzip(rv32b::clmulh(src, src));
 	uint32_t reference = src >> 16;
@@ -51,7 +51,7 @@ void clmul_fanout(uint32_t src)
 
 // ---------------------------------------------------------
 
-void crc_test()
+extern "C" void crc_test()
 {
 	uint32_t x = 0xffffffff;
 	x = rv32b::crc32_b(x ^ '1');
@@ -72,24 +72,24 @@ void crc_test()
 
 // ---------------------------------------------------------
 
-void crc_equiv_h_bb(uint64_t x)
+extern "C" void crc_equiv_h_bb(uint64_t x)
 {
 	assert(rv64b::crc32_h(x) == rv64b::crc32_b(rv64b::crc32_b(x)));
 }
 
-void crc_equiv_w_hh(uint64_t x)
+extern "C" void crc_equiv_w_hh(uint64_t x)
 {
 	assert(rv64b::crc32_w(x) == rv64b::crc32_h(rv64b::crc32_h(x)));
 }
 
-void crc_equiv_d_ww(uint64_t x)
+extern "C" void crc_equiv_d_ww(uint64_t x)
 {
 	assert(rv64b::crc32_d(x) == rv64b::crc32_w(rv64b::crc32_w(x)));
 }
 
 // ---------------------------------------------------------
 
-void pack_test(uint64_t x1, uint64_t x2, uint64_t x3)
+extern "C" void pack_test(uint64_t x1, uint64_t x2, uint64_t x3)
 {
 	uint64_t rd, ref;
 
@@ -110,7 +110,7 @@ void pack_test(uint64_t x1, uint64_t x2, uint64_t x3)
 
 // ---------------------------------------------------------
 
-void min_max_test(uint32_t u1, uint32_t u2)
+extern "C" void min_max_test(uint32_t u1, uint32_t u2)
 {
 	int32_t s1 = u1, s2 = u2;
 
