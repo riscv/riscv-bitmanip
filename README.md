@@ -17,6 +17,9 @@ See [bitmanip-draft.pdf](bitmanip-draft.pdf) for a pre-built version
 of the PDF spec document.
 The source of the PDF specification is in the [specification](specification) directory with a Makefile and script (bitmanip.sh) to build the PDF.
 
+## Toolchain
+See the [patches](patches) directory for patches for [riscv-opcodes](https://github.com/riscv/riscv-opcodes) and [binutils](https://www.gnu.org/software/binutils/). See [rvintrin.h](https://github.com/riscv/riscv-bitmanip/blob/master/cproofs/rvintrin.h) for compiler intrinsics.
+
 ## Verilog Reference
 The [verilog](verilog) directory includes Verilog reference implementations.
 

@@ -1,0 +1,408 @@
+diff --git a/include/opcode/riscv-opc.h b/include/opcode/riscv-opc.h
+index f09200c073..adc1cbd2f5 100644
+--- a/include/opcode/riscv-opc.h
++++ b/include/opcode/riscv-opc.h
+@@ -169,6 +169,176 @@
+ #define MASK_REMW  0xfe00707f
+ #define MATCH_REMUW 0x200703b
+ #define MASK_REMUW  0xfe00707f
++#define MATCH_ANDN 0x40007033
++#define MASK_ANDN  0xfe00707f
++#define MATCH_ORN 0x40006033
++#define MASK_ORN  0xfe00707f
++#define MATCH_XORN 0x40004033
++#define MASK_XORN  0xfe00707f
++#define MATCH_SLO 0x20001033
++#define MASK_SLO  0xfe00707f
++#define MATCH_SRO 0x20005033
++#define MASK_SRO  0xfe00707f
++#define MATCH_ROL 0x60001033
++#define MASK_ROL  0xfe00707f
++#define MATCH_ROR 0x60005033
++#define MASK_ROR  0xfe00707f
++#define MATCH_SBSET 0x28001033
++#define MASK_SBSET  0xfe00707f
++#define MATCH_SBCLR 0x48001033
++#define MASK_SBCLR  0xfe00707f
++#define MATCH_SBINV 0x68001033
++#define MASK_SBINV  0xfe00707f
++#define MATCH_SBEXT 0x48005033
++#define MASK_SBEXT  0xfe00707f
++#define MATCH_SLOI 0x20001013
++#define MASK_SLOI  0xfc00707f
++#define MATCH_SROI 0x20005013
++#define MASK_SROI  0xfc00707f
++#define MATCH_RORI 0x60005013
++#define MASK_RORI  0xfc00707f
++#define MATCH_SBSETI 0x28001013
++#define MASK_SBSETI  0xfc00707f
++#define MATCH_SBCLRI 0x48001013
++#define MASK_SBCLRI  0xfc00707f
++#define MATCH_SBINVI 0x68001013
++#define MASK_SBINVI  0xfc00707f
++#define MATCH_SBEXTI 0x48005013
++#define MASK_SBEXTI  0xfc00707f
++#define MATCH_CMIX 0x6001033
++#define MASK_CMIX  0x600707f
++#define MATCH_CMOV 0x6005033
++#define MASK_CMOV  0x600707f
++#define MATCH_FSL 0x4001033
++#define MASK_FSL  0x600707f
++#define MATCH_FSR 0x4005033
++#define MASK_FSR  0x600707f
++#define MATCH_FSRI 0x4005013
++#define MASK_FSRI  0x400707f
++#define MATCH_CLZ 0x60001013
++#define MASK_CLZ  0xfff0707f
++#define MATCH_CTZ 0x60101013
++#define MASK_CTZ  0xfff0707f
++#define MATCH_PCNT 0x60201013
++#define MASK_PCNT  0xfff0707f
++#define MATCH_CRC32_B 0x61001013
++#define MASK_CRC32_B  0xfff0707f
++#define MATCH_CRC32_H 0x61101013
++#define MASK_CRC32_H  0xfff0707f
++#define MATCH_CRC32_W 0x61201013
++#define MASK_CRC32_W  0xfff0707f
++#define MATCH_CRC32C_B 0x61801013
++#define MASK_CRC32C_B  0xfff0707f
++#define MATCH_CRC32C_H 0x61901013
++#define MASK_CRC32C_H  0xfff0707f
++#define MATCH_CRC32C_W 0x61a01013
++#define MASK_CRC32C_W  0xfff0707f
++#define MATCH_CLMUL 0xa001033
++#define MASK_CLMUL  0xfe00707f
++#define MATCH_CLMULHX 0xa002033
++#define MASK_CLMULHX  0xfe00707f
++#define MATCH_CLMULH 0xa003033
++#define MASK_CLMULH  0xfe00707f
++#define MATCH_MIN 0xa004033
++#define MASK_MIN  0xfe00707f
++#define MATCH_MAX 0xa005033
++#define MASK_MAX  0xfe00707f
++#define MATCH_MINU 0xa006033
++#define MASK_MINU  0xfe00707f
++#define MATCH_MAXU 0xa007033
++#define MASK_MAXU  0xfe00707f
++#define MATCH_SHFL 0x8001033
++#define MASK_SHFL  0xfe00707f
++#define MATCH_UNSHFL 0x8005033
++#define MASK_UNSHFL  0xfe00707f
++#define MATCH_BDEP 0x8002033
++#define MASK_BDEP  0xfe00707f
++#define MATCH_BEXT 0x8006033
++#define MASK_BEXT  0xfe00707f
++#define MATCH_PACK 0x8004033
++#define MASK_PACK  0xfe00707f
++#define MATCH_SHFLI 0x8001013
++#define MASK_SHFLI  0xfc00707f
++#define MATCH_UNSHFLI 0x8005013
++#define MASK_UNSHFLI  0xfc00707f
++#define MATCH_BMATFLIP 0x60301013
++#define MASK_BMATFLIP  0xfff0707f
++#define MATCH_CRC32_D 0x61301013
++#define MASK_CRC32_D  0xfff0707f
++#define MATCH_CRC32C_D 0x61b01013
++#define MASK_CRC32C_D  0xfff0707f
++#define MATCH_BMATOR 0x8003033
++#define MASK_BMATOR  0xfe00707f
++#define MATCH_BMATXOR 0x8007033
++#define MASK_BMATXOR  0xfe00707f
++#define MATCH_ADDIWU 0x401b
++#define MASK_ADDIWU  0x707f
++#define MATCH_SLLIU_W 0x800101b
++#define MASK_SLLIU_W  0xfc00707f
++#define MATCH_ADDWU 0xa00003b
++#define MASK_ADDWU  0xfe00707f
++#define MATCH_SUBWU 0x4a00003b
++#define MASK_SUBWU  0xfe00707f
++#define MATCH_ADDU_W 0x800003b
++#define MASK_ADDU_W  0xfe00707f
++#define MATCH_SUBU_W 0x4800003b
++#define MASK_SUBU_W  0xfe00707f
++#define MATCH_SLOW 0x2000103b
++#define MASK_SLOW  0xfe00707f
++#define MATCH_SROW 0x2000503b
++#define MASK_SROW  0xfe00707f
++#define MATCH_ROLW 0x6000103b
++#define MASK_ROLW  0xfe00707f
++#define MATCH_RORW 0x6000503b
++#define MASK_RORW  0xfe00707f
++#define MATCH_SBSETW 0x2800103b
++#define MASK_SBSETW  0xfe00707f
++#define MATCH_SBCLRW 0x4800103b
++#define MASK_SBCLRW  0xfe00707f
++#define MATCH_SBINVW 0x6800103b
++#define MASK_SBINVW  0xfe00707f
++#define MATCH_SBEXTW 0x4800503b
++#define MASK_SBEXTW  0xfe00707f
++#define MATCH_SLOIW 0x2000101b
++#define MASK_SLOIW  0xfe00707f
++#define MATCH_SROIW 0x2000501b
++#define MASK_SROIW  0xfe00707f
++#define MATCH_RORIW 0x6000501b
++#define MASK_RORIW  0xfe00707f
++#define MATCH_SBSETIW 0x2800101b
++#define MASK_SBSETIW  0xfe00707f
++#define MATCH_SBCLRIW 0x4800101b
++#define MASK_SBCLRIW  0xfe00707f
++#define MATCH_SBINVIW 0x6800101b
++#define MASK_SBINVIW  0xfe00707f
++#define MATCH_FSLW 0x400103b
++#define MASK_FSLW  0x600707f
++#define MATCH_FSRW 0x400503b
++#define MASK_FSRW  0x600707f
++#define MATCH_FSRIW 0x400501b
++#define MASK_FSRIW  0x600707f
++#define MATCH_CLZW 0x6000101b
++#define MASK_CLZW  0xfff0707f
++#define MATCH_CTZW 0x6010101b
++#define MASK_CTZW  0xfff0707f
++#define MATCH_PCNTW 0x6020101b
++#define MASK_PCNTW  0xfff0707f
++#define MATCH_CLMULW 0xa00103b
++#define MASK_CLMULW  0xfe00707f
++#define MATCH_CLMULHXW 0xa00203b
++#define MASK_CLMULHXW  0xfe00707f
++#define MATCH_CLMULHW 0xa00303b
++#define MASK_CLMULHW  0xfe00707f
++#define MATCH_SHFLW 0x800103b
++#define MASK_SHFLW  0xfe00707f
++#define MATCH_UNSHFLW 0x800503b
++#define MASK_UNSHFLW  0xfe00707f
++#define MATCH_BDEPW 0x800203b
++#define MASK_BDEPW  0xfe00707f
++#define MATCH_BEXTW 0x800603b
++#define MASK_BEXTW  0xfe00707f
++#define MATCH_PACKW 0x800403b
++#define MASK_PACKW  0xfe00707f
+ #define MATCH_AMOADD_W 0x202f
+ #define MASK_AMOADD_W  0xf800707f
+ #define MATCH_AMOXOR_W 0x2000202f
+@@ -914,6 +1084,91 @@ DECLARE_INSN(divw, MATCH_DIVW, MASK_DIVW)
+ DECLARE_INSN(divuw, MATCH_DIVUW, MASK_DIVUW)
+ DECLARE_INSN(remw, MATCH_REMW, MASK_REMW)
+ DECLARE_INSN(remuw, MATCH_REMUW, MASK_REMUW)
++DECLARE_INSN(andn, MATCH_ANDN, MASK_ANDN)
++DECLARE_INSN(orn, MATCH_ORN, MASK_ORN)
++DECLARE_INSN(xorn, MATCH_XORN, MASK_XORN)
++DECLARE_INSN(slo, MATCH_SLO, MASK_SLO)
++DECLARE_INSN(sro, MATCH_SRO, MASK_SRO)
++DECLARE_INSN(rol, MATCH_ROL, MASK_ROL)
++DECLARE_INSN(ror, MATCH_ROR, MASK_ROR)
++DECLARE_INSN(sbset, MATCH_SBSET, MASK_SBSET)
++DECLARE_INSN(sbclr, MATCH_SBCLR, MASK_SBCLR)
++DECLARE_INSN(sbinv, MATCH_SBINV, MASK_SBINV)
++DECLARE_INSN(sbext, MATCH_SBEXT, MASK_SBEXT)
++DECLARE_INSN(sloi, MATCH_SLOI, MASK_SLOI)
++DECLARE_INSN(sroi, MATCH_SROI, MASK_SROI)
++DECLARE_INSN(rori, MATCH_RORI, MASK_RORI)
++DECLARE_INSN(sbseti, MATCH_SBSETI, MASK_SBSETI)
++DECLARE_INSN(sbclri, MATCH_SBCLRI, MASK_SBCLRI)
++DECLARE_INSN(sbinvi, MATCH_SBINVI, MASK_SBINVI)
++DECLARE_INSN(sbexti, MATCH_SBEXTI, MASK_SBEXTI)
++DECLARE_INSN(cmix, MATCH_CMIX, MASK_CMIX)
++DECLARE_INSN(cmov, MATCH_CMOV, MASK_CMOV)
++DECLARE_INSN(fsl, MATCH_FSL, MASK_FSL)
++DECLARE_INSN(fsr, MATCH_FSR, MASK_FSR)
++DECLARE_INSN(fsri, MATCH_FSRI, MASK_FSRI)
++DECLARE_INSN(clz, MATCH_CLZ, MASK_CLZ)
++DECLARE_INSN(ctz, MATCH_CTZ, MASK_CTZ)
++DECLARE_INSN(pcnt, MATCH_PCNT, MASK_PCNT)
++DECLARE_INSN(crc32_b, MATCH_CRC32_B, MASK_CRC32_B)
++DECLARE_INSN(crc32_h, MATCH_CRC32_H, MASK_CRC32_H)
++DECLARE_INSN(crc32_w, MATCH_CRC32_W, MASK_CRC32_W)
++DECLARE_INSN(crc32c_b, MATCH_CRC32C_B, MASK_CRC32C_B)
++DECLARE_INSN(crc32c_h, MATCH_CRC32C_H, MASK_CRC32C_H)
++DECLARE_INSN(crc32c_w, MATCH_CRC32C_W, MASK_CRC32C_W)
++DECLARE_INSN(clmul, MATCH_CLMUL, MASK_CLMUL)
++DECLARE_INSN(clmulhx, MATCH_CLMULHX, MASK_CLMULHX)
++DECLARE_INSN(clmulh, MATCH_CLMULH, MASK_CLMULH)
++DECLARE_INSN(min, MATCH_MIN, MASK_MIN)
++DECLARE_INSN(max, MATCH_MAX, MASK_MAX)
++DECLARE_INSN(minu, MATCH_MINU, MASK_MINU)
++DECLARE_INSN(maxu, MATCH_MAXU, MASK_MAXU)
++DECLARE_INSN(shfl, MATCH_SHFL, MASK_SHFL)
++DECLARE_INSN(unshfl, MATCH_UNSHFL, MASK_UNSHFL)
++DECLARE_INSN(bdep, MATCH_BDEP, MASK_BDEP)
++DECLARE_INSN(bext, MATCH_BEXT, MASK_BEXT)
++DECLARE_INSN(pack, MATCH_PACK, MASK_PACK)
++DECLARE_INSN(shfli, MATCH_SHFLI, MASK_SHFLI)
++DECLARE_INSN(unshfli, MATCH_UNSHFLI, MASK_UNSHFLI)
++DECLARE_INSN(bmatflip, MATCH_BMATFLIP, MASK_BMATFLIP)
++DECLARE_INSN(crc32_d, MATCH_CRC32_D, MASK_CRC32_D)
++DECLARE_INSN(crc32c_d, MATCH_CRC32C_D, MASK_CRC32C_D)
++DECLARE_INSN(bmator, MATCH_BMATOR, MASK_BMATOR)
++DECLARE_INSN(bmatxor, MATCH_BMATXOR, MASK_BMATXOR)
++DECLARE_INSN(addiwu, MATCH_ADDIWU, MASK_ADDIWU)
++DECLARE_INSN(slliu_w, MATCH_SLLIU_W, MASK_SLLIU_W)
++DECLARE_INSN(addwu, MATCH_ADDWU, MASK_ADDWU)
++DECLARE_INSN(subwu, MATCH_SUBWU, MASK_SUBWU)
++DECLARE_INSN(addu_w, MATCH_ADDU_W, MASK_ADDU_W)
++DECLARE_INSN(subu_w, MATCH_SUBU_W, MASK_SUBU_W)
++DECLARE_INSN(slow, MATCH_SLOW, MASK_SLOW)
++DECLARE_INSN(srow, MATCH_SROW, MASK_SROW)
++DECLARE_INSN(rolw, MATCH_ROLW, MASK_ROLW)
++DECLARE_INSN(rorw, MATCH_RORW, MASK_RORW)
++DECLARE_INSN(sbsetw, MATCH_SBSETW, MASK_SBSETW)
++DECLARE_INSN(sbclrw, MATCH_SBCLRW, MASK_SBCLRW)
++DECLARE_INSN(sbinvw, MATCH_SBINVW, MASK_SBINVW)
++DECLARE_INSN(sbextw, MATCH_SBEXTW, MASK_SBEXTW)
++DECLARE_INSN(sloiw, MATCH_SLOIW, MASK_SLOIW)
++DECLARE_INSN(sroiw, MATCH_SROIW, MASK_SROIW)
++DECLARE_INSN(roriw, MATCH_RORIW, MASK_RORIW)
++DECLARE_INSN(sbsetiw, MATCH_SBSETIW, MASK_SBSETIW)
++DECLARE_INSN(sbclriw, MATCH_SBCLRIW, MASK_SBCLRIW)
++DECLARE_INSN(sbinviw, MATCH_SBINVIW, MASK_SBINVIW)
++DECLARE_INSN(fslw, MATCH_FSLW, MASK_FSLW)
++DECLARE_INSN(fsrw, MATCH_FSRW, MASK_FSRW)
++DECLARE_INSN(fsriw, MATCH_FSRIW, MASK_FSRIW)
++DECLARE_INSN(clzw, MATCH_CLZW, MASK_CLZW)
++DECLARE_INSN(ctzw, MATCH_CTZW, MASK_CTZW)
++DECLARE_INSN(pcntw, MATCH_PCNTW, MASK_PCNTW)
++DECLARE_INSN(clmulw, MATCH_CLMULW, MASK_CLMULW)
++DECLARE_INSN(clmulhxw, MATCH_CLMULHXW, MASK_CLMULHXW)
++DECLARE_INSN(clmulhw, MATCH_CLMULHW, MASK_CLMULHW)
++DECLARE_INSN(shflw, MATCH_SHFLW, MASK_SHFLW)
++DECLARE_INSN(unshflw, MATCH_UNSHFLW, MASK_UNSHFLW)
++DECLARE_INSN(bdepw, MATCH_BDEPW, MASK_BDEPW)
++DECLARE_INSN(bextw, MATCH_BEXTW, MASK_BEXTW)
++DECLARE_INSN(packw, MATCH_PACKW, MASK_PACKW)
+ DECLARE_INSN(amoadd_w, MATCH_AMOADD_W, MASK_AMOADD_W)
+ DECLARE_INSN(amoxor_w, MATCH_AMOXOR_W, MASK_AMOXOR_W)
+ DECLARE_INSN(amoor_w, MATCH_AMOOR_W, MASK_AMOOR_W)
+diff --git a/opcodes/riscv-dis.c b/opcodes/riscv-dis.c
+index 764c4d4d25..d41749e7f0 100644
+--- a/opcodes/riscv-dis.c
++++ b/opcodes/riscv-dis.c
+@@ -236,6 +236,11 @@ print_insn_args (const char *d, insn_t l, bfd_vma pc, disassemble_info *info)
+ 		 riscv_gpr_names[EXTRACT_OPERAND (RS2, l)]);
+ 	  break;
+ 
++	case 'r':
++	  print (info->stream, "%s",
++		 riscv_gpr_names[EXTRACT_OPERAND (RS3, l)]);
++	  break;
++
+ 	case 'u':
+ 	  print (info->stream, "0x%x",
+ 		 (unsigned)EXTRACT_UTYPE_IMM (l) >> RISCV_IMM_BITS);
+diff --git a/opcodes/riscv-opc.c b/opcodes/riscv-opc.c
+index bd652590b5..fd2f827544 100644
+--- a/opcodes/riscv-opc.c
++++ b/opcodes/riscv-opc.c
+@@ -495,6 +495,114 @@ const struct riscv_opcode riscv_opcodes[] =
+ {"remw",     64, {"M", 0}, "d,s,t",  MATCH_REMW, MASK_REMW, match_opcode, 0 },
+ {"remuw",    64, {"M", 0}, "d,s,t",  MATCH_REMUW, MASK_REMUW, match_opcode, 0 },
+ 
++/* Bitmanip instruction subset */
++{"andn",      0, {"B", 0},   "d,s,t",  MATCH_ANDN, MASK_ANDN, match_opcode, 0 },
++{"orn",       0, {"B", 0},   "d,s,t",  MATCH_ORN, MASK_ORN, match_opcode, 0 },
++{"xorn",      0, {"B", 0},   "d,s,t",  MATCH_XORN, MASK_XORN, match_opcode, 0 },
++{"sloi",      0, {"B", 0},   "d,s,>",  MATCH_SLOI, MASK_SLOI, match_opcode, 0 },
++{"sroi",      0, {"B", 0},   "d,s,>",  MATCH_SROI, MASK_SROI, match_opcode, 0 },
++// {"roli",   0, {"B", 0},   "d,s,>",  MATCH_ROLI, MASK_ROLI, match_opcode, 0 },   /** TBD **/
++{"rori",      0, {"B", 0},   "d,s,>",  MATCH_RORI, MASK_RORI, match_opcode, 0 },
++{"slo",       0, {"B", 0},   "d,s,t",  MATCH_SLO, MASK_SLO, match_opcode, 0 },
++{"slo",       0, {"B", 0},   "d,s,>",  MATCH_SLOI, MASK_SLOI, match_opcode, INSN_ALIAS },
++{"sro",       0, {"B", 0},   "d,s,t",  MATCH_SRO, MASK_SRO, match_opcode, 0 },
++{"sro",       0, {"B", 0},   "d,s,>",  MATCH_SROI, MASK_SROI, match_opcode, INSN_ALIAS },
++{"rol",       0, {"B", 0},   "d,s,t",  MATCH_ROL, MASK_ROL, match_opcode, 0 },
++// {"rol",    0, {"B", 0},   "d,s,>",  MATCH_ROLI, MASK_ROLI, match_opcode, INSN_ALIAS },   /** TBD **/
++{"ror",       0, {"B", 0},   "d,s,t",  MATCH_ROR, MASK_ROR, match_opcode, 0 },
++{"ror",       0, {"B", 0},   "d,s,>",  MATCH_RORI, MASK_RORI, match_opcode, INSN_ALIAS },
++{"sbseti",    0, {"B", 0},   "d,s,>",  MATCH_SBSETI, MASK_SBSETI, match_opcode, 0 },
++{"sbclri",    0, {"B", 0},   "d,s,>",  MATCH_SBCLRI, MASK_SBCLRI, match_opcode, 0 },
++{"sbinvi",    0, {"B", 0},   "d,s,>",  MATCH_SBINVI, MASK_SBINVI, match_opcode, 0 },
++{"sbexti",    0, {"B", 0},   "d,s,>",  MATCH_SBEXTI, MASK_SBEXTI, match_opcode, 0 },
++{"sbset",     0, {"B", 0},   "d,s,t",  MATCH_SBSET, MASK_SBSET, match_opcode, 0 },
++{"sbset",     0, {"B", 0},   "d,s,>",  MATCH_SBSETI, MASK_SBSETI, match_opcode, INSN_ALIAS },
++{"sbclr",     0, {"B", 0},   "d,s,t",  MATCH_SBCLR, MASK_SBCLR, match_opcode, 0 },
++{"sbclr",     0, {"B", 0},   "d,s,>",  MATCH_SBCLRI, MASK_SBCLRI, match_opcode, INSN_ALIAS },
++{"sbinv",     0, {"B", 0},   "d,s,t",  MATCH_SBINV, MASK_SBINV, match_opcode, 0 },
++{"sbinv",     0, {"B", 0},   "d,s,>",  MATCH_SBINVI, MASK_SBINVI, match_opcode, INSN_ALIAS },
++{"sbext",     0, {"B", 0},   "d,s,t",  MATCH_SBEXT, MASK_SBEXT, match_opcode, 0 },
++{"sbext",     0, {"B", 0},   "d,s,>",  MATCH_SBEXTI, MASK_SBEXTI, match_opcode, INSN_ALIAS },
++{"cmix",      0, {"B", 0},   "d,t,s,r",  MATCH_CMIX, MASK_CMIX, match_opcode, 0 },
++{"cmov",      0, {"B", 0},   "d,t,s,r",  MATCH_CMOV, MASK_CMOV, match_opcode, 0 },
++// {"fsli",   0, {"B", 0},   "d,s,r,>",  MATCH_FSLI, MASK_FSLI, match_opcode, 0 },   /** TBD **/
++{"fsri",      0, {"B", 0},   "d,s,r,>",  MATCH_FSRI, MASK_FSRI, match_opcode, 0 },
++{"fsl",       0, {"B", 0},   "d,s,r,t",  MATCH_FSL, MASK_FSL, match_opcode, 0 },
++// {"fsl",    0, {"B", 0},   "d,s,r,>",  MATCH_FSLI, MASK_FSLI, match_opcode, INSN_ALIAS },   /** TBD **/
++{"fsr",       0, {"B", 0},   "d,s,r,t",  MATCH_FSR, MASK_FSR, match_opcode, 0 },
++{"fsr",       0, {"B", 0},   "d,s,r,>",  MATCH_FSRI, MASK_FSRI, match_opcode, INSN_ALIAS },
++{"clz",       0, {"B", 0},   "d,s",  MATCH_CLZ, MASK_CLZ, match_opcode, 0 },
++{"ctz",       0, {"B", 0},   "d,s",  MATCH_CTZ, MASK_CTZ, match_opcode, 0 },
++{"pcnt",      0, {"B", 0},   "d,s",  MATCH_PCNT, MASK_PCNT, match_opcode, 0 },
++{"bmatflip", 64, {"B", 0},   "d,s",  MATCH_BMATFLIP, MASK_BMATFLIP, match_opcode, 0 },
++{"crc32.b",   0, {"B", 0},   "d,s",  MATCH_CRC32_B, MASK_CRC32_B, match_opcode, 0 },
++{"crc32.h",   0, {"B", 0},   "d,s",  MATCH_CRC32_H, MASK_CRC32_H, match_opcode, 0 },
++{"crc32.w",   0, {"B", 0},   "d,s",  MATCH_CRC32_W, MASK_CRC32_W, match_opcode, 0 },
++{"crc32.d",  64, {"B", 0},   "d,s",  MATCH_CRC32_D, MASK_CRC32_D, match_opcode, 0 },
++{"crc32c.b",  0, {"B", 0},   "d,s",  MATCH_CRC32C_B, MASK_CRC32C_B, match_opcode, 0 },
++{"crc32c.h",  0, {"B", 0},   "d,s",  MATCH_CRC32C_H, MASK_CRC32C_H, match_opcode, 0 },
++{"crc32c.w",  0, {"B", 0},   "d,s",  MATCH_CRC32C_W, MASK_CRC32C_W, match_opcode, 0 },
++{"crc32c.d", 64, {"B", 0},   "d,s",  MATCH_CRC32C_D, MASK_CRC32C_D, match_opcode, 0 },
++{"clmul",     0, {"B", 0},   "d,s,t",  MATCH_CLMUL, MASK_CLMUL, match_opcode, 0 },
++{"clmulh",    0, {"B", 0},   "d,s,t",  MATCH_CLMULH, MASK_CLMULH, match_opcode, 0 },
++{"clmulhx",   0, {"B", 0},   "d,s,t",  MATCH_CLMULHX, MASK_CLMULHX, match_opcode, 0 },
++{"min",       0, {"B", 0},   "d,s,t",  MATCH_MIN, MASK_MIN, match_opcode, 0 },
++{"max",       0, {"B", 0},   "d,s,t",  MATCH_MAX, MASK_MAX, match_opcode, 0 },
++{"minu",      0, {"B", 0},   "d,s,t",  MATCH_MINU, MASK_MINU, match_opcode, 0 },
++{"maxu",      0, {"B", 0},   "d,s,t",  MATCH_MAXU, MASK_MAXU, match_opcode, 0 },
++{"shfli",     0, {"B", 0},   "d,s,>",  MATCH_SHFLI, MASK_SHFLI, match_opcode, 0 },
++{"unshfli",   0, {"B", 0},   "d,s,>",  MATCH_UNSHFLI, MASK_UNSHFLI, match_opcode, 0 },
++{"shfl",      0, {"B", 0},   "d,s,t",  MATCH_SHFL, MASK_SHFL, match_opcode, 0 },
++{"shfl",      0, {"B", 0},   "d,s,>",  MATCH_SHFLI, MASK_SHFLI, match_opcode, INSN_ALIAS },
++{"unshfl",    0, {"B", 0},   "d,s,t",  MATCH_UNSHFL, MASK_UNSHFL, match_opcode, 0 },
++{"unshfl",    0, {"B", 0},   "d,s,>",  MATCH_UNSHFLI, MASK_UNSHFLI, match_opcode, INSN_ALIAS },
++{"bdep",      0, {"B", 0},   "d,s,t",  MATCH_BDEP, MASK_BDEP, match_opcode, 0 },
++{"bext",      0, {"B", 0},   "d,s,t",  MATCH_BEXT, MASK_BEXT, match_opcode, 0 },
++{"pack",      0, {"B", 0},   "d,s,t",  MATCH_PACK, MASK_PACK, match_opcode, 0 },
++{"bmator",   64, {"B", 0},   "d,s,t",  MATCH_BMATOR, MASK_BMATOR, match_opcode, 0 },
++{"bmatxor",  64, {"B", 0},   "d,s,t",  MATCH_BMATXOR, MASK_BMATXOR, match_opcode, 0 },
++{"addiwu",   64, {"B", 0},   "d,s,j",  MATCH_ADDIWU, MASK_ADDIWU, match_opcode, 0 },
++{"slliu.w",  64, {"B", 0},   "d,s,>",  MATCH_SLLIU_W, MASK_SLLIU_W, match_opcode, 0 },
++{"sloiw",    64, {"B", 0},   "d,s,>",  MATCH_SLOIW, MASK_SLOIW, match_opcode, 0 },
++{"sroiw",    64, {"B", 0},   "d,s,>",  MATCH_SROIW, MASK_SROIW, match_opcode, 0 },
++// {"roliw", 64, {"B", 0},   "d,s,>",  MATCH_ROLIW, MASK_ROLIW, match_opcode, 0 },   /** TBD **/
++{"roriw",    64, {"B", 0},   "d,s,>",  MATCH_RORIW, MASK_RORIW, match_opcode, 0 },
++{"slow",     64, {"B", 0},   "d,s,t",  MATCH_SLOW, MASK_SLOW, match_opcode, 0 },
++{"slow",     64, {"B", 0},   "d,s,>",  MATCH_SLOIW, MASK_SLOIW, match_opcode, INSN_ALIAS },
++{"srow",     64, {"B", 0},   "d,s,t",  MATCH_SROW, MASK_SROW, match_opcode, 0 },
++{"srow",     64, {"B", 0},   "d,s,>",  MATCH_SROIW, MASK_SROIW, match_opcode, INSN_ALIAS },
++{"rolw",     64, {"B", 0},   "d,s,t",  MATCH_ROLW, MASK_ROLW, match_opcode, 0 },
++// {"rolw",  64, {"B", 0},   "d,s,>",  MATCH_ROLIW, MASK_ROLIW, match_opcode, INSN_ALIAS },   /** TBD **/
++{"rorw",     64, {"B", 0},   "d,s,t",  MATCH_RORW, MASK_RORW, match_opcode, 0 },
++{"rorw",     64, {"B", 0},   "d,s,>",  MATCH_RORIW, MASK_RORIW, match_opcode, INSN_ALIAS },
++{"sbsetiw",  64, {"B", 0},   "d,s,>",  MATCH_SBSETIW, MASK_SBSETIW, match_opcode, 0 },
++{"sbclriw",  64, {"B", 0},   "d,s,>",  MATCH_SBCLRIW, MASK_SBCLRIW, match_opcode, 0 },
++{"sbinviw",  64, {"B", 0},   "d,s,>",  MATCH_SBINVIW, MASK_SBINVIW, match_opcode, 0 },
++{"sbsetw",   64, {"B", 0},   "d,s,t",  MATCH_SBSETW, MASK_SBSETW, match_opcode, 0 },
++{"sbsetw",   64, {"B", 0},   "d,s,>",  MATCH_SBSETIW, MASK_SBSETIW, match_opcode, INSN_ALIAS },
++{"sbclrw",   64, {"B", 0},   "d,s,t",  MATCH_SBCLRW, MASK_SBCLRW, match_opcode, 0 },
++{"sbclrw",   64, {"B", 0},   "d,s,>",  MATCH_SBCLRIW, MASK_SBCLRIW, match_opcode, INSN_ALIAS },
++{"sbinvw",   64, {"B", 0},   "d,s,t",  MATCH_SBINVW, MASK_SBINVW, match_opcode, 0 },
++{"sbinvw",   64, {"B", 0},   "d,s,>",  MATCH_SBINVIW, MASK_SBINVIW, match_opcode, INSN_ALIAS },
++{"sbextw",   64, {"B", 0},   "d,s,t",  MATCH_SBEXTW, MASK_SBEXTW, match_opcode, 0 },
++// {"fsliw", 64, {"B", 0},   "d,s,r,>",  MATCH_FSLIW, MASK_FSLIW, match_opcode, 0 },   /** TBD **/
++{"fsriw",    64, {"B", 0},   "d,s,r,>",  MATCH_FSRIW, MASK_FSRIW, match_opcode, 0 },
++{"fslw",     64, {"B", 0},   "d,s,r,t",  MATCH_FSLW, MASK_FSLW, match_opcode, 0 },
++// {"fslw",  64, {"B", 0},   "d,s,r,>",  MATCH_FSLIW, MASK_FSLIW, match_opcode, INSN_ALIAS },   /** TBD **/
++{"fsrw",     64, {"B", 0},   "d,s,r,t",  MATCH_FSRW, MASK_FSRW, match_opcode, 0 },
++{"fsrw",     64, {"B", 0},   "d,s,r,>",  MATCH_FSRIW, MASK_FSRIW, match_opcode, INSN_ALIAS },
++{"clzw",     64, {"B", 0},   "d,s",  MATCH_CLZW, MASK_CLZW, match_opcode, 0 },
++{"ctzw",     64, {"B", 0},   "d,s",  MATCH_CTZW, MASK_CTZW, match_opcode, 0 },
++{"pcntw",    64, {"B", 0},   "d,s",  MATCH_PCNTW, MASK_PCNTW, match_opcode, 0 },
++{"clmulw",   64, {"B", 0},   "d,s,t",  MATCH_CLMULW, MASK_CLMULW, match_opcode, 0 },
++{"clmulhw",  64, {"B", 0},   "d,s,t",  MATCH_CLMULHW, MASK_CLMULHW, match_opcode, 0 },
++{"clmulhxw", 64, {"B", 0},   "d,s,t",  MATCH_CLMULHXW, MASK_CLMULHXW, match_opcode, 0 },
++{"shflw",    64, {"B", 0},   "d,s,t",  MATCH_SHFLW, MASK_SHFLW, match_opcode, 0 },
++{"unshflw",  64, {"B", 0},   "d,s,t",  MATCH_UNSHFLW, MASK_UNSHFLW, match_opcode, 0 },
++{"bdepw",    64, {"B", 0},   "d,s,t",  MATCH_BDEPW, MASK_BDEP, match_opcode, 0 },
++{"bextw",    64, {"B", 0},   "d,s,t",  MATCH_BEXTW, MASK_BEXT, match_opcode, 0 },
++{"packw",    64, {"B", 0},   "d,s,t",  MATCH_PACKW, MASK_PACK, match_opcode, 0 },
++
+ /* Single-precision floating-point instruction subset */
+ {"frsr",      0, {"F", 0},   "d",  MATCH_FRCSR, MASK_FRCSR, match_opcode, 0 },
+ {"fssr",      0, {"F", 0},   "s",  MATCH_FSCSR, MASK_FSCSR | MASK_RD, match_opcode, 0 },
