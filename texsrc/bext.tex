@@ -1627,6 +1627,33 @@ approximately $1\%$ of bitmanipulation code size.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Future 64-bit instruction for bit-field extract and place}
+
+When instruction encodings for instructions $>$32-bit are defined, a {\bf Zbf} (bit-field)
+extension should be considered that defines the following {\it bit-field extract and place}
+instructions.
+
+\begin{rvb}
+  RV32, RV64:
+    bfxp  rd, rs1, rs2, src_off, src_len, dst_off, dst_len
+    bfxpu rd, rs1, rs2, src_off, src_len, dst_off, dst_len
+
+  RV64 only:
+    bfxpw  rd, rs1, rs2, src_off, src_len, dst_off, dst_len
+    bfxpuw rd, rs1, rs2, src_off, src_len, dst_off, dst_len
+\end{rvb}
+
+These instructions extract {\tt src\_len} bits at offset {\tt src\_off} from {\tt rs1},
+and place them in the field of {\tt dst\_len} bits at offset {\tt dst\_off} in the
+value from {\tt rs2}. {\tt bfxp} sign-extends if {\tt dst\_len}$>${\tt src\_len},
+and {\tt bfxp} zero-extends. When {\tt src\_len == 0} then {\tt bfxp} sets bits
+in the output and {\tt bfxpu} clears bits. When {\tt src\_len}$+${\tt src\_off} $>$ XLEN
+or {\tt dst\_len}$+${\tt dst\_off} $>$ XLEN then the bit-field wraps around.
+
+\input{bextcref-bfxp}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Micro architectural considerations and macro-op fusion for bit-manipulation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

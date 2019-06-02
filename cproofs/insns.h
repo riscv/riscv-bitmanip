@@ -630,36 +630,6 @@ uint_xlen_t crc32c_d(uint_xlen_t rs1) { return crc32c(rs1, 64); }
 #endif
 // --REF-END--
 
-// --REF-BEGIN-- bfxp
-uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
-		unsigned start, unsigned len, unsigned dest)
-{
-	assert(start < XLEN && len < XLEN && dest < XLEN);
-
-	assert(start + len <= XLEN);
-	assert(dest + len <= XLEN);
-	assert(len != 0);
-
-	uint_xlen_t x = rs1;
-	x <<= XLEN-start-len;
-	x >>= XLEN-len;
-	x <<= dest;
-
-	uint_xlen_t y = ~uint_xlen_t(0);
-	y <<= XLEN-start-len;
-	y >>= XLEN-len;
-	y <<= dest;
-
-	return x | (rs2 & ~y);
-}
-
-uint_xlen_t bfxpc(uint_xlen_t rs1, uint_xlen_t rs2,
-		unsigned start, unsigned len, unsigned dest)
-{
-	return bfxp(~rs1, rs2, start, len, dest);
-}
-// --REF-END--
-
 // --REF-BEGIN-- cmix
 uint_xlen_t cmix(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
 {
@@ -784,6 +754,36 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 		return ~(~x >> shamt);
 	return x >> shamt;
 }
+
+// --REF-BEGIN-- bfxp
+uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
+		unsigned src_off, unsigned src_len, unsigned dst_off, unsigned dst_len)
+{
+	assert(src_off < XLEN && src_len < XLEN && dst_off < XLEN && dst_len < XLEN);
+
+	uint_xlen_t src_mask = rol(slo(0, src_len), src_off);
+	uint_xlen_t dst_mask = rol(slo(0, dst_len), dst_off);
+	uint_xlen_t value = ror((rs1 & src_mask), src_off);
+
+	// sign-extend
+	value = sra(sll(value, XLEN-src_len), XLEN-src_len);
+	if (src_len == 0) value = ~(uint_xlen_t)0;
+
+	return (rs2 & ~dst_mask) | (rol(value, dst_off) & dst_mask);
+}
+
+uint_xlen_t bfxpu(uint_xlen_t rs1, uint_xlen_t rs2,
+		unsigned src_off, unsigned src_len, unsigned dst_off, unsigned dst_len)
+{
+	assert(src_off < XLEN && src_len < XLEN && dst_off < XLEN && dst_len < XLEN);
+
+	uint_xlen_t src_mask = rol(slo(0, src_len), src_off);
+	uint_xlen_t dst_mask = rol(slo(0, dst_len), dst_off);
+	uint_xlen_t value = ror((rs1 & src_mask), src_off);
+
+	return (rs2 & ~dst_mask) | (rol(value, dst_off) & dst_mask);
+}
+// --REF-END--
 
 #if XLEN == 64
 uint64_t zextw(uint64_t x)
