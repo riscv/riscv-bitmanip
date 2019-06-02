@@ -39,14 +39,14 @@ look like exactly, but it will probably look something like this:
 
  \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[h[x]]} };
 
- \node (cmov) [right=3.5cm of bext.west,anchor=north west] { \texttt{cmov, cmix} };
- \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
+ \node (bmatxor) [right=3.5cm of bext.west,anchor=north west] { \texttt{bmat[x]or} };
+ \node (bmatflip) [below=0.5cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
 
  \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \texttt{crc32.[bhwd]} };
  \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \texttt{crc32c.[bhwd]} };
 
- \node (bmatxor) [right=3.5cm of crc32.west,anchor=west] { \texttt{bmat[x]or} };
- \node (bmatflip) [below=0.5cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
+ \node (cmov) [right=3.5cm of crc32.west,anchor=west] { \texttt{cmov, cmix} };
+ \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
@@ -69,9 +69,9 @@ look like exactly, but it will probably look something like this:
    \node (be) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbe} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
 
-   \node (bt) at ($ (cmov.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbt} };
-   \node (bternary) [below=-0.1cm of bt.south west,anchor=north west] { (ternary) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
+   \node (bm) at ($ (bmatxor.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbm} };
+   \node (bmatrix) [below=-0.1cm of bm.south west,anchor=north west] { (bit matrix) };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (bmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
 
    \node (bc) at ($ (clmul.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbc} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clmul.north west) + (-0.5cm,0) $) rectangle ($ (clmul.south west) + (3.0cm,0) $);
@@ -79,9 +79,9 @@ look like exactly, but it will probably look something like this:
    \node (br) at ($ (crc32.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbr} };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.5cm,0) $) rectangle ($ (crc32c.south west) + (3.0cm,0) $);
 
-   \node (bm) at ($ (bmatxor.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbm} };
-   \node (bmatrix) [below=-0.1cm of bm.south west,anchor=north west] { (bit matrix) };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (bmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
+   \node (bt) at ($ (cmov.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbt} };
+   \node (bternary) [below=-0.1cm of bt.south west,anchor=north west] { (ternary) };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
  \end{scope}
 \end{tikzpicture}
 \end{center}
