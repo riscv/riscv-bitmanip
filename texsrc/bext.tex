@@ -1646,7 +1646,7 @@ instructions.
 These instructions extract {\tt src\_len} bits at offset {\tt src\_off} from {\tt rs1},
 and place them in the field of {\tt dst\_len} bits at offset {\tt dst\_off} in the
 value from {\tt rs2}. {\tt bfxp} sign-extends if {\tt dst\_len}$>${\tt src\_len},
-and {\tt bfxp} zero-extends. When {\tt src\_len == 0} then {\tt bfxp} sets bits
+and {\tt bfxpu} zero-extends. When {\tt src\_len == 0} then {\tt bfxp} sets bits
 in the output and {\tt bfxpu} clears bits. When {\tt src\_len}$+${\tt src\_off} $>$ XLEN
 or {\tt dst\_len}$+${\tt dst\_off} $>$ XLEN then the bit-field wraps around.
 
