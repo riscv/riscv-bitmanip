@@ -1895,21 +1895,3 @@ Sign-extending bytes and half-words are special cases of {\tt bfext}:
   sext.h rd, rs   ->   slli rd, rs, (XLEN-16); c.srai rd, (XLEN-16)
 \end{verbatim}
 \end{minipage}
-
-Endianness-swap pseudo-ops for {\tt c.sr[la]i} postfix fusion:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  eswap.b rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-8)
-  eswap.h rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-16)
-  eswap.w rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-32)
-  eswap.d rd, rs    ->   bswap rd, rs; c.srai rd, (XLEN-64)
-
-  eswapu.b rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-8)
-  eswapu.h rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-16)
-  eswapu.w rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-32)
-  eswapu.d rd, rs   ->   bswap rd, rs; c.srli rd, (XLEN-64)
-
-  (or simply bswap/bswapw/bswapd if applicable)
-\end{verbatim}
-\end{minipage}
