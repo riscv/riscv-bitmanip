@@ -269,8 +269,8 @@ static inline int64_t _rv64_clz(int64_t rs1) { return rs1 ? __builtin_clzll(rs1)
 static inline int32_t _rv32_ctz(int32_t rs1) { return rs1 ? __builtin_ctz(rs1)   : 32; }
 static inline int64_t _rv64_ctz(int64_t rs1) { return rs1 ? __builtin_ctzll(rs1) : 64; }
 
-static inline int32_t _rv32_pcnt(int32_t rs1) { __builtin_popcount(rs1);   }
-static inline int64_t _rv64_pcnt(int64_t rs1) { __builtin_popcountll(rs1); }
+static inline int32_t _rv32_pcnt(int32_t rs1) { return __builtin_popcount(rs1);   }
+static inline int64_t _rv64_pcnt(int64_t rs1) { return __builtin_popcountll(rs1); }
 #endif
 
 static inline int32_t _rv32_pack(int32_t rs1, int32_t rs2) { return (rs1 & 0x0000ffff)   | (rs2 << 16); }
@@ -550,8 +550,8 @@ static inline long _rv_crc32c_h(long rs1) { return _rvintrin_crc32c(rs1, 16); }
 static inline long _rv_crc32c_w(long rs1) { return _rvintrin_crc32c(rs1, 32); }
 
 #if UINT_MAX != ULONG_MAX
-static inline long crc32_d (long rs1) { return _rvintrin_crc32 (rs1, 64); }
-static inline long crc32c_d(long rs1) { return _rvintrin_crc32c(rs1, 64); }
+static inline long _rv_crc32_d (long rs1) { return _rvintrin_crc32 (rs1, 64); }
+static inline long _rv_crc32c_d(long rs1) { return _rvintrin_crc32c(rs1, 64); }
 #endif
 
 static inline uint64_t _rv64_bmatflip(uint64_t rs1)
@@ -612,7 +612,7 @@ static inline long _rv_cmix(long rs2, long rs1, long rs3)
 	return (rs1 & rs2) | (rs3 & ~rs2);
 }
 
-static inline long _rv_cmov(long rs1, long rs2, long rs3)
+static inline long _rv_cmov(long rs2, long rs1, long rs3)
 {
 	return rs2 ? rs1 : rs3;
 }
