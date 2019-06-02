@@ -1,5 +1,5 @@
 #!/bin/bash
 set -ex
-binutils-gdb/gas/as-new -o binutils-demo.o -march=rv64ib binutils-demo.s
-binutils-gdb/binutils/objdump -M numeric -d binutils-demo.o
+/opt/riscv64b/bin/riscv64-unkown-elf-as -o binutils-demo.o -march=rv64ib binutils-demo.s
+/opt/riscv64b/bin/riscv64-unkown-elf-objdump -M numeric -d binutils-demo.o
 rm binutils-demo.o

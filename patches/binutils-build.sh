@@ -1,8 +1,9 @@
 #!/bin/bash
 set -ex
-git clone git://sourceware.org/git/binutils-gdb.git
-cd binutils-gdb
+git clone --depth=1000 git://sourceware.org/git/binutils-gdb.git binutils-build
+cd binutils-build
 git checkout 9660559
 patch -p1 < ../binutils.diff
-./configure --target=riscv-unkown-elf
+./configure --prefix=/opt/riscv64b --target=riscv64-unkown-elf
 make -j$(nproc)
+make install
