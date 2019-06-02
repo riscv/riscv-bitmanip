@@ -554,7 +554,7 @@ static inline long _rv_crc32_d (long rs1) { return _rvintrin_crc32 (rs1, 64); }
 static inline long _rv_crc32c_d(long rs1) { return _rvintrin_crc32c(rs1, 64); }
 #endif
 
-static inline uint64_t _rv64_bmatflip(uint64_t rs1)
+static inline int64_t _rv64_bmatflip(int64_t rs1)
 {
 	uint64_t x = rs1;
 	x = _rv64_shfl(x, 31);
@@ -563,10 +563,10 @@ static inline uint64_t _rv64_bmatflip(uint64_t rs1)
 	return x;
 }
 
-static inline uint64_t _rv64_bmatxor(uint64_t rs1, uint64_t rs2)
+static inline int64_t _rv64_bmatxor(int64_t rs1, int64_t rs2)
 {
 	// transpose of rs2
-	uint64_t rs2t = _rv64_bmatflip(rs2);
+	int64_t rs2t = _rv64_bmatflip(rs2);
 
 	uint8_t u[8]; // rows of rs1
 	uint8_t v[8]; // cols of rs2
@@ -585,10 +585,10 @@ static inline uint64_t _rv64_bmatxor(uint64_t rs1, uint64_t rs2)
 	return x;
 }
 
-static inline uint64_t _rv64_bmator(uint64_t rs1, uint64_t rs2)
+static inline int64_t _rv64_bmator(int64_t rs1, int64_t rs2)
 {
 	// transpose of rs2
-	uint64_t rs2t = _rv64_bmatflip(rs2);
+	int64_t rs2t = _rv64_bmatflip(rs2);
 
 	uint8_t u[8]; // rows of rs1
 	uint8_t v[8]; // cols of rs2
