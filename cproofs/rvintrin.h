@@ -31,10 +31,6 @@
  *  _rv64_*(...)
  *    RV64-only intrinsics that operate on the "int64_t" data type
  *
- *  There are also *i-variants of some intrinsics that map direcly to
- *  the *i-variants of the underlying instructions. Those intrinsics
- *  will likely be depricated once there are compiler-supported
- *  intrinsics that can infer *i-instructions automatically.
  */
 
 #ifndef RVINTRIN_H
@@ -84,103 +80,55 @@ static inline int64_t _rv64_maxu(int64_t rs1, int64_t rs2) { int64_t rd; __asm__
 #endif
 
 #if __riscv_xlen == 32
-static inline int32_t _rv32_sbset (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbset %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sbclr (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbclr %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sbinv (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbinv %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sbext (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbext %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
-static inline int32_t _rv32_sbseti(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbseti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-static inline int32_t _rv32_sbclri(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbclri %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-static inline int32_t _rv32_sbinvi(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbinvi %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-static inline int32_t _rv32_sbexti(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbexti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
+static inline int32_t _rv32_sbset (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbseti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbset %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbclr (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbclri %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbclr %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbinv (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbinvi %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbinv %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbext (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbexti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbext %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #else
-static inline int32_t _rv32_sbset (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbsetw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sbclr (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbclrw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sbinv (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbinvw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sbext (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sbextw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbset (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbsetiw %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbsetw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbclr (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbclriw %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbclrw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbinv (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbinviw %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbinvw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sbext (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbexti  %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & rs2)); else __asm__ ("sbextw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 
-static inline int32_t _rv32_sbseti(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbsetiw %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-static inline int32_t _rv32_sbclri(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbclriw %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-static inline int32_t _rv32_sbinvi(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbinviw %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-static inline int32_t _rv32_sbexti(int32_t rs1, int imm) { int32_t rd; __asm__ ("sbexti  %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & imm)); return rd; }
-
-static inline int64_t _rv64_sbset (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sbset %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_sbclr (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sbclr %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_sbinv (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sbinv %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_sbext (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sbext %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
-static inline int64_t _rv64_sbseti(int64_t rs1, int imm) { int64_t rd; __asm__ ("sbseti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & imm)); return rd; }
-static inline int64_t _rv64_sbclri(int64_t rs1, int imm) { int64_t rd; __asm__ ("sbclri %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & imm)); return rd; }
-static inline int64_t _rv64_sbinvi(int64_t rs1, int imm) { int64_t rd; __asm__ ("sbinvi %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & imm)); return rd; }
-static inline int64_t _rv64_sbexti(int64_t rs1, int imm) { int64_t rd; __asm__ ("sbexti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & imm)); return rd; }
+static inline int64_t _rv64_sbset (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbseti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & rs2)); else __asm__ ("sbset %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_sbclr (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbclri %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & rs2)); else __asm__ ("sbclr %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_sbinv (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbinvi %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & rs2)); else __asm__ ("sbinv %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_sbext (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sbexti %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & rs2)); else __asm__ ("sbext %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
 #if __riscv_xlen == 32
-static inline int32_t _rv32_sll    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sll     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_srl    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("srl     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sra    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sra     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_slo    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("slo     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sro    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sro     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_rol    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("rol     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_ror    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("ror     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_grev   (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("grev    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_shfl   (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("shfl    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_unshfl (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("unshfl  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
-static inline int32_t _rv32_slli   (int32_t rs1, int imm) { int32_t rd; __asm__ ("slli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  imm)); return rd; }
-static inline int32_t _rv32_srli   (int32_t rs1, int imm) { int32_t rd; __asm__ ("srli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  imm)); return rd; }
-static inline int32_t _rv32_srai   (int32_t rs1, int imm) { int32_t rd; __asm__ ("srai    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  imm)); return rd; }
-static inline int32_t _rv32_sloi   (int32_t rs1, int imm) { int32_t rd; __asm__ ("sloi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  imm)); return rd; }
-static inline int32_t _rv32_sroi   (int32_t rs1, int imm) { int32_t rd; __asm__ ("sroi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  imm)); return rd; }
-static inline int32_t _rv32_roli   (int32_t rs1, int imm) { int32_t rd; __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & -imm)); return rd; }
-static inline int32_t _rv32_rori   (int32_t rs1, int imm) { int32_t rd; __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_grevi  (int32_t rs1, int imm) { int32_t rd; __asm__ ("grevi   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_shfli  (int32_t rs1, int imm) { int32_t rd; __asm__ ("shfli   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_unshfli(int32_t rs1, int imm) { int32_t rd; __asm__ ("unshfli %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
+static inline int32_t _rv32_sll    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("slli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  rs2)); else __asm__ ("sll     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_srl    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("srli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  rs2)); else __asm__ ("srl     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sra    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("srai    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  rs2)); else __asm__ ("sra     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_slo    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sloi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  rs2)); else __asm__ ("slo     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sro    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sroi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(32 &  rs2)); else __asm__ ("sro     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_rol    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & -rs2)); else __asm__ ("rol     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_ror    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("ror     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_grev   (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("grevi   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("grev    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_shfl   (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("shfli   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(15 &  rs2)); else __asm__ ("shfl    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_unshfl (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("unshfli %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(15 &  rs2)); else __asm__ ("unshfl  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #else
-static inline int32_t _rv32_sll    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sllw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_srl    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("srlw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sra    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("sraw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_slo    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("slow    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_sro    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("srow    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_rol    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("rolw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_ror    (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("rorw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_grev   (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("grevw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_shfl   (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("shflw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_unshfl (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("unshflw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sll    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("slliw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("sllw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_srl    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("srliw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("srlw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sra    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sraiw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("sraw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_slo    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sloiw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("slow    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_sro    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sroiw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("srow    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_rol    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("roriw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & -rs2)); else __asm__ ("rolw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_ror    (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("roriw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("rorw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_grev   (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("greviw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("grevw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_shfl   (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("shfli   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(15 &  rs2)); else __asm__ ("shflw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_unshfl (int32_t rs1, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("unshfli %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(15 &  rs2)); else __asm__ ("unshflw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 
-static inline int32_t _rv32_slli   (int32_t rs1, int imm) { int32_t rd; __asm__ ("slliw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_srli   (int32_t rs1, int imm) { int32_t rd; __asm__ ("srliw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_srai   (int32_t rs1, int imm) { int32_t rd; __asm__ ("sraiw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_sloi   (int32_t rs1, int imm) { int32_t rd; __asm__ ("sloiw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_sroi   (int32_t rs1, int imm) { int32_t rd; __asm__ ("sroiw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_roli   (int32_t rs1, int imm) { int32_t rd; __asm__ ("roriw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 & -imm)); return rd; }
-static inline int32_t _rv32_rori   (int32_t rs1, int imm) { int32_t rd; __asm__ ("roriw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_grevi  (int32_t rs1, int imm) { int32_t rd; __asm__ ("greviw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_shfli  (int32_t rs1, int imm) { int32_t rd; __asm__ ("shfli   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-static inline int32_t _rv32_unshfli(int32_t rs1, int imm) { int32_t rd; __asm__ ("unshfli %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  imm)); return rd; }
-
-static inline int64_t _rv64_sll    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sll     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_srl    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("srl     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_sra    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sra     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_slo    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("slo     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_sro    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("sro     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_rol    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("rol     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_ror    (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("ror     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_grev   (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("grev    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_shfl   (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("shfl    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_unshfl (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("unshfl  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
-static inline int64_t _rv64_slli   (int64_t rs1, int imm) { int64_t rd; __asm__ ("slli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_srli   (int64_t rs1, int imm) { int64_t rd; __asm__ ("srli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_srai   (int64_t rs1, int imm) { int64_t rd; __asm__ ("srai    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_sloi   (int64_t rs1, int imm) { int64_t rd; __asm__ ("sloi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_sroi   (int64_t rs1, int imm) { int64_t rd; __asm__ ("sroi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_roli   (int64_t rs1, int imm) { int64_t rd; __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & -imm)); return rd; }
-static inline int64_t _rv64_rori   (int64_t rs1, int imm) { int64_t rd; __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_grevi  (int64_t rs1, int imm) { int64_t rd; __asm__ ("grevi   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_shfli  (int64_t rs1, int imm) { int64_t rd; __asm__ ("shfli   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
-static inline int64_t _rv64_unshfli(int64_t rs1, int imm) { int64_t rd; __asm__ ("unshfli %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  imm)); return rd; }
+static inline int64_t _rv64_sll    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("slli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("sll     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_srl    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("srli    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("srl     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_sra    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("srai    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("sra     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_slo    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sloi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("slo     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_sro    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("sroi    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("sro     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_rol    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 & -rs2)); else __asm__ ("rol     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_ror    (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("rori    %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("ror     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_grev   (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("grevi   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(63 &  rs2)); else __asm__ ("grev    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_shfl   (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("shfli   %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("shfl    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_unshfl (int64_t rs1, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("unshfli %0, %1, %2" : "=r"(rd) : "r"(rs1), "i"(31 &  rs2)); else __asm__ ("unshfl  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
 #if __riscv_xlen == 32
@@ -231,20 +179,14 @@ static inline long _rv_cmix(long rs2, long rs1, long rs3) { long rd; __asm__ ("c
 static inline long _rv_cmov(long rs2, long rs1, long rs3) { long rd; __asm__ ("cmov %0, %1, %2, %3" : "=r"(rd) : "r"(rs2), "r"(rs1), "r"(rs3)); return rd; }
 
 #if __riscv_xlen == 32
-static inline int32_t _rv32_fsl(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; __asm__ ("fsl %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
-static inline int32_t _rv32_fsr(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; __asm__ ("fsr %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
-static inline int32_t _rv32_fsli(int32_t rs1, int32_t rs3, int imm) { int32_t rd; __asm__ ("fsri %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 & -imm)); return rd; }
-static inline int32_t _rv32_fsri(int32_t rs1, int32_t rs3, int imm) { int32_t rd; __asm__ ("fsri %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 &  imm)); return rd; }
+static inline int32_t _rv32_fsl(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsri  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 & -rs2)); else __asm__ ("fsl  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
+static inline int32_t _rv32_fsr(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsri  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 &  rs2)); else __asm__ ("fsr  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
 #else
-static inline int32_t _rv32_fsl(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; __asm__ ("fslw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
-static inline int32_t _rv32_fsr(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; __asm__ ("fsrw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
-static inline int32_t _rv32_fsli(int32_t rs1, int32_t rs3, int imm) { int32_t rd; __asm__ ("fsriw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 & -imm)); return rd; }
-static inline int32_t _rv32_fsri(int32_t rs1, int32_t rs3, int imm) { int32_t rd; __asm__ ("fsriw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 &  imm)); return rd; }
+static inline int32_t _rv32_fsl(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsriw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 & -rs2)); else __asm__ ("fslw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
+static inline int32_t _rv32_fsr(int32_t rs1, int32_t rs3, int32_t rs2) { int32_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsriw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(63 &  rs2)); else __asm__ ("fsrw %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
 
-static inline int64_t _rv64_fsl(int64_t rs1, int64_t rs3, int64_t rs2) { int64_t rd; __asm__ ("fsl %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
-static inline int64_t _rv64_fsr(int64_t rs1, int64_t rs3, int64_t rs2) { int64_t rd; __asm__ ("fsr %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
-static inline int64_t _rv64_fsli(int64_t rs1, int64_t rs3, int imm) { int64_t rd; __asm__ ("fsri %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(127 & -imm)); return rd; }
-static inline int64_t _rv64_fsri(int64_t rs1, int64_t rs3, int imm) { int64_t rd; __asm__ ("fsri %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(127 &  imm)); return rd; }
+static inline int64_t _rv64_fsl(int64_t rs1, int64_t rs3, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsri  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(127 & -rs2)); else __asm__ ("fsl %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
+static inline int64_t _rv64_fsr(int64_t rs1, int64_t rs3, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsri  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(127 &  rs2)); else __asm__ ("fsr %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
 #endif
 
 #else // RVINTRIN_EMULATE
@@ -295,20 +237,10 @@ static inline int32_t _rv32_sbclr (int32_t rs1, int32_t rs2) { return rs1 & ~(1 
 static inline int32_t _rv32_sbinv (int32_t rs1, int32_t rs2) { return rs1 ^  (1   << (rs2 & 31)); }
 static inline int32_t _rv32_sbext (int32_t rs1, int32_t rs2) { return 1   &  (rs1 >> (rs2 & 31)); }
 
-static inline int32_t _rv32_sbseti(int32_t rs1, int imm) { return _rv32_sbset(rs1, imm); }
-static inline int32_t _rv32_sbclri(int32_t rs1, int imm) { return _rv32_sbclr(rs1, imm); }
-static inline int32_t _rv32_sbinvi(int32_t rs1, int imm) { return _rv32_sbinv(rs1, imm); }
-static inline int32_t _rv32_sbexti(int32_t rs1, int imm) { return _rv32_sbext(rs1, imm); }
-
 static inline int64_t _rv64_sbset (int64_t rs1, int64_t rs2) { return rs1 |  (1LL << (rs2 & 63)); }
 static inline int64_t _rv64_sbclr (int64_t rs1, int64_t rs2) { return rs1 & ~(1LL << (rs2 & 63)); }
 static inline int64_t _rv64_sbinv (int64_t rs1, int64_t rs2) { return rs1 ^  (1LL << (rs2 & 63)); }
 static inline int64_t _rv64_sbext (int64_t rs1, int64_t rs2) { return 1LL &  (rs1 >> (rs2 & 63)); }
-
-static inline int64_t _rv64_sbseti(int64_t rs1, int imm) { return _rv64_sbset(rs1, imm); }
-static inline int64_t _rv64_sbclri(int64_t rs1, int imm) { return _rv64_sbclr(rs1, imm); }
-static inline int64_t _rv64_sbinvi(int64_t rs1, int imm) { return _rv64_sbinv(rs1, imm); }
-static inline int64_t _rv64_sbexti(int64_t rs1, int imm) { return _rv64_sbext(rs1, imm); }
 
 static inline int32_t _rv32_sll    (int32_t rs1, int32_t rs2) { return rs1 << (rs2 & 31); }
 static inline int32_t _rv32_srl    (int32_t rs1, int32_t rs2) { return (uint32_t)rs1 >> (rs2 & 31); }
@@ -363,17 +295,6 @@ static inline int32_t _rv32_unshfl(int32_t rs1, int32_t rs2)
 	return x;
 }
 
-static inline int32_t _rv32_slli   (int32_t rs1, int imm) { return _rv32_sll   (rs1, imm); }
-static inline int32_t _rv32_srli   (int32_t rs1, int imm) { return _rv32_srl   (rs1, imm); }
-static inline int32_t _rv32_srai   (int32_t rs1, int imm) { return _rv32_sra   (rs1, imm); }
-static inline int32_t _rv32_sloi   (int32_t rs1, int imm) { return _rv32_slo   (rs1, imm); }
-static inline int32_t _rv32_sroi   (int32_t rs1, int imm) { return _rv32_sro   (rs1, imm); }
-static inline int32_t _rv32_roli   (int32_t rs1, int imm) { return _rv32_rol   (rs1, imm); }
-static inline int32_t _rv32_rori   (int32_t rs1, int imm) { return _rv32_ror   (rs1, imm); }
-static inline int32_t _rv32_grevi  (int32_t rs1, int imm) { return _rv32_grev  (rs1, imm); }
-static inline int32_t _rv32_shfli  (int32_t rs1, int imm) { return _rv32_shfl  (rs1, imm); }
-static inline int32_t _rv32_unshfli(int32_t rs1, int imm) { return _rv32_unshfl(rs1, imm); }
-
 static inline int64_t _rv64_sll    (int64_t rs1, int64_t rs2) { return rs1 << (rs2 & 63); }
 static inline int64_t _rv64_srl    (int64_t rs1, int64_t rs2) { return (uint64_t)rs1 >> (rs2 & 63); }
 static inline int64_t _rv64_sra    (int64_t rs1, int64_t rs2) { return rs1 >> (rs2 & 63); }
@@ -425,17 +346,6 @@ static inline int64_t _rv64_unshfl(int64_t rs1, int64_t rs2)
 	if (shamt & 16) x = _rvintrin_shuffle64_stage(x, 0x0000ffff00000000LL, 0x00000000ffff0000LL, 16);
 	return x;
 }
-
-static inline int64_t _rv64_slli   (int64_t rs1, int imm) { return _rv64_sll   (rs1, imm); }
-static inline int64_t _rv64_srli   (int64_t rs1, int imm) { return _rv64_srl   (rs1, imm); }
-static inline int64_t _rv64_srai   (int64_t rs1, int imm) { return _rv64_sra   (rs1, imm); }
-static inline int64_t _rv64_sloi   (int64_t rs1, int imm) { return _rv64_slo   (rs1, imm); }
-static inline int64_t _rv64_sroi   (int64_t rs1, int imm) { return _rv64_sro   (rs1, imm); }
-static inline int64_t _rv64_roli   (int64_t rs1, int imm) { return _rv64_rol   (rs1, imm); }
-static inline int64_t _rv64_rori   (int64_t rs1, int imm) { return _rv64_ror   (rs1, imm); }
-static inline int64_t _rv64_grevi  (int64_t rs1, int imm) { return _rv64_grev  (rs1, imm); }
-static inline int64_t _rv64_shfli  (int64_t rs1, int imm) { return _rv64_shfl  (rs1, imm); }
-static inline int64_t _rv64_unshfli(int64_t rs1, int imm) { return _rv64_unshfl(rs1, imm); }
 
 static inline int32_t _rv32_bext(int32_t rs1, int32_t rs2)
 {
@@ -668,12 +578,6 @@ static inline int64_t _rv64_fsr(int64_t rs1, int64_t rs3, int64_t rs2)
 	}
 	return shamt ? (A >> shamt) | (B << (64-shamt)) : A;
 }
-
-static inline int32_t _rv32_fsli(int32_t rs1, int32_t rs3, int imm) { return _rv32_fsl(rs1, rs3, imm); }
-static inline int32_t _rv32_fsri(int32_t rs1, int32_t rs3, int imm) { return _rv32_fsr(rs1, rs3, imm); }
-
-static inline int64_t _rv64_fsli(int64_t rs1, int64_t rs3, int imm) { return _rv64_fsl(rs1, rs3, imm); }
-static inline int64_t _rv64_fsri(int64_t rs1, int64_t rs3, int imm) { return _rv64_fsr(rs1, rs3, imm); }
 
 #endif // RVINTRIN_EMULATE
 #endif // RVINTRIN_H
