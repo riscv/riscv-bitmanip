@@ -11,3 +11,4 @@ cd gcc-build
 ../gcc-9.1.0/configure --prefix=/opt/riscv64b --target=riscv64-unkown-elf --enable-languages=c --disable-libssp
 make -j$(nproc)
 make install
+ln -fs riscv64-unkown-elf-gcc /opt/riscv64b/bin/riscv64-unkown-elf-cc
