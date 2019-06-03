@@ -3,3 +3,4 @@
 /gcc-build/
 /gcc-9.1.0/
 /newlib-build/
+/xorshift32.o
