@@ -28,11 +28,11 @@ look like exactly, but it will probably look something like this:
  \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
- \node (bswap) [below=0.5cm of rol.west,anchor=west] { \texttt{bswap, brev} };
- \node (brevp) [right=4.0cm of bswap.west,anchor=west] { \texttt{brev.p} };
- \node (grev) [right=6.5cm of bswap.west,anchor=west] { \texttt{grev[i]} };
+ \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
+ \node (revp) [right=4.0cm of rev8.west,anchor=west] { \texttt{rev.p} };
+ \node (grev) [right=6.5cm of rev8.west,anchor=west] { \texttt{grev[i]} };
 
- \node (zip) [below=1.0cm of bswap.west,anchor=west] { \texttt{zip, unzip, zip.n} };
+ \node (zip) [below=1.0cm of rev8.west,anchor=west] { \texttt{zip, unzip, zip.n} };
  \node (shuffle) [right=6.5cm of zip.west,anchor=west] { \texttt{shfl[i], unshfl[i]} };
 
  \node (bext) [below=1.0cm of zip.west,anchor=west] { \texttt{bext, bdep} };
@@ -46,7 +46,7 @@ look like exactly, but it will probably look something like this:
  \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \texttt{crc32c.[bhwd]} };
 
  \node (cmov) [right=3.5cm of clmul.west,anchor=north west] { \texttt{cmov, cmix} };
- \node (fsl) [below=0.45cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
+ \node (fsl) [below=0.40cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
 
  \node (bfxp) [right=3.5cm of crc32c.west,anchor=west] { \texttt{bfxp[u]} };
 
@@ -57,7 +57,7 @@ look like exactly, but it will probably look something like this:
 
    \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (bswap.south west) + (3.5cm,0) $);
+   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (rev8.south west) + (3.5cm,0) $);
 
    \node (bs) at ($ (sbset.west) + (2.0cm,0) $) [right, text=blue] { \textbf{Zbs} };
    \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
@@ -66,7 +66,7 @@ look like exactly, but it will probably look something like this:
    \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
    \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (bit permutation) };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) |- ($ (shuffle.south east) + (0,0) $)
-     |- ($ (brevp.north west) + (2.5cm,0.2cm) $) |- ($ (andn.north west) + (-0.2cm,0) $);
+     |- ($ (revp.north west) + (2.5cm,0.2cm) $) |- ($ (andn.north west) + (-0.2cm,0) $);
 
    \node (be) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbe} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
@@ -378,29 +378,6 @@ register, in order. This is also called `circular shift'.
 
 \input{bextcref-rox}
 
-Rotate shift is implemented very similarly to the other shift
-instructions. One possible way to encode it is to re-use the way that
-bit 30 in the instruction encoding selects `arithmetic shift' when bit
-31 is zero (signalling a logical-zero shift). We can re-use this so that
-when bit 31 is set (signalling a logical-ones shift), if bit 30 is also
-set, then we are doing a rotate. The following table summarizes the
-behavior. The generalized reverse instructions can be encoded using the
-bit pattern that would otherwise encode an ``Arithmetic Left Shift''
-(which is an operation that does not exist). Likewise, the generalized zip
-instruction can be encoded using the bit pattern that would otherwise
-encode an ``Rotate left immediate''.
-
-\begin{center}
-\begin{tabular}{lll}
-Bit 31 & Bit 30 & Meaning \\
-\hline
-0 & 0 & Logical Shift-Zeros \\
-0 & 1 & Arithmetic Shift \\
-1 & 0 & Logical Shift-Ones \\
-1 & 1 & Rotate \\
-\end{tabular}
-\end{center}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{figure}[t]
@@ -467,33 +444,33 @@ this definition in an obvious manner for RV128.
 \cline{4-5}
 \cline{7-8}
 
- 0: 00000 & ---           &   &  0: 000000 & ---           &   & 32: 100000 & {\tt wswap} \\
- 1: 00001 & {\tt brev.p}  &   &  1: 000001 & {\tt brev.p}  &   & 33: 100001 & ---         \\
- 2: 00010 & {\tt pswap.n} &   &  2: 000010 & {\tt pswap.n} &   & 34: 100010 & ---         \\
- 3: 00011 & {\tt brev.n}  &   &  3: 000011 & {\tt brev.n}  &   & 35: 100011 & ---         \\
- 4: 00100 & {\tt nswap.b} &   &  4: 000100 & {\tt nswap.b} &   & 36: 100100 & ---         \\
+ 0: 00000 & ---           &   &  0: 000000 & ---           &   & 32: 100000 & {\tt rev32} \\
+ 1: 00001 & {\tt rev.p}   &   &  1: 000001 & {\tt rev.p}   &   & 33: 100001 & ---         \\
+ 2: 00010 & {\tt rev2.n}  &   &  2: 000010 & {\tt rev2.n}  &   & 34: 100010 & ---         \\
+ 3: 00011 & {\tt rev.n}   &   &  3: 000011 & {\tt rev.n}   &   & 35: 100011 & ---         \\
+ 4: 00100 & {\tt rev4.b}  &   &  4: 000100 & {\tt rev4.b}  &   & 36: 100100 & ---         \\
  5: 00101 & ---           &   &  5: 000101 & ---           &   & 37: 100101 & ---         \\
- 6: 00110 & {\tt pswap.b} &   &  6: 000110 & {\tt pswap.b} &   & 38: 100110 & ---         \\
- 7: 00111 & {\tt brev.b}  &   &  7: 000111 & {\tt brev.b}  &   & 39: 100111 & ---         \\
+ 6: 00110 & {\tt rev2.b}  &   &  6: 000110 & {\tt rev2.b}  &   & 38: 100110 & ---         \\
+ 7: 00111 & {\tt rev.b}   &   &  7: 000111 & {\tt rev.b}   &   & 39: 100111 & ---         \\
 
 \cline{1-2}
 \cline{4-5}
 \cline{7-8}
 
- 8: 01000 & {\tt bswap.h} &   &  8: 001000 & {\tt bswap.h} &   & 40: 101000 & ---         \\
+ 8: 01000 & {\tt rev8.h}  &   &  8: 001000 & {\tt rev8.h}  &   & 40: 101000 & ---         \\
  9: 01001 & ---           &   &  9: 001001 & ---           &   & 41: 101001 & ---         \\
 10: 01010 & ---           &   & 10: 001010 & ---           &   & 42: 101010 & ---         \\
 11: 01011 & ---           &   & 11: 001011 & ---           &   & 43: 101011 & ---         \\
-12: 01100 & {\tt nswap.h} &   & 12: 001100 & {\tt nswap.h} &   & 44: 101100 & ---         \\
+12: 01100 & {\tt rev4.h}  &   & 12: 001100 & {\tt rev4.h}  &   & 44: 101100 & ---         \\
 13: 01101 & ---           &   & 13: 001101 & ---           &   & 45: 101101 & ---         \\
-14: 01110 & {\tt pswap.h} &   & 14: 001110 & {\tt pswap.h} &   & 46: 101110 & ---         \\
-15: 01111 & {\tt brev.h}  &   & 15: 001111 & {\tt brev.h}  &   & 47: 101111 & ---         \\
+14: 01110 & {\tt rev2.h}  &   & 14: 001110 & {\tt rev2.h}  &   & 46: 101110 & ---         \\
+15: 01111 & {\tt rev.h}   &   & 15: 001111 & {\tt rev.h}   &   & 47: 101111 & ---         \\
 
 \cline{1-2}
 \cline{4-5}
 \cline{7-8}
 
-16: 10000 & {\tt hswap}   &   & 16: 010000 & {\tt hswap.w} &   & 48: 110000 & {\tt hswap} \\
+16: 10000 & {\tt rev16}   &   & 16: 010000 & {\tt rev16.w} &   & 48: 110000 & {\tt rev16} \\
 17: 10001 & ---           &   & 17: 010001 & ---           &   & 49: 110001 & ---         \\
 18: 10010 & ---           &   & 18: 010010 & ---           &   & 50: 110010 & ---         \\
 19: 10011 & ---           &   & 19: 010011 & ---           &   & 51: 110011 & ---         \\
@@ -506,14 +483,14 @@ this definition in an obvious manner for RV128.
 \cline{4-5}
 \cline{7-8}
 
-24: 11000 & {\tt bswap}   &   & 24: 011000 & {\tt bswap.w} &   & 56: 111000 & {\tt bswap} \\
+24: 11000 & {\tt rev8}    &   & 24: 011000 & {\tt rev8.w}  &   & 56: 111000 & {\tt rev8}  \\
 25: 11001 & ---           &   & 25: 011001 & ---           &   & 57: 111001 & ---         \\
 26: 11010 & ---           &   & 26: 011010 & ---           &   & 58: 111010 & ---         \\
 27: 11011 & ---           &   & 27: 011011 & ---           &   & 59: 111011 & ---         \\
-28: 11100 & {\tt nswap}   &   & 28: 011100 & {\tt nswap.w} &   & 60: 111100 & {\tt nswap} \\
+28: 11100 & {\tt rev4}    &   & 28: 011100 & {\tt rev4.w}  &   & 60: 111100 & {\tt rev4}  \\
 29: 11101 & ---           &   & 29: 011101 & ---           &   & 61: 111101 & ---         \\
-30: 11110 & {\tt pswap}   &   & 30: 011110 & {\tt pswap.w} &   & 62: 111110 & {\tt pswap} \\
-31: 11111 & {\tt brev}    &   & 31: 011111 & {\tt brev.w}  &   & 63: 111111 & {\tt brev}  \\
+30: 11110 & {\tt rev2}    &   & 30: 011110 & {\tt rev2.w}  &   & 62: 111110 & {\tt rev2}  \\
+31: 11111 & {\tt rev}     &   & 31: 011111 & {\tt rev.w}   &   & 63: 111111 & {\tt rev}   \\
 \end{tabular}
 \end{center}
 \end{small}
@@ -529,6 +506,29 @@ Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
 \texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
 encoded as standard I-type opcode. \texttt{grev} and \texttt{grevi} can
 use the instruction encoding for ``arithmetic shift left''.
+
+Pseudo-instructions are provided for the most common GREVI use-cases. Their names
+consist of a prefix and and optional suffix. Each prefix and suffix corresponds
+to a bit mask. The GREVI control word is obtained by AND-ing the two masks together.
+
+\begin{center}
+\begin{tabular}{lcp{1cm}rc}
+Prefix & Mask & & Suffix & Mask \\
+\hline
+{\tt rev}   & 111111 & &      --- & 111111 \\
+{\tt rev2}  & 111110 & & {\tt .w} & 011111 \\
+{\tt rev4}  & 111100 & & {\tt .h} & 001111 \\
+{\tt rev8}  & 111000 & & {\tt .b} & 000111 \\
+{\tt rev16} & 110000 & & {\tt .n} & 000011 \\
+{\tt rev32} & 100000 & & {\tt .p} & 000001 \\
+\end{tabular}
+\end{center}
+
+In other words, the prefix controls the number of zero bits at the LSB end of the
+control word, and the suffix controls the number of zeros at the MSB end of the control
+word.
+
+{\tt rev8} reverses the order of bytes in a word, thus performs endianness conversion.
 
 % \subsection{References}
 %
@@ -585,7 +585,9 @@ bit indices.
 
 The most common type of shuffle/unshuffle operation is one on an immediate
 control value that only contains one continuous region of set bits. We call
-those operations zip/unzip and provide pseudo-instructions for them.
+those operations zip/unzip and provide pseudo-instructions for them. The naming
+scheme for those pseudo-instructions is similar to the naming scheme for the
+{\tt grevi} pseudo-instructions.
 
 Shuffle/unshuffle operations that only have individual bits set (not a continuous
 region of two or more bits) are their own inverse.
@@ -810,11 +812,11 @@ on RV64:
 \begin{verbatim}
   li a0, 0x0000000012345678
   zip4 t0, a0    ; <- 0x0102030405060708
-  nswap.b t1, t0 ; <- 0x1020304050607080
+  rev4.b t1, t0  ; <- 0x1020304050607080
   zip8 t2, a0    ; <- 0x0012003400560078
-  bswap.h t3, t2 ; <- 0x1200340056007800
+  rev8.h t3, t2  ; <- 0x1200340056007800
   zip16 t4, a0   ; <- 0x0000123400005678
-  hswap.w t5, t4 ; <- 0x1234000056780000
+  rev16.w t5, t4 ; <- 0x1234000056780000
 \end{verbatim}
 \end{minipage}
 
@@ -1020,10 +1022,10 @@ implements a replacement for \texttt{crc32.w} (RV32).
 crc32_w:
   li t0, 0x04C11DB7
   li t1, 0x04D101DF
-  brev a0, a0
+  rev a0, a0
   clmulhx a1, a0, t1
   clmul a0, a1, t0
-  brev a0, a0
+  rev a0, a0
   ret
 \end{verbatim}
 \end{minipage}

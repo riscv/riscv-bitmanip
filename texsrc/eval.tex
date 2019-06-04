@@ -363,7 +363,7 @@ Flipping horizontally or vertically can easily done with {\tt grevi}:
 \begin{verbatim}
 Flip horizontal:
  63 62 61 60 59 58 57 56    RISC-V Bitmanip:
- 55 54 53 52 51 50 49 48       brev.b
+ 55 54 53 52 51 50 49 48       rev.b
  47 46 45 44 43 42 41 40
  39 38 37 36 35 34 33 32
  31 30 29 28 27 26 25 24    x86:
@@ -373,7 +373,7 @@ Flip horizontal:
 
 Flip vertical:
   0  1  2  3  4  5  6  7    RISC-V Bitmanip:
-  8  9 10 11 12 13 14 15       bswap
+  8  9 10 11 12 13 14 15       rev8
  16 17 18 19 20 21 22 23
  24 25 26 27 28 29 30 31
  32 33 34 35 36 37 38 39    x86:
@@ -387,7 +387,7 @@ Rotating by 180 (flip horizontal and vertical):
 \begin{verbatim}
 Rotate 180:
   7  6  5  4  3  2  1  0    RISC-V Bitmanip:
- 15 14 13 12 11 10  9  8       brev
+ 15 14 13 12 11 10  9  8       rev
  23 22 21 20 19 18 17 16
  31 30 29 28 27 26 25 24
  39 38 37 36 35 34 33 32    x86:
@@ -419,7 +419,7 @@ the rotate operation only takes 4 operations:
 
 \begin{verbatim}
 rotate_bitboard:
-  bswap a0, a0
+  rev8 a0, a0
   zip a0, a0
   zip a0, a0
   zip a0, a0
@@ -450,9 +450,9 @@ In a bitboard, $\texttt{i[2:0]}$ corresponds to the X coordinate of a board posi
 $\texttt{i[5:3]}$ corresponds to the Y coordinate.
 
 Therefore flipping the board horizontally is the same as negating bits $\texttt{i[2:0]}$,
-which is the operation performed by {\tt grevi rd, rs, 7} ({\tt brev.b}).
+which is the operation performed by {\tt grevi rd, rs, 7} ({\tt rev.b}).
 
-Likewise flipping the board vertically is done by {\tt grevi rd, rs, 56} ({\tt bswap}).
+Likewise flipping the board vertically is done by {\tt grevi rd, rs, 56} ({\tt rev8}).
 
 Finally, transposing corresponds by swapping the lower and upper half of $\texttt{i[5:0]}$,
 or rotate shifting $\texttt{i[5:0]}$ by 3 positions. This can easily done by rotate shifting the entire
@@ -468,7 +468,7 @@ above we can easily rotate a bitcube by 90$^\circ$ around the X-, Y-, and Z-axis
 \begin{minipage}{\linewidth}
 \begin{verbatim}
 rotate_x:
-  hswap a0, a0
+  rev16 a0, a0
   zip4 a0, a0
   zip4 a0, a0
 \end{verbatim}
@@ -477,7 +477,7 @@ rotate_x:
 \begin{minipage}{\linewidth}
 \begin{verbatim}
 rotate_y:
-  brev.n a0, a0
+  rev.n a0, a0
   zip a0, a0
   zip a0, a0
   zip4 a0, a0
@@ -488,7 +488,7 @@ rotate_y:
 \begin{minipage}{\linewidth}
 \begin{verbatim}
 rotate_z:
-  nswap.h
+  rev4.h
   zip.h a0, a0
   zip.h a0, a0
 \end{verbatim}
@@ -641,15 +641,15 @@ handling of the case where {\tt x=0} using {\tt sltiu+addi}.
 \end{minipage}
 
 Alternatively, a Trailing Bit Manipulation (TBM) code pattern can be used
-together with {\tt brev} to implement this function in 4 instructions:
+together with {\tt rev} to implement this function in 4 instructions:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  uint64_t rfill_brev(uint64_t x)
+  uint64_t rfill_rev(uint64_t x)
   {
-    x = brev(x);        // GREVI
+    x = rev(x);         // GREVI
     x = x | ~(x - 1);   // ADDI, ORN
-    x = brev(x);        // GREVI
+    x = rev(x);         // GREVI
     return x;
   }
 \end{verbatim}
@@ -700,9 +700,9 @@ On RV32:
     uint32_t crc = 0;
 
     for (int i = 0; i < length; i++) {
-      crc ^= bswap32(data[i]);
-      crc = clmulhx32(crc, mu);
-      crc = clmul32(crc, P);
+      crc ^= rev8(data[i]);
+      crc = clmulhx(crc, mu);
+      crc = clmul(crc, P);
     }
 
     return crc;
@@ -744,14 +744,14 @@ time (RV64):
     uint64_t a0, a1, a2, t1, t2;
 
     assert(len >= 2);
-    a0 = bswap(p[0]);
-    a1 = bswap(p[1]);
+    a0 = rev8(p[0]);
+    a1 = rev8(p[1]);
 
     // Main loop: Reduce to 2x 64 bits
 
     for (const uint64_t *t0 = p+2; t0 != p+len; t0++)
     {
-      a2 = bswap(*t0);
+      a2 = rev8(*t0);
       t1 = clmulh(a0, k1);
       t2 = clmul(a0, k1);
       a0 = a1 ^ t1;
