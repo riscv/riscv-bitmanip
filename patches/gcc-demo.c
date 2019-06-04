@@ -2,7 +2,7 @@
 
 int demo_asm(int val)
 {
-	int cnt = __builtin_riscv_pcntw(val);
+	int cnt;
 	__asm__ ("pcntw %0, %1" : "=r"(cnt) : "r"(val));
 	return cnt;
 }
