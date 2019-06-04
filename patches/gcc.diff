@@ -14,7 +14,7 @@ index eeb75717d..2555589b0 100644
      delete current_subset_list;
  
 diff --git a/gcc/config/riscv/riscv-builtins.c b/gcc/config/riscv/riscv-builtins.c
-index 548267179..383827a64 100644
+index 548267179..fb1a36197 100644
 --- a/gcc/config/riscv/riscv-builtins.c
 +++ b/gcc/config/riscv/riscv-builtins.c
 @@ -84,6 +84,7 @@ struct riscv_builtin_description {
@@ -37,7 +37,7 @@ index 548267179..383827a64 100644
    RISCV_ATYPE_##A, RISCV_ATYPE_##B
  
  static const struct riscv_builtin_description riscv_builtins[] = {
-+  DIRECT_BUILTIN (pcntw, RISCV_SI_FTYPE_SI, bitmanip),
++  DIRECT_BUILTIN (pcntw, RISCV_SI_FTYPE_SI, bitmanip64),
    DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE_VOID, hard_float),
    DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float)
  };
