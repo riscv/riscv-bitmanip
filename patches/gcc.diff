@@ -1,0 +1,94 @@
+diff --git a/gcc/common/config/riscv/riscv-common.c b/gcc/common/config/riscv/riscv-common.c
+index eeb75717d..2555589b0 100644
+--- a/gcc/common/config/riscv/riscv-common.c
++++ b/gcc/common/config/riscv/riscv-common.c
+@@ -568,6 +568,10 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
+   if (subset_list->lookup ("c"))
+     *flags |= MASK_RVC;
+ 
++  *flags &= ~MASK_BITMANIP;
++  if (subset_list->lookup ("b"))
++    *flags |= MASK_BITMANIP;
++
+   if (current_subset_list)
+     delete current_subset_list;
+ 
+diff --git a/gcc/config/riscv/riscv-builtins.c b/gcc/config/riscv/riscv-builtins.c
+index 548267179..383827a64 100644
+--- a/gcc/config/riscv/riscv-builtins.c
++++ b/gcc/config/riscv/riscv-builtins.c
+@@ -84,6 +84,7 @@ struct riscv_builtin_description {
+   unsigned int (*avail) (void);
+ };
+ 
++AVAIL (bitmanip64, TARGET_64BIT && TARGET_BITMANIP)
+ AVAIL (hard_float, TARGET_HARD_FLOAT)
+ 
+ /* Construct a riscv_builtin_description from the given arguments.
+@@ -118,6 +119,7 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
+ /* Argument types.  */
+ #define RISCV_ATYPE_VOID void_type_node
+ #define RISCV_ATYPE_USI unsigned_intSI_type_node
++#define RISCV_ATYPE_SI intSI_type_node
+ 
+ /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
+    their associated RISCV_ATYPEs.  */
+@@ -125,6 +127,7 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
+   RISCV_ATYPE_##A, RISCV_ATYPE_##B
+ 
+ static const struct riscv_builtin_description riscv_builtins[] = {
++  DIRECT_BUILTIN (pcntw, RISCV_SI_FTYPE_SI, bitmanip),
+   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE_VOID, hard_float),
+   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float)
+ };
+diff --git a/gcc/config/riscv/riscv-ftypes.def b/gcc/config/riscv/riscv-ftypes.def
+index eefe3033e..f91dac7d2 100644
+--- a/gcc/config/riscv/riscv-ftypes.def
++++ b/gcc/config/riscv/riscv-ftypes.def
+@@ -28,3 +28,4 @@ along with GCC; see the file COPYING3.  If not see
+ 
+ DEF_RISCV_FTYPE (1, (USI, VOID))
+ DEF_RISCV_FTYPE (1, (VOID, USI))
++DEF_RISCV_FTYPE (1, (SI, SI))
+diff --git a/gcc/config/riscv/riscv.md b/gcc/config/riscv/riscv.md
+index e3799a5bd..7f5ccb97a 100644
+--- a/gcc/config/riscv/riscv.md
++++ b/gcc/config/riscv/riscv.md
+@@ -43,6 +43,9 @@
+   UNSPEC_LRINT
+   UNSPEC_LROUND
+ 
++  ;; Bitmanip
++  UNSPEC_PCNTW
++
+   ;; Stack tie
+   UNSPEC_TIE
+ ])
+@@ -2389,6 +2392,14 @@
+   ""
+   "")
+ 
++(define_insn "riscv_pcntw"
++  [(set (match_operand:SI 0 "register_operand" "=r")
++	(unspec
++	    [(match_operand:SI 1 "register_operand" "r")]
++	    UNSPEC_PCNTW))]
++  ""
++  "pcntw\t%0,%1")
++
+ (define_insn "riscv_frflags"
+   [(set (match_operand:SI 0 "register_operand" "=r")
+ 	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
+diff --git a/gcc/config/riscv/riscv.opt b/gcc/config/riscv/riscv.opt
+index 3b25f9a10..2be866d20 100644
+--- a/gcc/config/riscv/riscv.opt
++++ b/gcc/config/riscv/riscv.opt
+@@ -118,6 +118,8 @@ Mask(64BIT)
+ 
+ Mask(MUL)
+ 
++Mask(BITMANIP)
++
+ Mask(ATOMIC)
+ 
+ Mask(HARD_FLOAT)

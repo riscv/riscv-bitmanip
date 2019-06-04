@@ -1,5 +1,6 @@
 #include <rvintrin.h>
 
+#if 0
 uint32_t xorshift32(uint32_t x)
 {
 	x ^= x << 13;
@@ -23,6 +24,7 @@ uint32_t xorshift32_inv_simple(uint32_t x)
 	return x;
 
 }
+#endif
 
 uint32_t xorshift32_inv_clmul(uint32_t x)
 {
