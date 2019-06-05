@@ -6,7 +6,11 @@ assume RV32 for most examples in this chapter.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bitfield extract}
+\section{Basic Bitmanipulation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Bitfield extract}
 
 Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
 two shift operations.
@@ -16,6 +20,122 @@ two shift operations.
   srli a0, a0, (XLEN-len)
 \end{verbatim}
 
+Or using {\tt srai} for a signed bit-field.
+
+\begin{verbatim}
+  slli a0, a0, (XLEN-len-pos)
+  srai a0, a0, (XLEN-len)
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Rank and select}
+
+Rank and select are fundamental operations in succinct data structures~\cite{SelectX86}.
+
+\texttt{select(a0, a1)} returns the position of the \texttt{a1}th set bit in \texttt{a0}.
+It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  select:
+    li a2, 1
+    sll a1, a2, a1
+    bdep a0, a1, a0
+    ctz a0, a0
+    ret
+\end{verbatim}
+\end{minipage}
+
+\texttt{rank(a0, a1)} returns the number of set bits in \texttt{a0} up to and
+including position \texttt{a1}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  rank:
+    not a1, a1
+    sll a0, a1
+    pcnt a0, a0
+    ret
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fill right of most significant set bit}
+
+The ``fill right'' or ``fold right'' operation is a pattern commonly used in bit manipulation code.~\cite{MAGIC}
+
+The straight-forward RV64 implementation requires 12 instructions:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill(uint64_t x)
+  {
+    x |= x >> 1;   // SRLI, OR
+    x |= x >> 2;   // SRLI, OR
+    x |= x >> 4;   // SRLI, OR
+    x |= x >> 8;   // SRLI, OR
+    x |= x >> 16;  // SRLI, OR
+    x |= x >> 32;  // SRLI, OR
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+With {\tt clz} it can be implemented in only 4 instructions. Notice the
+handling of the case where {\tt x=0} using {\tt sltiu+addi}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill_clz(uint64_t x)
+  {
+    uint64_t t;
+    t = clz(x);         // CLZ
+    x = (!x)-1;         // SLTIU, ADDI
+    x = x >> (t & 63);  // SRL
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+Alternatively, a Trailing Bit Manipulation (TBM) code pattern can be used
+together with {\tt rev} to implement this function in 4 instructions:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill_rev(uint64_t x)
+  {
+    x = rev(x);         // GREVI
+    x = x | ~(x - 1);   // ADDI, ORN
+    x = rev(x);         // GREVI
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
+
+Finally, there is another implementation in 4 instructions using BMATOR, if we do
+not count the extra instructions for loading utility matrices.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t rfill_bmat(uint64_t x)
+  {
+    uint64_t m0, m1, m2, t;
+
+    m0 = 0xFF7F3F1F0F070301LL;  // LD
+    m1 = bmatflip(m0 << 8);     // SLLI, BMATFLIP
+    m2 = -1LL;                  // ADDI
+
+    t = bmator(x, m0);          // BMATOR
+    x = bmator(x, m2);          // BMATOR
+    x = bmator(m1, x);          // BMATOR
+    x |= t;                     // OR
+
+    return x;
+  }
+\end{verbatim}
+\end{minipage}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Funnel shifts}
@@ -497,39 +617,6 @@ rotate_z:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Rank and select}
-
-Rank and select are fundamental operations in succinct data structures~\cite{SelectX86}.
-
-\texttt{select(a0, a1)} returns the position of the \texttt{a1}th set bit in \texttt{a0}.
-It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  select:
-    li a2, 1
-    sll a1, a2, a1
-    bdep a0, a1, a0
-    ctz a0, a0
-    ret
-\end{verbatim}
-\end{minipage}
-
-\texttt{rank(a0, a1)} returns the number of set bits in \texttt{a0} up to and
-including position \texttt{a1}.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  rank:
-    not a1, a1
-    sll a0, a1
-    pcnt a0, a0
-    ret
-\end{verbatim}
-\end{minipage}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Inverting Xorshift RNGs}
 
 Xorshift RNGs are a class of fast RNGs for different bit widths. There are 648
@@ -600,83 +687,6 @@ The obvious remaining question is ``if {\tt clmul(x, 0x42108421)} is the inverse
 the inverse of {\tt x \^{} (x >> 5)}?'' It's {\tt clmulhx(x, 0x08421084)}, where {\tt 0x08421084 == 0x42108421 << (clz(0x42108421)+1)} (mod $2^{32}$).
 
 A special case of xorshift is {\tt x \^{} (x >> 1)}, which is a gray encoder. The corresponding gray decoder is {\tt clmulhx(x, 0xffffffff)}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Fill right of most significant set bit}
-
-The ``fill right'' or ``fold right'' operation is a pattern commonly used in bit manipulation code.~\cite{MAGIC}
-
-The straight-forward RV64 implementation requires 12 instructions:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  uint64_t rfill(uint64_t x)
-  {
-    x |= x >> 1;   // SRLI, OR
-    x |= x >> 2;   // SRLI, OR
-    x |= x >> 4;   // SRLI, OR
-    x |= x >> 8;   // SRLI, OR
-    x |= x >> 16;  // SRLI, OR
-    x |= x >> 32;  // SRLI, OR
-    return x;
-  }
-\end{verbatim}
-\end{minipage}
-
-With {\tt clz} it can be implemented in only 4 instructions. Notice the
-handling of the case where {\tt x=0} using {\tt sltiu+addi}.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  uint64_t rfill_clz(uint64_t x)
-  {
-    uint64_t t;
-    t = clz(x);         // CLZ
-    x = (!x)-1;         // SLTIU, ADDI
-    x = x >> (t & 63);  // SRL
-    return x;
-  }
-\end{verbatim}
-\end{minipage}
-
-Alternatively, a Trailing Bit Manipulation (TBM) code pattern can be used
-together with {\tt rev} to implement this function in 4 instructions:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  uint64_t rfill_rev(uint64_t x)
-  {
-    x = rev(x);         // GREVI
-    x = x | ~(x - 1);   // ADDI, ORN
-    x = rev(x);         // GREVI
-    return x;
-  }
-\end{verbatim}
-\end{minipage}
-
-Finally, there is another implementation in 4 instructions using BMATOR, if we do
-not count the extra instructions for loading utility matrices.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  uint64_t rfill_bmat(uint64_t x)
-  {
-    uint64_t m0, m1, m2, t;
-
-    m0 = 0xFF7F3F1F0F070301LL;  // LD
-    m1 = bmatflip(m0 << 8);     // SLLI, BMATFLIP
-    m2 = -1LL;                  // ADDI
-
-    t = bmator(x, m0);          // BMATOR
-    x = bmator(x, m2);          // BMATOR
-    x = bmator(m1, x);          // BMATOR
-    x |= t;                     // OR
-
-    return x;
-  }
-\end{verbatim}
-\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
