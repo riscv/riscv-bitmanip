@@ -829,6 +829,9 @@ on RV64:
 Another application for the zip instruction is generating Morton
 code~\cite[MortonCode].
 
+The x86 {\tt PUNPCK[LH]*} MMX/SSE/AVX instructions perform similar operations
+as {\tt zip8} and {\tt zip16}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
@@ -1943,62 +1946,63 @@ Sign-extending bytes and half-words are special cases of {\tt bfext}:
 
 \begin{table}[h]
 \begin{center}
-\begin{tabular}{lccc}
-Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv64\_*} \\
+\begin{tabular}{l|cc|ccc|}
+& \multicolumn{2}{c|}{RV32} & \multicolumn{3}{c|}{RV64} \\
+Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv64\_*} \\
 \hline
-{\tt clz      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt ctz      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt pcnt     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clz      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt ctz      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt pcnt     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt pack     } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt min      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt minu     } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt max      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt maxu     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt pack     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt min      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt minu     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt max      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt maxu     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt sbset    } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sbclr    } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sbinv    } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sbext    } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbset    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbclr    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbinv    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbext    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt sll      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt srl      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sra      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt slo      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sro      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt rol      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt ror      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sll      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt srl      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sra      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt slo      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sro      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt rol      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt ror      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt grev     } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt shfl     } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt unshfl   } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt grev     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt shfl     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt unshfl   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt bext     } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt bdep     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bext     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bdep     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt clmul    } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt clmulh   } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt clmulhx  } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clmul    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clmulh   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clmulhx  } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt bmatflip } & \ding{52} &           & \ding{52} \\
-{\tt bmator   } & \ding{52} &           & \ding{52} \\
-{\tt bmatxor  } & \ding{52} &           & \ding{52} \\
+{\tt bmatflip } &           &           & \ding{52} &           & \ding{52} \\
+{\tt bmator   } &           &           & \ding{52} &           & \ding{52} \\
+{\tt bmatxor  } &           &           & \ding{52} &           & \ding{52} \\
 \hline
-{\tt fsl      } & \ding{52} & \ding{52} & \ding{52} \\
-{\tt fsr      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt fsl      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt fsr      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt cmix     } & \ding{52} &           &           \\
-{\tt cmov     } & \ding{52} &           &           \\
+{\tt cmix     } & \ding{52} &           & \ding{52} &           &           \\
+{\tt cmov     } & \ding{52} &           & \ding{52} &           &           \\
 \hline
-{\tt crc32\_b } & \ding{52} &           &           \\
-{\tt crc32\_h } & \ding{52} &           &           \\
-{\tt crc32\_w } & \ding{52} &           &           \\
-{\tt crc32\_d } & \ding{52} &           &           \\
+{\tt crc32\_b } & \ding{52} &           & \ding{52} &           &           \\
+{\tt crc32\_h } & \ding{52} &           & \ding{52} &           &           \\
+{\tt crc32\_w } & \ding{52} &           & \ding{52} &           &           \\
+{\tt crc32\_d } &           &           & \ding{52} &           &           \\
 \hline
-{\tt crc32c\_b} & \ding{52} &           &           \\
-{\tt crc32c\_h} & \ding{52} &           &           \\
-{\tt crc32c\_w} & \ding{52} &           &           \\
-{\tt crc32c\_d} & \ding{52} &           &           \\
+{\tt crc32c\_b} & \ding{52} &           & \ding{52} &           &           \\
+{\tt crc32c\_h} & \ding{52} &           & \ding{52} &           &           \\
+{\tt crc32c\_w} & \ding{52} &           & \ding{52} &           &           \\
+{\tt crc32c\_d} &           &           & \ding{52} &           &           \\
 \end{tabular}
 \end{center}
 \caption{C intrinsics defined in {\tt <rvintrin.h>}}
@@ -2028,3 +2032,7 @@ Usage example:
   }
 \end{verbatim}
 \end{minipage}
+
+Defining {\tt RVINTRIN\_EMULATE} before including {\tt <rvintrin.h>} will
+define plain C functions that emulate the behavior of the RISC-V instructions.
+This is useful for testing software on non-RISC-V platforms.
