@@ -205,7 +205,7 @@ power-of-two representable in an {\tt uint64\_t}.
   {
     uint64_t t;
     t = clz(x-1);     // ADDI, CLZ
-    x = ror(!!x, t);  // SLTU, RORI
+    x = ror(!!x, t);  // SLTU, ROR
     return x;
   }
 \end{verbatim}

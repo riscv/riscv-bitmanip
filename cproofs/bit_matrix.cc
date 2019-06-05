@@ -121,7 +121,7 @@ extern "C" void round_pow2_check(uint64_t x)
 	uint32_t t;
 
 	t = clz(x-1);     // ADDI, CLZ
-	x = ror(!!x, t);  // SLTIU, RORI
+	x = ror(!!x, t);  // SLTU, ROR
 
 	if (!t) return;
 	assert(ref == x);
