@@ -52,8 +52,15 @@ look like exactly, but it will probably look something like this:
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
-   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- ($ (clmul.south west) + (3.15cm,-0.2cm) $)
+   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- coordinate (A) ($ (clmul.south west) + (3.15cm,-0.2cm) $) coordinate (B)
      |- ($ (zip.south west) + (6.0cm,-0.2cm) $) |- ($ (clz.north west) + (0,+0.2cm) $);
+
+   \draw [draw=black, dashed, opacity=0.2] (A) |- ($ (crc32c.south) + (0,-0.2cm) $) -| (B);
+
+   \draw [draw=black, dashed, opacity=0.2] ($ (slliuw.west) + (6.0cm,0) $) -| coordinate (A) ($ (shuffle.east) + (+0.2cm,0) $)
+     |- ($ (cmov.north west) + (-0.35cm,+0.12cm) $);
+
+   \node (B) at ($ (A) + (0,0) $) [above left, text=gray, opacity=0.5] { \textbf{B$^?$} };
 
    \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
@@ -96,12 +103,11 @@ included in ``B'', and what should or shouldn't be included in ``Zbb''.
 These decisions will be informed in big part by evaluations of the cost and
 added value for the individual instructions.
 
-With regard to ``B'', the main open questions are:
+The main open questions are:
 \begin{itemize}
-\item Should {\tt clmul[h]} be included, or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
-\item Should Zbt be included? It adds a large architectural cost by adding instructions with three source operands.
-\item Should Zbe be included? Should Zbm be included?
-\item Which Zbp pseudo-ops should be included in ``B''?
+\item Should {\tt clmul[h[x]]} be included in ``B'', or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
+\item Should ``Zbe'' be included in ``B''? Should ``Zbm be included in ``B''?
+\item Which ``Zbp'' pseudo-ops should be included in ``B''? Which in ``Zbb''? Should ``Zbp'' be included in ``B'' as a whole?
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
