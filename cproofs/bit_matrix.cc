@@ -123,7 +123,7 @@ extern "C" void round_pow2_check(uint64_t x)
 	t = clz(x-1);     // ADDI, CLZ
 	x = ror(!!x, t);  // SLTU, ROR
 
-	if (!t) return;
+	if (!t && x) return;
 	assert(ref == x);
 }
 

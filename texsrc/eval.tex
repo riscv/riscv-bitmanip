@@ -195,9 +195,9 @@ One common application of {\tt rfill()} is rounding up to the next power of two:
 \end{verbatim}
 \end{minipage}
 
-This can also be implemented in just 4 instructions, if we don't care
-about the case where {\tt x} is already larger than the largest
-power-of-two representable in an {\tt uint64\_t}.
+This can also be implemented in just 4 instructions, if we don't care about the
+case where the above code overflows because {\tt x} is already larger than the
+largest power-of-two representable in an {\tt uint64\_t}.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -210,6 +210,9 @@ power-of-two representable in an {\tt uint64\_t}.
   }
 \end{verbatim}
 \end{minipage}
+
+Note that this code handles $0\rightarrow{}0$ and $1\rightarrow{}1$ correctly,
+i.e. equivialent to {\tt rfill(x-1)+1}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
