@@ -1938,3 +1938,93 @@ Sign-extending bytes and half-words are special cases of {\tt bfext}:
   sext.h rd, rs   ->   slli rd, rs, (XLEN-16); c.srai rd, (XLEN-16)
 \end{verbatim}
 \end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{lccc}
+Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv64\_*} \\
+\hline
+{\tt clz      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt ctz      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt pcnt     } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt pack     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt min      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt minu     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt max      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt maxu     } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt sbset    } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbclr    } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbinv    } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sbext    } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt sll      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt srl      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sra      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt slo      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt sro      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt rol      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt ror      } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt grev     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt shfl     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt unshfl   } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt bext     } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bdep     } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt clmul    } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clmulh   } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clmulhx  } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt bmatflip } & \ding{52} &           & \ding{52} \\
+{\tt bmator   } & \ding{52} &           & \ding{52} \\
+{\tt bmatxor  } & \ding{52} &           & \ding{52} \\
+\hline
+{\tt fsl      } & \ding{52} & \ding{52} & \ding{52} \\
+{\tt fsr      } & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt cmix     } & \ding{52} &           &           \\
+{\tt cmov     } & \ding{52} &           &           \\
+\hline
+{\tt crc32\_b } & \ding{52} &           &           \\
+{\tt crc32\_h } & \ding{52} &           &           \\
+{\tt crc32\_w } & \ding{52} &           &           \\
+{\tt crc32\_d } & \ding{52} &           &           \\
+\hline
+{\tt crc32c\_b} & \ding{52} &           &           \\
+{\tt crc32c\_h} & \ding{52} &           &           \\
+{\tt crc32c\_w} & \ding{52} &           &           \\
+{\tt crc32c\_d} & \ding{52} &           &           \\
+\end{tabular}
+\end{center}
+\caption{C intrinsics defined in {\tt <rvintrin.h>}}
+\label{rvintrin}
+\end{table}
+
+\section{C intrinsics via {\tt <rvintrin.h>}}
+
+A C header file {\tt <rvintrin.h>} is provided that contains assembler
+templates for directly creating assembler instructions from C code.
+
+The header defines {\tt \_rv\_*(...)} functions that operate on the {\tt long}
+data type, {\tt \_rv32\_*(...)} functions that operate on the {\tt int32\_t}
+data type, and {\tt \_rv64\_*(...)} functions that operate on the {\tt
+int64\_t} data type. The {\tt \_rv64\_*(...)} functions are only available on
+RV64. See table~\ref{rvintrin} for a complete list of intrinsics defined in
+{\tt <rvintrin.h>}.
+
+Usage example:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  #include <rvintrin.h>
+
+  int find_nth_set_bit(unsigned int value, int cnt) {
+    return _rv32_ctz(_rv32_bdep(1 << cnt, value));
+  }
+\end{verbatim}
+\end{minipage}
