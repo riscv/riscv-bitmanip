@@ -115,4 +115,16 @@ extern "C" void rfill_check(uint64_t x)
 	assert(a == d);
 }
 
+extern "C" void round_pow2_check(uint64_t x)
+{
+	uint64_t ref = rfill_ref(x-1)+1;
+	uint32_t t;
+
+	t = clz(x-1);     // ADDI, CLZ
+	x = ror(!!x, t);  // SLTIU, RORI
+
+	if (!t) return;
+	assert(ref == x);
+}
+
 // ---------------------------------------------------------

@@ -505,7 +505,7 @@ extern "C" void check_pack_bytes(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
 	uint32_t ref = (a & 255) | ((b & 255) << 8) | ((c & 255) << 16) | ((d & 255) << 24);
 	uint32_t tst1 = rv32b::pack(rv32b::shfl(rv32b::pack(a, b), 8), rv32b::shfl(rv32b::pack(c, d), 8));
-	uint32_t tst2 = rv32b::ror(rv32b::pack(d & 255, b & 255), 8) | rv32b::pack(a & 255, c & 255);
+	uint32_t tst2 = rv32b::sll(rv32b::pack(b & 255, d), 8) | rv32b::pack(a & 255, c & 255);
 	assert(ref == tst1);
 	assert(ref == tst2);
 }
