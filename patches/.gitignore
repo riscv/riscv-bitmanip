@@ -3,4 +3,5 @@
 /gcc-build/
 /gcc-9.1.0/
 /newlib-build/
+/spike-build/
 /xorshift32.o
