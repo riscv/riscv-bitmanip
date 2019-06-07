@@ -36,7 +36,7 @@ extern "C" void clmul_gray2(uint32_t src)
 extern "C" void clmul_gray3(uint32_t src)
 {
 	uint32_t gray_encoded = src ^ (src >> 1);
-	uint32_t gray_decoded = rv32b::brev(rv32b::clmul(rv32b::brev(gray_encoded), -1));
+	uint32_t gray_decoded = rv32b::rev(rv32b::clmul(rv32b::rev(gray_encoded), -1));
 	assert(gray_decoded == src);
 }
 

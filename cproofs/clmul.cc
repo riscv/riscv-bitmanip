@@ -86,6 +86,20 @@ extern "C" void check_gray_inv(uint32_t x)
 
 // ---------------------------------------------------------
 
+extern "C" void check_clmulhx_rev(uint32_t a, uint32_t b)
+{
+	uint32_t ref_clmulh  = rv32b::clmulh(a, b);
+	uint32_t ref_clmulhx = rv32b::clmulhx(a, b);
+
+	uint32_t result_clmulh  = rv32b::rev(rv32b::clmul(rv32b::rev(a), (rv32b::rev(b) << 1) | 0));
+	uint32_t result_clmulhx = rv32b::rev(rv32b::clmul(rv32b::rev(a), (rv32b::rev(b) << 1) | 1));
+
+	assert(ref_clmulh  == result_clmulh);
+	assert(ref_clmulhx == result_clmulhx);
+}
+
+// ---------------------------------------------------------
+
 void check(uint64_t a, uint64_t b, uint64_t ab_hi, uint64_t ab_lo)
 {
 	uint64_t x_hi = rv64b::clmulh(a, b);
@@ -96,6 +110,8 @@ void check(uint64_t a, uint64_t b, uint64_t ab_hi, uint64_t ab_lo)
 
 	assert(ab_hi == x_hi);
 	assert(ab_lo == x_lo);
+
+	check_clmulhx_rev(a, b);
 }
 
 int main()

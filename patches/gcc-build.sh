@@ -12,8 +12,8 @@ if ! test -d gcc-9.1.0; then
 fi
 mkdir gcc-build
 cd gcc-build
-../gcc-9.1.0/configure --prefix=/opt/riscv64b --target=riscv64-unkown-elf --enable-languages=c --disable-libssp
+../gcc-9.1.0/configure --prefix=/opt/riscv64b --target=riscv64-unknown-elf --enable-languages=c --disable-libssp
 make -j$(nproc)
 make install
-ln -fs riscv64-unkown-elf-gcc /opt/riscv64b/bin/riscv64-unkown-elf-cc
-cp ../../cproofs/rvintrin.h /opt/riscv64b/lib/gcc/riscv64-unkown-elf/9.1.0/include/
+ln -fs riscv64-unknown-elf-gcc /opt/riscv64b/bin/riscv64-unknown-elf-cc
+cp ../../cproofs/rvintrin.h /opt/riscv64b/lib/gcc/riscv64-unknown-elf/9.1.0/include/

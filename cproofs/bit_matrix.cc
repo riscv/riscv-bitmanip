@@ -82,9 +82,9 @@ uint64_t rfill_clz(uint64_t x)
 
 uint64_t rfill_brev(uint64_t x)
 {
-	x = brev(x);        // GREVI
-	x = x | ~(x - 1);   // ADDI, ORN
-	x = brev(x);        // GREVI
+	x = rev(x);        // GREVI
+	x = x | ~(x - 1);  // ADDI, ORN
+	x = rev(x);        // GREVI
 	return x;
 }
 

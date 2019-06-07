@@ -50,7 +50,7 @@
 #  define RVINTRIN_RV32
 #endif
 
-#if __riscv_xlen == 32
+#if __riscv_xlen == 64
 #  define RVINTRIN_RV64
 #endif
 

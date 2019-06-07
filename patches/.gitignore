@@ -3,5 +3,6 @@
 /gcc-build/
 /gcc-9.1.0/
 /newlib-build/
+riscv-pk-build/
 /spike-build/
 /xorshift32.o
