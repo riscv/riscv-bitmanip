@@ -553,7 +553,7 @@ index 80755e7..0fac6e7 100644
  	addi \
  	addiw \
 +	addiwu \
-+	addiu_w \
++	addu_w \
  	addw \
 +	addwu \
  	amoadd_d \
