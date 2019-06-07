@@ -3,8 +3,8 @@
 
 In the proposals provided in this chapter, the C code examples are for
 illustration purposes only. They are not optimal implementations, but are
-intended to specify the desired functionality. See Section~\ref{fastc} for fast
-C code for use in emulators.
+intended to specify the desired functionality.
+% See Section~\ref{fastc} for fast C code for use in emulators.
 
 The final standard will likely define a range of Z-extensions for different bit
 manipulation instructions, with the ``B'' extension itself being a mix of
@@ -109,6 +109,8 @@ The main open questions are:
 \item Should ``Zbe'' be included in ``B''? Should ``Zbm be included in ``B''?
 \item Which ``Zbp'' pseudo-ops should be included in ``B''? Which in ``Zbb''? Should ``Zbp'' be included in ``B'' as a whole?
 \end{itemize}
+
+For the purpose of tool-chain development ``B'' is currently everything (excluding ``Zbf'').
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
