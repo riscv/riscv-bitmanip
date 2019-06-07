@@ -10,8 +10,8 @@ index f09200c073..adc1cbd2f5 100644
 +#define MASK_ANDN  0xfe00707f
 +#define MATCH_ORN 0x40006033
 +#define MASK_ORN  0xfe00707f
-+#define MATCH_XORN 0x40004033
-+#define MASK_XORN  0xfe00707f
++#define MATCH_XNOR 0x40004033
++#define MASK_XNOR  0xfe00707f
 +#define MATCH_SLO 0x20001033
 +#define MASK_SLO  0xfe00707f
 +#define MATCH_SRO 0x20005033
@@ -185,7 +185,7 @@ index f09200c073..adc1cbd2f5 100644
  DECLARE_INSN(remuw, MATCH_REMUW, MASK_REMUW)
 +DECLARE_INSN(andn, MATCH_ANDN, MASK_ANDN)
 +DECLARE_INSN(orn, MATCH_ORN, MASK_ORN)
-+DECLARE_INSN(xorn, MATCH_XORN, MASK_XORN)
++DECLARE_INSN(xnor, MATCH_XNOR, MASK_XNOR)
 +DECLARE_INSN(slo, MATCH_SLO, MASK_SLO)
 +DECLARE_INSN(sro, MATCH_SRO, MASK_SRO)
 +DECLARE_INSN(rol, MATCH_ROL, MASK_ROL)
@@ -298,7 +298,7 @@ index bd652590b5..fd2f827544 100644
 +/* Bitmanip instruction subset */
 +{"andn",      0, {"B", 0},   "d,s,t",  MATCH_ANDN, MASK_ANDN, match_opcode, 0 },
 +{"orn",       0, {"B", 0},   "d,s,t",  MATCH_ORN, MASK_ORN, match_opcode, 0 },
-+{"xorn",      0, {"B", 0},   "d,s,t",  MATCH_XORN, MASK_XORN, match_opcode, 0 },
++{"xnor",      0, {"B", 0},   "d,s,t",  MATCH_XNOR, MASK_XNOR, match_opcode, 0 },
 +{"sloi",      0, {"B", 0},   "d,s,>",  MATCH_SLOI, MASK_SLOI, match_opcode, 0 },
 +{"sroi",      0, {"B", 0},   "d,s,>",  MATCH_SROI, MASK_SROI, match_opcode, 0 },
 +// {"roli",   0, {"B", 0},   "d,s,>",  MATCH_ROLI, MASK_ROLI, match_opcode, 0 },   /** TBD **/

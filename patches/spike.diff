@@ -10,8 +10,8 @@ index c109ce1..597c9fc 100644
 +#define MASK_ANDN  0xfe00707f
 +#define MATCH_ORN 0x40006033
 +#define MASK_ORN  0xfe00707f
-+#define MATCH_XORN 0x40004033
-+#define MASK_XORN  0xfe00707f
++#define MATCH_XNOR 0x40004033
++#define MASK_XNOR  0xfe00707f
 +#define MATCH_SLO 0x20001033
 +#define MASK_SLO  0xfe00707f
 +#define MATCH_SRO 0x20005033
@@ -185,7 +185,7 @@ index c109ce1..597c9fc 100644
  DECLARE_INSN(remuw, MATCH_REMUW, MASK_REMUW)
 +DECLARE_INSN(andn, MATCH_ANDN, MASK_ANDN)
 +DECLARE_INSN(orn, MATCH_ORN, MASK_ORN)
-+DECLARE_INSN(xorn, MATCH_XORN, MASK_XORN)
++DECLARE_INSN(xnor, MATCH_XNOR, MASK_XNOR)
 +DECLARE_INSN(slo, MATCH_SLO, MASK_SLO)
 +DECLARE_INSN(sro, MATCH_SRO, MASK_SRO)
 +DECLARE_INSN(rol, MATCH_ROL, MASK_ROL)
@@ -283,8 +283,8 @@ index c109ce1..597c9fc 100644
 +#define MASK_ANDN  0xfe00707f
 +#define MATCH_ORN 0x40006033
 +#define MASK_ORN  0xfe00707f
-+#define MATCH_XORN 0x40004033
-+#define MASK_XORN  0xfe00707f
++#define MATCH_XNOR 0x40004033
++#define MASK_XNOR  0xfe00707f
 +#define MATCH_SLO 0x20001033
 +#define MASK_SLO  0xfe00707f
 +#define MATCH_SRO 0x20005033
@@ -458,7 +458,7 @@ index c109ce1..597c9fc 100644
  DECLARE_INSN(remuw, MATCH_REMUW, MASK_REMUW)
 +DECLARE_INSN(andn, MATCH_ANDN, MASK_ANDN)
 +DECLARE_INSN(orn, MATCH_ORN, MASK_ORN)
-+DECLARE_INSN(xorn, MATCH_XORN, MASK_XORN)
++DECLARE_INSN(xnor, MATCH_XNOR, MASK_XNOR)
 +DECLARE_INSN(slo, MATCH_SLO, MASK_SLO)
 +DECLARE_INSN(sro, MATCH_SRO, MASK_SRO)
 +DECLARE_INSN(rol, MATCH_ROL, MASK_ROL)
@@ -544,8 +544,632 @@ index c109ce1..597c9fc 100644
  DECLARE_INSN(amoadd_w, MATCH_AMOADD_W, MASK_AMOADD_W)
  DECLARE_INSN(amoxor_w, MATCH_AMOXOR_W, MASK_AMOXOR_W)
  DECLARE_INSN(amoor_w, MATCH_AMOOR_W, MASK_AMOOR_W)
+diff --git a/riscv/insns/addiwu.h b/riscv/insns/addiwu.h
+index e69de29..5ba1427 100644
+--- a/riscv/insns/addiwu.h
++++ b/riscv/insns/addiwu.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++WRITE_RD(zext32(insn.i_imm() + RS1));
+diff --git a/riscv/insns/addu_w.h b/riscv/insns/addu_w.h
+index e69de29..4c34449 100644
+--- a/riscv/insns/addu_w.h
++++ b/riscv/insns/addu_w.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++WRITE_RD(sext_xlen(RS1 + zext32(RS2)));
+diff --git a/riscv/insns/addwu.h b/riscv/insns/addwu.h
+index e69de29..cc40683 100644
+--- a/riscv/insns/addwu.h
++++ b/riscv/insns/addwu.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++WRITE_RD(zext32(RS1 + RS2));
+diff --git a/riscv/insns/andn.h b/riscv/insns/andn.h
+index e69de29..4582aac 100644
+--- a/riscv/insns/andn.h
++++ b/riscv/insns/andn.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++WRITE_RD(RS1 & ~RS2);
+diff --git a/riscv/insns/bdep.h b/riscv/insns/bdep.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/bdep.h
++++ b/riscv/insns/bdep.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/bdepw.h b/riscv/insns/bdepw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/bdepw.h
++++ b/riscv/insns/bdepw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/bext.h b/riscv/insns/bext.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/bext.h
++++ b/riscv/insns/bext.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/bextw.h b/riscv/insns/bextw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/bextw.h
++++ b/riscv/insns/bextw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/bmatflip.h b/riscv/insns/bmatflip.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/bmatflip.h
++++ b/riscv/insns/bmatflip.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/bmator.h b/riscv/insns/bmator.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/bmator.h
++++ b/riscv/insns/bmator.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/bmatxor.h b/riscv/insns/bmatxor.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/bmatxor.h
++++ b/riscv/insns/bmatxor.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clmul.h b/riscv/insns/clmul.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/clmul.h
++++ b/riscv/insns/clmul.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clmulh.h b/riscv/insns/clmulh.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/clmulh.h
++++ b/riscv/insns/clmulh.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clmulhw.h b/riscv/insns/clmulhw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/clmulhw.h
++++ b/riscv/insns/clmulhw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clmulhx.h b/riscv/insns/clmulhx.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/clmulhx.h
++++ b/riscv/insns/clmulhx.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clmulhxw.h b/riscv/insns/clmulhxw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/clmulhxw.h
++++ b/riscv/insns/clmulhxw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clmulw.h b/riscv/insns/clmulw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/clmulw.h
++++ b/riscv/insns/clmulw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clz.h b/riscv/insns/clz.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/clz.h
++++ b/riscv/insns/clz.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/clzw.h b/riscv/insns/clzw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/clzw.h
++++ b/riscv/insns/clzw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/cmix.h b/riscv/insns/cmix.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/cmix.h
++++ b/riscv/insns/cmix.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/cmov.h b/riscv/insns/cmov.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/cmov.h
++++ b/riscv/insns/cmov.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32_b.h b/riscv/insns/crc32_b.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32_b.h
++++ b/riscv/insns/crc32_b.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32_d.h b/riscv/insns/crc32_d.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32_d.h
++++ b/riscv/insns/crc32_d.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32_h.h b/riscv/insns/crc32_h.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32_h.h
++++ b/riscv/insns/crc32_h.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32_w.h b/riscv/insns/crc32_w.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32_w.h
++++ b/riscv/insns/crc32_w.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32c_b.h b/riscv/insns/crc32c_b.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32c_b.h
++++ b/riscv/insns/crc32c_b.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32c_d.h b/riscv/insns/crc32c_d.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32c_d.h
++++ b/riscv/insns/crc32c_d.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32c_h.h b/riscv/insns/crc32c_h.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32c_h.h
++++ b/riscv/insns/crc32c_h.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/crc32c_w.h b/riscv/insns/crc32c_w.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/crc32c_w.h
++++ b/riscv/insns/crc32c_w.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/ctz.h b/riscv/insns/ctz.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/ctz.h
++++ b/riscv/insns/ctz.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/ctzw.h b/riscv/insns/ctzw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/ctzw.h
++++ b/riscv/insns/ctzw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/fsl.h b/riscv/insns/fsl.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/fsl.h
++++ b/riscv/insns/fsl.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/fslw.h b/riscv/insns/fslw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/fslw.h
++++ b/riscv/insns/fslw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/fsr.h b/riscv/insns/fsr.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/fsr.h
++++ b/riscv/insns/fsr.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/fsri.h b/riscv/insns/fsri.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/fsri.h
++++ b/riscv/insns/fsri.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/fsriw.h b/riscv/insns/fsriw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/fsriw.h
++++ b/riscv/insns/fsriw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/fsrw.h b/riscv/insns/fsrw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/fsrw.h
++++ b/riscv/insns/fsrw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/max.h b/riscv/insns/max.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/max.h
++++ b/riscv/insns/max.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/maxu.h b/riscv/insns/maxu.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/maxu.h
++++ b/riscv/insns/maxu.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/min.h b/riscv/insns/min.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/min.h
++++ b/riscv/insns/min.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/minu.h b/riscv/insns/minu.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/minu.h
++++ b/riscv/insns/minu.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/orn.h b/riscv/insns/orn.h
+index e69de29..670926f 100644
+--- a/riscv/insns/orn.h
++++ b/riscv/insns/orn.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++WRITE_RD(RS1 | ~RS2);
+diff --git a/riscv/insns/pack.h b/riscv/insns/pack.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/pack.h
++++ b/riscv/insns/pack.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/packw.h b/riscv/insns/packw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/packw.h
++++ b/riscv/insns/packw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/pcnt.h b/riscv/insns/pcnt.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/pcnt.h
++++ b/riscv/insns/pcnt.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/pcntw.h b/riscv/insns/pcntw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/pcntw.h
++++ b/riscv/insns/pcntw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/rol.h b/riscv/insns/rol.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/rol.h
++++ b/riscv/insns/rol.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/rolw.h b/riscv/insns/rolw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/rolw.h
++++ b/riscv/insns/rolw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/ror.h b/riscv/insns/ror.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/ror.h
++++ b/riscv/insns/ror.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/rori.h b/riscv/insns/rori.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/rori.h
++++ b/riscv/insns/rori.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/roriw.h b/riscv/insns/roriw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/roriw.h
++++ b/riscv/insns/roriw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/rorw.h b/riscv/insns/rorw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/rorw.h
++++ b/riscv/insns/rorw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbclr.h b/riscv/insns/sbclr.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbclr.h
++++ b/riscv/insns/sbclr.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbclri.h b/riscv/insns/sbclri.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbclri.h
++++ b/riscv/insns/sbclri.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbclriw.h b/riscv/insns/sbclriw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbclriw.h
++++ b/riscv/insns/sbclriw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbclrw.h b/riscv/insns/sbclrw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbclrw.h
++++ b/riscv/insns/sbclrw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbext.h b/riscv/insns/sbext.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbext.h
++++ b/riscv/insns/sbext.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbexti.h b/riscv/insns/sbexti.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbexti.h
++++ b/riscv/insns/sbexti.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbextw.h b/riscv/insns/sbextw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbextw.h
++++ b/riscv/insns/sbextw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbinv.h b/riscv/insns/sbinv.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbinv.h
++++ b/riscv/insns/sbinv.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbinvi.h b/riscv/insns/sbinvi.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbinvi.h
++++ b/riscv/insns/sbinvi.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbinviw.h b/riscv/insns/sbinviw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbinviw.h
++++ b/riscv/insns/sbinviw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbinvw.h b/riscv/insns/sbinvw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbinvw.h
++++ b/riscv/insns/sbinvw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbset.h b/riscv/insns/sbset.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbset.h
++++ b/riscv/insns/sbset.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbseti.h b/riscv/insns/sbseti.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sbseti.h
++++ b/riscv/insns/sbseti.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbsetiw.h b/riscv/insns/sbsetiw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbsetiw.h
++++ b/riscv/insns/sbsetiw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sbsetw.h b/riscv/insns/sbsetw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sbsetw.h
++++ b/riscv/insns/sbsetw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/shfl.h b/riscv/insns/shfl.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/shfl.h
++++ b/riscv/insns/shfl.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/shfli.h b/riscv/insns/shfli.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/shfli.h
++++ b/riscv/insns/shfli.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/shflw.h b/riscv/insns/shflw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/shflw.h
++++ b/riscv/insns/shflw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/slo.h b/riscv/insns/slo.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/slo.h
++++ b/riscv/insns/slo.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sloi.h b/riscv/insns/sloi.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sloi.h
++++ b/riscv/insns/sloi.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sloiw.h b/riscv/insns/sloiw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sloiw.h
++++ b/riscv/insns/sloiw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/slow.h b/riscv/insns/slow.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/slow.h
++++ b/riscv/insns/slow.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sro.h b/riscv/insns/sro.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sro.h
++++ b/riscv/insns/sro.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sroi.h b/riscv/insns/sroi.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/sroi.h
++++ b/riscv/insns/sroi.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/sroiw.h b/riscv/insns/sroiw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/sroiw.h
++++ b/riscv/insns/sroiw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/srow.h b/riscv/insns/srow.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/srow.h
++++ b/riscv/insns/srow.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/subu_w.h b/riscv/insns/subu_w.h
+index e69de29..0afeb14 100644
+--- a/riscv/insns/subu_w.h
++++ b/riscv/insns/subu_w.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++WRITE_RD(sext_xlen(RS1 - zext32(RS2)));
+diff --git a/riscv/insns/subwu.h b/riscv/insns/subwu.h
+index e69de29..a97f6d7 100644
+--- a/riscv/insns/subwu.h
++++ b/riscv/insns/subwu.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++WRITE_RD(zext32(RS1 - RS2));
+diff --git a/riscv/insns/unshfl.h b/riscv/insns/unshfl.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/unshfl.h
++++ b/riscv/insns/unshfl.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/unshfli.h b/riscv/insns/unshfli.h
+index e69de29..34238c9 100644
+--- a/riscv/insns/unshfli.h
++++ b/riscv/insns/unshfli.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/unshflw.h b/riscv/insns/unshflw.h
+index e69de29..c37937f 100644
+--- a/riscv/insns/unshflw.h
++++ b/riscv/insns/unshflw.h
+@@ -0,0 +1,3 @@
++require_rv64;
++require_extension('B');
++abort(); // FIXME
+diff --git a/riscv/insns/xnor.h b/riscv/insns/xnor.h
+index e69de29..b2fe95b 100644
+--- a/riscv/insns/xnor.h
++++ b/riscv/insns/xnor.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++WRITE_RD(RS1 ^ ~RS2);
 diff --git a/riscv/riscv.mk.in b/riscv/riscv.mk.in
-index 80755e7..0fac6e7 100644
+index 80755e7..cbeb06f 100644
 --- a/riscv/riscv.mk.in
 +++ b/riscv/riscv.mk.in
 @@ -65,7 +65,10 @@ riscv_insn_list = \
@@ -696,7 +1320,7 @@ index 80755e7..0fac6e7 100644
  	slt \
  	slti \
  	sltiu \
-@@ -284,12 +358,22 @@ riscv_insn_list = \
+@@ -284,10 +358,20 @@ riscv_insn_list = \
  	srli \
  	srliw \
  	srlw \
@@ -713,9 +1337,7 @@ index 80755e7..0fac6e7 100644
 +	unshfli \
 +	unshflw \
  	wfi \
++	xnor \
  	xor \
  	xori \
-+	xorn \
  
- riscv_gen_srcs = \
- 	$(addsuffix .cc,$(riscv_insn_list))

@@ -5,7 +5,7 @@ srai x1,x2,5
 
 andn x1,x2,x3
 orn  x1,x2,x3
-xorn x1,x2,x3
+xnor x1,x2,x3
 
 slo x1,x2,x3
 slo x1,x2,5
