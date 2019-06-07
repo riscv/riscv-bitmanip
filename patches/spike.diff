@@ -1,5 +1,5 @@
 diff --git a/fesvr/encoding.h b/fesvr/encoding.h
-index c109ce1..597c9fc 100644
+index c109ce1..c3b77af 100644
 --- a/fesvr/encoding.h
 +++ b/fesvr/encoding.h
 @@ -352,6 +352,176 @@
@@ -272,7 +272,7 @@ index c109ce1..597c9fc 100644
  DECLARE_INSN(amoxor_w, MATCH_AMOXOR_W, MASK_AMOXOR_W)
  DECLARE_INSN(amoor_w, MATCH_AMOOR_W, MASK_AMOOR_W)
 diff --git a/riscv/encoding.h b/riscv/encoding.h
-index c109ce1..597c9fc 100644
+index c109ce1..c3b77af 100644
 --- a/riscv/encoding.h
 +++ b/riscv/encoding.h
 @@ -352,6 +352,176 @@
@@ -1168,6 +1168,35 @@ index e69de29..b2fe95b 100644
 @@ -0,0 +1,2 @@
 +require_extension('B');
 +WRITE_RD(RS1 ^ ~RS2);
+diff --git a/riscv/processor.cc b/riscv/processor.cc
+index 189b7db..b3f4f85 100644
+--- a/riscv/processor.cc
++++ b/riscv/processor.cc
+@@ -65,7 +65,7 @@ void processor_t::parse_isa_string(const char* str)
+     lowercase += std::tolower(*r);
+ 
+   const char* p = lowercase.c_str();
+-  const char* all_subsets = "imafdqc";
++  const char* all_subsets = "imafdqcb";
+ 
+   max_xlen = 64;
+   state.misa = reg_t(2) << 62;
+@@ -492,13 +492,14 @@ void processor_t::set_csr(int which, reg_t val)
+       if (!(val & (1L << ('F' - 'A'))))
+         val &= ~(1L << ('D' - 'A'));
+ 
+-      // allow MAFDC bits in MISA to be modified
++      // allow MAFDCB bits in MISA to be modified
+       reg_t mask = 0;
+       mask |= 1L << ('M' - 'A');
+       mask |= 1L << ('A' - 'A');
+       mask |= 1L << ('F' - 'A');
+       mask |= 1L << ('D' - 'A');
+       mask |= 1L << ('C' - 'A');
++      mask |= 1L << ('B' - 'A');
+       mask &= max_isa;
+ 
+       state.misa = (val & mask) | (state.misa & ~mask);
 diff --git a/riscv/riscv.mk.in b/riscv/riscv.mk.in
 index 80755e7..cbeb06f 100644
 --- a/riscv/riscv.mk.in

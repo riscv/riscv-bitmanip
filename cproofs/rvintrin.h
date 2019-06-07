@@ -211,6 +211,10 @@ static inline int64_t _rv64_fsl(int64_t rs1, int64_t rs3, int64_t rs2) { int64_t
 static inline int64_t _rv64_fsr(int64_t rs1, int64_t rs3, int64_t rs2) { int64_t rd; if (__builtin_constant_p(rs2)) __asm__ ("fsri  %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "i"(127 &  rs2)); else __asm__ ("fsr %0, %1, %2, %3" : "=r"(rd) : "r"(rs1), "r"(rs3), "r"(rs2)); return rd; }
 #endif
 
+static inline long _rv_andn(long rs1, long rs2) { long rd; __asm__ ("andn %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline long _rv_orn (long rs1, long rs2) { long rd; __asm__ ("orn  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline long _rv_xnor(long rs1, long rs2) { long rd; __asm__ ("xnor %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+
 #else // RVINTRIN_EMULATE
 
 #if UINT_MAX != 0xffffffffU
@@ -606,6 +610,10 @@ static inline int64_t _rv64_fsr(int64_t rs1, int64_t rs3, int64_t rs2)
 	}
 	return shamt ? (A >> shamt) | (B << (64-shamt)) : A;
 }
+
+static inline long _rv_andn(long rs1, long rs2) { return rs1 & ~rs2; }
+static inline long _rv_orn (long rs1, long rs2) { return rs1 | ~rs2; }
+static inline long _rv_xnor(long rs1, long rs2) { return rs1 ^ ~rs2; }
 
 #endif // RVINTRIN_EMULATE
 
