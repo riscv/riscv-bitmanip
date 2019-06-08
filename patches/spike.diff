@@ -1059,20 +1059,23 @@ index e69de29..670926f 100644
 +require_extension('B');
 +WRITE_RD(RS1 | ~RS2);
 diff --git a/riscv/insns/pack.h b/riscv/insns/pack.h
-index e69de29..34238c9 100644
+index e69de29..841f24d 100644
 --- a/riscv/insns/pack.h
 +++ b/riscv/insns/pack.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,4 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t lo = zext_xlen(RS1 << (xlen/2)) >> (xlen/2);
++reg_t hi = zext_xlen(RS2 << (xlen/2));
++WRITE_RD(sext_xlen(lo | hi));
 diff --git a/riscv/insns/packw.h b/riscv/insns/packw.h
-index e69de29..c37937f 100644
+index e69de29..3da96bf 100644
 --- a/riscv/insns/packw.h
 +++ b/riscv/insns/packw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,4 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t lo = zext32(RS1 << 16) >> 16;
++reg_t hi = zext32(RS2 << 16);
++WRITE_RD(sext32(lo | hi));
 diff --git a/riscv/insns/pcnt.h b/riscv/insns/pcnt.h
 index e69de29..773e2e1 100644
 --- a/riscv/insns/pcnt.h

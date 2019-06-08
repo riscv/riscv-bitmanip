@@ -43,6 +43,9 @@ long test_zbb(uint64_t *argp, int argc)
 	for (int i = 0; i < argc; i++)
 	for (int j = 0; j < argc; j++)
 	{
+		CK(_rv32_pack(argp[i], argp[j]));
+		CK(_rv64_pack(argp[i], argp[j]));
+
 		CK(_rv32_slo(argp[i], argp[j]));
 		CK(_rv32_sro(argp[i], argp[j]));
 
