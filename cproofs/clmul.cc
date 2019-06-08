@@ -98,6 +98,25 @@ extern "C" void check_clmulhx_rev(uint32_t a, uint32_t b)
 	assert(ref_clmulhx == result_clmulhx);
 }
 
+uint32_t clmulr(uint32_t a, uint32_t b)
+{
+	return rv32b::rev(rv32b::clmul(rv32b::rev(a), rv32b::rev(b)));
+}
+
+extern "C" void check_clmulr(uint32_t a, uint32_t b)
+{
+	uint32_t ref = clmulr(a, b);
+	uint32_t alt = rv32b::clmulh(a, b << 1) ^ ((int32_t(b)<0) ? a : 0);
+	assert(ref == alt);
+}
+
+extern "C" void check_clmulh(uint32_t a, uint32_t b)
+{
+	uint32_t ref = rv32b::clmulh(a, b);
+	uint32_t alt = clmulr(a, b) >> 1;
+	assert(ref == alt);
+}
+
 // ---------------------------------------------------------
 
 void check(uint64_t a, uint64_t b, uint64_t ab_hi, uint64_t ab_lo)
@@ -111,7 +130,8 @@ void check(uint64_t a, uint64_t b, uint64_t ab_hi, uint64_t ab_lo)
 	assert(ab_hi == x_hi);
 	assert(ab_lo == x_lo);
 
-	check_clmulhx_rev(a, b);
+	check_clmulr(a, b);
+	check_clmulh(a, b);
 }
 
 int main()
