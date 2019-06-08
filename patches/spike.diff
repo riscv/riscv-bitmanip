@@ -1183,27 +1183,47 @@ index e69de29..c37937f 100644
 +require_extension('B');
 +abort(); // FIXME
 diff --git a/riscv/insns/shfl.h b/riscv/insns/shfl.h
-index e69de29..34238c9 100644
+index e69de29..5d41336 100644
 --- a/riscv/insns/shfl.h
 +++ b/riscv/insns/shfl.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,9 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++int shamt = RS2 & (xlen-1);
++if (shamt & 16) x = (x & 0xFFFF00000000FFFFLL) | ((x & 0x0000FFFF00000000LL) >> 16) | ((x & 0x00000000FFFF0000LL) << 16);
++if (shamt &  8) x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++if (shamt &  4) x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++if (shamt &  2) x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/shfli.h b/riscv/insns/shfli.h
-index e69de29..34238c9 100644
+index e69de29..964638e 100644
 --- a/riscv/insns/shfli.h
 +++ b/riscv/insns/shfli.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,10 @@
 +require_extension('B');
-+abort(); // FIXME
++require(SHAMT < (xlen/2));
++reg_t x = RS1;
++int shamt = SHAMT & (xlen-1);
++if (shamt & 16) x = (x & 0xFFFF00000000FFFFLL) | ((x & 0x0000FFFF00000000LL) >> 16) | ((x & 0x00000000FFFF0000LL) << 16);
++if (shamt &  8) x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++if (shamt &  4) x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++if (shamt &  2) x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/shflw.h b/riscv/insns/shflw.h
-index e69de29..c37937f 100644
+index e69de29..361ee36 100644
 --- a/riscv/insns/shflw.h
 +++ b/riscv/insns/shflw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,8 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++int shamt = RS2 & 15;
++if (shamt &  8) x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++if (shamt &  4) x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++if (shamt &  2) x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++WRITE_RD(sext32(x));
 diff --git a/riscv/insns/slliu_w.h b/riscv/insns/slliu_w.h
 index e69de29..99ac5f8 100644
 --- a/riscv/insns/slliu_w.h
@@ -1291,27 +1311,47 @@ index e69de29..a97f6d7 100644
 +require_extension('B');
 +WRITE_RD(zext32(RS1 - RS2));
 diff --git a/riscv/insns/unshfl.h b/riscv/insns/unshfl.h
-index e69de29..34238c9 100644
+index e69de29..bc50f70 100644
 --- a/riscv/insns/unshfl.h
 +++ b/riscv/insns/unshfl.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,9 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++int shamt = RS2 & (xlen-1);
++if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++if (shamt &  2) x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++if (shamt &  4) x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++if (shamt &  8) x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++if (shamt & 16) x = (x & 0xFFFF00000000FFFFLL) | ((x & 0x0000FFFF00000000LL) >> 16) | ((x & 0x00000000FFFF0000LL) << 16);
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/unshfli.h b/riscv/insns/unshfli.h
-index e69de29..34238c9 100644
+index e69de29..af25d7d 100644
 --- a/riscv/insns/unshfli.h
 +++ b/riscv/insns/unshfli.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,10 @@
 +require_extension('B');
-+abort(); // FIXME
++require(SHAMT < (xlen/2));
++reg_t x = RS1;
++int shamt = SHAMT & (xlen-1);
++if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++if (shamt &  2) x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++if (shamt &  4) x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++if (shamt &  8) x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++if (shamt & 16) x = (x & 0xFFFF00000000FFFFLL) | ((x & 0x0000FFFF00000000LL) >> 16) | ((x & 0x00000000FFFF0000LL) << 16);
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/unshflw.h b/riscv/insns/unshflw.h
-index e69de29..c37937f 100644
+index e69de29..5210bde 100644
 --- a/riscv/insns/unshflw.h
 +++ b/riscv/insns/unshflw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,8 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++int shamt = RS2 & 15;
++if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++if (shamt &  2) x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++if (shamt &  4) x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++if (shamt &  8) x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++WRITE_RD(sext32(x));
 diff --git a/riscv/insns/xnor.h b/riscv/insns/xnor.h
 index e69de29..b2fe95b 100644
 --- a/riscv/insns/xnor.h
