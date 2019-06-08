@@ -612,35 +612,61 @@ index e69de29..4582aac 100644
 +require_extension('B');
 +WRITE_RD(RS1 & ~RS2);
 diff --git a/riscv/insns/bdep.h b/riscv/insns/bdep.h
-index e69de29..34238c9 100644
+index e69de29..059a1cd 100644
 --- a/riscv/insns/bdep.h
 +++ b/riscv/insns/bdep.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,9 @@
 +require_extension('B');
-+abort(); // FIXME
++uint64_t c = 0, i = 0, data = zext_xlen(RS1), mask = zext_xlen(RS2);
++while (mask) {
++	uint64_t b = mask & ~((mask | (mask-1)) + 1);
++	c |= (data << (__builtin_ctzl(b) - i)) & b;
++	i += __builtin_popcountl(b);
++	mask -= b;
++}
++WRITE_RD(sext_xlen(c));
 diff --git a/riscv/insns/bdepw.h b/riscv/insns/bdepw.h
-index e69de29..c37937f 100644
+index e69de29..8f013c5 100644
 --- a/riscv/insns/bdepw.h
 +++ b/riscv/insns/bdepw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,9 @@
 +require_extension('B');
-+abort(); // FIXME
++uint64_t c = 0, i = 0, data = zext32(RS1), mask = zext32(RS2);
++while (mask) {
++	uint64_t b = mask & ~((mask | (mask-1)) + 1);
++	c |= (data << (__builtin_ctzl(b) - i)) & b;
++	i += __builtin_popcountl(b);
++	mask -= b;
++}
++WRITE_RD(sext32(c));
 diff --git a/riscv/insns/bext.h b/riscv/insns/bext.h
-index e69de29..34238c9 100644
+index e69de29..50d9bb2 100644
 --- a/riscv/insns/bext.h
 +++ b/riscv/insns/bext.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,9 @@
 +require_extension('B');
-+abort(); // FIXME
++uint64_t c = 0, i = 0, data = zext_xlen(RS1), mask = zext_xlen(RS2);
++while (mask) {
++	uint64_t b = mask & ~((mask | (mask-1)) + 1);
++	c |= (data & b) >> (__builtin_ctzl(b) - i);
++	i += __builtin_popcountl(b);
++	mask -= b;
++}
++WRITE_RD(sext_xlen(c));
 diff --git a/riscv/insns/bextw.h b/riscv/insns/bextw.h
-index e69de29..c37937f 100644
+index e69de29..2bc9a5f 100644
 --- a/riscv/insns/bextw.h
 +++ b/riscv/insns/bextw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,9 @@
 +require_extension('B');
-+abort(); // FIXME
++uint64_t c = 0, i = 0, data = zext32(RS1), mask = zext32(RS2);
++while (mask) {
++	uint64_t b = mask & ~((mask | (mask-1)) + 1);
++	c |= (data & b) >> (__builtin_ctzl(b) - i);
++	i += __builtin_popcountl(b);
++	mask -= b;
++}
++WRITE_RD(sext32(c));
 diff --git a/riscv/insns/bmatflip.h b/riscv/insns/bmatflip.h
 index e69de29..c37937f 100644
 --- a/riscv/insns/bmatflip.h
