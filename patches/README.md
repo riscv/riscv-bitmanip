@@ -26,3 +26,10 @@ Testing the environment:
 ```
 bash spike-demo.sh
 ```
+
+Running B-extension tests:
+
+```
+cd ../tests
+bash run.sh
+```
