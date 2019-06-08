@@ -1071,117 +1071,125 @@ index e69de29..b42ab73 100644
 +int rshamt = -shamt & 31;
 +WRITE_RD(sext32((RS1 << rshamt) | (zext32(RS1) >> shamt)));
 diff --git a/riscv/insns/sbclr.h b/riscv/insns/sbclr.h
-index e69de29..34238c9 100644
+index e69de29..f0b0e0a 100644
 --- a/riscv/insns/sbclr.h
 +++ b/riscv/insns/sbclr.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & (xlen-1);
++WRITE_RD(sext_xlen(RS1 & ~(1LL << shamt)));
 diff --git a/riscv/insns/sbclri.h b/riscv/insns/sbclri.h
-index e69de29..34238c9 100644
+index e69de29..546dcaa 100644
 --- a/riscv/insns/sbclri.h
 +++ b/riscv/insns/sbclri.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & (xlen-1);
++WRITE_RD(sext_xlen(RS1 & ~(1LL << shamt)));
 diff --git a/riscv/insns/sbclriw.h b/riscv/insns/sbclriw.h
-index e69de29..c37937f 100644
+index e69de29..3a26fe0 100644
 --- a/riscv/insns/sbclriw.h
 +++ b/riscv/insns/sbclriw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & 31;
++WRITE_RD(sext32(RS1 & ~(1LL << shamt)));
 diff --git a/riscv/insns/sbclrw.h b/riscv/insns/sbclrw.h
-index e69de29..c37937f 100644
+index e69de29..e089298 100644
 --- a/riscv/insns/sbclrw.h
 +++ b/riscv/insns/sbclrw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & 31;
++WRITE_RD(sext32(RS1 & ~(1LL << shamt)));
 diff --git a/riscv/insns/sbext.h b/riscv/insns/sbext.h
-index e69de29..34238c9 100644
+index e69de29..7149a2a 100644
 --- a/riscv/insns/sbext.h
 +++ b/riscv/insns/sbext.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & (xlen-1);
++WRITE_RD(sext_xlen(1 & (RS1 >> shamt)));
 diff --git a/riscv/insns/sbexti.h b/riscv/insns/sbexti.h
-index e69de29..34238c9 100644
+index e69de29..c930cfb 100644
 --- a/riscv/insns/sbexti.h
 +++ b/riscv/insns/sbexti.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & (xlen-1);
++WRITE_RD(sext_xlen(1 & (RS1 >> shamt)));
 diff --git a/riscv/insns/sbextw.h b/riscv/insns/sbextw.h
-index e69de29..c37937f 100644
+index e69de29..1041453 100644
 --- a/riscv/insns/sbextw.h
 +++ b/riscv/insns/sbextw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & 31;
++WRITE_RD(sext32(1 & (RS1 >> shamt)));
 diff --git a/riscv/insns/sbinv.h b/riscv/insns/sbinv.h
-index e69de29..34238c9 100644
+index e69de29..5892252 100644
 --- a/riscv/insns/sbinv.h
 +++ b/riscv/insns/sbinv.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & (xlen-1);
++WRITE_RD(sext_xlen(RS1 ^ (1LL << shamt)));
 diff --git a/riscv/insns/sbinvi.h b/riscv/insns/sbinvi.h
-index e69de29..34238c9 100644
+index e69de29..f67143c 100644
 --- a/riscv/insns/sbinvi.h
 +++ b/riscv/insns/sbinvi.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & (xlen-1);
++WRITE_RD(sext_xlen(RS1 ^ (1LL << shamt)));
 diff --git a/riscv/insns/sbinviw.h b/riscv/insns/sbinviw.h
-index e69de29..c37937f 100644
+index e69de29..80fef91 100644
 --- a/riscv/insns/sbinviw.h
 +++ b/riscv/insns/sbinviw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & 31;
++WRITE_RD(sext32(RS1 ^ (1LL << shamt)));
 diff --git a/riscv/insns/sbinvw.h b/riscv/insns/sbinvw.h
-index e69de29..c37937f 100644
+index e69de29..1b9ccfd 100644
 --- a/riscv/insns/sbinvw.h
 +++ b/riscv/insns/sbinvw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & 31;
++WRITE_RD(sext32(RS1 ^ (1LL << shamt)));
 diff --git a/riscv/insns/sbset.h b/riscv/insns/sbset.h
-index e69de29..34238c9 100644
+index e69de29..0e3f0fc 100644
 --- a/riscv/insns/sbset.h
 +++ b/riscv/insns/sbset.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & (xlen-1);
++WRITE_RD(sext_xlen(RS1 | (1LL << shamt)));
 diff --git a/riscv/insns/sbseti.h b/riscv/insns/sbseti.h
-index e69de29..34238c9 100644
+index e69de29..44aa8bb 100644
 --- a/riscv/insns/sbseti.h
 +++ b/riscv/insns/sbseti.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,3 @@
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & (xlen-1);
++WRITE_RD(sext_xlen(RS1 | (1LL << shamt)));
 diff --git a/riscv/insns/sbsetiw.h b/riscv/insns/sbsetiw.h
-index e69de29..c37937f 100644
+index e69de29..dcfc6b1 100644
 --- a/riscv/insns/sbsetiw.h
 +++ b/riscv/insns/sbsetiw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = SHAMT & 31;
++WRITE_RD(sext32(RS1 | (1LL << shamt)));
 diff --git a/riscv/insns/sbsetw.h b/riscv/insns/sbsetw.h
-index e69de29..c37937f 100644
+index e69de29..c65199a 100644
 --- a/riscv/insns/sbsetw.h
 +++ b/riscv/insns/sbsetw.h
 @@ -0,0 +1,3 @@
-+require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++int shamt = RS2 & 31;
++WRITE_RD(sext32(RS1 | (1LL << shamt)));
 diff --git a/riscv/insns/shfl.h b/riscv/insns/shfl.h
 index e69de29..5d41336 100644
 --- a/riscv/insns/shfl.h
