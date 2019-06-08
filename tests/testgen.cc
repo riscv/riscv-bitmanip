@@ -77,9 +77,9 @@ int main()
 	printf("  printf(\"test_" #_tst "\");\n"); \
 	printf("  fflush(stdout);\n"); \
 	uint64_t test_ ## _tst ## _result = test_ ## _tst (args, 128); \
-	printf("  uint64_t test_" #_tst "_result = test_" #_tst "(args, 128);\n"); \
-	printf("  printf(\" 0x%%016llx %%s\\n\", (long long)test_" #_tst "_result, test_" #_tst "_result == 0x%016llx ? \"OK\" : \"ERROR\");\n", (long long)test_ ## _tst ## _result); \
-	printf("  if (test_" #_tst "_result != 0x%016llx) return 1;\n", (long long)test_ ## _tst ## _result);
+	printf("  long test_" #_tst "_result = test_" #_tst "(args, 128);\n"); \
+	printf("  printf(\" 0x%%08lx %%s\\n\", (long)test_" #_tst "_result, test_" #_tst "_result == 0x%08lx ? \"OK\" : \"ERROR\");\n", (long)test_ ## _tst ## _result); \
+	printf("  if (test_" #_tst "_result != 0x%08lx) return 1;\n", (long)test_ ## _tst ## _result);
 
 	RUN_TEST(zbb)
 	RUN_TEST(zbs)

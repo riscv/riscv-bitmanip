@@ -704,61 +704,85 @@ index e69de29..34238c9 100644
 +require_extension('B');
 +abort(); // FIXME
 diff --git a/riscv/insns/crc32_b.h b/riscv/insns/crc32_b.h
-index e69de29..34238c9 100644
+index e69de29..8f04e56 100644
 --- a/riscv/insns/crc32_b.h
 +++ b/riscv/insns/crc32_b.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 8; i++)
++  x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32_d.h b/riscv/insns/crc32_d.h
-index e69de29..34238c9 100644
+index e69de29..e4f1583 100644
 --- a/riscv/insns/crc32_d.h
 +++ b/riscv/insns/crc32_d.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 64; i++)
++  x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32_h.h b/riscv/insns/crc32_h.h
-index e69de29..34238c9 100644
+index e69de29..aa4c0b8 100644
 --- a/riscv/insns/crc32_h.h
 +++ b/riscv/insns/crc32_h.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 16; i++)
++  x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32_w.h b/riscv/insns/crc32_w.h
-index e69de29..34238c9 100644
+index e69de29..c8874a1 100644
 --- a/riscv/insns/crc32_w.h
 +++ b/riscv/insns/crc32_w.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 32; i++)
++  x = (x >> 1) ^ (0xEDB88320 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32c_b.h b/riscv/insns/crc32c_b.h
-index e69de29..34238c9 100644
+index e69de29..89a218a 100644
 --- a/riscv/insns/crc32c_b.h
 +++ b/riscv/insns/crc32c_b.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 8; i++)
++  x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32c_d.h b/riscv/insns/crc32c_d.h
-index e69de29..34238c9 100644
+index e69de29..862407c 100644
 --- a/riscv/insns/crc32c_d.h
 +++ b/riscv/insns/crc32c_d.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 64; i++)
++  x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32c_h.h b/riscv/insns/crc32c_h.h
-index e69de29..34238c9 100644
+index e69de29..c5956b9 100644
 --- a/riscv/insns/crc32c_h.h
 +++ b/riscv/insns/crc32c_h.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 16; i++)
++  x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/crc32c_w.h b/riscv/insns/crc32c_w.h
-index e69de29..34238c9 100644
+index e69de29..137a369 100644
 --- a/riscv/insns/crc32c_w.h
 +++ b/riscv/insns/crc32c_w.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,5 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 32; i++)
++  x = (x >> 1) ^ (0x82F63B78 & ~((x&1)-1));
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/ctz.h b/riscv/insns/ctz.h
 index e69de29..34238c9 100644
 --- a/riscv/insns/ctz.h
