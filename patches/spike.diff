@@ -754,50 +754,71 @@ index e69de29..06d9db0 100644
 +
 +WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/clmul.h b/riscv/insns/clmul.h
-index e69de29..34238c9 100644
+index e69de29..9601567 100644
 --- a/riscv/insns/clmul.h
 +++ b/riscv/insns/clmul.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,6 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t a = zext_xlen(RS1), b = zext_xlen(RS2), x = 0;
++for (int i = 0; i < xlen; i++)
++  if ((b >> i) & 1)
++    x ^= a << i;
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/clmulh.h b/riscv/insns/clmulh.h
-index e69de29..34238c9 100644
+index e69de29..68a50e3 100644
 --- a/riscv/insns/clmulh.h
 +++ b/riscv/insns/clmulh.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,6 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t a = zext_xlen(RS1), b = zext_xlen(RS2), x = 0;
++for (int i = 1; i < xlen; i++)
++  if ((b >> i) & 1)
++    x ^= a >> (xlen-i);
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/clmulhw.h b/riscv/insns/clmulhw.h
-index e69de29..c37937f 100644
+index e69de29..75f64ec 100644
 --- a/riscv/insns/clmulhw.h
 +++ b/riscv/insns/clmulhw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,6 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t a = zext32(RS1), b = zext32(RS2), x = 0;
++for (int i = 1; i < 32; i++)
++  if ((b >> i) & 1)
++    x ^= a >> (32-i);
++WRITE_RD(sext32(x));
 diff --git a/riscv/insns/clmulhx.h b/riscv/insns/clmulhx.h
-index e69de29..34238c9 100644
+index e69de29..18faa20 100644
 --- a/riscv/insns/clmulhx.h
 +++ b/riscv/insns/clmulhx.h
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,6 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t a = zext_xlen(RS1), b = zext_xlen(RS2), x = a;
++for (int i = 1; i < xlen; i++)
++  if ((b >> i) & 1)
++    x ^= a >> (xlen-i);
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/clmulhxw.h b/riscv/insns/clmulhxw.h
-index e69de29..c37937f 100644
+index e69de29..b294fd0 100644
 --- a/riscv/insns/clmulhxw.h
 +++ b/riscv/insns/clmulhxw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,6 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t a = zext32(RS1), b = zext32(RS2), x = a;
++for (int i = 1; i < 32; i++)
++  if ((b >> i) & 1)
++    x ^= a >> (32-i);
++WRITE_RD(sext32(x));
 diff --git a/riscv/insns/clmulw.h b/riscv/insns/clmulw.h
-index e69de29..c37937f 100644
+index e69de29..69d0f43 100644
 --- a/riscv/insns/clmulw.h
 +++ b/riscv/insns/clmulw.h
-@@ -0,0 +1,3 @@
-+require_rv64;
+@@ -0,0 +1,6 @@
 +require_extension('B');
-+abort(); // FIXME
++reg_t a = zext32(RS1), b = zext32(RS2), x = 0;
++for (int i = 0; i < 32; i++)
++  if ((b >> i) & 1)
++    x ^= a << i;
++WRITE_RD(sext32(x));
 diff --git a/riscv/insns/clz.h b/riscv/insns/clz.h
 index e69de29..6821b2d 100644
 --- a/riscv/insns/clz.h
