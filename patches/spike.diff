@@ -626,10 +626,11 @@ index e69de29..059a1cd 100644
 +}
 +WRITE_RD(sext_xlen(c));
 diff --git a/riscv/insns/bdepw.h b/riscv/insns/bdepw.h
-index e69de29..8f013c5 100644
+index e69de29..fc2e9c3 100644
 --- a/riscv/insns/bdepw.h
 +++ b/riscv/insns/bdepw.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
++require_rv64;
 +require_extension('B');
 +uint64_t c = 0, i = 0, data = zext32(RS1), mask = zext32(RS2);
 +while (mask) {
@@ -654,10 +655,11 @@ index e69de29..50d9bb2 100644
 +}
 +WRITE_RD(sext_xlen(c));
 diff --git a/riscv/insns/bextw.h b/riscv/insns/bextw.h
-index e69de29..2bc9a5f 100644
+index e69de29..90f3d45 100644
 --- a/riscv/insns/bextw.h
 +++ b/riscv/insns/bextw.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
++require_rv64;
 +require_extension('B');
 +uint64_t c = 0, i = 0, data = zext32(RS1), mask = zext32(RS2);
 +while (mask) {
@@ -887,10 +889,11 @@ index e69de29..fdf02ad 100644
 +int rshamt = -shamt & (xlen-1);
 +WRITE_RD(sext_xlen(shamt ? (a << shamt) | (zext_xlen(b) >> rshamt) : a));
 diff --git a/riscv/insns/fslw.h b/riscv/insns/fslw.h
-index e69de29..3e68130 100644
+index e69de29..04ab04f 100644
 --- a/riscv/insns/fslw.h
 +++ b/riscv/insns/fslw.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
++require_rv64;
 +require_extension('B');
 +int shamt = RS2 & 63;
 +reg_t a = RS1, b = RS3;
@@ -929,10 +932,11 @@ index e69de29..2d41c82 100644
 +int rshamt = -shamt & (xlen-1);
 +WRITE_RD(sext_xlen(shamt ? (b << rshamt) | (zext_xlen(a) >> shamt) : a));
 diff --git a/riscv/insns/fsriw.h b/riscv/insns/fsriw.h
-index e69de29..7e22f0f 100644
+index e69de29..31983c9 100644
 --- a/riscv/insns/fsriw.h
 +++ b/riscv/insns/fsriw.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
++require_rv64;
 +require_extension('B');
 +int shamt = SHAMT & 63;
 +reg_t a = RS1, b = RS3;
@@ -943,10 +947,11 @@ index e69de29..7e22f0f 100644
 +int rshamt = -shamt & 31;
 +WRITE_RD(sext32(shamt ? (b << rshamt) | (zext32(a) >> shamt) : a));
 diff --git a/riscv/insns/fsrw.h b/riscv/insns/fsrw.h
-index e69de29..eaf408c 100644
+index e69de29..1511fbe 100644
 --- a/riscv/insns/fsrw.h
 +++ b/riscv/insns/fsrw.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
++require_rv64;
 +require_extension('B');
 +int shamt = RS2 & 63;
 +reg_t a = RS1, b = RS3;
@@ -1297,10 +1302,11 @@ index e69de29..964638e 100644
 +if (shamt &  1) x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
 +WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/shflw.h b/riscv/insns/shflw.h
-index e69de29..361ee36 100644
+index e69de29..8239a98 100644
 --- a/riscv/insns/shflw.h
 +++ b/riscv/insns/shflw.h
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,9 @@
++require_rv64;
 +require_extension('B');
 +reg_t x = RS1;
 +int shamt = RS2 & 15;
@@ -1425,10 +1431,11 @@ index e69de29..af25d7d 100644
 +if (shamt & 16) x = (x & 0xFFFF00000000FFFFLL) | ((x & 0x0000FFFF00000000LL) >> 16) | ((x & 0x00000000FFFF0000LL) << 16);
 +WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/unshflw.h b/riscv/insns/unshflw.h
-index e69de29..5210bde 100644
+index e69de29..de5ceb5 100644
 --- a/riscv/insns/unshflw.h
 +++ b/riscv/insns/unshflw.h
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,9 @@
++require_rv64;
 +require_extension('B');
 +reg_t x = RS1;
 +int shamt = RS2 & 15;
