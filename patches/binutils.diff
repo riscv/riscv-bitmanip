@@ -2,7 +2,7 @@ diff --git a/include/opcode/riscv-opc.h b/include/opcode/riscv-opc.h
 index f09200c073..adc1cbd2f5 100644
 --- a/include/opcode/riscv-opc.h
 +++ b/include/opcode/riscv-opc.h
-@@ -169,6 +169,176 @@
+@@ -169,6 +169,184 @@
  #define MASK_REMW  0xfe00707f
  #define MATCH_REMUW 0x200703b
  #define MASK_REMUW  0xfe00707f
@@ -12,6 +12,8 @@ index f09200c073..adc1cbd2f5 100644
 +#define MASK_ORN  0xfe00707f
 +#define MATCH_XNOR 0x40004033
 +#define MASK_XNOR  0xfe00707f
++#define MATCH_GREV 0x40001033
++#define MASK_GREV  0xfe00707f
 +#define MATCH_SLO 0x20001033
 +#define MASK_SLO  0xfe00707f
 +#define MATCH_SRO 0x20005033
@@ -28,6 +30,8 @@ index f09200c073..adc1cbd2f5 100644
 +#define MASK_SBINV  0xfe00707f
 +#define MATCH_SBEXT 0x48005033
 +#define MASK_SBEXT  0xfe00707f
++#define MATCH_GREVI 0x40001013
++#define MASK_GREVI  0xfc00707f
 +#define MATCH_SLOI 0x20001013
 +#define MASK_SLOI  0xfc00707f
 +#define MATCH_SROI 0x20005013
@@ -120,6 +124,8 @@ index f09200c073..adc1cbd2f5 100644
 +#define MASK_ADDU_W  0xfe00707f
 +#define MATCH_SUBU_W 0x4800003b
 +#define MASK_SUBU_W  0xfe00707f
++#define MATCH_GREVW 0x4000103b
++#define MASK_GREVW  0xfe00707f
 +#define MATCH_SLOW 0x2000103b
 +#define MASK_SLOW  0xfe00707f
 +#define MATCH_SROW 0x2000503b
@@ -136,6 +142,8 @@ index f09200c073..adc1cbd2f5 100644
 +#define MASK_SBINVW  0xfe00707f
 +#define MATCH_SBEXTW 0x4800503b
 +#define MASK_SBEXTW  0xfe00707f
++#define MATCH_GREVIW 0x4000101b
++#define MASK_GREVIW  0xfe00707f
 +#define MATCH_SLOIW 0x2000101b
 +#define MASK_SLOIW  0xfe00707f
 +#define MATCH_SROIW 0x2000501b
@@ -179,13 +187,14 @@ index f09200c073..adc1cbd2f5 100644
  #define MATCH_AMOADD_W 0x202f
  #define MASK_AMOADD_W  0xf800707f
  #define MATCH_AMOXOR_W 0x2000202f
-@@ -914,6 +1084,91 @@ DECLARE_INSN(divw, MATCH_DIVW, MASK_DIVW)
+@@ -914,6 +1084,95 @@ DECLARE_INSN(divw, MATCH_DIVW, MASK_DIVW)
  DECLARE_INSN(divuw, MATCH_DIVUW, MASK_DIVUW)
  DECLARE_INSN(remw, MATCH_REMW, MASK_REMW)
  DECLARE_INSN(remuw, MATCH_REMUW, MASK_REMUW)
 +DECLARE_INSN(andn, MATCH_ANDN, MASK_ANDN)
 +DECLARE_INSN(orn, MATCH_ORN, MASK_ORN)
 +DECLARE_INSN(xnor, MATCH_XNOR, MASK_XNOR)
++DECLARE_INSN(grev, MATCH_GREV, MASK_GREV)
 +DECLARE_INSN(slo, MATCH_SLO, MASK_SLO)
 +DECLARE_INSN(sro, MATCH_SRO, MASK_SRO)
 +DECLARE_INSN(rol, MATCH_ROL, MASK_ROL)
@@ -194,6 +203,7 @@ index f09200c073..adc1cbd2f5 100644
 +DECLARE_INSN(sbclr, MATCH_SBCLR, MASK_SBCLR)
 +DECLARE_INSN(sbinv, MATCH_SBINV, MASK_SBINV)
 +DECLARE_INSN(sbext, MATCH_SBEXT, MASK_SBEXT)
++DECLARE_INSN(grevi, MATCH_GREVI, MASK_GREVI)
 +DECLARE_INSN(sloi, MATCH_SLOI, MASK_SLOI)
 +DECLARE_INSN(sroi, MATCH_SROI, MASK_SROI)
 +DECLARE_INSN(rori, MATCH_RORI, MASK_RORI)
@@ -240,6 +250,7 @@ index f09200c073..adc1cbd2f5 100644
 +DECLARE_INSN(subwu, MATCH_SUBWU, MASK_SUBWU)
 +DECLARE_INSN(addu_w, MATCH_ADDU_W, MASK_ADDU_W)
 +DECLARE_INSN(subu_w, MATCH_SUBU_W, MASK_SUBU_W)
++DECLARE_INSN(grevw, MATCH_GREVW, MASK_GREVW)
 +DECLARE_INSN(slow, MATCH_SLOW, MASK_SLOW)
 +DECLARE_INSN(srow, MATCH_SROW, MASK_SROW)
 +DECLARE_INSN(rolw, MATCH_ROLW, MASK_ROLW)
@@ -248,6 +259,7 @@ index f09200c073..adc1cbd2f5 100644
 +DECLARE_INSN(sbclrw, MATCH_SBCLRW, MASK_SBCLRW)
 +DECLARE_INSN(sbinvw, MATCH_SBINVW, MASK_SBINVW)
 +DECLARE_INSN(sbextw, MATCH_SBEXTW, MASK_SBEXTW)
++DECLARE_INSN(greviw, MATCH_GREVIW, MASK_GREVIW)
 +DECLARE_INSN(sloiw, MATCH_SLOIW, MASK_SLOIW)
 +DECLARE_INSN(sroiw, MATCH_SROIW, MASK_SROIW)
 +DECLARE_INSN(roriw, MATCH_RORIW, MASK_RORIW)
@@ -291,7 +303,7 @@ diff --git a/opcodes/riscv-opc.c b/opcodes/riscv-opc.c
 index bd652590b5..fd2f827544 100644
 --- a/opcodes/riscv-opc.c
 +++ b/opcodes/riscv-opc.c
-@@ -495,6 +495,114 @@ const struct riscv_opcode riscv_opcodes[] =
+@@ -495,6 +495,120 @@ const struct riscv_opcode riscv_opcodes[] =
  {"remw",     64, {"M", 0}, "d,s,t",  MATCH_REMW, MASK_REMW, match_opcode, 0 },
  {"remuw",    64, {"M", 0}, "d,s,t",  MATCH_REMUW, MASK_REMUW, match_opcode, 0 },
  
@@ -299,10 +311,13 @@ index bd652590b5..fd2f827544 100644
 +{"andn",      0, {"B", 0},   "d,s,t",  MATCH_ANDN, MASK_ANDN, match_opcode, 0 },
 +{"orn",       0, {"B", 0},   "d,s,t",  MATCH_ORN, MASK_ORN, match_opcode, 0 },
 +{"xnor",      0, {"B", 0},   "d,s,t",  MATCH_XNOR, MASK_XNOR, match_opcode, 0 },
++{"grevi",     0, {"B", 0},   "d,s,>",  MATCH_GREVI, MASK_GREVI, match_opcode, 0 },
 +{"sloi",      0, {"B", 0},   "d,s,>",  MATCH_SLOI, MASK_SLOI, match_opcode, 0 },
 +{"sroi",      0, {"B", 0},   "d,s,>",  MATCH_SROI, MASK_SROI, match_opcode, 0 },
 +// {"roli",   0, {"B", 0},   "d,s,>",  MATCH_ROLI, MASK_ROLI, match_opcode, 0 },   /** TBD **/
 +{"rori",      0, {"B", 0},   "d,s,>",  MATCH_RORI, MASK_RORI, match_opcode, 0 },
++{"grev",      0, {"B", 0},   "d,s,t",  MATCH_GREV, MASK_GREV, match_opcode, 0 },
++{"grev",      0, {"B", 0},   "d,s,>",  MATCH_GREVI, MASK_GREVI, match_opcode, INSN_ALIAS },
 +{"slo",       0, {"B", 0},   "d,s,t",  MATCH_SLO, MASK_SLO, match_opcode, 0 },
 +{"slo",       0, {"B", 0},   "d,s,>",  MATCH_SLOI, MASK_SLOI, match_opcode, INSN_ALIAS },
 +{"sro",       0, {"B", 0},   "d,s,t",  MATCH_SRO, MASK_SRO, match_opcode, 0 },
@@ -363,10 +378,13 @@ index bd652590b5..fd2f827544 100644
 +{"bmatxor",  64, {"B", 0},   "d,s,t",  MATCH_BMATXOR, MASK_BMATXOR, match_opcode, 0 },
 +{"addiwu",   64, {"B", 0},   "d,s,j",  MATCH_ADDIWU, MASK_ADDIWU, match_opcode, 0 },
 +{"slliu.w",  64, {"B", 0},   "d,s,>",  MATCH_SLLIU_W, MASK_SLLIU_W, match_opcode, 0 },
++{"greviw",   64, {"B", 0},   "d,s,>",  MATCH_GREVIW, MASK_GREVIW, match_opcode, 0 },
 +{"sloiw",    64, {"B", 0},   "d,s,>",  MATCH_SLOIW, MASK_SLOIW, match_opcode, 0 },
 +{"sroiw",    64, {"B", 0},   "d,s,>",  MATCH_SROIW, MASK_SROIW, match_opcode, 0 },
 +// {"roliw", 64, {"B", 0},   "d,s,>",  MATCH_ROLIW, MASK_ROLIW, match_opcode, 0 },   /** TBD **/
 +{"roriw",    64, {"B", 0},   "d,s,>",  MATCH_RORIW, MASK_RORIW, match_opcode, 0 },
++{"grevw",    64, {"B", 0},   "d,s,t",  MATCH_GREVW, MASK_GREVW, match_opcode, 0 },
++{"grevw",    64, {"B", 0},   "d,s,>",  MATCH_GREVIW, MASK_GREVIW, match_opcode, INSN_ALIAS },
 +{"slow",     64, {"B", 0},   "d,s,t",  MATCH_SLOW, MASK_SLOW, match_opcode, 0 },
 +{"slow",     64, {"B", 0},   "d,s,>",  MATCH_SLOIW, MASK_SLOIW, match_opcode, INSN_ALIAS },
 +{"srow",     64, {"B", 0},   "d,s,t",  MATCH_SROW, MASK_SROW, match_opcode, 0 },
