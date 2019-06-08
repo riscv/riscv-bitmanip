@@ -670,29 +670,89 @@ index e69de29..90f3d45 100644
 +}
 +WRITE_RD(sext32(c));
 diff --git a/riscv/insns/bmatflip.h b/riscv/insns/bmatflip.h
-index e69de29..c37937f 100644
+index e69de29..e137f10 100644
 --- a/riscv/insns/bmatflip.h
 +++ b/riscv/insns/bmatflip.h
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,11 @@
 +require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++reg_t x = RS1;
++for (int i = 0; i < 3; i++) {
++	x = (x & 0xFFFF00000000FFFFLL) | ((x & 0x0000FFFF00000000LL) >> 16) | ((x & 0x00000000FFFF0000LL) << 16);
++	x = (x & 0xFF0000FFFF0000FFLL) | ((x & 0x00FF000000FF0000LL) >>  8) | ((x & 0x0000FF000000FF00LL) <<  8);
++	x = (x & 0xF00FF00FF00FF00FLL) | ((x & 0x0F000F000F000F00LL) >>  4) | ((x & 0x00F000F000F000F0LL) <<  4);
++	x = (x & 0xC3C3C3C3C3C3C3C3LL) | ((x & 0x3030303030303030LL) >>  2) | ((x & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++	x = (x & 0x9999999999999999LL) | ((x & 0x4444444444444444LL) >>  1) | ((x & 0x2222222222222222LL) <<  1);
++}
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/bmator.h b/riscv/insns/bmator.h
-index e69de29..c37937f 100644
+index e69de29..2d57228 100644
 --- a/riscv/insns/bmator.h
 +++ b/riscv/insns/bmator.h
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,29 @@
 +require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++
++// transpose of rs2
++int64_t rs2t = RS2;
++for (int i = 0; i < 3; i++) {
++  rs2t = (rs2t & 0xFFFF00000000FFFFLL) | ((rs2t & 0x0000FFFF00000000LL) >> 16) | ((rs2t & 0x00000000FFFF0000LL) << 16);
++  rs2t = (rs2t & 0xFF0000FFFF0000FFLL) | ((rs2t & 0x00FF000000FF0000LL) >>  8) | ((rs2t & 0x0000FF000000FF00LL) <<  8);
++  rs2t = (rs2t & 0xF00FF00FF00FF00FLL) | ((rs2t & 0x0F000F000F000F00LL) >>  4) | ((rs2t & 0x00F000F000F000F0LL) <<  4);
++  rs2t = (rs2t & 0xC3C3C3C3C3C3C3C3LL) | ((rs2t & 0x3030303030303030LL) >>  2) | ((rs2t & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++  rs2t = (rs2t & 0x9999999999999999LL) | ((rs2t & 0x4444444444444444LL) >>  1) | ((rs2t & 0x2222222222222222LL) <<  1);
++}
++
++int64_t rs1 = RS1;
++uint8_t u[8]; // rows of rs1
++uint8_t v[8]; // cols of rs2
++
++for (int i = 0; i < 8; i++) {
++  u[i] = rs1 >> (i*8);
++  v[i] = rs2t >> (i*8);
++}
++
++uint64_t x = 0;
++for (int i = 0; i < 64; i++) {
++  if ((u[i / 8] & v[i % 8]) != 0)
++    x |= 1LL << i;
++}
++
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/bmatxor.h b/riscv/insns/bmatxor.h
-index e69de29..c37937f 100644
+index e69de29..06d9db0 100644
 --- a/riscv/insns/bmatxor.h
 +++ b/riscv/insns/bmatxor.h
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,29 @@
 +require_rv64;
 +require_extension('B');
-+abort(); // FIXME
++
++// transpose of rs2
++int64_t rs2t = RS2;
++for (int i = 0; i < 3; i++) {
++  rs2t = (rs2t & 0xFFFF00000000FFFFLL) | ((rs2t & 0x0000FFFF00000000LL) >> 16) | ((rs2t & 0x00000000FFFF0000LL) << 16);
++  rs2t = (rs2t & 0xFF0000FFFF0000FFLL) | ((rs2t & 0x00FF000000FF0000LL) >>  8) | ((rs2t & 0x0000FF000000FF00LL) <<  8);
++  rs2t = (rs2t & 0xF00FF00FF00FF00FLL) | ((rs2t & 0x0F000F000F000F00LL) >>  4) | ((rs2t & 0x00F000F000F000F0LL) <<  4);
++  rs2t = (rs2t & 0xC3C3C3C3C3C3C3C3LL) | ((rs2t & 0x3030303030303030LL) >>  2) | ((rs2t & 0x0C0C0C0C0C0C0C0CLL) <<  2);
++  rs2t = (rs2t & 0x9999999999999999LL) | ((rs2t & 0x4444444444444444LL) >>  1) | ((rs2t & 0x2222222222222222LL) <<  1);
++}
++
++int64_t rs1 = RS1;
++uint8_t u[8]; // rows of rs1
++uint8_t v[8]; // cols of rs2
++
++for (int i = 0; i < 8; i++) {
++  u[i] = rs1 >> (i*8);
++  v[i] = rs2t >> (i*8);
++}
++
++uint64_t x = 0;
++for (int i = 0; i < 64; i++) {
++  if (__builtin_popcountl(u[i / 8] & v[i % 8]) & 1)
++    x |= 1LL << i;
++}
++
++WRITE_RD(sext_xlen(x));
 diff --git a/riscv/insns/clmul.h b/riscv/insns/clmul.h
 index e69de29..34238c9 100644
 --- a/riscv/insns/clmul.h

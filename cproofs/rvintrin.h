@@ -191,7 +191,7 @@ static inline long _rv_crc32c_d(long rs1) { long rd; __asm__ ("crc32c.d %0, %1" 
 
 #ifdef RVINTRIN_RV64
 static inline int64_t _rv64_bmatflip(int64_t rs1) { long rd; __asm__ ("bmatflip %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
-static inline int64_t _rv64_bmator  (int64_t rs1, int64_t rs2) { long rd; __asm__ ("bmatxor %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_bmator  (int64_t rs1, int64_t rs2) { long rd; __asm__ ("bmator  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int64_t _rv64_bmatxor (int64_t rs1, int64_t rs2) { long rd; __asm__ ("bmatxor %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
