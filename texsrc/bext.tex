@@ -141,6 +141,9 @@ output is 0.
 
 \input{bextcref-clz-ctz}
 
+The expression {\tt XLEN-1-clz(x)} evaluates to the index of the most significant
+set bit, also known as integer base-2 logarithm, or -1 if {\tt x} is zero.
+
 % \subsection{References}
 %
 % https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
@@ -1705,7 +1708,7 @@ Loading a 32-bit constant:
 \end{verbatim}
 \end{minipage}
 
-On RV64 a 64 bit constant can be loaded by loading two 32-bit constants anmd combining them
+On RV64 a 64 bit constant can be loaded by loading two 32-bit constants and combining them
 with a {\tt PACK} instruction:
 
 \begin{minipage}{\linewidth}
@@ -1785,7 +1788,7 @@ A future compressed NOT instruction would help keeping those fused sequences sho
 
 \subsection{Fused {\tt *-srli} and {\tt *-srai} sequences}
 
-Pairs of left end right shifts are common operations for extracting a bit field.
+Pairs of left and right shifts are common operations for extracting a bit field.
 
 To extract the continuous bit field starting at {\tt pos} with length {\tt len}
 from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and

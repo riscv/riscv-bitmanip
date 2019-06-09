@@ -410,8 +410,8 @@ arbitrary bit permutation (Bene{\v s} network):
 
 
 Many permutations arising from real-world applications can be implemented
-using shorter sequences. For example, any sheep-and-goats operation with either
-the sheep or the goats bit reversed can be implemented in $log_2(\textrm{XLEN})$
+using shorter sequences. For example, any sheep-and-goats operation (SAG, see section~\ref{SAG})
+with either the sheep or the goats bit reversed can be implemented in $log_2(\textrm{XLEN})$
 butterfly operations.
 
 Reversing a permutation implemented using butterfly operations is as simple as
@@ -495,6 +495,7 @@ any arbitrary bit permutation.
 % https://dl.acm.org/citation.cfm?id=1311797
 
 \subsection{Using sheep-and-goats}
+\label{SAG}
 
 The Sheep-and-goats (SAG) operation is a common operation for bit permutations.
 It moves all the bits selected by a mask (goats) to the LSB end of the word
