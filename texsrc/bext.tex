@@ -1130,7 +1130,7 @@ instructions. Thus, arbitrary bit-permutations can be implemented using only
 to make assembler code more readable. But the reference C code code below uses
 the ``architecturally correct'' argument order {\tt rs1, rs2, rs3}.)
 
-The {\tt cmov rd, rs1, rs2, rs3} instruction selects {\tt rs1} if the control
+The {\tt cmov rd, rs2, rs1, rs3} instruction selects {\tt rs1} if the control
 word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \input{bextcref-cmov}
