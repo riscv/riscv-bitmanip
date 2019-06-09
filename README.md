@@ -6,8 +6,7 @@ This is the repository for the RISC-V Foundations Bitmanip Extension working gro
 These instructions and their specification may change before being accepted as a standard by the RISC-V Foundation and so it is highly likely that implementations made using this draft specification will not conform to the future standard.
 
 ## Specification 
-See [bitmanip-draft.pdf](bitmanip-draft.pdf) for a pre-built version
-of the PDF spec document.
+See [bitmanip-0.90.pdf](bitmanip-0.90.pdf) for a pre-built version of the PDF spec document.
 The source of the PDF specification is in the [texsrc](texsrc) directory with script (`bitmanip.sh`) to build the PDF.
 
 ## Toolchain
