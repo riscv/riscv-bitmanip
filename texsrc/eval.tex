@@ -636,7 +636,7 @@ as $\texttt{i$'$[5:0]} = \texttt{i[5:0]} + N \,\,\, (\textrm{mod 64})$.
 The GREV operation with shamt $N$ is $\texttt{i$'$[5:0]} = \texttt{i[5:0]} \textrm{ XOR } N$.
 
 And a GZIP operation corresponds to a rotate left shift by one position of any
-continuous region of $\texttt{i[5:0]}$. For example, {\tt zip} is a left rotate shift
+contiguous region of $\texttt{i[5:0]}$. For example, {\tt zip} is a left rotate shift
 of the entire bit index:
 
 $$\texttt{i$'$[5:0]} = \{ \texttt{i[4:0]},\, \texttt{i[5]} \}$$

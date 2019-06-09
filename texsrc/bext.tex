@@ -588,19 +588,19 @@ A generalized (un)shuffle operation has $log_2(\textrm{XLEN})-1$ control bits,
 one for each pair of neighbouring bits in a bit index. When the bit is set,
 generalized shuffle will swap the two index bits. The {\tt shfl} operation
 performs this swaps in MSB-to-LSB order (performing a rotate left shift on
-continuous regions of set control bits), and the {\tt unshfl} operation performs
-the swaps in LSB-to-MSB order (performing a rotate right shift on continuous
+contiguous regions of set control bits), and the {\tt unshfl} operation performs
+the swaps in LSB-to-MSB order (performing a rotate right shift on contiguous
 regions of set control bits). Combining up to $log_2(\textrm{XLEN})$ of those
 {\tt shfl}/{\tt unshfl} operations can implement any bitpermutation on the
 bit indices.
 
 The most common type of shuffle/unshuffle operation is one on an immediate
-control value that only contains one continuous region of set bits. We call
+control value that only contains one contiguous region of set bits. We call
 those operations zip/unzip and provide pseudo-instructions for them. The naming
 scheme for those pseudo-instructions is similar to the naming scheme for the
 {\tt grevi} pseudo-instructions.
 
-Shuffle/unshuffle operations that only have individual bits set (not a continuous
+Shuffle/unshuffle operations that only have individual bits set (not a contiguous
 region of two or more bits) are their own inverse.
 
 \begin{table}[h]
@@ -1790,7 +1790,7 @@ A future compressed NOT instruction would help keeping those fused sequences sho
 
 Pairs of left and right shifts are common operations for extracting a bit field.
 
-To extract the continuous bit field starting at {\tt pos} with length {\tt len}
+To extract the contiguous bit field starting at {\tt pos} with length {\tt len}
 from {\tt rs} (with $\texttt{pos}>0$, $\texttt{len}>0$, and
 $\texttt{pos}+\texttt{len}\le\textrm{XLEN}$):
 
