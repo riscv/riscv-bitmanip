@@ -52,7 +52,7 @@ uint32_t xorshift5_fwd(uint32_t x)
 
 uint32_t xorshift5_inv(uint32_t x)
 {
-	x = rv32b::clmulhx(x, 0x08421084);
+	x = rv32b::clmulr(x, 0x84210842);
         return x;
 }
 
@@ -73,7 +73,7 @@ uint32_t gray_fwd(uint32_t x)
 
 uint32_t gray_inv(uint32_t x)
 {
-	x = rv32b::clmulhx(x, 0xffffffff);
+	x = rv32b::clmulr(x, 0xffffffff);
         return x;
 }
 
@@ -86,26 +86,21 @@ extern "C" void check_gray_inv(uint32_t x)
 
 // ---------------------------------------------------------
 
-extern "C" void check_clmulhx_rev(uint32_t a, uint32_t b)
+extern "C" void check_clmul_rev(uint32_t a, uint32_t b)
 {
-	uint32_t ref_clmulh  = rv32b::clmulh(a, b);
-	uint32_t ref_clmulhx = rv32b::clmulhx(a, b);
+	uint32_t ref_clmulh = rv32b::clmulh(a, b);
+	uint32_t ref_clmulr = rv32b::clmulr(a, b);
 
-	uint32_t result_clmulh  = rv32b::rev(rv32b::clmul(rv32b::rev(a), (rv32b::rev(b) << 1) | 0));
-	uint32_t result_clmulhx = rv32b::rev(rv32b::clmul(rv32b::rev(a), (rv32b::rev(b) << 1) | 1));
+	uint32_t result_clmulh = rv32b::rev(rv32b::clmul(rv32b::rev(a), rv32b::rev(b) << 1));
+	uint32_t result_clmulr = rv32b::rev(rv32b::clmul(rv32b::rev(a), rv32b::rev(b)));
 
-	assert(ref_clmulh  == result_clmulh);
-	assert(ref_clmulhx == result_clmulhx);
-}
-
-uint32_t clmulr(uint32_t a, uint32_t b)
-{
-	return rv32b::rev(rv32b::clmul(rv32b::rev(a), rv32b::rev(b)));
+	assert(ref_clmulh == result_clmulh);
+	assert(ref_clmulr == result_clmulr);
 }
 
 extern "C" void check_clmulr(uint32_t a, uint32_t b)
 {
-	uint32_t ref = clmulr(a, b);
+	uint32_t ref = rv32b::clmulr(a, b);
 	uint32_t alt = rv32b::clmulh(a, b << 1) ^ ((int32_t(b)<0) ? a : 0);
 	assert(ref == alt);
 }
@@ -113,8 +108,19 @@ extern "C" void check_clmulr(uint32_t a, uint32_t b)
 extern "C" void check_clmulh(uint32_t a, uint32_t b)
 {
 	uint32_t ref = rv32b::clmulh(a, b);
-	uint32_t alt = clmulr(a, b) >> 1;
+	uint32_t alt = rv32b::clmulr(a, b) >> 1;
 	assert(ref == alt);
+}
+
+extern "C" void check_clmul_crc32w(uint32_t a)
+{
+	uint32_t ref = rv32b::crc32_w(a);
+
+	uint32_t x = a;
+	x = rv32b::clmul(x, 0xF7011641);
+	x = rv32b::clmulr(x, 0xEDB88320);
+
+	assert(ref == x);
 }
 
 // ---------------------------------------------------------
@@ -130,8 +136,10 @@ void check(uint64_t a, uint64_t b, uint64_t ab_hi, uint64_t ab_lo)
 	assert(ab_hi == x_hi);
 	assert(ab_lo == x_lo);
 
+	check_clmul_rev(a, b);
 	check_clmulr(a, b);
 	check_clmulh(a, b);
+	check_clmul_crc32w(a);
 }
 
 int main()

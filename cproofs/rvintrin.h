@@ -161,19 +161,19 @@ static inline int64_t _rv64_bdep(int64_t rs1, int64_t rs2) { int64_t rd; __asm__
 #endif
 
 #ifdef RVINTRIN_RV32
-static inline int32_t _rv32_clmul  (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmul     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_clmulh (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulh    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_clmulhx(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhx   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmul (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmul   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulh(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulh  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulr(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulr  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
 #ifdef RVINTRIN_RV64
-static inline int32_t _rv32_clmul  (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulw    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_clmulh (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_clmulhx(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhxw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmul (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulh(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulhw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_clmulr(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("clmulrw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 
-static inline int64_t _rv64_clmul  (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmul     %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_clmulh (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulh    %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_clmulhx(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulhx   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_clmul (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmul   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_clmulh(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulh  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulr  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
 static inline long _rv_crc32_b (long rs1) { long rd; __asm__ ("crc32.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
@@ -445,9 +445,13 @@ static inline int32_t _rv32_clmulh(int32_t rs1, int32_t rs2)
 	return x;
 }
 
-static inline int32_t _rv32_clmulhx(int32_t rs1, int32_t rs2)
+static inline int32_t _rv32_clmulr(int32_t rs1, int32_t rs2)
 {
-	return _rv32_clmulh(rs1, rs2) ^ rs1;
+	uint32_t a = rs1, b = rs2, x = 0;
+	for (int i = 0; i < 32; i++)
+		if ((b >> i) & 1)
+			x ^= a >> (31-i);
+	return x;
 }
 
 static inline int64_t _rv64_clmul(int64_t rs1, int64_t rs2)
@@ -468,9 +472,13 @@ static inline int64_t _rv64_clmulh(int64_t rs1, int64_t rs2)
 	return x;
 }
 
-static inline int64_t _rv64_clmulhx(int64_t rs1, int64_t rs2)
+static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2)
 {
-	return _rv64_clmulh(rs1, rs2) ^ rs1;
+	uint64_t a = rs1, b = rs2, x = 0;
+	for (int i = 0; i < 64; i++)
+		if ((b >> i) & 1)
+			x ^= a >> (63-i);
+	return x;
 }
 
 static inline long _rvintrin_crc32(unsigned long x, int nbits)
@@ -645,7 +653,7 @@ static inline long _rv_bext   (long rs1, long rs2) { return _rv32_bext   (rs1, r
 static inline long _rv_bdep   (long rs1, long rs2) { return _rv32_bdep   (rs1, rs2); }
 static inline long _rv_clmul  (long rs1, long rs2) { return _rv32_clmul  (rs1, rs2); }
 static inline long _rv_clmulh (long rs1, long rs2) { return _rv32_clmulh (rs1, rs2); }
-static inline long _rv_clmulhx(long rs1, long rs2) { return _rv32_clmulhx(rs1, rs2); }
+static inline long _rv_clmulr (long rs1, long rs2) { return _rv32_clmulr (rs1, rs2); }
 
 static inline long _rv_fsl(long rs1, long rs3, long rs2) { return _rv32_fsl(rs1, rs3, rs2); }
 static inline long _rv_fsr(long rs1, long rs3, long rs2) { return _rv32_fsr(rs1, rs3, rs2); }
@@ -680,7 +688,7 @@ static inline long _rv_bext   (long rs1, long rs2) { return _rv64_bext   (rs1, r
 static inline long _rv_bdep   (long rs1, long rs2) { return _rv64_bdep   (rs1, rs2); }
 static inline long _rv_clmul  (long rs1, long rs2) { return _rv64_clmul  (rs1, rs2); }
 static inline long _rv_clmulh (long rs1, long rs2) { return _rv64_clmulh (rs1, rs2); }
-static inline long _rv_clmulhx(long rs1, long rs2) { return _rv64_clmulhx(rs1, rs2); }
+static inline long _rv_clmulr (long rs1, long rs2) { return _rv64_clmulr (rs1, rs2); }
 static inline long _rv_bmator (long rs1, long rs2) { return _rv64_bmator (rs1, rs2); }
 static inline long _rv_bmatxor(long rs1, long rs2) { return _rv64_bmatxor(rs1, rs2); }
 

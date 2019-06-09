@@ -37,7 +37,7 @@ look like exactly, but it will probably look something like this:
 
  \node (bext) [below=1.0cm of zip.west,anchor=west] { \texttt{bext, bdep} };
 
- \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[h[x]]} };
+ \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[hr]} };
 
  \node (bmatxor) [right=3.5cm of bext.west,anchor=west] { \texttt{bmat[x]or} };
  \node (bmatflip) [below=0.45cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
@@ -105,7 +105,7 @@ added value for the individual instructions.
 
 The main open questions are:
 \begin{itemize}
-\item Should {\tt clmul[h[x]]} be included in ``B'', or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
+\item Should {\tt clmul[hr]} be included in ``B'', or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
 \item Should ``Zbe'' be included in ``B''? Should ``Zbm be included in ``B''?
 \item Which ``Zbp'' pseudo-ops should be included in ``B''? Which in ``Zbb''? Should ``Zbp'' be included in ``B'' as a whole?
 \end{itemize}
@@ -913,29 +913,31 @@ it is the same instruction.)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Carry-less multiply (\texttt{clmul, clmulh, clmulhx})}
+\section{Carry-less multiply (\texttt{clmul, clmulh, clmulr})}
 
 \begin{rvb}
   RV32, RV64:
-    clmul   rd, rs1, rs2
-    clmulh  rd, rs1, rs2
-    clmulhx rd, rs1, rs2
+    clmul  rd, rs1, rs2
+    clmulh rd, rs1, rs2
+    clmulr rd, rs1, rs2
 
   RV64 only:
-    clmulw   rd, rs1, rs2
-    clmulhw  rd, rs1, rs2
-    clmulhxw rd, rs1, rs2
+    clmulw  rd, rs1, rs2
+    clmulhw rd, rs1, rs2
+    clmulrw rd, rs1, rs2
 \end{rvb}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
 produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
 of the 2$\cdot$XLEN carry-less product.
 
-\texttt{clmulhx} produces the upper half of the 2$\cdot$XLEN carry-less product after appending
-a 1-bit to {\tt rs2}, which is equivalent to XOR'ing {\tt rs1} with the {\tt clmulh} result.
-In CRC calculations {\tt clmulhx} eliminates those additional XORs.
+\texttt{clmulr} produces bits 2$\cdot$XLEN$-2$:XLEN-1 of the 2$\cdot$XLEN carry-less product.
+That means \texttt{clmulh} is equivalent to \texttt{clmulr} followed by a 1-bit right shift.
+(The MSB of a \texttt{clmulh} result is always zero.) Another equivalent definition of
+\texttt{clmulr} is that is \texttt{clmulr(a,b) := rev(clmul(rev(a), rev(b)))}. (The ``r''
+in \texttt{clmulr} means reversed.)
 
-Unlike {\tt mulh[[s]u]}, we add *W variants of {\tt clmulh[x]}. This is because we expect
+Unlike {\tt mulh[[s]u]}, we add a *W variant of {\tt clmulh}. This is because we expect
 some code to use 32-bit clmul intrisics, even on 64-bit architectures. For example in cases
 where data is processed in 32-bit chunks.
 
@@ -1034,12 +1036,10 @@ implements a replacement for \texttt{crc32.w} (RV32).
 \begin{minipage}{\linewidth}
 \begin{verbatim}
 crc32_w:
-  li t0, 0x04C11DB7
-  li t1, 0x04D101DF
-  rev a0, a0
-  clmulhx a1, a0, t1
-  clmul a0, a1, t0
-  rev a0, a0
+  li t0, 0xF7011641
+  li t1, 0xEDB88320
+  clmul a0, a0, t0
+  clmulr a0, a0, t1
   ret
 \end{verbatim}
 \end{minipage}
@@ -1330,10 +1330,10 @@ The single-bit instructions are also encoded within the shift opcodes, with
 The remaining instructions are encoded within {\tt funct7=0000100} and
 {\tt funct7=0000101}.
 
-The {\tt funct7=0000101} block contains {\tt clmul[h[x]]},
+The {\tt funct7=0000101} block contains {\tt clmul[hr]},
 {\tt min[u]}, and {\tt max[u]}.
 
-The encoding of {\tt clmul, clmulhx, clmulh} is identical to the encoding of
+The encoding of {\tt clmul, clmulr, clmulh} is identical to the encoding of
 {\tt mulh, mulhsu, mulhu}, except that {\tt op[27]=1}.
 
 The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
@@ -1460,7 +1460,7 @@ and are marked with a {\tt *}.
 |  0110000    |  11011  |   rs1   | 001 |    rd   |   0010011   |  CRC32C.D
 |---------------------------------------------------------------|
 |  0000101    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  CLMUL
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  CLMULHX
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  CLMULR
 |  0000101    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  CLMULH
 |  0000101    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  MIN
 |  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  MAX
@@ -1536,7 +1536,7 @@ and are marked with a {\tt *}.
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
 |---------------------------------------------------------------|
 |  0000101    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  CLMULW
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  CLMULHXW
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  CLMULRW
 |  0000101    |   rs2   |   rs1   | 011 |    rd   |   0111011   |  CLMULHW
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
@@ -1987,7 +1987,7 @@ Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} 
 \hline
 {\tt clmul    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt clmulh   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt clmulhx  } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt clmulr   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
 {\tt bmatflip } &           &           & \ding{52} &           & \ding{52} \\
 {\tt bmator   } &           &           & \ding{52} &           & \ding{52} \\

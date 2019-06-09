@@ -540,9 +540,13 @@ uint_xlen_t clmulh(uint_xlen_t rs1, uint_xlen_t rs2)
 	return x;
 }
 
-uint_xlen_t clmulhx(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t clmulr(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	return clmulh(rs1, rs2) ^ rs1;
+	uint_xlen_t x = 0;
+	for (int i = 0; i < XLEN; i++)
+		if ((rs2 >> i) & 1)
+			x ^= rs1 >> (XLEN-i-1);
+	return x;
 }
 // --REF-END--
 

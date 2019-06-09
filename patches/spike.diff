@@ -76,8 +76,8 @@ index c109ce1..afac052 100644
 +#define MASK_CRC32C_W  0xfff0707f
 +#define MATCH_CLMUL 0xa001033
 +#define MASK_CLMUL  0xfe00707f
-+#define MATCH_CLMULHX 0xa002033
-+#define MASK_CLMULHX  0xfe00707f
++#define MATCH_CLMULR 0xa002033
++#define MASK_CLMULR  0xfe00707f
 +#define MATCH_CLMULH 0xa003033
 +#define MASK_CLMULH  0xfe00707f
 +#define MATCH_MIN 0xa004033
@@ -170,8 +170,8 @@ index c109ce1..afac052 100644
 +#define MASK_PCNTW  0xfff0707f
 +#define MATCH_CLMULW 0xa00103b
 +#define MASK_CLMULW  0xfe00707f
-+#define MATCH_CLMULHXW 0xa00203b
-+#define MASK_CLMULHXW  0xfe00707f
++#define MATCH_CLMULRW 0xa00203b
++#define MASK_CLMULRW  0xfe00707f
 +#define MATCH_CLMULHW 0xa00303b
 +#define MASK_CLMULHW  0xfe00707f
 +#define MATCH_SHFLW 0x800103b
@@ -226,7 +226,7 @@ index c109ce1..afac052 100644
 +DECLARE_INSN(crc32c_h, MATCH_CRC32C_H, MASK_CRC32C_H)
 +DECLARE_INSN(crc32c_w, MATCH_CRC32C_W, MASK_CRC32C_W)
 +DECLARE_INSN(clmul, MATCH_CLMUL, MASK_CLMUL)
-+DECLARE_INSN(clmulhx, MATCH_CLMULHX, MASK_CLMULHX)
++DECLARE_INSN(clmulr, MATCH_CLMULR, MASK_CLMULR)
 +DECLARE_INSN(clmulh, MATCH_CLMULH, MASK_CLMULH)
 +DECLARE_INSN(min, MATCH_MIN, MASK_MIN)
 +DECLARE_INSN(max, MATCH_MAX, MASK_MAX)
@@ -273,7 +273,7 @@ index c109ce1..afac052 100644
 +DECLARE_INSN(ctzw, MATCH_CTZW, MASK_CTZW)
 +DECLARE_INSN(pcntw, MATCH_PCNTW, MASK_PCNTW)
 +DECLARE_INSN(clmulw, MATCH_CLMULW, MASK_CLMULW)
-+DECLARE_INSN(clmulhxw, MATCH_CLMULHXW, MASK_CLMULHXW)
++DECLARE_INSN(clmulrw, MATCH_CLMULRW, MASK_CLMULRW)
 +DECLARE_INSN(clmulhw, MATCH_CLMULHW, MASK_CLMULHW)
 +DECLARE_INSN(shflw, MATCH_SHFLW, MASK_SHFLW)
 +DECLARE_INSN(unshflw, MATCH_UNSHFLW, MASK_UNSHFLW)
@@ -373,8 +373,8 @@ index c109ce1..afac052 100644
 +#define MASK_CRC32C_W  0xfff0707f
 +#define MATCH_CLMUL 0xa001033
 +#define MASK_CLMUL  0xfe00707f
-+#define MATCH_CLMULHX 0xa002033
-+#define MASK_CLMULHX  0xfe00707f
++#define MATCH_CLMULR 0xa002033
++#define MASK_CLMULR  0xfe00707f
 +#define MATCH_CLMULH 0xa003033
 +#define MASK_CLMULH  0xfe00707f
 +#define MATCH_MIN 0xa004033
@@ -467,8 +467,8 @@ index c109ce1..afac052 100644
 +#define MASK_PCNTW  0xfff0707f
 +#define MATCH_CLMULW 0xa00103b
 +#define MASK_CLMULW  0xfe00707f
-+#define MATCH_CLMULHXW 0xa00203b
-+#define MASK_CLMULHXW  0xfe00707f
++#define MATCH_CLMULRW 0xa00203b
++#define MASK_CLMULRW  0xfe00707f
 +#define MATCH_CLMULHW 0xa00303b
 +#define MASK_CLMULHW  0xfe00707f
 +#define MATCH_SHFLW 0x800103b
@@ -523,7 +523,7 @@ index c109ce1..afac052 100644
 +DECLARE_INSN(crc32c_h, MATCH_CRC32C_H, MASK_CRC32C_H)
 +DECLARE_INSN(crc32c_w, MATCH_CRC32C_W, MASK_CRC32C_W)
 +DECLARE_INSN(clmul, MATCH_CLMUL, MASK_CLMUL)
-+DECLARE_INSN(clmulhx, MATCH_CLMULHX, MASK_CLMULHX)
++DECLARE_INSN(clmulr, MATCH_CLMULR, MASK_CLMULR)
 +DECLARE_INSN(clmulh, MATCH_CLMULH, MASK_CLMULH)
 +DECLARE_INSN(min, MATCH_MIN, MASK_MIN)
 +DECLARE_INSN(max, MATCH_MAX, MASK_MAX)
@@ -570,7 +570,7 @@ index c109ce1..afac052 100644
 +DECLARE_INSN(ctzw, MATCH_CTZW, MASK_CTZW)
 +DECLARE_INSN(pcntw, MATCH_PCNTW, MASK_PCNTW)
 +DECLARE_INSN(clmulw, MATCH_CLMULW, MASK_CLMULW)
-+DECLARE_INSN(clmulhxw, MATCH_CLMULHXW, MASK_CLMULHXW)
++DECLARE_INSN(clmulrw, MATCH_CLMULRW, MASK_CLMULRW)
 +DECLARE_INSN(clmulhw, MATCH_CLMULHW, MASK_CLMULHW)
 +DECLARE_INSN(shflw, MATCH_SHFLW, MASK_SHFLW)
 +DECLARE_INSN(unshflw, MATCH_UNSHFLW, MASK_UNSHFLW)
@@ -786,27 +786,27 @@ index e69de29..75f64ec 100644
 +  if ((b >> i) & 1)
 +    x ^= a >> (32-i);
 +WRITE_RD(sext32(x));
-diff --git a/riscv/insns/clmulhx.h b/riscv/insns/clmulhx.h
+diff --git a/riscv/insns/clmulr.h b/riscv/insns/clmulr.h
 index e69de29..18faa20 100644
---- a/riscv/insns/clmulhx.h
-+++ b/riscv/insns/clmulhx.h
+--- a/riscv/insns/clmulr.h
++++ b/riscv/insns/clmulr.h
 @@ -0,0 +1,6 @@
 +require_extension('B');
-+reg_t a = zext_xlen(RS1), b = zext_xlen(RS2), x = a;
-+for (int i = 1; i < xlen; i++)
++reg_t a = zext_xlen(RS1), b = zext_xlen(RS2), x = 0;
++for (int i = 0; i < xlen; i++)
 +  if ((b >> i) & 1)
-+    x ^= a >> (xlen-i);
++    x ^= a >> (xlen-i-1);
 +WRITE_RD(sext_xlen(x));
-diff --git a/riscv/insns/clmulhxw.h b/riscv/insns/clmulhxw.h
+diff --git a/riscv/insns/clmulrw.h b/riscv/insns/clmulrw.h
 index e69de29..b294fd0 100644
---- a/riscv/insns/clmulhxw.h
-+++ b/riscv/insns/clmulhxw.h
+--- a/riscv/insns/clmulrw.h
++++ b/riscv/insns/clmulrw.h
 @@ -0,0 +1,6 @@
 +require_extension('B');
-+reg_t a = zext32(RS1), b = zext32(RS2), x = a;
-+for (int i = 1; i < 32; i++)
++reg_t a = zext32(RS1), b = zext32(RS2), x = 0;
++for (int i = 0; i < 32; i++)
 +  if ((b >> i) & 1)
-+    x ^= a >> (32-i);
++    x ^= a >> (31-i);
 +WRITE_RD(sext32(x));
 diff --git a/riscv/insns/clmulw.h b/riscv/insns/clmulw.h
 index e69de29..69d0f43 100644
@@ -1608,8 +1608,8 @@ index 80755e7..f561fb6 100644
 +	clmul \
 +	clmulh \
 +	clmulhw \
-+	clmulhx \
-+	clmulhxw \
++	clmulr \
++	clmulrw \
 +	clmulw \
 +	clz \
 +	clzw \

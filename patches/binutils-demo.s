@@ -63,7 +63,7 @@ crc32c.d x1,x2
 
 clmul x1,x2,x3
 clmulh x1,x2,x3
-clmulhx x1,x2,x3
+clmulr x1,x2,x3
 min x1,x2,x3
 max x1,x2,x3
 minu x1,x2,x3
@@ -123,7 +123,7 @@ pcntw x1,x2
 
 clmulw x1,x2,x3
 clmulhw x1,x2,x3
-clmulhxw x1,x2,x3
+clmulrw x1,x2,x3
 
 shflw x1,x2,x3
 unshflw x1,x2,x3

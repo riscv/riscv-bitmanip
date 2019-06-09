@@ -763,9 +763,9 @@ constants from the C code for the na\"ive implementation. ({\tt 0x04002001 = (1 
 and {\tt 0x42108421 = (1 << 6*5) | (1 << 5*5) | \dots | (1 << 5) | 1})
 
 The obvious remaining question is ``if {\tt clmul(x, 0x42108421)} is the inverse of {\tt x \^{} (x << 5)}, what's
-the inverse of {\tt x \^{} (x >> 5)}?'' It's {\tt clmulhx(x, 0x08421084)}, where {\tt 0x08421084 == 0x42108421 << (clz(0x42108421)+1)} (mod $2^{32}$).
+the inverse of {\tt x \^{} (x >> 5)}?'' It's {\tt clmulr(x, 0x84210842)}, where {\tt 0x84210842} is the bit-reversal of {\tt 0x42108421}.
 
-A special case of xorshift is {\tt x \^{} (x >> 1)}, which is a gray encoder. The corresponding gray decoder is {\tt clmulhx(x, 0xffffffff)}.
+A special case of xorshift is {\tt x \^{} (x >> 1)}, which is a gray encoder. The corresponding gray decoder is {\tt clmulr(x, 0xffffffff)}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -786,11 +786,12 @@ On RV32:
   {
     uint32_t P  = 0x814141AB;  // CRC polynomial (implicit x^32)
     uint32_t mu = 0xFEFF7F62;  // x^64 divided by CRC polynomial
+    uint32_t mu1 = 0xFF7FBFB1; // "mu" with leading 1, shifted right by 1 bit
     uint32_t crc = 0;
 
     for (int i = 0; i < length; i++) {
       crc ^= rev8(data[i]);
-      crc = clmulhx(crc, mu);
+      crc = clmulr(crc, mu1);
       crc = clmul(crc, P);
     }
 

@@ -12,8 +12,8 @@ long test_zbc(uint64_t *argp, int argc)
 		CK(_rv64_clmulh(argp[i], argp[j]));
 		CK(_rv32_clmulh(argp[i], argp[j]));
 
-		CK(_rv64_clmulhx(argp[i], argp[j]));
-		CK(_rv32_clmulhx(argp[i], argp[j]));
+		CK(_rv64_clmulr(argp[i], argp[j]));
+		CK(_rv32_clmulr(argp[i], argp[j]));
 	}
 
 	return cksum;

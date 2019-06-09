@@ -165,7 +165,7 @@ int main()
 		int32_t b = xorshift32();
 		ASSERT_RV32_2(clmul);
 		ASSERT_RV32_2(clmulh);
-		ASSERT_RV32_2(clmulhx);
+		ASSERT_RV32_2(clmulr);
 	}
 
 	printf("testing rv64 clmul[h[x]]..\n");
@@ -174,7 +174,7 @@ int main()
 		int64_t b = xorshift64();
 		ASSERT_RV64_2(clmul);
 		ASSERT_RV64_2(clmulh);
-		ASSERT_RV64_2(clmulhx);
+		ASSERT_RV64_2(clmulr);
 	}
 
 	printf("testing crc32/crc32c..\n");
