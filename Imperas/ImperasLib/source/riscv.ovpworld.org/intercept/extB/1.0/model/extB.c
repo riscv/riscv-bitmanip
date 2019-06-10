@@ -38,7 +38,7 @@
 
 #define CPU_PREFIX "Bit Manipulation"
 
-#define EXTB_REVISION "extB Version(0.37-Draft) March 22 2019"
+#define EXTB_REVISION "extB Version(0.37-Draft) May 20 2019"
 
 #define RISCV_GPR_NUM  32
 #define RV_MAX_AREGS   4
@@ -124,7 +124,7 @@ typedef enum riscvExtBInstrType {
     EXTB_CLZ,
     EXTB_CTZ,
     EXTB_PCNT,
-    EXTB_ANDC,
+    EXTB_ANDN,
     EXTB_SLO,
     EXTB_SLOI,
     EXTB_SRO,
@@ -143,8 +143,6 @@ typedef enum riscvExtBInstrType {
 
     // extension B 16bit Instructions
     EXTB_NOT,
-    EXTB_NEG,
-    EXTB_BREV,
 
     // RISC-V XTernarybits Extension all
     EXTB_CMIX,
@@ -194,36 +192,27 @@ static vmidDecodeTableP createDecodeTable32(void) {
 //    |---------------------------------------------------------------|
 
     //                         F7      RS2   RS1   F3  RD    OP
+    DECODE_ENTRY(0, ANDN,     "|0100000|.....|.....|111|.....|0110011|");  // R-type
+
+    DECODE_ENTRY(0, GREV,     "|0100000|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SLO,      "|0010000|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SRO,      "|0010000|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, ROL,      "|0110000|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, ROR,      "|0110000|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, FSL,      "|.....10|.....|.....|001|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSR,      "|.....10|.....|.....|101|.....|0110011|"); // R4-type
+
+    DECODE_ENTRY(0, GREVI,    "|01000|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SROI,     "|00100|.......|.....|101|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, RORI,     "|01100|.......|.....|101|.....|0010011|");  // I-type
+    // FSRI
+
     DECODE_ENTRY(0, CLZ,      "|0110000|00000|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CTZ,      "|0110000|00001|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, PCNT,     "|0110000|00010|.....|001|.....|0010011|");  // R-type
-    DECODE_ENTRY(0, ANDC,     "|0100000|.....|.....|111|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, SLO,      "|0010000|.....|.....|001|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, SRO,      "|0010000|.....|.....|101|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, SROI,     "|00100|.......|.....|101|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, ROL,      "|0110000|.....|.....|001|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, ROR,      "|0110000|.....|.....|101|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, RORI,     "|01100|.......|.....|101|.....|0010011|");  // I-type
-    // FSRI
-    DECODE_ENTRY(0, GREV,     "|0100000|.....|.....|001|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, GREVI,    "|01000|.......|.....|001|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, SHFL,     "|0000100|.....|.....|001|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, UNSHFL,   "|0000100|.....|.....|101|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, SHFLI,    "|000010|......|.....|001|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, UNSHFLI,  "|000010|......|.....|101|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, BEXT,     "|0000100|.....|.....|000|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, BDEP,     "|0000100|.....|.....|100|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, CMIX,     "|.....11|.....|.....|010|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, CMOV,     "|.....11|.....|.....|011|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, FSL,      "|.....10|.....|.....|001|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, FSR,      "|.....10|.....|.....|101|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, MIN,      "|0000101|.....|.....|100|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, MINU,     "|0000101|.....|.....|110|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, MAX,      "|0000101|.....|.....|101|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, MAXU,     "|0000101|.....|.....|111|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, CLMUL,    "|0000101|.....|.....|000|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, CLMULH,   "|0000101|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BMATFLIP, "|0110000|00011|.....|001|.....|0010011|");  // R-type
+
     DECODE_ENTRY(0, CRC32_B,  "|0110000|10000|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CRC32_H,  "|0110000|10001|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CRC32_W,  "|0110000|10010|.....|001|.....|0010011|");  // R-type
@@ -232,13 +221,59 @@ static vmidDecodeTableP createDecodeTable32(void) {
     DECODE_ENTRY(0, CRC32C_H, "|0110000|11001|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CRC32C_W, "|0110000|11010|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|");  // R-type
+
+    DECODE_ENTRY(0, CMIX,     "|.....11|.....|.....|010|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, CMOV,     "|.....11|.....|.....|011|.....|0110011|"); // R4-type
+
+
+    DECODE_ENTRY(0, CLMUL,    "|0000101|.....|.....|000|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CLMULH,   "|0000101|.....|.....|001|.....|0110011|");  // R-type
+    // CLMULHX
+    DECODE_ENTRY(0, MIN,      "|0000101|.....|.....|100|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, MAX,      "|0000101|.....|.....|101|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, MINU,     "|0000101|.....|.....|110|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, MAXU,     "|0000101|.....|.....|111|.....|0110011|");  // R-type
+
+    // PACK
+    DECODE_ENTRY(0, BDEP,     "|0000100|.....|.....|100|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BEXT,     "|0000100|.....|.....|000|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SHFL,     "|0000100|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, UNSHFL,   "|0000100|.....|.....|101|.....|0110011|");  // R-type
     DECODE_ENTRY(0, BMATXOR,  "|0000101|.....|.....|010|.....|0110011|");  // R-type
     DECODE_ENTRY(0, BMATOR,   "|0000101|.....|.....|011|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, BMATFLIP, "|0110000|00011|.....|001|.....|0010011|");  // R-type
+
+    DECODE_ENTRY(0, SHFLI,    "|000010|......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, UNSHFLI,  "|000010|......|.....|101|.....|0010011|");  // I-type
+
+    // GREVW
+    // SLOW
+    // SROW
+    // ROLW
+    // RORW
+    // FSLW
+    // FSRW
+    // GREVIW
+    // SLOIW
+    // SROIW
+    // ROLIW
+    // RORIW
+    // FSRIW
+    // CLZW
+    // CTZW
+    // PCNTW
+    // CLMULW
+    // PACKW
+    // BDEPW
+    // BEXTW
+    // SHFLW
+    // UNSHFLW
+    // SHFLIW
+    // UNSHFLIW
 
     return table;
 }
 
+// Have these gone ?
 static vmidDecodeTableP createDecodeTable16(void) {
 
     vmidDecodeTableP table = vmidNewDecodeTable(16, EXTB_LAST);
@@ -246,10 +281,7 @@ static vmidDecodeTableP createDecodeTable16(void) {
     //
     // handle instruction
     //                      F3  ??  R         OP
-    DECODE_ENTRY(0, NEG,  "|011|000|...|00000|01|");
     DECODE_ENTRY(0, NOT,  "|011|001|...|00000|01|");
-    DECODE_ENTRY(0, BREV, "|011|010|...|00000|01|");
-
     return table;
 }
 
@@ -295,13 +327,6 @@ static riscvExtBInstrType getInstrType(
 // Constructor
 //
 static VMIOS_CONSTRUCTOR_FN(constructor) {
-
-//    paramValuesP params = parameterValues;
-//
-//    // Is the B bit set in the misa register ?
-//    object->enable = params->enable;
-//
-
     //
     // Determine the XLEN & MISA.B
     //
@@ -334,7 +359,6 @@ static VMIOS_CONSTRUCTOR_FN(constructor) {
     } else {
         vmiMessage("F", CPU_PREFIX, "MISA register error = " FMT_640Nx , object->misa);
     }
-    vmiMessage("I", CPU_PREFIX, "%dbit Mode\n", object->xlen);
 
     // get handles to the RISCV GPRs
     Uns32 i;
@@ -437,7 +461,7 @@ EXTB_MORPH_FN(emitPCNT) {
     regEpilog(processor, object, instruction);
 }
 
-EXTB_MORPH_FN(emitANDC) {
+EXTB_MORPH_FN(emitANDN) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_ANDN, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
     regEpilog(processor, object, instruction);
@@ -767,25 +791,6 @@ EXTB_MORPH_FN(emitBDEP) {
 EXTB_MORPH_FN(emitCNOT) {
     regProlog(processor, object, instruction, BM_COMP);
     vmimtUnopRR(object->xlen, vmi_NOT, object->reg_rd, object->reg_rd, 0);
-    regEpilog(processor, object, instruction);
-}
-
-EXTB_MORPH_FN(emitCNEG) {
-    regProlog(processor, object, instruction, BM_COMP);
-    vmimtUnopRR(object->xlen, vmi_NEG, object->reg_rd, object->reg_rd, 0);
-    regEpilog(processor, object, instruction);
-}
-
-EXTB_MORPH_FN(emitCBREV) {
-    regProlog(processor, object, instruction, BM_COMP);
-    vmimtArgReg(object->xlen, object->reg_rd);
-    if (object->xlen == 32) {
-        vmimtArgUns32(-1);
-        vmimtCallResult((vmiCallFn)grev32_c, object->xlen, object->reg_rd);
-    } else {
-        vmimtArgUns64(-1);
-        vmimtCallResult((vmiCallFn)grev64_c, object->xlen, object->reg_rd);
-    }
     regEpilog(processor, object, instruction);
 }
 
@@ -1173,8 +1178,8 @@ static VMIOS_MORPH_FN(doMorph) {
         emitCTZ(processor, object, instruction);
     } else if (type==EXTB_PCNT   ) {
         emitPCNT(processor, object, instruction);
-    } else if (type==EXTB_ANDC   ) {
-        emitANDC(processor, object, instruction);
+    } else if (type==EXTB_ANDN   ) {
+        emitANDN(processor, object, instruction);
     } else if (type==EXTB_SLO    ) {
         emitSLO(processor, object, instruction);
     } else if (type==EXTB_SLOI   ) {
@@ -1207,10 +1212,6 @@ static VMIOS_MORPH_FN(doMorph) {
         emitBDEP(processor, object, instruction);
     } else if (type==EXTB_NOT    ) {
         emitCNOT(processor, object, instruction);
-    } else if (type==EXTB_NEG    ) {
-        emitCNEG(processor, object, instruction);
-    } else if (type==EXTB_BREV   ) {
-        emitCBREV(processor, object, instruction);
 
     //
     // RISC-V XTernarybits Extension all
@@ -1355,8 +1356,8 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
             DISS_RD_RS1("ctz");
         } else if (type==EXTB_PCNT   ) {
             DISS_RD_RS1("pcnt");
-        } else if (type==EXTB_ANDC   ) {
-            DISS_RD_RS1_RS2("andc");
+        } else if (type==EXTB_ANDN   ) {
+            DISS_RD_RS1_RS2("andn");
         } else if (type==EXTB_SLO    ) {
             DISS_RD_RS1_RS2("slo");
         } else if (type==EXTB_SLOI   ) {
@@ -1393,12 +1394,7 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
         //
         } else if (type==EXTB_NOT    ) {
             DISS_RDP("c.not");
-        } else if (type==EXTB_NEG    ) {
-            DISS_RDP("c.neg");
-        } else if (type==EXTB_BREV   ) {
-            DISS_RDP("c.brev");
 
-        //
         // RISC-V XTernarybits Extension all
         //
         } else if (type==EXTB_CMIX  ) {
@@ -1478,13 +1474,13 @@ VMIOS_DOC_FN(doDoc) {
     vmiDocNodeP extb2 = vmidocAddSection(extb, "RISC-V XBitmanip Extension");
     vmidocAddText(extb2,"Count Leading/Trailing Zeros (clz, ctz)");
     vmidocAddText(extb2,"Count Bits Set (pcnt)");
-    vmidocAddText(extb2,"And-with-complement (andc)");
+    vmidocAddText(extb2,"And-with-complement (andn)");
     vmidocAddText(extb2,"Shift Ones (Left/Right) (slo, sloi, sro, sroi)");
     vmidocAddText(extb2,"Rotate (Left/Right) (rol, ror, rori)");
     vmidocAddText(extb2,"Generalized Reverse (grev, grevi)");
     vmidocAddText(extb2,"Generalized Shuffle (shfl, unshfl, shfli, unshfli)");
     vmidocAddText(extb2,"Bit Extract/Deposit (bext, bdep)");
-    vmidocAddText(extb2,"Compressed instructions (c.not, c.neg, c.brev)");
+    vmidocAddText(extb2,"Compressed instructions (c.not)");
 
     vmiDocNodeP extb4 = vmidocAddSection(extb, "RISC-V XTernarybits Extension");
     vmidocAddText(extb4,"Conditional mix (cmix)");

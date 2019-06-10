@@ -41,14 +41,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4: (ref=x6) andc(rs1=x27/0x515F007C)(rs2=x3/0x5BD062C2) => (rd=x18/0x000F003C)
-.l_andc_4_Start:
+# Test 4: (ref=x6) andn(rs1=x27/0x515F007C)(rs2=x3/0x5BD062C2) => (rd=x18/0x000F003C)
+.l_andn_4_Start:
     li       x27, 0x515F007C
     li        x3, 0x5BD062C2
-    andc     18 27 3
+    andn     18 27 3
     li        x6, 0x000F003C
     beq      x18,  x6, 1f
-.l_andc_4_Fail:
+.l_andn_4_Fail:
     li        x1, 4
     la        x2, test_fail
     jalr      x0, x2
@@ -497,14 +497,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 40: (ref=x9) andc(rs1=x13/0x2A155DBC)(rs2=x29/0x1D9F6E5F) => (rd=x25/0x220011A0)
-.l_andc_40_Start:
+# Test 40: (ref=x9) andn(rs1=x13/0x2A155DBC)(rs2=x29/0x1D9F6E5F) => (rd=x25/0x220011A0)
+.l_andn_40_Start:
     li       x13, 0x2A155DBC
     li       x29, 0x1D9F6E5F
-    andc     25 13 29
+    andn     25 13 29
     li        x9, 0x220011A0
     beq      x25,  x9, 1f
-.l_andc_40_Fail:
+.l_andn_40_Fail:
     li        x1, 40
     la        x2, test_fail
     jalr      x0, x2
@@ -953,14 +953,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 76: (ref=x9) andc(rs1=x5/0x6A37288A)(rs2=x16/0x08F8B73F) => (rd=x21/0x62070880)
-.l_andc_76_Start:
+# Test 76: (ref=x9) andn(rs1=x5/0x6A37288A)(rs2=x16/0x08F8B73F) => (rd=x21/0x62070880)
+.l_andn_76_Start:
     li        x5, 0x6A37288A
     li       x16, 0x08F8B73F
-    andc     21 5 16
+    andn     21 5 16
     li        x9, 0x62070880
     beq      x21,  x9, 1f
-.l_andc_76_Fail:
+.l_andn_76_Fail:
     li        x1, 76
     la        x2, test_fail
     jalr      x0, x2
@@ -1409,14 +1409,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 112: (ref=x3) andc(rs1=x21/0x75509D76)(rs2=x7/0x1AF7F0EA) => (rd=x26/0x65000D14)
-.l_andc_112_Start:
+# Test 112: (ref=x3) andn(rs1=x21/0x75509D76)(rs2=x7/0x1AF7F0EA) => (rd=x26/0x65000D14)
+.l_andn_112_Start:
     li       x21, 0x75509D76
     li        x7, 0x1AF7F0EA
-    andc     26 21 7
+    andn     26 21 7
     li        x3, 0x65000D14
     beq      x26,  x3, 1f
-.l_andc_112_Fail:
+.l_andn_112_Fail:
     li        x1, 112
     la        x2, test_fail
     jalr      x0, x2
@@ -1865,14 +1865,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 148: (ref=x22) andc(rs1=x27/0x162EB70D)(rs2=x3/0x78070222) => (rd=x21/0x0628B50D)
-.l_andc_148_Start:
+# Test 148: (ref=x22) andn(rs1=x27/0x162EB70D)(rs2=x3/0x78070222) => (rd=x21/0x0628B50D)
+.l_andn_148_Start:
     li       x27, 0x162EB70D
     li        x3, 0x78070222
-    andc     21 27 3
+    andn     21 27 3
     li       x22, 0x0628B50D
     beq      x21, x22, 1f
-.l_andc_148_Fail:
+.l_andn_148_Fail:
     li        x1, 148
     la        x2, test_fail
     jalr      x0, x2
@@ -2321,14 +2321,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 184: (ref=x11) andc(rs1=x6/0x22643EA9)(rs2=x5/0x1887578D) => (rd=x7/0x22602820)
-.l_andc_184_Start:
+# Test 184: (ref=x11) andn(rs1=x6/0x22643EA9)(rs2=x5/0x1887578D) => (rd=x7/0x22602820)
+.l_andn_184_Start:
     li        x6, 0x22643EA9
     li        x5, 0x1887578D
-    andc     7 6 5
+    andn     7 6 5
     li       x11, 0x22602820
     beq       x7, x11, 1f
-.l_andc_184_Fail:
+.l_andn_184_Fail:
     li        x1, 184
     la        x2, test_fail
     jalr      x0, x2
@@ -2777,14 +2777,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 220: (ref=x10) andc(rs1=x15/0x527F603D)(rs2=x22/0x7E13D013) => (rd=x13/0x006C202C)
-.l_andc_220_Start:
+# Test 220: (ref=x10) andn(rs1=x15/0x527F603D)(rs2=x22/0x7E13D013) => (rd=x13/0x006C202C)
+.l_andn_220_Start:
     li       x15, 0x527F603D
     li       x22, 0x7E13D013
-    andc     13 15 22
+    andn     13 15 22
     li       x10, 0x006C202C
     beq      x13, x10, 1f
-.l_andc_220_Fail:
+.l_andn_220_Fail:
     li        x1, 220
     la        x2, test_fail
     jalr      x0, x2
@@ -3233,14 +3233,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 256: (ref=x4) andc(rs1=x15/0x4511160D)(rs2=x11/0x2A27DE11) => (rd=x27/0x4510000C)
-.l_andc_256_Start:
+# Test 256: (ref=x4) andn(rs1=x15/0x4511160D)(rs2=x11/0x2A27DE11) => (rd=x27/0x4510000C)
+.l_andn_256_Start:
     li       x15, 0x4511160D
     li       x11, 0x2A27DE11
-    andc     27 15 11
+    andn     27 15 11
     li        x4, 0x4510000C
     beq      x27,  x4, 1f
-.l_andc_256_Fail:
+.l_andn_256_Fail:
     li        x1, 256
     la        x2, test_fail
     jalr      x0, x2
@@ -3689,14 +3689,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 292: (ref=x21) andc(rs1=x22/0x7BE319E5)(rs2=x31/0x4A2CDADC) => (rd=x16/0x31C30121)
-.l_andc_292_Start:
+# Test 292: (ref=x21) andn(rs1=x22/0x7BE319E5)(rs2=x31/0x4A2CDADC) => (rd=x16/0x31C30121)
+.l_andn_292_Start:
     li       x22, 0x7BE319E5
     li       x31, 0x4A2CDADC
-    andc     16 22 31
+    andn     16 22 31
     li       x21, 0x31C30121
     beq      x16, x21, 1f
-.l_andc_292_Fail:
+.l_andn_292_Fail:
     li        x1, 292
     la        x2, test_fail
     jalr      x0, x2
@@ -4145,14 +4145,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 328: (ref=x2) andc(rs1=x27/0x11ACAB8C)(rs2=x29/0x2486D4C7) => (rd=x12/0x11282B08)
-.l_andc_328_Start:
+# Test 328: (ref=x2) andn(rs1=x27/0x11ACAB8C)(rs2=x29/0x2486D4C7) => (rd=x12/0x11282B08)
+.l_andn_328_Start:
     li       x27, 0x11ACAB8C
     li       x29, 0x2486D4C7
-    andc     12 27 29
+    andn     12 27 29
     li        x2, 0x11282B08
     beq      x12,  x2, 1f
-.l_andc_328_Fail:
+.l_andn_328_Fail:
     li        x1, 328
     la        x2, test_fail
     jalr      x0, x2
@@ -4601,14 +4601,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 364: (ref=x11) andc(rs1=x18/0x1E0B04A6)(rs2=x1/0x1FABCD90) => (rd=x18/0x00000026)
-.l_andc_364_Start:
+# Test 364: (ref=x11) andn(rs1=x18/0x1E0B04A6)(rs2=x1/0x1FABCD90) => (rd=x18/0x00000026)
+.l_andn_364_Start:
     li       x18, 0x1E0B04A6
     li        x1, 0x1FABCD90
-    andc     18 18 1
+    andn     18 18 1
     li       x11, 0x00000026
     beq      x18, x11, 1f
-.l_andc_364_Fail:
+.l_andn_364_Fail:
     li        x1, 364
     la        x2, test_fail
     jalr      x0, x2
@@ -5057,14 +5057,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 400: (ref=x1) andc(rs1=x24/0x658E7855)(rs2=x6/0x151227F6) => (rd=x2/0x608C5801)
-.l_andc_400_Start:
+# Test 400: (ref=x1) andn(rs1=x24/0x658E7855)(rs2=x6/0x151227F6) => (rd=x2/0x608C5801)
+.l_andn_400_Start:
     li       x24, 0x658E7855
     li        x6, 0x151227F6
-    andc     2 24 6
+    andn     2 24 6
     li        x1, 0x608C5801
     beq       x2,  x1, 1f
-.l_andc_400_Fail:
+.l_andn_400_Fail:
     li        x1, 400
     la        x2, test_fail
     jalr      x0, x2
@@ -5513,14 +5513,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 436: (ref=x24) andc(rs1=x2/0x54B99A69)(rs2=x1/0x72B0F990) => (rd=x25/0x04090269)
-.l_andc_436_Start:
+# Test 436: (ref=x24) andn(rs1=x2/0x54B99A69)(rs2=x1/0x72B0F990) => (rd=x25/0x04090269)
+.l_andn_436_Start:
     li        x2, 0x54B99A69
     li        x1, 0x72B0F990
-    andc     25 2 1
+    andn     25 2 1
     li       x24, 0x04090269
     beq      x25, x24, 1f
-.l_andc_436_Fail:
+.l_andn_436_Fail:
     li        x1, 436
     la        x2, test_fail
     jalr      x0, x2
@@ -5969,14 +5969,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 472: (ref=x24) andc(rs1=x0/0x00000000)(rs2=x3/0x00C1AB6B) => (rd=x5/0x00000000)
-.l_andc_472_Start:
+# Test 472: (ref=x24) andn(rs1=x0/0x00000000)(rs2=x3/0x00C1AB6B) => (rd=x5/0x00000000)
+.l_andn_472_Start:
     li        x0, 0x00000000
     li        x3, 0x00C1AB6B
-    andc     5 0 3
+    andn     5 0 3
     li       x24, 0x00000000
     beq       x5, x24, 1f
-.l_andc_472_Fail:
+.l_andn_472_Fail:
     li        x1, 472
     la        x2, test_fail
     jalr      x0, x2
@@ -6425,14 +6425,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 508: (ref=x31) andc(rs1=x10/0x17B8A930)(rs2=x16/0x12346DF9) => (rd=x10/0x05888000)
-.l_andc_508_Start:
+# Test 508: (ref=x31) andn(rs1=x10/0x17B8A930)(rs2=x16/0x12346DF9) => (rd=x10/0x05888000)
+.l_andn_508_Start:
     li       x10, 0x17B8A930
     li       x16, 0x12346DF9
-    andc     10 10 16
+    andn     10 10 16
     li       x31, 0x05888000
     beq      x10, x31, 1f
-.l_andc_508_Fail:
+.l_andn_508_Fail:
     li        x1, 508
     la        x2, test_fail
     jalr      x0, x2
@@ -6881,14 +6881,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 544: (ref=x16) andc(rs1=x24/0x7DFC5CF4)(rs2=x7/0x44CDF9E6) => (rd=x14/0x39300410)
-.l_andc_544_Start:
+# Test 544: (ref=x16) andn(rs1=x24/0x7DFC5CF4)(rs2=x7/0x44CDF9E6) => (rd=x14/0x39300410)
+.l_andn_544_Start:
     li       x24, 0x7DFC5CF4
     li        x7, 0x44CDF9E6
-    andc     14 24 7
+    andn     14 24 7
     li       x16, 0x39300410
     beq      x14, x16, 1f
-.l_andc_544_Fail:
+.l_andn_544_Fail:
     li        x1, 544
     la        x2, test_fail
     jalr      x0, x2
@@ -7337,14 +7337,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 580: (ref=x31) andc(rs1=x30/0x1F8B7EFA)(rs2=x7/0x42C33864) => (rd=x4/0x1D08469A)
-.l_andc_580_Start:
+# Test 580: (ref=x31) andn(rs1=x30/0x1F8B7EFA)(rs2=x7/0x42C33864) => (rd=x4/0x1D08469A)
+.l_andn_580_Start:
     li       x30, 0x1F8B7EFA
     li        x7, 0x42C33864
-    andc     4 30 7
+    andn     4 30 7
     li       x31, 0x1D08469A
     beq       x4, x31, 1f
-.l_andc_580_Fail:
+.l_andn_580_Fail:
     li        x1, 580
     la        x2, test_fail
     jalr      x0, x2
@@ -7793,14 +7793,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 616: (ref=x13) andc(rs1=x16/0x45F030F9)(rs2=x14/0x5E683656) => (rd=x25/0x019000A9)
-.l_andc_616_Start:
+# Test 616: (ref=x13) andn(rs1=x16/0x45F030F9)(rs2=x14/0x5E683656) => (rd=x25/0x019000A9)
+.l_andn_616_Start:
     li       x16, 0x45F030F9
     li       x14, 0x5E683656
-    andc     25 16 14
+    andn     25 16 14
     li       x13, 0x019000A9
     beq      x25, x13, 1f
-.l_andc_616_Fail:
+.l_andn_616_Fail:
     li        x1, 616
     la        x2, test_fail
     jalr      x0, x2
@@ -8249,14 +8249,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 652: (ref=x18) andc(rs1=x5/0x4705DD19)(rs2=x31/0x664F224E) => (rd=x12/0x0100DD11)
-.l_andc_652_Start:
+# Test 652: (ref=x18) andn(rs1=x5/0x4705DD19)(rs2=x31/0x664F224E) => (rd=x12/0x0100DD11)
+.l_andn_652_Start:
     li        x5, 0x4705DD19
     li       x31, 0x664F224E
-    andc     12 5 31
+    andn     12 5 31
     li       x18, 0x0100DD11
     beq      x12, x18, 1f
-.l_andc_652_Fail:
+.l_andn_652_Fail:
     li        x1, 652
     la        x2, test_fail
     jalr      x0, x2
@@ -8705,14 +8705,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 688: (ref=x27) andc(rs1=x3/0x09FADA4A)(rs2=x16/0x795497AD) => (rd=x21/0x00AA4842)
-.l_andc_688_Start:
+# Test 688: (ref=x27) andn(rs1=x3/0x09FADA4A)(rs2=x16/0x795497AD) => (rd=x21/0x00AA4842)
+.l_andn_688_Start:
     li        x3, 0x09FADA4A
     li       x16, 0x795497AD
-    andc     21 3 16
+    andn     21 3 16
     li       x27, 0x00AA4842
     beq      x21, x27, 1f
-.l_andc_688_Fail:
+.l_andn_688_Fail:
     li        x1, 688
     la        x2, test_fail
     jalr      x0, x2
@@ -9161,14 +9161,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 724: (ref=x13) andc(rs1=x15/0x32988A4B)(rs2=x1/0x6CC7E603) => (rd=x9/0x12180848)
-.l_andc_724_Start:
+# Test 724: (ref=x13) andn(rs1=x15/0x32988A4B)(rs2=x1/0x6CC7E603) => (rd=x9/0x12180848)
+.l_andn_724_Start:
     li       x15, 0x32988A4B
     li        x1, 0x6CC7E603
-    andc     9 15 1
+    andn     9 15 1
     li       x13, 0x12180848
     beq       x9, x13, 1f
-.l_andc_724_Fail:
+.l_andn_724_Fail:
     li        x1, 724
     la        x2, test_fail
     jalr      x0, x2
@@ -9617,14 +9617,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 760: (ref=x21) andc(rs1=x0/0x00000000)(rs2=x29/0x6C9B10A1) => (rd=x3/0x00000000)
-.l_andc_760_Start:
+# Test 760: (ref=x21) andn(rs1=x0/0x00000000)(rs2=x29/0x6C9B10A1) => (rd=x3/0x00000000)
+.l_andn_760_Start:
     li        x0, 0x00000000
     li       x29, 0x6C9B10A1
-    andc     3 0 29
+    andn     3 0 29
     li       x21, 0x00000000
     beq       x3, x21, 1f
-.l_andc_760_Fail:
+.l_andn_760_Fail:
     li        x1, 760
     la        x2, test_fail
     jalr      x0, x2
@@ -10073,14 +10073,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 796: (ref=x22) andc(rs1=x23/0x0104CCA5)(rs2=x23/0x0104CCA5) => (rd=x19/0x00000000)
-.l_andc_796_Start:
+# Test 796: (ref=x22) andn(rs1=x23/0x0104CCA5)(rs2=x23/0x0104CCA5) => (rd=x19/0x00000000)
+.l_andn_796_Start:
     li       x23, 0x0104CCA5
     li       x23, 0x0104CCA5
-    andc     19 23 23
+    andn     19 23 23
     li       x22, 0x00000000
     beq      x19, x22, 1f
-.l_andc_796_Fail:
+.l_andn_796_Fail:
     li        x1, 796
     la        x2, test_fail
     jalr      x0, x2
@@ -10529,14 +10529,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 832: (ref=x17) andc(rs1=x11/0x5DBF24CA)(rs2=x4/0x75A2CE64) => (rd=x4/0x081D208A)
-.l_andc_832_Start:
+# Test 832: (ref=x17) andn(rs1=x11/0x5DBF24CA)(rs2=x4/0x75A2CE64) => (rd=x4/0x081D208A)
+.l_andn_832_Start:
     li       x11, 0x5DBF24CA
     li        x4, 0x75A2CE64
-    andc     4 11 4
+    andn     4 11 4
     li       x17, 0x081D208A
     beq       x4, x17, 1f
-.l_andc_832_Fail:
+.l_andn_832_Fail:
     li        x1, 832
     la        x2, test_fail
     jalr      x0, x2
@@ -10985,14 +10985,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 868: (ref=x7) andc(rs1=x1/0x79F19474)(rs2=x29/0x3253A441) => (rd=x16/0x49A01034)
-.l_andc_868_Start:
+# Test 868: (ref=x7) andn(rs1=x1/0x79F19474)(rs2=x29/0x3253A441) => (rd=x16/0x49A01034)
+.l_andn_868_Start:
     li        x1, 0x79F19474
     li       x29, 0x3253A441
-    andc     16 1 29
+    andn     16 1 29
     li        x7, 0x49A01034
     beq      x16,  x7, 1f
-.l_andc_868_Fail:
+.l_andn_868_Fail:
     li        x1, 868
     la        x2, test_fail
     jalr      x0, x2
@@ -11441,14 +11441,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 904: (ref=x2) andc(rs1=x13/0x1D2D5141)(rs2=x8/0x005C42AC) => (rd=x22/0x1D211141)
-.l_andc_904_Start:
+# Test 904: (ref=x2) andn(rs1=x13/0x1D2D5141)(rs2=x8/0x005C42AC) => (rd=x22/0x1D211141)
+.l_andn_904_Start:
     li       x13, 0x1D2D5141
     li        x8, 0x005C42AC
-    andc     22 13 8
+    andn     22 13 8
     li        x2, 0x1D211141
     beq      x22,  x2, 1f
-.l_andc_904_Fail:
+.l_andn_904_Fail:
     li        x1, 904
     la        x2, test_fail
     jalr      x0, x2
@@ -11897,14 +11897,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 940: (ref=x2) andc(rs1=x18/0x11022583)(rs2=x14/0x76E456F1) => (rd=x15/0x01022102)
-.l_andc_940_Start:
+# Test 940: (ref=x2) andn(rs1=x18/0x11022583)(rs2=x14/0x76E456F1) => (rd=x15/0x01022102)
+.l_andn_940_Start:
     li       x18, 0x11022583
     li       x14, 0x76E456F1
-    andc     15 18 14
+    andn     15 18 14
     li        x2, 0x01022102
     beq      x15,  x2, 1f
-.l_andc_940_Fail:
+.l_andn_940_Fail:
     li        x1, 940
     la        x2, test_fail
     jalr      x0, x2
@@ -12353,14 +12353,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 976: (ref=x23) andc(rs1=x18/0x7E18CFA1)(rs2=x25/0x59D9A223) => (rd=x7/0x26004D80)
-.l_andc_976_Start:
+# Test 976: (ref=x23) andn(rs1=x18/0x7E18CFA1)(rs2=x25/0x59D9A223) => (rd=x7/0x26004D80)
+.l_andn_976_Start:
     li       x18, 0x7E18CFA1
     li       x25, 0x59D9A223
-    andc     7 18 25
+    andn     7 18 25
     li       x23, 0x26004D80
     beq       x7, x23, 1f
-.l_andc_976_Fail:
+.l_andn_976_Fail:
     li        x1, 976
     la        x2, test_fail
     jalr      x0, x2
@@ -12809,14 +12809,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1012: (ref=x14) andc(rs1=x20/0x508D2138)(rs2=x3/0x260646CE) => (rd=x12/0x50892130)
-.l_andc_1012_Start:
+# Test 1012: (ref=x14) andn(rs1=x20/0x508D2138)(rs2=x3/0x260646CE) => (rd=x12/0x50892130)
+.l_andn_1012_Start:
     li       x20, 0x508D2138
     li        x3, 0x260646CE
-    andc     12 20 3
+    andn     12 20 3
     li       x14, 0x50892130
     beq      x12, x14, 1f
-.l_andc_1012_Fail:
+.l_andn_1012_Fail:
     li        x1, 1012
     la        x2, test_fail
     jalr      x0, x2
@@ -13265,14 +13265,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1048: (ref=x22) andc(rs1=x17/0x1B68E871)(rs2=x6/0x2C0B0417) => (rd=x2/0x1360E860)
-.l_andc_1048_Start:
+# Test 1048: (ref=x22) andn(rs1=x17/0x1B68E871)(rs2=x6/0x2C0B0417) => (rd=x2/0x1360E860)
+.l_andn_1048_Start:
     li       x17, 0x1B68E871
     li        x6, 0x2C0B0417
-    andc     2 17 6
+    andn     2 17 6
     li       x22, 0x1360E860
     beq       x2, x22, 1f
-.l_andc_1048_Fail:
+.l_andn_1048_Fail:
     li        x1, 1048
     la        x2, test_fail
     jalr      x0, x2
@@ -13721,14 +13721,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1084: (ref=x23) andc(rs1=x5/0x0D72CD94)(rs2=x0/0x00000000) => (rd=x31/0x0D72CD94)
-.l_andc_1084_Start:
+# Test 1084: (ref=x23) andn(rs1=x5/0x0D72CD94)(rs2=x0/0x00000000) => (rd=x31/0x0D72CD94)
+.l_andn_1084_Start:
     li        x5, 0x0D72CD94
     li        x0, 0x00000000
-    andc     31 5 0
+    andn     31 5 0
     li       x23, 0x0D72CD94
     beq      x31, x23, 1f
-.l_andc_1084_Fail:
+.l_andn_1084_Fail:
     li        x1, 1084
     la        x2, test_fail
     jalr      x0, x2
@@ -14177,14 +14177,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1120: (ref=x21) andc(rs1=x20/0x54D61DD5)(rs2=x18/0x129BC053) => (rd=x27/0x44441D84)
-.l_andc_1120_Start:
+# Test 1120: (ref=x21) andn(rs1=x20/0x54D61DD5)(rs2=x18/0x129BC053) => (rd=x27/0x44441D84)
+.l_andn_1120_Start:
     li       x20, 0x54D61DD5
     li       x18, 0x129BC053
-    andc     27 20 18
+    andn     27 20 18
     li       x21, 0x44441D84
     beq      x27, x21, 1f
-.l_andc_1120_Fail:
+.l_andn_1120_Fail:
     li        x1, 1120
     la        x2, test_fail
     jalr      x0, x2
@@ -14633,14 +14633,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1156: (ref=x14) andc(rs1=x29/0x7C08EC58)(rs2=x2/0x6455379C) => (rd=x30/0x1808C840)
-.l_andc_1156_Start:
+# Test 1156: (ref=x14) andn(rs1=x29/0x7C08EC58)(rs2=x2/0x6455379C) => (rd=x30/0x1808C840)
+.l_andn_1156_Start:
     li       x29, 0x7C08EC58
     li        x2, 0x6455379C
-    andc     30 29 2
+    andn     30 29 2
     li       x14, 0x1808C840
     beq      x30, x14, 1f
-.l_andc_1156_Fail:
+.l_andn_1156_Fail:
     li        x1, 1156
     la        x2, test_fail
     jalr      x0, x2
@@ -15089,14 +15089,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1192: (ref=x14) andc(rs1=x20/0x2E5FE6C8)(rs2=x24/0x69636CB0) => (rd=x6/0x061C8248)
-.l_andc_1192_Start:
+# Test 1192: (ref=x14) andn(rs1=x20/0x2E5FE6C8)(rs2=x24/0x69636CB0) => (rd=x6/0x061C8248)
+.l_andn_1192_Start:
     li       x20, 0x2E5FE6C8
     li       x24, 0x69636CB0
-    andc     6 20 24
+    andn     6 20 24
     li       x14, 0x061C8248
     beq       x6, x14, 1f
-.l_andc_1192_Fail:
+.l_andn_1192_Fail:
     li        x1, 1192
     la        x2, test_fail
     jalr      x0, x2
@@ -15545,14 +15545,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1228: (ref=x4) andc(rs1=x27/0x26F81DC7)(rs2=x21/0x47E29F7F) => (rd=x29/0x20180080)
-.l_andc_1228_Start:
+# Test 1228: (ref=x4) andn(rs1=x27/0x26F81DC7)(rs2=x21/0x47E29F7F) => (rd=x29/0x20180080)
+.l_andn_1228_Start:
     li       x27, 0x26F81DC7
     li       x21, 0x47E29F7F
-    andc     29 27 21
+    andn     29 27 21
     li        x4, 0x20180080
     beq      x29,  x4, 1f
-.l_andc_1228_Fail:
+.l_andn_1228_Fail:
     li        x1, 1228
     la        x2, test_fail
     jalr      x0, x2
@@ -16001,14 +16001,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1264: (ref=x1) andc(rs1=x30/0x6B378701)(rs2=x17/0x3E46E437) => (rd=x8/0x41310300)
-.l_andc_1264_Start:
+# Test 1264: (ref=x1) andn(rs1=x30/0x6B378701)(rs2=x17/0x3E46E437) => (rd=x8/0x41310300)
+.l_andn_1264_Start:
     li       x30, 0x6B378701
     li       x17, 0x3E46E437
-    andc     8 30 17
+    andn     8 30 17
     li        x1, 0x41310300
     beq       x8,  x1, 1f
-.l_andc_1264_Fail:
+.l_andn_1264_Fail:
     li        x1, 1264
     la        x2, test_fail
     jalr      x0, x2
@@ -16457,14 +16457,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1300: (ref=x6) andc(rs1=x2/0x36B4482D)(rs2=x20/0x5251CC2C) => (rd=x31/0x24A40001)
-.l_andc_1300_Start:
+# Test 1300: (ref=x6) andn(rs1=x2/0x36B4482D)(rs2=x20/0x5251CC2C) => (rd=x31/0x24A40001)
+.l_andn_1300_Start:
     li        x2, 0x36B4482D
     li       x20, 0x5251CC2C
-    andc     31 2 20
+    andn     31 2 20
     li        x6, 0x24A40001
     beq      x31,  x6, 1f
-.l_andc_1300_Fail:
+.l_andn_1300_Fail:
     li        x1, 1300
     la        x2, test_fail
     jalr      x0, x2
@@ -16913,14 +16913,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1336: (ref=x20) andc(rs1=x24/0x222E7FB4)(rs2=x29/0x02BDC5EB) => (rd=x25/0x20023A14)
-.l_andc_1336_Start:
+# Test 1336: (ref=x20) andn(rs1=x24/0x222E7FB4)(rs2=x29/0x02BDC5EB) => (rd=x25/0x20023A14)
+.l_andn_1336_Start:
     li       x24, 0x222E7FB4
     li       x29, 0x02BDC5EB
-    andc     25 24 29
+    andn     25 24 29
     li       x20, 0x20023A14
     beq      x25, x20, 1f
-.l_andc_1336_Fail:
+.l_andn_1336_Fail:
     li        x1, 1336
     la        x2, test_fail
     jalr      x0, x2
@@ -17369,14 +17369,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1372: (ref=x16) andc(rs1=x4/0x61FE50D7)(rs2=x26/0x4E2BB872) => (rd=x20/0x21D44085)
-.l_andc_1372_Start:
+# Test 1372: (ref=x16) andn(rs1=x4/0x61FE50D7)(rs2=x26/0x4E2BB872) => (rd=x20/0x21D44085)
+.l_andn_1372_Start:
     li        x4, 0x61FE50D7
     li       x26, 0x4E2BB872
-    andc     20 4 26
+    andn     20 4 26
     li       x16, 0x21D44085
     beq      x20, x16, 1f
-.l_andc_1372_Fail:
+.l_andn_1372_Fail:
     li        x1, 1372
     la        x2, test_fail
     jalr      x0, x2
@@ -17825,14 +17825,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1408: (ref=x21) andc(rs1=x17/0x6CCED03D)(rs2=x11/0x3CB0580E) => (rd=x3/0x404E8031)
-.l_andc_1408_Start:
+# Test 1408: (ref=x21) andn(rs1=x17/0x6CCED03D)(rs2=x11/0x3CB0580E) => (rd=x3/0x404E8031)
+.l_andn_1408_Start:
     li       x17, 0x6CCED03D
     li       x11, 0x3CB0580E
-    andc     3 17 11
+    andn     3 17 11
     li       x21, 0x404E8031
     beq       x3, x21, 1f
-.l_andc_1408_Fail:
+.l_andn_1408_Fail:
     li        x1, 1408
     la        x2, test_fail
     jalr      x0, x2
@@ -18281,14 +18281,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1444: (ref=x29) andc(rs1=x9/0x33866AA1)(rs2=x26/0x320B0B79) => (rd=x22/0x01846080)
-.l_andc_1444_Start:
+# Test 1444: (ref=x29) andn(rs1=x9/0x33866AA1)(rs2=x26/0x320B0B79) => (rd=x22/0x01846080)
+.l_andn_1444_Start:
     li        x9, 0x33866AA1
     li       x26, 0x320B0B79
-    andc     22 9 26
+    andn     22 9 26
     li       x29, 0x01846080
     beq      x22, x29, 1f
-.l_andc_1444_Fail:
+.l_andn_1444_Fail:
     li        x1, 1444
     la        x2, test_fail
     jalr      x0, x2
@@ -18737,14 +18737,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1480: (ref=x30) andc(rs1=x5/0x188B4CC4)(rs2=x5/0x188B4CC4) => (rd=x18/0x00000000)
-.l_andc_1480_Start:
+# Test 1480: (ref=x30) andn(rs1=x5/0x188B4CC4)(rs2=x5/0x188B4CC4) => (rd=x18/0x00000000)
+.l_andn_1480_Start:
     li        x5, 0x188B4CC4
     li        x5, 0x188B4CC4
-    andc     18 5 5
+    andn     18 5 5
     li       x30, 0x00000000
     beq      x18, x30, 1f
-.l_andc_1480_Fail:
+.l_andn_1480_Fail:
     li        x1, 1480
     la        x2, test_fail
     jalr      x0, x2
@@ -19193,14 +19193,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1516: (ref=x17) andc(rs1=x0/0x00000000)(rs2=x18/0x066066E4) => (rd=x30/0x00000000)
-.l_andc_1516_Start:
+# Test 1516: (ref=x17) andn(rs1=x0/0x00000000)(rs2=x18/0x066066E4) => (rd=x30/0x00000000)
+.l_andn_1516_Start:
     li        x0, 0x00000000
     li       x18, 0x066066E4
-    andc     30 0 18
+    andn     30 0 18
     li       x17, 0x00000000
     beq      x30, x17, 1f
-.l_andc_1516_Fail:
+.l_andn_1516_Fail:
     li        x1, 1516
     la        x2, test_fail
     jalr      x0, x2
@@ -19649,14 +19649,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1552: (ref=x4) andc(rs1=x20/0x458864C0)(rs2=x8/0x3BA916A0) => (rd=x23/0x44006040)
-.l_andc_1552_Start:
+# Test 1552: (ref=x4) andn(rs1=x20/0x458864C0)(rs2=x8/0x3BA916A0) => (rd=x23/0x44006040)
+.l_andn_1552_Start:
     li       x20, 0x458864C0
     li        x8, 0x3BA916A0
-    andc     23 20 8
+    andn     23 20 8
     li        x4, 0x44006040
     beq      x23,  x4, 1f
-.l_andc_1552_Fail:
+.l_andn_1552_Fail:
     li        x1, 1552
     la        x2, test_fail
     jalr      x0, x2
@@ -20105,14 +20105,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1588: (ref=x20) andc(rs1=x5/0x0D3ADF0D)(rs2=x13/0x78BDF911) => (rd=x27/0x0502060C)
-.l_andc_1588_Start:
+# Test 1588: (ref=x20) andn(rs1=x5/0x0D3ADF0D)(rs2=x13/0x78BDF911) => (rd=x27/0x0502060C)
+.l_andn_1588_Start:
     li        x5, 0x0D3ADF0D
     li       x13, 0x78BDF911
-    andc     27 5 13
+    andn     27 5 13
     li       x20, 0x0502060C
     beq      x27, x20, 1f
-.l_andc_1588_Fail:
+.l_andn_1588_Fail:
     li        x1, 1588
     la        x2, test_fail
     jalr      x0, x2
@@ -20561,14 +20561,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1624: (ref=x18) andc(rs1=x16/0x200A7C06)(rs2=x29/0x0AE9F52C) => (rd=x15/0x20020802)
-.l_andc_1624_Start:
+# Test 1624: (ref=x18) andn(rs1=x16/0x200A7C06)(rs2=x29/0x0AE9F52C) => (rd=x15/0x20020802)
+.l_andn_1624_Start:
     li       x16, 0x200A7C06
     li       x29, 0x0AE9F52C
-    andc     15 16 29
+    andn     15 16 29
     li       x18, 0x20020802
     beq      x15, x18, 1f
-.l_andc_1624_Fail:
+.l_andn_1624_Fail:
     li        x1, 1624
     la        x2, test_fail
     jalr      x0, x2
@@ -21017,14 +21017,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1660: (ref=x29) andc(rs1=x27/0x59745D5A)(rs2=x27/0x59745D5A) => (rd=x24/0x00000000)
-.l_andc_1660_Start:
+# Test 1660: (ref=x29) andn(rs1=x27/0x59745D5A)(rs2=x27/0x59745D5A) => (rd=x24/0x00000000)
+.l_andn_1660_Start:
     li       x27, 0x59745D5A
     li       x27, 0x59745D5A
-    andc     24 27 27
+    andn     24 27 27
     li       x29, 0x00000000
     beq      x24, x29, 1f
-.l_andc_1660_Fail:
+.l_andn_1660_Fail:
     li        x1, 1660
     la        x2, test_fail
     jalr      x0, x2
@@ -21473,14 +21473,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1696: (ref=x22) andc(rs1=x7/0x6BCC432E)(rs2=x23/0x7E490E1C) => (rd=x12/0x01844122)
-.l_andc_1696_Start:
+# Test 1696: (ref=x22) andn(rs1=x7/0x6BCC432E)(rs2=x23/0x7E490E1C) => (rd=x12/0x01844122)
+.l_andn_1696_Start:
     li        x7, 0x6BCC432E
     li       x23, 0x7E490E1C
-    andc     12 7 23
+    andn     12 7 23
     li       x22, 0x01844122
     beq      x12, x22, 1f
-.l_andc_1696_Fail:
+.l_andn_1696_Fail:
     li        x1, 1696
     la        x2, test_fail
     jalr      x0, x2
@@ -21929,14 +21929,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1732: (ref=x23) andc(rs1=x2/0x03D2C226)(rs2=x3/0x2C5ECACA) => (rd=x7/0x03800024)
-.l_andc_1732_Start:
+# Test 1732: (ref=x23) andn(rs1=x2/0x03D2C226)(rs2=x3/0x2C5ECACA) => (rd=x7/0x03800024)
+.l_andn_1732_Start:
     li        x2, 0x03D2C226
     li        x3, 0x2C5ECACA
-    andc     7 2 3
+    andn     7 2 3
     li       x23, 0x03800024
     beq       x7, x23, 1f
-.l_andc_1732_Fail:
+.l_andn_1732_Fail:
     li        x1, 1732
     la        x2, test_fail
     jalr      x0, x2
@@ -22385,14 +22385,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1768: (ref=x3) andc(rs1=x6/0x64A67494)(rs2=x22/0x10D6FC69) => (rd=x13/0x64200094)
-.l_andc_1768_Start:
+# Test 1768: (ref=x3) andn(rs1=x6/0x64A67494)(rs2=x22/0x10D6FC69) => (rd=x13/0x64200094)
+.l_andn_1768_Start:
     li        x6, 0x64A67494
     li       x22, 0x10D6FC69
-    andc     13 6 22
+    andn     13 6 22
     li        x3, 0x64200094
     beq      x13,  x3, 1f
-.l_andc_1768_Fail:
+.l_andn_1768_Fail:
     li        x1, 1768
     la        x2, test_fail
     jalr      x0, x2
@@ -22841,14 +22841,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1804: (ref=x12) andc(rs1=x13/0x513A05EE)(rs2=x30/0x77C537BE) => (rd=x4/0x003A0040)
-.l_andc_1804_Start:
+# Test 1804: (ref=x12) andn(rs1=x13/0x513A05EE)(rs2=x30/0x77C537BE) => (rd=x4/0x003A0040)
+.l_andn_1804_Start:
     li       x13, 0x513A05EE
     li       x30, 0x77C537BE
-    andc     4 13 30
+    andn     4 13 30
     li       x12, 0x003A0040
     beq       x4, x12, 1f
-.l_andc_1804_Fail:
+.l_andn_1804_Fail:
     li        x1, 1804
     la        x2, test_fail
     jalr      x0, x2
@@ -23297,14 +23297,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1840: (ref=x25) andc(rs1=x28/0x45668E87)(rs2=x18/0x6B359B83) => (rd=x10/0x04420404)
-.l_andc_1840_Start:
+# Test 1840: (ref=x25) andn(rs1=x28/0x45668E87)(rs2=x18/0x6B359B83) => (rd=x10/0x04420404)
+.l_andn_1840_Start:
     li       x28, 0x45668E87
     li       x18, 0x6B359B83
-    andc     10 28 18
+    andn     10 28 18
     li       x25, 0x04420404
     beq      x10, x25, 1f
-.l_andc_1840_Fail:
+.l_andn_1840_Fail:
     li        x1, 1840
     la        x2, test_fail
     jalr      x0, x2
@@ -23753,14 +23753,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1876: (ref=x19) andc(rs1=x18/0x78CED4BF)(rs2=x14/0x18538498) => (rd=x17/0x608C5027)
-.l_andc_1876_Start:
+# Test 1876: (ref=x19) andn(rs1=x18/0x78CED4BF)(rs2=x14/0x18538498) => (rd=x17/0x608C5027)
+.l_andn_1876_Start:
     li       x18, 0x78CED4BF
     li       x14, 0x18538498
-    andc     17 18 14
+    andn     17 18 14
     li       x19, 0x608C5027
     beq      x17, x19, 1f
-.l_andc_1876_Fail:
+.l_andn_1876_Fail:
     li        x1, 1876
     la        x2, test_fail
     jalr      x0, x2
@@ -24209,14 +24209,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1912: (ref=x7) andc(rs1=x20/0x38E17BCA)(rs2=x16/0x71F39C41) => (rd=x16/0x0800638A)
-.l_andc_1912_Start:
+# Test 1912: (ref=x7) andn(rs1=x20/0x38E17BCA)(rs2=x16/0x71F39C41) => (rd=x16/0x0800638A)
+.l_andn_1912_Start:
     li       x20, 0x38E17BCA
     li       x16, 0x71F39C41
-    andc     16 20 16
+    andn     16 20 16
     li        x7, 0x0800638A
     beq      x16,  x7, 1f
-.l_andc_1912_Fail:
+.l_andn_1912_Fail:
     li        x1, 1912
     la        x2, test_fail
     jalr      x0, x2
@@ -24665,14 +24665,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1948: (ref=x11) andc(rs1=x7/0x42D88789)(rs2=x23/0x7B8E2363) => (rd=x21/0x00508488)
-.l_andc_1948_Start:
+# Test 1948: (ref=x11) andn(rs1=x7/0x42D88789)(rs2=x23/0x7B8E2363) => (rd=x21/0x00508488)
+.l_andn_1948_Start:
     li        x7, 0x42D88789
     li       x23, 0x7B8E2363
-    andc     21 7 23
+    andn     21 7 23
     li       x11, 0x00508488
     beq      x21, x11, 1f
-.l_andc_1948_Fail:
+.l_andn_1948_Fail:
     li        x1, 1948
     la        x2, test_fail
     jalr      x0, x2
@@ -25121,14 +25121,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 1984: (ref=x30) andc(rs1=x13/0x2D817B97)(rs2=x29/0x401ED6A1) => (rd=x7/0x2D812916)
-.l_andc_1984_Start:
+# Test 1984: (ref=x30) andn(rs1=x13/0x2D817B97)(rs2=x29/0x401ED6A1) => (rd=x7/0x2D812916)
+.l_andn_1984_Start:
     li       x13, 0x2D817B97
     li       x29, 0x401ED6A1
-    andc     7 13 29
+    andn     7 13 29
     li       x30, 0x2D812916
     beq       x7, x30, 1f
-.l_andc_1984_Fail:
+.l_andn_1984_Fail:
     li        x1, 1984
     la        x2, test_fail
     jalr      x0, x2
@@ -25577,14 +25577,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2020: (ref=x19) andc(rs1=x29/0x38BDBCFB)(rs2=x28/0x7F7039D9) => (rd=x24/0x008D8422)
-.l_andc_2020_Start:
+# Test 2020: (ref=x19) andn(rs1=x29/0x38BDBCFB)(rs2=x28/0x7F7039D9) => (rd=x24/0x008D8422)
+.l_andn_2020_Start:
     li       x29, 0x38BDBCFB
     li       x28, 0x7F7039D9
-    andc     24 29 28
+    andn     24 29 28
     li       x19, 0x008D8422
     beq      x24, x19, 1f
-.l_andc_2020_Fail:
+.l_andn_2020_Fail:
     li        x1, 2020
     la        x2, test_fail
     jalr      x0, x2
@@ -26033,14 +26033,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2056: (ref=x24) andc(rs1=x13/0x74E00D3B)(rs2=x14/0x06D98FDD) => (rd=x16/0x70200022)
-.l_andc_2056_Start:
+# Test 2056: (ref=x24) andn(rs1=x13/0x74E00D3B)(rs2=x14/0x06D98FDD) => (rd=x16/0x70200022)
+.l_andn_2056_Start:
     li       x13, 0x74E00D3B
     li       x14, 0x06D98FDD
-    andc     16 13 14
+    andn     16 13 14
     li       x24, 0x70200022
     beq      x16, x24, 1f
-.l_andc_2056_Fail:
+.l_andn_2056_Fail:
     li        x1, 2056
     la        x2, test_fail
     jalr      x0, x2
@@ -26489,14 +26489,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2092: (ref=x6) andc(rs1=x13/0x770EED0E)(rs2=x9/0x15B7D0BB) => (rd=x21/0x62082D04)
-.l_andc_2092_Start:
+# Test 2092: (ref=x6) andn(rs1=x13/0x770EED0E)(rs2=x9/0x15B7D0BB) => (rd=x21/0x62082D04)
+.l_andn_2092_Start:
     li       x13, 0x770EED0E
     li        x9, 0x15B7D0BB
-    andc     21 13 9
+    andn     21 13 9
     li        x6, 0x62082D04
     beq      x21,  x6, 1f
-.l_andc_2092_Fail:
+.l_andn_2092_Fail:
     li        x1, 2092
     la        x2, test_fail
     jalr      x0, x2
@@ -26945,14 +26945,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2128: (ref=x17) andc(rs1=x28/0x6676A9F0)(rs2=x14/0x60347836) => (rd=x28/0x064281C0)
-.l_andc_2128_Start:
+# Test 2128: (ref=x17) andn(rs1=x28/0x6676A9F0)(rs2=x14/0x60347836) => (rd=x28/0x064281C0)
+.l_andn_2128_Start:
     li       x28, 0x6676A9F0
     li       x14, 0x60347836
-    andc     28 28 14
+    andn     28 28 14
     li       x17, 0x064281C0
     beq      x28, x17, 1f
-.l_andc_2128_Fail:
+.l_andn_2128_Fail:
     li        x1, 2128
     la        x2, test_fail
     jalr      x0, x2
@@ -27401,14 +27401,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2164: (ref=x2) andc(rs1=x1/0x7ECB2026)(rs2=x31/0x1E383E1D) => (rd=x24/0x60C30022)
-.l_andc_2164_Start:
+# Test 2164: (ref=x2) andn(rs1=x1/0x7ECB2026)(rs2=x31/0x1E383E1D) => (rd=x24/0x60C30022)
+.l_andn_2164_Start:
     li        x1, 0x7ECB2026
     li       x31, 0x1E383E1D
-    andc     24 1 31
+    andn     24 1 31
     li        x2, 0x60C30022
     beq      x24,  x2, 1f
-.l_andc_2164_Fail:
+.l_andn_2164_Fail:
     li        x1, 2164
     la        x2, test_fail
     jalr      x0, x2
@@ -27857,14 +27857,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2200: (ref=x5) andc(rs1=x12/0x1D85B621)(rs2=x13/0x13484806) => (rd=x31/0x0C85B621)
-.l_andc_2200_Start:
+# Test 2200: (ref=x5) andn(rs1=x12/0x1D85B621)(rs2=x13/0x13484806) => (rd=x31/0x0C85B621)
+.l_andn_2200_Start:
     li       x12, 0x1D85B621
     li       x13, 0x13484806
-    andc     31 12 13
+    andn     31 12 13
     li        x5, 0x0C85B621
     beq      x31,  x5, 1f
-.l_andc_2200_Fail:
+.l_andn_2200_Fail:
     li        x1, 2200
     la        x2, test_fail
     jalr      x0, x2
@@ -28313,14 +28313,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2236: (ref=x21) andc(rs1=x16/0x0D4B2C87)(rs2=x24/0x61C1EAEF) => (rd=x14/0x0C0A0400)
-.l_andc_2236_Start:
+# Test 2236: (ref=x21) andn(rs1=x16/0x0D4B2C87)(rs2=x24/0x61C1EAEF) => (rd=x14/0x0C0A0400)
+.l_andn_2236_Start:
     li       x16, 0x0D4B2C87
     li       x24, 0x61C1EAEF
-    andc     14 16 24
+    andn     14 16 24
     li       x21, 0x0C0A0400
     beq      x14, x21, 1f
-.l_andc_2236_Fail:
+.l_andn_2236_Fail:
     li        x1, 2236
     la        x2, test_fail
     jalr      x0, x2
@@ -28769,14 +28769,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2272: (ref=x2) andc(rs1=x12/0x369B9DDB)(rs2=x15/0x3394746D) => (rd=x24/0x040B8992)
-.l_andc_2272_Start:
+# Test 2272: (ref=x2) andn(rs1=x12/0x369B9DDB)(rs2=x15/0x3394746D) => (rd=x24/0x040B8992)
+.l_andn_2272_Start:
     li       x12, 0x369B9DDB
     li       x15, 0x3394746D
-    andc     24 12 15
+    andn     24 12 15
     li        x2, 0x040B8992
     beq      x24,  x2, 1f
-.l_andc_2272_Fail:
+.l_andn_2272_Fail:
     li        x1, 2272
     la        x2, test_fail
     jalr      x0, x2
@@ -29225,14 +29225,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2308: (ref=x5) andc(rs1=x30/0x68DC5F45)(rs2=x15/0x111B2024) => (rd=x12/0x68C45F41)
-.l_andc_2308_Start:
+# Test 2308: (ref=x5) andn(rs1=x30/0x68DC5F45)(rs2=x15/0x111B2024) => (rd=x12/0x68C45F41)
+.l_andn_2308_Start:
     li       x30, 0x68DC5F45
     li       x15, 0x111B2024
-    andc     12 30 15
+    andn     12 30 15
     li        x5, 0x68C45F41
     beq      x12,  x5, 1f
-.l_andc_2308_Fail:
+.l_andn_2308_Fail:
     li        x1, 2308
     la        x2, test_fail
     jalr      x0, x2
@@ -29681,14 +29681,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2344: (ref=x8) andc(rs1=x10/0x0BD3BF10)(rs2=x11/0x32EEEEC2) => (rd=x13/0x09111110)
-.l_andc_2344_Start:
+# Test 2344: (ref=x8) andn(rs1=x10/0x0BD3BF10)(rs2=x11/0x32EEEEC2) => (rd=x13/0x09111110)
+.l_andn_2344_Start:
     li       x10, 0x0BD3BF10
     li       x11, 0x32EEEEC2
-    andc     13 10 11
+    andn     13 10 11
     li        x8, 0x09111110
     beq      x13,  x8, 1f
-.l_andc_2344_Fail:
+.l_andn_2344_Fail:
     li        x1, 2344
     la        x2, test_fail
     jalr      x0, x2
@@ -30137,14 +30137,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2380: (ref=x22) andc(rs1=x31/0x28C0CA7B)(rs2=x21/0x443E6698) => (rd=x0/0x00000000)
-.l_andc_2380_Start:
+# Test 2380: (ref=x22) andn(rs1=x31/0x28C0CA7B)(rs2=x21/0x443E6698) => (rd=x0/0x00000000)
+.l_andn_2380_Start:
     li       x31, 0x28C0CA7B
     li       x21, 0x443E6698
-    andc     0 31 21
+    andn     0 31 21
     li       x22, 0x00000000
     beq       x0, x22, 1f
-.l_andc_2380_Fail:
+.l_andn_2380_Fail:
     li        x1, 2380
     la        x2, test_fail
     jalr      x0, x2
@@ -30593,14 +30593,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2416: (ref=x31) andc(rs1=x29/0x19375F44)(rs2=x10/0x13801794) => (rd=x13/0x08374840)
-.l_andc_2416_Start:
+# Test 2416: (ref=x31) andn(rs1=x29/0x19375F44)(rs2=x10/0x13801794) => (rd=x13/0x08374840)
+.l_andn_2416_Start:
     li       x29, 0x19375F44
     li       x10, 0x13801794
-    andc     13 29 10
+    andn     13 29 10
     li       x31, 0x08374840
     beq      x13, x31, 1f
-.l_andc_2416_Fail:
+.l_andn_2416_Fail:
     li        x1, 2416
     la        x2, test_fail
     jalr      x0, x2
@@ -31049,14 +31049,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2452: (ref=x22) andc(rs1=x11/0x617A9001)(rs2=x13/0x586BCF8D) => (rd=x7/0x21101000)
-.l_andc_2452_Start:
+# Test 2452: (ref=x22) andn(rs1=x11/0x617A9001)(rs2=x13/0x586BCF8D) => (rd=x7/0x21101000)
+.l_andn_2452_Start:
     li       x11, 0x617A9001
     li       x13, 0x586BCF8D
-    andc     7 11 13
+    andn     7 11 13
     li       x22, 0x21101000
     beq       x7, x22, 1f
-.l_andc_2452_Fail:
+.l_andn_2452_Fail:
     li        x1, 2452
     la        x2, test_fail
     jalr      x0, x2
@@ -31505,14 +31505,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2488: (ref=x18) andc(rs1=x21/0x0BC474A4)(rs2=x20/0x43D1C63F) => (rd=x14/0x08043080)
-.l_andc_2488_Start:
+# Test 2488: (ref=x18) andn(rs1=x21/0x0BC474A4)(rs2=x20/0x43D1C63F) => (rd=x14/0x08043080)
+.l_andn_2488_Start:
     li       x21, 0x0BC474A4
     li       x20, 0x43D1C63F
-    andc     14 21 20
+    andn     14 21 20
     li       x18, 0x08043080
     beq      x14, x18, 1f
-.l_andc_2488_Fail:
+.l_andn_2488_Fail:
     li        x1, 2488
     la        x2, test_fail
     jalr      x0, x2
@@ -31961,14 +31961,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2524: (ref=x28) andc(rs1=x20/0x34CE8864)(rs2=x23/0x3969FE2B) => (rd=x25/0x04860044)
-.l_andc_2524_Start:
+# Test 2524: (ref=x28) andn(rs1=x20/0x34CE8864)(rs2=x23/0x3969FE2B) => (rd=x25/0x04860044)
+.l_andn_2524_Start:
     li       x20, 0x34CE8864
     li       x23, 0x3969FE2B
-    andc     25 20 23
+    andn     25 20 23
     li       x28, 0x04860044
     beq      x25, x28, 1f
-.l_andc_2524_Fail:
+.l_andn_2524_Fail:
     li        x1, 2524
     la        x2, test_fail
     jalr      x0, x2
@@ -32417,14 +32417,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2560: (ref=x22) andc(rs1=x12/0x2488095B)(rs2=x21/0x01C8218F) => (rd=x24/0x24000850)
-.l_andc_2560_Start:
+# Test 2560: (ref=x22) andn(rs1=x12/0x2488095B)(rs2=x21/0x01C8218F) => (rd=x24/0x24000850)
+.l_andn_2560_Start:
     li       x12, 0x2488095B
     li       x21, 0x01C8218F
-    andc     24 12 21
+    andn     24 12 21
     li       x22, 0x24000850
     beq      x24, x22, 1f
-.l_andc_2560_Fail:
+.l_andn_2560_Fail:
     li        x1, 2560
     la        x2, test_fail
     jalr      x0, x2
@@ -32873,14 +32873,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2596: (ref=x19) andc(rs1=x28/0x64D73018)(rs2=x21/0x336C60A7) => (rd=x2/0x44931018)
-.l_andc_2596_Start:
+# Test 2596: (ref=x19) andn(rs1=x28/0x64D73018)(rs2=x21/0x336C60A7) => (rd=x2/0x44931018)
+.l_andn_2596_Start:
     li       x28, 0x64D73018
     li       x21, 0x336C60A7
-    andc     2 28 21
+    andn     2 28 21
     li       x19, 0x44931018
     beq       x2, x19, 1f
-.l_andc_2596_Fail:
+.l_andn_2596_Fail:
     li        x1, 2596
     la        x2, test_fail
     jalr      x0, x2
@@ -33329,14 +33329,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2632: (ref=x10) andc(rs1=x21/0x76073A66)(rs2=x13/0x159DF2E5) => (rd=x5/0x62020802)
-.l_andc_2632_Start:
+# Test 2632: (ref=x10) andn(rs1=x21/0x76073A66)(rs2=x13/0x159DF2E5) => (rd=x5/0x62020802)
+.l_andn_2632_Start:
     li       x21, 0x76073A66
     li       x13, 0x159DF2E5
-    andc     5 21 13
+    andn     5 21 13
     li       x10, 0x62020802
     beq       x5, x10, 1f
-.l_andc_2632_Fail:
+.l_andn_2632_Fail:
     li        x1, 2632
     la        x2, test_fail
     jalr      x0, x2
@@ -33785,14 +33785,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2668: (ref=x21) andc(rs1=x6/0x735D5276)(rs2=x27/0x5A1D1AD3) => (rd=x15/0x21404024)
-.l_andc_2668_Start:
+# Test 2668: (ref=x21) andn(rs1=x6/0x735D5276)(rs2=x27/0x5A1D1AD3) => (rd=x15/0x21404024)
+.l_andn_2668_Start:
     li        x6, 0x735D5276
     li       x27, 0x5A1D1AD3
-    andc     15 6 27
+    andn     15 6 27
     li       x21, 0x21404024
     beq      x15, x21, 1f
-.l_andc_2668_Fail:
+.l_andn_2668_Fail:
     li        x1, 2668
     la        x2, test_fail
     jalr      x0, x2
@@ -34241,14 +34241,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2704: (ref=x14) andc(rs1=x4/0x2BFF55FA)(rs2=x11/0x563151FF) => (rd=x27/0x29CE0400)
-.l_andc_2704_Start:
+# Test 2704: (ref=x14) andn(rs1=x4/0x2BFF55FA)(rs2=x11/0x563151FF) => (rd=x27/0x29CE0400)
+.l_andn_2704_Start:
     li        x4, 0x2BFF55FA
     li       x11, 0x563151FF
-    andc     27 4 11
+    andn     27 4 11
     li       x14, 0x29CE0400
     beq      x27, x14, 1f
-.l_andc_2704_Fail:
+.l_andn_2704_Fail:
     li        x1, 2704
     la        x2, test_fail
     jalr      x0, x2
@@ -34697,14 +34697,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2740: (ref=x7) andc(rs1=x31/0x22D96245)(rs2=x22/0x46A4E5FD) => (rd=x10/0x20590200)
-.l_andc_2740_Start:
+# Test 2740: (ref=x7) andn(rs1=x31/0x22D96245)(rs2=x22/0x46A4E5FD) => (rd=x10/0x20590200)
+.l_andn_2740_Start:
     li       x31, 0x22D96245
     li       x22, 0x46A4E5FD
-    andc     10 31 22
+    andn     10 31 22
     li        x7, 0x20590200
     beq      x10,  x7, 1f
-.l_andc_2740_Fail:
+.l_andn_2740_Fail:
     li        x1, 2740
     la        x2, test_fail
     jalr      x0, x2
@@ -35153,14 +35153,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2776: (ref=x25) andc(rs1=x28/0x69172B20)(rs2=x29/0x382C7BAB) => (rd=x9/0x41130000)
-.l_andc_2776_Start:
+# Test 2776: (ref=x25) andn(rs1=x28/0x69172B20)(rs2=x29/0x382C7BAB) => (rd=x9/0x41130000)
+.l_andn_2776_Start:
     li       x28, 0x69172B20
     li       x29, 0x382C7BAB
-    andc     9 28 29
+    andn     9 28 29
     li       x25, 0x41130000
     beq       x9, x25, 1f
-.l_andc_2776_Fail:
+.l_andn_2776_Fail:
     li        x1, 2776
     la        x2, test_fail
     jalr      x0, x2
@@ -35609,14 +35609,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2812: (ref=x5) andc(rs1=x7/0x739BDAE0)(rs2=x10/0x51D75E23) => (rd=x19/0x220880C0)
-.l_andc_2812_Start:
+# Test 2812: (ref=x5) andn(rs1=x7/0x739BDAE0)(rs2=x10/0x51D75E23) => (rd=x19/0x220880C0)
+.l_andn_2812_Start:
     li        x7, 0x739BDAE0
     li       x10, 0x51D75E23
-    andc     19 7 10
+    andn     19 7 10
     li        x5, 0x220880C0
     beq      x19,  x5, 1f
-.l_andc_2812_Fail:
+.l_andn_2812_Fail:
     li        x1, 2812
     la        x2, test_fail
     jalr      x0, x2
@@ -36065,14 +36065,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2848: (ref=x20) andc(rs1=x21/0x12317C68)(rs2=x17/0x3D93EF09) => (rd=x15/0x02201060)
-.l_andc_2848_Start:
+# Test 2848: (ref=x20) andn(rs1=x21/0x12317C68)(rs2=x17/0x3D93EF09) => (rd=x15/0x02201060)
+.l_andn_2848_Start:
     li       x21, 0x12317C68
     li       x17, 0x3D93EF09
-    andc     15 21 17
+    andn     15 21 17
     li       x20, 0x02201060
     beq      x15, x20, 1f
-.l_andc_2848_Fail:
+.l_andn_2848_Fail:
     li        x1, 2848
     la        x2, test_fail
     jalr      x0, x2
@@ -36521,14 +36521,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2884: (ref=x25) andc(rs1=x2/0x0892EE76)(rs2=x5/0x7E988787) => (rd=x30/0x00026870)
-.l_andc_2884_Start:
+# Test 2884: (ref=x25) andn(rs1=x2/0x0892EE76)(rs2=x5/0x7E988787) => (rd=x30/0x00026870)
+.l_andn_2884_Start:
     li        x2, 0x0892EE76
     li        x5, 0x7E988787
-    andc     30 2 5
+    andn     30 2 5
     li       x25, 0x00026870
     beq      x30, x25, 1f
-.l_andc_2884_Fail:
+.l_andn_2884_Fail:
     li        x1, 2884
     la        x2, test_fail
     jalr      x0, x2
@@ -36977,14 +36977,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2920: (ref=x14) andc(rs1=x27/0x061F0F88)(rs2=x2/0x6AB4214E) => (rd=x24/0x040B0E80)
-.l_andc_2920_Start:
+# Test 2920: (ref=x14) andn(rs1=x27/0x061F0F88)(rs2=x2/0x6AB4214E) => (rd=x24/0x040B0E80)
+.l_andn_2920_Start:
     li       x27, 0x061F0F88
     li        x2, 0x6AB4214E
-    andc     24 27 2
+    andn     24 27 2
     li       x14, 0x040B0E80
     beq      x24, x14, 1f
-.l_andc_2920_Fail:
+.l_andn_2920_Fail:
     li        x1, 2920
     la        x2, test_fail
     jalr      x0, x2
@@ -37433,14 +37433,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2956: (ref=x23) andc(rs1=x20/0x0CE05488)(rs2=x29/0x1B30A886) => (rd=x1/0x04C05408)
-.l_andc_2956_Start:
+# Test 2956: (ref=x23) andn(rs1=x20/0x0CE05488)(rs2=x29/0x1B30A886) => (rd=x1/0x04C05408)
+.l_andn_2956_Start:
     li       x20, 0x0CE05488
     li       x29, 0x1B30A886
-    andc     1 20 29
+    andn     1 20 29
     li       x23, 0x04C05408
     beq       x1, x23, 1f
-.l_andc_2956_Fail:
+.l_andn_2956_Fail:
     li        x1, 2956
     la        x2, test_fail
     jalr      x0, x2
@@ -37889,14 +37889,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 2992: (ref=x21) andc(rs1=x3/0x74F99838)(rs2=x30/0x77C1E0C0) => (rd=x30/0x00381838)
-.l_andc_2992_Start:
+# Test 2992: (ref=x21) andn(rs1=x3/0x74F99838)(rs2=x30/0x77C1E0C0) => (rd=x30/0x00381838)
+.l_andn_2992_Start:
     li        x3, 0x74F99838
     li       x30, 0x77C1E0C0
-    andc     30 3 30
+    andn     30 3 30
     li       x21, 0x00381838
     beq      x30, x21, 1f
-.l_andc_2992_Fail:
+.l_andn_2992_Fail:
     li        x1, 2992
     la        x2, test_fail
     jalr      x0, x2
@@ -38345,14 +38345,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3028: (ref=x10) andc(rs1=x28/0x7A44B9B8)(rs2=x12/0x06448194) => (rd=x6/0x78003828)
-.l_andc_3028_Start:
+# Test 3028: (ref=x10) andn(rs1=x28/0x7A44B9B8)(rs2=x12/0x06448194) => (rd=x6/0x78003828)
+.l_andn_3028_Start:
     li       x28, 0x7A44B9B8
     li       x12, 0x06448194
-    andc     6 28 12
+    andn     6 28 12
     li       x10, 0x78003828
     beq       x6, x10, 1f
-.l_andc_3028_Fail:
+.l_andn_3028_Fail:
     li        x1, 3028
     la        x2, test_fail
     jalr      x0, x2
@@ -38801,14 +38801,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3064: (ref=x3) andc(rs1=x29/0x093F5F22)(rs2=x17/0x07129968) => (rd=x26/0x082D4602)
-.l_andc_3064_Start:
+# Test 3064: (ref=x3) andn(rs1=x29/0x093F5F22)(rs2=x17/0x07129968) => (rd=x26/0x082D4602)
+.l_andn_3064_Start:
     li       x29, 0x093F5F22
     li       x17, 0x07129968
-    andc     26 29 17
+    andn     26 29 17
     li        x3, 0x082D4602
     beq      x26,  x3, 1f
-.l_andc_3064_Fail:
+.l_andn_3064_Fail:
     li        x1, 3064
     la        x2, test_fail
     jalr      x0, x2
@@ -39257,14 +39257,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3100: (ref=x23) andc(rs1=x9/0x08F26D25)(rs2=x18/0x2D505ED7) => (rd=x31/0x00A22120)
-.l_andc_3100_Start:
+# Test 3100: (ref=x23) andn(rs1=x9/0x08F26D25)(rs2=x18/0x2D505ED7) => (rd=x31/0x00A22120)
+.l_andn_3100_Start:
     li        x9, 0x08F26D25
     li       x18, 0x2D505ED7
-    andc     31 9 18
+    andn     31 9 18
     li       x23, 0x00A22120
     beq      x31, x23, 1f
-.l_andc_3100_Fail:
+.l_andn_3100_Fail:
     li        x1, 3100
     la        x2, test_fail
     jalr      x0, x2
@@ -39713,14 +39713,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3136: (ref=x14) andc(rs1=x3/0x5829CC68)(rs2=x27/0x3E788108) => (rd=x23/0x40014C60)
-.l_andc_3136_Start:
+# Test 3136: (ref=x14) andn(rs1=x3/0x5829CC68)(rs2=x27/0x3E788108) => (rd=x23/0x40014C60)
+.l_andn_3136_Start:
     li        x3, 0x5829CC68
     li       x27, 0x3E788108
-    andc     23 3 27
+    andn     23 3 27
     li       x14, 0x40014C60
     beq      x23, x14, 1f
-.l_andc_3136_Fail:
+.l_andn_3136_Fail:
     li        x1, 3136
     la        x2, test_fail
     jalr      x0, x2
@@ -40169,14 +40169,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3172: (ref=x19) andc(rs1=x8/0x2F3E9D88)(rs2=x7/0x66965ADF) => (rd=x22/0x09288500)
-.l_andc_3172_Start:
+# Test 3172: (ref=x19) andn(rs1=x8/0x2F3E9D88)(rs2=x7/0x66965ADF) => (rd=x22/0x09288500)
+.l_andn_3172_Start:
     li        x8, 0x2F3E9D88
     li        x7, 0x66965ADF
-    andc     22 8 7
+    andn     22 8 7
     li       x19, 0x09288500
     beq      x22, x19, 1f
-.l_andc_3172_Fail:
+.l_andn_3172_Fail:
     li        x1, 3172
     la        x2, test_fail
     jalr      x0, x2
@@ -40625,14 +40625,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3208: (ref=x28) andc(rs1=x10/0x773BCA70)(rs2=x1/0x70BDD8D4) => (rd=x26/0x07020220)
-.l_andc_3208_Start:
+# Test 3208: (ref=x28) andn(rs1=x10/0x773BCA70)(rs2=x1/0x70BDD8D4) => (rd=x26/0x07020220)
+.l_andn_3208_Start:
     li       x10, 0x773BCA70
     li        x1, 0x70BDD8D4
-    andc     26 10 1
+    andn     26 10 1
     li       x28, 0x07020220
     beq      x26, x28, 1f
-.l_andc_3208_Fail:
+.l_andn_3208_Fail:
     li        x1, 3208
     la        x2, test_fail
     jalr      x0, x2
@@ -41081,14 +41081,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3244: (ref=x4) andc(rs1=x2/0x5D719C86)(rs2=x25/0x6D489DF3) => (rd=x23/0x10310004)
-.l_andc_3244_Start:
+# Test 3244: (ref=x4) andn(rs1=x2/0x5D719C86)(rs2=x25/0x6D489DF3) => (rd=x23/0x10310004)
+.l_andn_3244_Start:
     li        x2, 0x5D719C86
     li       x25, 0x6D489DF3
-    andc     23 2 25
+    andn     23 2 25
     li        x4, 0x10310004
     beq      x23,  x4, 1f
-.l_andc_3244_Fail:
+.l_andn_3244_Fail:
     li        x1, 3244
     la        x2, test_fail
     jalr      x0, x2
@@ -41537,14 +41537,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3280: (ref=x16) andc(rs1=x5/0x69FCA675)(rs2=x11/0x742217A5) => (rd=x30/0x09DCA050)
-.l_andc_3280_Start:
+# Test 3280: (ref=x16) andn(rs1=x5/0x69FCA675)(rs2=x11/0x742217A5) => (rd=x30/0x09DCA050)
+.l_andn_3280_Start:
     li        x5, 0x69FCA675
     li       x11, 0x742217A5
-    andc     30 5 11
+    andn     30 5 11
     li       x16, 0x09DCA050
     beq      x30, x16, 1f
-.l_andc_3280_Fail:
+.l_andn_3280_Fail:
     li        x1, 3280
     la        x2, test_fail
     jalr      x0, x2
@@ -41993,14 +41993,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3316: (ref=x30) andc(rs1=x9/0x439D4AF3)(rs2=x14/0x384A3464) => (rd=x22/0x43954A93)
-.l_andc_3316_Start:
+# Test 3316: (ref=x30) andn(rs1=x9/0x439D4AF3)(rs2=x14/0x384A3464) => (rd=x22/0x43954A93)
+.l_andn_3316_Start:
     li        x9, 0x439D4AF3
     li       x14, 0x384A3464
-    andc     22 9 14
+    andn     22 9 14
     li       x30, 0x43954A93
     beq      x22, x30, 1f
-.l_andc_3316_Fail:
+.l_andn_3316_Fail:
     li        x1, 3316
     la        x2, test_fail
     jalr      x0, x2
@@ -42449,14 +42449,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3352: (ref=x12) andc(rs1=x17/0x71049B87)(rs2=x18/0x1EFE9677) => (rd=x20/0x61000980)
-.l_andc_3352_Start:
+# Test 3352: (ref=x12) andn(rs1=x17/0x71049B87)(rs2=x18/0x1EFE9677) => (rd=x20/0x61000980)
+.l_andn_3352_Start:
     li       x17, 0x71049B87
     li       x18, 0x1EFE9677
-    andc     20 17 18
+    andn     20 17 18
     li       x12, 0x61000980
     beq      x20, x12, 1f
-.l_andc_3352_Fail:
+.l_andn_3352_Fail:
     li        x1, 3352
     la        x2, test_fail
     jalr      x0, x2
@@ -42905,14 +42905,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3388: (ref=x21) andc(rs1=x8/0x020D13B9)(rs2=x12/0x54F4C6A5) => (rd=x12/0x02091118)
-.l_andc_3388_Start:
+# Test 3388: (ref=x21) andn(rs1=x8/0x020D13B9)(rs2=x12/0x54F4C6A5) => (rd=x12/0x02091118)
+.l_andn_3388_Start:
     li        x8, 0x020D13B9
     li       x12, 0x54F4C6A5
-    andc     12 8 12
+    andn     12 8 12
     li       x21, 0x02091118
     beq      x12, x21, 1f
-.l_andc_3388_Fail:
+.l_andn_3388_Fail:
     li        x1, 3388
     la        x2, test_fail
     jalr      x0, x2
@@ -43361,14 +43361,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3424: (ref=x26) andc(rs1=x11/0x2D35F842)(rs2=x1/0x4FB1CB31) => (rd=x7/0x20043042)
-.l_andc_3424_Start:
+# Test 3424: (ref=x26) andn(rs1=x11/0x2D35F842)(rs2=x1/0x4FB1CB31) => (rd=x7/0x20043042)
+.l_andn_3424_Start:
     li       x11, 0x2D35F842
     li        x1, 0x4FB1CB31
-    andc     7 11 1
+    andn     7 11 1
     li       x26, 0x20043042
     beq       x7, x26, 1f
-.l_andc_3424_Fail:
+.l_andn_3424_Fail:
     li        x1, 3424
     la        x2, test_fail
     jalr      x0, x2
@@ -43817,14 +43817,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3460: (ref=x24) andc(rs1=x2/0x461A0715)(rs2=x16/0x207AC953) => (rd=x25/0x46000604)
-.l_andc_3460_Start:
+# Test 3460: (ref=x24) andn(rs1=x2/0x461A0715)(rs2=x16/0x207AC953) => (rd=x25/0x46000604)
+.l_andn_3460_Start:
     li        x2, 0x461A0715
     li       x16, 0x207AC953
-    andc     25 2 16
+    andn     25 2 16
     li       x24, 0x46000604
     beq      x25, x24, 1f
-.l_andc_3460_Fail:
+.l_andn_3460_Fail:
     li        x1, 3460
     la        x2, test_fail
     jalr      x0, x2
@@ -44273,14 +44273,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3496: (ref=x3) andc(rs1=x16/0x3B347B4A)(rs2=x6/0x3DABA6A6) => (rd=x10/0x02145948)
-.l_andc_3496_Start:
+# Test 3496: (ref=x3) andn(rs1=x16/0x3B347B4A)(rs2=x6/0x3DABA6A6) => (rd=x10/0x02145948)
+.l_andn_3496_Start:
     li       x16, 0x3B347B4A
     li        x6, 0x3DABA6A6
-    andc     10 16 6
+    andn     10 16 6
     li        x3, 0x02145948
     beq      x10,  x3, 1f
-.l_andc_3496_Fail:
+.l_andn_3496_Fail:
     li        x1, 3496
     la        x2, test_fail
     jalr      x0, x2
@@ -44729,14 +44729,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3532: (ref=x15) andc(rs1=x23/0x75A9597C)(rs2=x29/0x7188C9EE) => (rd=x0/0x00000000)
-.l_andc_3532_Start:
+# Test 3532: (ref=x15) andn(rs1=x23/0x75A9597C)(rs2=x29/0x7188C9EE) => (rd=x0/0x00000000)
+.l_andn_3532_Start:
     li       x23, 0x75A9597C
     li       x29, 0x7188C9EE
-    andc     0 23 29
+    andn     0 23 29
     li       x15, 0x00000000
     beq       x0, x15, 1f
-.l_andc_3532_Fail:
+.l_andn_3532_Fail:
     li        x1, 3532
     la        x2, test_fail
     jalr      x0, x2
@@ -45185,14 +45185,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3568: (ref=x7) andc(rs1=x20/0x76734BEA)(rs2=x16/0x4715FD74) => (rd=x4/0x3062028A)
-.l_andc_3568_Start:
+# Test 3568: (ref=x7) andn(rs1=x20/0x76734BEA)(rs2=x16/0x4715FD74) => (rd=x4/0x3062028A)
+.l_andn_3568_Start:
     li       x20, 0x76734BEA
     li       x16, 0x4715FD74
-    andc     4 20 16
+    andn     4 20 16
     li        x7, 0x3062028A
     beq       x4,  x7, 1f
-.l_andc_3568_Fail:
+.l_andn_3568_Fail:
     li        x1, 3568
     la        x2, test_fail
     jalr      x0, x2
@@ -45641,14 +45641,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3604: (ref=x27) andc(rs1=x19/0x770A6089)(rs2=x18/0x26792B8A) => (rd=x8/0x51024001)
-.l_andc_3604_Start:
+# Test 3604: (ref=x27) andn(rs1=x19/0x770A6089)(rs2=x18/0x26792B8A) => (rd=x8/0x51024001)
+.l_andn_3604_Start:
     li       x19, 0x770A6089
     li       x18, 0x26792B8A
-    andc     8 19 18
+    andn     8 19 18
     li       x27, 0x51024001
     beq       x8, x27, 1f
-.l_andc_3604_Fail:
+.l_andn_3604_Fail:
     li        x1, 3604
     la        x2, test_fail
     jalr      x0, x2
@@ -46097,14 +46097,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3640: (ref=x25) andc(rs1=x7/0x634163F9)(rs2=x8/0x19B946F6) => (rd=x7/0x62402109)
-.l_andc_3640_Start:
+# Test 3640: (ref=x25) andn(rs1=x7/0x634163F9)(rs2=x8/0x19B946F6) => (rd=x7/0x62402109)
+.l_andn_3640_Start:
     li        x7, 0x634163F9
     li        x8, 0x19B946F6
-    andc     7 7 8
+    andn     7 7 8
     li       x25, 0x62402109
     beq       x7, x25, 1f
-.l_andc_3640_Fail:
+.l_andn_3640_Fail:
     li        x1, 3640
     la        x2, test_fail
     jalr      x0, x2
@@ -46553,14 +46553,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3676: (ref=x10) andc(rs1=x20/0x7266F0C2)(rs2=x22/0x0500A6A2) => (rd=x8/0x72665040)
-.l_andc_3676_Start:
+# Test 3676: (ref=x10) andn(rs1=x20/0x7266F0C2)(rs2=x22/0x0500A6A2) => (rd=x8/0x72665040)
+.l_andn_3676_Start:
     li       x20, 0x7266F0C2
     li       x22, 0x0500A6A2
-    andc     8 20 22
+    andn     8 20 22
     li       x10, 0x72665040
     beq       x8, x10, 1f
-.l_andc_3676_Fail:
+.l_andn_3676_Fail:
     li        x1, 3676
     la        x2, test_fail
     jalr      x0, x2
@@ -47009,14 +47009,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3712: (ref=x15) andc(rs1=x6/0x62946199)(rs2=x19/0x4EB3B4D5) => (rd=x0/0x00000000)
-.l_andc_3712_Start:
+# Test 3712: (ref=x15) andn(rs1=x6/0x62946199)(rs2=x19/0x4EB3B4D5) => (rd=x0/0x00000000)
+.l_andn_3712_Start:
     li        x6, 0x62946199
     li       x19, 0x4EB3B4D5
-    andc     0 6 19
+    andn     0 6 19
     li       x15, 0x00000000
     beq       x0, x15, 1f
-.l_andc_3712_Fail:
+.l_andn_3712_Fail:
     li        x1, 3712
     la        x2, test_fail
     jalr      x0, x2
@@ -47465,14 +47465,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3748: (ref=x6) andc(rs1=x19/0x55E3144B)(rs2=x23/0x237C17C6) => (rd=x14/0x54830009)
-.l_andc_3748_Start:
+# Test 3748: (ref=x6) andn(rs1=x19/0x55E3144B)(rs2=x23/0x237C17C6) => (rd=x14/0x54830009)
+.l_andn_3748_Start:
     li       x19, 0x55E3144B
     li       x23, 0x237C17C6
-    andc     14 19 23
+    andn     14 19 23
     li        x6, 0x54830009
     beq      x14,  x6, 1f
-.l_andc_3748_Fail:
+.l_andn_3748_Fail:
     li        x1, 3748
     la        x2, test_fail
     jalr      x0, x2
@@ -47921,14 +47921,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3784: (ref=x5) andc(rs1=x21/0x30464A2C)(rs2=x8/0x4EEC4C23) => (rd=x9/0x3002020C)
-.l_andc_3784_Start:
+# Test 3784: (ref=x5) andn(rs1=x21/0x30464A2C)(rs2=x8/0x4EEC4C23) => (rd=x9/0x3002020C)
+.l_andn_3784_Start:
     li       x21, 0x30464A2C
     li        x8, 0x4EEC4C23
-    andc     9 21 8
+    andn     9 21 8
     li        x5, 0x3002020C
     beq       x9,  x5, 1f
-.l_andc_3784_Fail:
+.l_andn_3784_Fail:
     li        x1, 3784
     la        x2, test_fail
     jalr      x0, x2
@@ -48377,14 +48377,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3820: (ref=x24) andc(rs1=x13/0x40DB46CB)(rs2=x0/0x00000000) => (rd=x29/0x40DB46CB)
-.l_andc_3820_Start:
+# Test 3820: (ref=x24) andn(rs1=x13/0x40DB46CB)(rs2=x0/0x00000000) => (rd=x29/0x40DB46CB)
+.l_andn_3820_Start:
     li       x13, 0x40DB46CB
     li        x0, 0x00000000
-    andc     29 13 0
+    andn     29 13 0
     li       x24, 0x40DB46CB
     beq      x29, x24, 1f
-.l_andc_3820_Fail:
+.l_andn_3820_Fail:
     li        x1, 3820
     la        x2, test_fail
     jalr      x0, x2
@@ -48833,14 +48833,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3856: (ref=x17) andc(rs1=x18/0x3706A0AD)(rs2=x16/0x7D06CC5C) => (rd=x16/0x020020A1)
-.l_andc_3856_Start:
+# Test 3856: (ref=x17) andn(rs1=x18/0x3706A0AD)(rs2=x16/0x7D06CC5C) => (rd=x16/0x020020A1)
+.l_andn_3856_Start:
     li       x18, 0x3706A0AD
     li       x16, 0x7D06CC5C
-    andc     16 18 16
+    andn     16 18 16
     li       x17, 0x020020A1
     beq      x16, x17, 1f
-.l_andc_3856_Fail:
+.l_andn_3856_Fail:
     li        x1, 3856
     la        x2, test_fail
     jalr      x0, x2
@@ -49289,14 +49289,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3892: (ref=x19) andc(rs1=x24/0x437E833F)(rs2=x2/0x34E9E174) => (rd=x12/0x4316020B)
-.l_andc_3892_Start:
+# Test 3892: (ref=x19) andn(rs1=x24/0x437E833F)(rs2=x2/0x34E9E174) => (rd=x12/0x4316020B)
+.l_andn_3892_Start:
     li       x24, 0x437E833F
     li        x2, 0x34E9E174
-    andc     12 24 2
+    andn     12 24 2
     li       x19, 0x4316020B
     beq      x12, x19, 1f
-.l_andc_3892_Fail:
+.l_andn_3892_Fail:
     li        x1, 3892
     la        x2, test_fail
     jalr      x0, x2
@@ -49745,14 +49745,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3928: (ref=x22) andc(rs1=x4/0x5B1A7B5E)(rs2=x14/0x034A60EA) => (rd=x4/0x58101B14)
-.l_andc_3928_Start:
+# Test 3928: (ref=x22) andn(rs1=x4/0x5B1A7B5E)(rs2=x14/0x034A60EA) => (rd=x4/0x58101B14)
+.l_andn_3928_Start:
     li        x4, 0x5B1A7B5E
     li       x14, 0x034A60EA
-    andc     4 4 14
+    andn     4 4 14
     li       x22, 0x58101B14
     beq       x4, x22, 1f
-.l_andc_3928_Fail:
+.l_andn_3928_Fail:
     li        x1, 3928
     la        x2, test_fail
     jalr      x0, x2
@@ -50201,14 +50201,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 3964: (ref=x7) andc(rs1=x21/0x21E1A20F)(rs2=x18/0x512833E8) => (rd=x20/0x20C18007)
-.l_andc_3964_Start:
+# Test 3964: (ref=x7) andn(rs1=x21/0x21E1A20F)(rs2=x18/0x512833E8) => (rd=x20/0x20C18007)
+.l_andn_3964_Start:
     li       x21, 0x21E1A20F
     li       x18, 0x512833E8
-    andc     20 21 18
+    andn     20 21 18
     li        x7, 0x20C18007
     beq      x20,  x7, 1f
-.l_andc_3964_Fail:
+.l_andn_3964_Fail:
     li        x1, 3964
     la        x2, test_fail
     jalr      x0, x2
@@ -50657,14 +50657,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4000: (ref=x20) andc(rs1=x9/0x0DBEA992)(rs2=x29/0x11530AA2) => (rd=x19/0x0CACA110)
-.l_andc_4000_Start:
+# Test 4000: (ref=x20) andn(rs1=x9/0x0DBEA992)(rs2=x29/0x11530AA2) => (rd=x19/0x0CACA110)
+.l_andn_4000_Start:
     li        x9, 0x0DBEA992
     li       x29, 0x11530AA2
-    andc     19 9 29
+    andn     19 9 29
     li       x20, 0x0CACA110
     beq      x19, x20, 1f
-.l_andc_4000_Fail:
+.l_andn_4000_Fail:
     li        x1, 4000
     la        x2, test_fail
     jalr      x0, x2
@@ -51113,14 +51113,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4036: (ref=x8) andc(rs1=x24/0x5D2E62EE)(rs2=x17/0x6F5734E9) => (rd=x16/0x10284206)
-.l_andc_4036_Start:
+# Test 4036: (ref=x8) andn(rs1=x24/0x5D2E62EE)(rs2=x17/0x6F5734E9) => (rd=x16/0x10284206)
+.l_andn_4036_Start:
     li       x24, 0x5D2E62EE
     li       x17, 0x6F5734E9
-    andc     16 24 17
+    andn     16 24 17
     li        x8, 0x10284206
     beq      x16,  x8, 1f
-.l_andc_4036_Fail:
+.l_andn_4036_Fail:
     li        x1, 4036
     la        x2, test_fail
     jalr      x0, x2
@@ -51569,14 +51569,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4072: (ref=x2) andc(rs1=x23/0x6434D30E)(rs2=x3/0x389A4A7A) => (rd=x1/0x44249104)
-.l_andc_4072_Start:
+# Test 4072: (ref=x2) andn(rs1=x23/0x6434D30E)(rs2=x3/0x389A4A7A) => (rd=x1/0x44249104)
+.l_andn_4072_Start:
     li       x23, 0x6434D30E
     li        x3, 0x389A4A7A
-    andc     1 23 3
+    andn     1 23 3
     li        x2, 0x44249104
     beq       x1,  x2, 1f
-.l_andc_4072_Fail:
+.l_andn_4072_Fail:
     li        x1, 4072
     la        x2, test_fail
     jalr      x0, x2
@@ -52025,14 +52025,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4108: (ref=x12) andc(rs1=x17/0x7B8BF461)(rs2=x29/0x4669515A) => (rd=x24/0x3982A421)
-.l_andc_4108_Start:
+# Test 4108: (ref=x12) andn(rs1=x17/0x7B8BF461)(rs2=x29/0x4669515A) => (rd=x24/0x3982A421)
+.l_andn_4108_Start:
     li       x17, 0x7B8BF461
     li       x29, 0x4669515A
-    andc     24 17 29
+    andn     24 17 29
     li       x12, 0x3982A421
     beq      x24, x12, 1f
-.l_andc_4108_Fail:
+.l_andn_4108_Fail:
     li        x1, 4108
     la        x2, test_fail
     jalr      x0, x2
@@ -52481,14 +52481,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4144: (ref=x11) andc(rs1=x22/0x08893033)(rs2=x9/0x33BEF275) => (rd=x10/0x08010002)
-.l_andc_4144_Start:
+# Test 4144: (ref=x11) andn(rs1=x22/0x08893033)(rs2=x9/0x33BEF275) => (rd=x10/0x08010002)
+.l_andn_4144_Start:
     li       x22, 0x08893033
     li        x9, 0x33BEF275
-    andc     10 22 9
+    andn     10 22 9
     li       x11, 0x08010002
     beq      x10, x11, 1f
-.l_andc_4144_Fail:
+.l_andn_4144_Fail:
     li        x1, 4144
     la        x2, test_fail
     jalr      x0, x2
@@ -52937,14 +52937,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4180: (ref=x7) andc(rs1=x22/0x72B1B54D)(rs2=x5/0x79FE57A3) => (rd=x28/0x0201A04C)
-.l_andc_4180_Start:
+# Test 4180: (ref=x7) andn(rs1=x22/0x72B1B54D)(rs2=x5/0x79FE57A3) => (rd=x28/0x0201A04C)
+.l_andn_4180_Start:
     li       x22, 0x72B1B54D
     li        x5, 0x79FE57A3
-    andc     28 22 5
+    andn     28 22 5
     li        x7, 0x0201A04C
     beq      x28,  x7, 1f
-.l_andc_4180_Fail:
+.l_andn_4180_Fail:
     li        x1, 4180
     la        x2, test_fail
     jalr      x0, x2
@@ -53393,14 +53393,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4216: (ref=x2) andc(rs1=x22/0x18184D10)(rs2=x0/0x00000000) => (rd=x13/0x18184D10)
-.l_andc_4216_Start:
+# Test 4216: (ref=x2) andn(rs1=x22/0x18184D10)(rs2=x0/0x00000000) => (rd=x13/0x18184D10)
+.l_andn_4216_Start:
     li       x22, 0x18184D10
     li        x0, 0x00000000
-    andc     13 22 0
+    andn     13 22 0
     li        x2, 0x18184D10
     beq      x13,  x2, 1f
-.l_andc_4216_Fail:
+.l_andn_4216_Fail:
     li        x1, 4216
     la        x2, test_fail
     jalr      x0, x2
@@ -53849,14 +53849,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4252: (ref=x4) andc(rs1=x9/0x6EECFFA7)(rs2=x7/0x7F6A271A) => (rd=x16/0x0084D8A5)
-.l_andc_4252_Start:
+# Test 4252: (ref=x4) andn(rs1=x9/0x6EECFFA7)(rs2=x7/0x7F6A271A) => (rd=x16/0x0084D8A5)
+.l_andn_4252_Start:
     li        x9, 0x6EECFFA7
     li        x7, 0x7F6A271A
-    andc     16 9 7
+    andn     16 9 7
     li        x4, 0x0084D8A5
     beq      x16,  x4, 1f
-.l_andc_4252_Fail:
+.l_andn_4252_Fail:
     li        x1, 4252
     la        x2, test_fail
     jalr      x0, x2
@@ -54305,14 +54305,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4288: (ref=x30) andc(rs1=x16/0x1ABB82DC)(rs2=x29/0x05F624DB) => (rd=x11/0x1A098204)
-.l_andc_4288_Start:
+# Test 4288: (ref=x30) andn(rs1=x16/0x1ABB82DC)(rs2=x29/0x05F624DB) => (rd=x11/0x1A098204)
+.l_andn_4288_Start:
     li       x16, 0x1ABB82DC
     li       x29, 0x05F624DB
-    andc     11 16 29
+    andn     11 16 29
     li       x30, 0x1A098204
     beq      x11, x30, 1f
-.l_andc_4288_Fail:
+.l_andn_4288_Fail:
     li        x1, 4288
     la        x2, test_fail
     jalr      x0, x2
@@ -54761,14 +54761,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4324: (ref=x30) andc(rs1=x4/0x49826AF9)(rs2=x6/0x38952559) => (rd=x13/0x41024AA0)
-.l_andc_4324_Start:
+# Test 4324: (ref=x30) andn(rs1=x4/0x49826AF9)(rs2=x6/0x38952559) => (rd=x13/0x41024AA0)
+.l_andn_4324_Start:
     li        x4, 0x49826AF9
     li        x6, 0x38952559
-    andc     13 4 6
+    andn     13 4 6
     li       x30, 0x41024AA0
     beq      x13, x30, 1f
-.l_andc_4324_Fail:
+.l_andn_4324_Fail:
     li        x1, 4324
     la        x2, test_fail
     jalr      x0, x2
@@ -55217,14 +55217,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4360: (ref=x5) andc(rs1=x6/0x45BE9909)(rs2=x19/0x616352CC) => (rd=x6/0x049C8901)
-.l_andc_4360_Start:
+# Test 4360: (ref=x5) andn(rs1=x6/0x45BE9909)(rs2=x19/0x616352CC) => (rd=x6/0x049C8901)
+.l_andn_4360_Start:
     li        x6, 0x45BE9909
     li       x19, 0x616352CC
-    andc     6 6 19
+    andn     6 6 19
     li        x5, 0x049C8901
     beq       x6,  x5, 1f
-.l_andc_4360_Fail:
+.l_andn_4360_Fail:
     li        x1, 4360
     la        x2, test_fail
     jalr      x0, x2
@@ -55673,14 +55673,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4396: (ref=x4) andc(rs1=x18/0x678FF676)(rs2=x11/0x5EB7AC64) => (rd=x9/0x21085212)
-.l_andc_4396_Start:
+# Test 4396: (ref=x4) andn(rs1=x18/0x678FF676)(rs2=x11/0x5EB7AC64) => (rd=x9/0x21085212)
+.l_andn_4396_Start:
     li       x18, 0x678FF676
     li       x11, 0x5EB7AC64
-    andc     9 18 11
+    andn     9 18 11
     li        x4, 0x21085212
     beq       x9,  x4, 1f
-.l_andc_4396_Fail:
+.l_andn_4396_Fail:
     li        x1, 4396
     la        x2, test_fail
     jalr      x0, x2
@@ -56129,14 +56129,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4432: (ref=x27) andc(rs1=x18/0x58E1D867)(rs2=x23/0x73637F18) => (rd=x3/0x08808067)
-.l_andc_4432_Start:
+# Test 4432: (ref=x27) andn(rs1=x18/0x58E1D867)(rs2=x23/0x73637F18) => (rd=x3/0x08808067)
+.l_andn_4432_Start:
     li       x18, 0x58E1D867
     li       x23, 0x73637F18
-    andc     3 18 23
+    andn     3 18 23
     li       x27, 0x08808067
     beq       x3, x27, 1f
-.l_andc_4432_Fail:
+.l_andn_4432_Fail:
     li        x1, 4432
     la        x2, test_fail
     jalr      x0, x2
@@ -56585,14 +56585,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4468: (ref=x6) andc(rs1=x8/0x463DCA5C)(rs2=x16/0x2803DEF4) => (rd=x23/0x463C0008)
-.l_andc_4468_Start:
+# Test 4468: (ref=x6) andn(rs1=x8/0x463DCA5C)(rs2=x16/0x2803DEF4) => (rd=x23/0x463C0008)
+.l_andn_4468_Start:
     li        x8, 0x463DCA5C
     li       x16, 0x2803DEF4
-    andc     23 8 16
+    andn     23 8 16
     li        x6, 0x463C0008
     beq      x23,  x6, 1f
-.l_andc_4468_Fail:
+.l_andn_4468_Fail:
     li        x1, 4468
     la        x2, test_fail
     jalr      x0, x2
@@ -57041,14 +57041,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4504: (ref=x10) andc(rs1=x26/0x53E7D2BB)(rs2=x21/0x4D4CFA69) => (rd=x27/0x12A30092)
-.l_andc_4504_Start:
+# Test 4504: (ref=x10) andn(rs1=x26/0x53E7D2BB)(rs2=x21/0x4D4CFA69) => (rd=x27/0x12A30092)
+.l_andn_4504_Start:
     li       x26, 0x53E7D2BB
     li       x21, 0x4D4CFA69
-    andc     27 26 21
+    andn     27 26 21
     li       x10, 0x12A30092
     beq      x27, x10, 1f
-.l_andc_4504_Fail:
+.l_andn_4504_Fail:
     li        x1, 4504
     la        x2, test_fail
     jalr      x0, x2
@@ -57497,14 +57497,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4540: (ref=x21) andc(rs1=x27/0x557614DB)(rs2=x1/0x4849DA0C) => (rd=x29/0x153604D3)
-.l_andc_4540_Start:
+# Test 4540: (ref=x21) andn(rs1=x27/0x557614DB)(rs2=x1/0x4849DA0C) => (rd=x29/0x153604D3)
+.l_andn_4540_Start:
     li       x27, 0x557614DB
     li        x1, 0x4849DA0C
-    andc     29 27 1
+    andn     29 27 1
     li       x21, 0x153604D3
     beq      x29, x21, 1f
-.l_andc_4540_Fail:
+.l_andn_4540_Fail:
     li        x1, 4540
     la        x2, test_fail
     jalr      x0, x2
@@ -57953,14 +57953,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4576: (ref=x24) andc(rs1=x6/0x175B90B6)(rs2=x31/0x0B5359CA) => (rd=x5/0x14088034)
-.l_andc_4576_Start:
+# Test 4576: (ref=x24) andn(rs1=x6/0x175B90B6)(rs2=x31/0x0B5359CA) => (rd=x5/0x14088034)
+.l_andn_4576_Start:
     li        x6, 0x175B90B6
     li       x31, 0x0B5359CA
-    andc     5 6 31
+    andn     5 6 31
     li       x24, 0x14088034
     beq       x5, x24, 1f
-.l_andc_4576_Fail:
+.l_andn_4576_Fail:
     li        x1, 4576
     la        x2, test_fail
     jalr      x0, x2
@@ -58409,14 +58409,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4612: (ref=x1) andc(rs1=x10/0x6E499E55)(rs2=x20/0x78D54943) => (rd=x12/0x06089614)
-.l_andc_4612_Start:
+# Test 4612: (ref=x1) andn(rs1=x10/0x6E499E55)(rs2=x20/0x78D54943) => (rd=x12/0x06089614)
+.l_andn_4612_Start:
     li       x10, 0x6E499E55
     li       x20, 0x78D54943
-    andc     12 10 20
+    andn     12 10 20
     li        x1, 0x06089614
     beq      x12,  x1, 1f
-.l_andc_4612_Fail:
+.l_andn_4612_Fail:
     li        x1, 4612
     la        x2, test_fail
     jalr      x0, x2
@@ -58865,14 +58865,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4648: (ref=x31) andc(rs1=x30/0x56BF3219)(rs2=x5/0x7BBE46AE) => (rd=x9/0x04013011)
-.l_andc_4648_Start:
+# Test 4648: (ref=x31) andn(rs1=x30/0x56BF3219)(rs2=x5/0x7BBE46AE) => (rd=x9/0x04013011)
+.l_andn_4648_Start:
     li       x30, 0x56BF3219
     li        x5, 0x7BBE46AE
-    andc     9 30 5
+    andn     9 30 5
     li       x31, 0x04013011
     beq       x9, x31, 1f
-.l_andc_4648_Fail:
+.l_andn_4648_Fail:
     li        x1, 4648
     la        x2, test_fail
     jalr      x0, x2
@@ -59321,14 +59321,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4684: (ref=x21) andc(rs1=x29/0x4828A589)(rs2=x1/0x22CD3E7A) => (rd=x22/0x48208181)
-.l_andc_4684_Start:
+# Test 4684: (ref=x21) andn(rs1=x29/0x4828A589)(rs2=x1/0x22CD3E7A) => (rd=x22/0x48208181)
+.l_andn_4684_Start:
     li       x29, 0x4828A589
     li        x1, 0x22CD3E7A
-    andc     22 29 1
+    andn     22 29 1
     li       x21, 0x48208181
     beq      x22, x21, 1f
-.l_andc_4684_Fail:
+.l_andn_4684_Fail:
     li        x1, 4684
     la        x2, test_fail
     jalr      x0, x2
@@ -59777,14 +59777,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4720: (ref=x7) andc(rs1=x10/0x371C1BCF)(rs2=x14/0x2D5718C9) => (rd=x30/0x12080306)
-.l_andc_4720_Start:
+# Test 4720: (ref=x7) andn(rs1=x10/0x371C1BCF)(rs2=x14/0x2D5718C9) => (rd=x30/0x12080306)
+.l_andn_4720_Start:
     li       x10, 0x371C1BCF
     li       x14, 0x2D5718C9
-    andc     30 10 14
+    andn     30 10 14
     li        x7, 0x12080306
     beq      x30,  x7, 1f
-.l_andc_4720_Fail:
+.l_andn_4720_Fail:
     li        x1, 4720
     la        x2, test_fail
     jalr      x0, x2
@@ -60233,14 +60233,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4756: (ref=x30) andc(rs1=x7/0x1870716B)(rs2=x24/0x1EB88105) => (rd=x3/0x0040706A)
-.l_andc_4756_Start:
+# Test 4756: (ref=x30) andn(rs1=x7/0x1870716B)(rs2=x24/0x1EB88105) => (rd=x3/0x0040706A)
+.l_andn_4756_Start:
     li        x7, 0x1870716B
     li       x24, 0x1EB88105
-    andc     3 7 24
+    andn     3 7 24
     li       x30, 0x0040706A
     beq       x3, x30, 1f
-.l_andc_4756_Fail:
+.l_andn_4756_Fail:
     li        x1, 4756
     la        x2, test_fail
     jalr      x0, x2
@@ -60689,14 +60689,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4792: (ref=x24) andc(rs1=x4/0x6ED3CF02)(rs2=x12/0x04C319C6) => (rd=x19/0x6A10C600)
-.l_andc_4792_Start:
+# Test 4792: (ref=x24) andn(rs1=x4/0x6ED3CF02)(rs2=x12/0x04C319C6) => (rd=x19/0x6A10C600)
+.l_andn_4792_Start:
     li        x4, 0x6ED3CF02
     li       x12, 0x04C319C6
-    andc     19 4 12
+    andn     19 4 12
     li       x24, 0x6A10C600
     beq      x19, x24, 1f
-.l_andc_4792_Fail:
+.l_andn_4792_Fail:
     li        x1, 4792
     la        x2, test_fail
     jalr      x0, x2
@@ -61145,14 +61145,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4828: (ref=x23) andc(rs1=x6/0x6724E6A6)(rs2=x11/0x186B347B) => (rd=x3/0x6704C284)
-.l_andc_4828_Start:
+# Test 4828: (ref=x23) andn(rs1=x6/0x6724E6A6)(rs2=x11/0x186B347B) => (rd=x3/0x6704C284)
+.l_andn_4828_Start:
     li        x6, 0x6724E6A6
     li       x11, 0x186B347B
-    andc     3 6 11
+    andn     3 6 11
     li       x23, 0x6704C284
     beq       x3, x23, 1f
-.l_andc_4828_Fail:
+.l_andn_4828_Fail:
     li        x1, 4828
     la        x2, test_fail
     jalr      x0, x2
@@ -61601,14 +61601,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4864: (ref=x16) andc(rs1=x3/0x60615903)(rs2=x23/0x0A0CF482) => (rd=x23/0x60610901)
-.l_andc_4864_Start:
+# Test 4864: (ref=x16) andn(rs1=x3/0x60615903)(rs2=x23/0x0A0CF482) => (rd=x23/0x60610901)
+.l_andn_4864_Start:
     li        x3, 0x60615903
     li       x23, 0x0A0CF482
-    andc     23 3 23
+    andn     23 3 23
     li       x16, 0x60610901
     beq      x23, x16, 1f
-.l_andc_4864_Fail:
+.l_andn_4864_Fail:
     li        x1, 4864
     la        x2, test_fail
     jalr      x0, x2
@@ -62057,14 +62057,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4900: (ref=x23) andc(rs1=x21/0x699AB87E)(rs2=x11/0x746E3A1F) => (rd=x5/0x09908060)
-.l_andc_4900_Start:
+# Test 4900: (ref=x23) andn(rs1=x21/0x699AB87E)(rs2=x11/0x746E3A1F) => (rd=x5/0x09908060)
+.l_andn_4900_Start:
     li       x21, 0x699AB87E
     li       x11, 0x746E3A1F
-    andc     5 21 11
+    andn     5 21 11
     li       x23, 0x09908060
     beq       x5, x23, 1f
-.l_andc_4900_Fail:
+.l_andn_4900_Fail:
     li        x1, 4900
     la        x2, test_fail
     jalr      x0, x2
@@ -62513,14 +62513,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4936: (ref=x27) andc(rs1=x2/0x725EFEE8)(rs2=x22/0x65893E9D) => (rd=x14/0x1256C060)
-.l_andc_4936_Start:
+# Test 4936: (ref=x27) andn(rs1=x2/0x725EFEE8)(rs2=x22/0x65893E9D) => (rd=x14/0x1256C060)
+.l_andn_4936_Start:
     li        x2, 0x725EFEE8
     li       x22, 0x65893E9D
-    andc     14 2 22
+    andn     14 2 22
     li       x27, 0x1256C060
     beq      x14, x27, 1f
-.l_andc_4936_Fail:
+.l_andn_4936_Fail:
     li        x1, 4936
     la        x2, test_fail
     jalr      x0, x2
@@ -62969,14 +62969,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 4972: (ref=x31) andc(rs1=x8/0x6AB02CE3)(rs2=x9/0x0DE4AFCE) => (rd=x20/0x62100021)
-.l_andc_4972_Start:
+# Test 4972: (ref=x31) andn(rs1=x8/0x6AB02CE3)(rs2=x9/0x0DE4AFCE) => (rd=x20/0x62100021)
+.l_andn_4972_Start:
     li        x8, 0x6AB02CE3
     li        x9, 0x0DE4AFCE
-    andc     20 8 9
+    andn     20 8 9
     li       x31, 0x62100021
     beq      x20, x31, 1f
-.l_andc_4972_Fail:
+.l_andn_4972_Fail:
     li        x1, 4972
     la        x2, test_fail
     jalr      x0, x2
@@ -63425,14 +63425,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5008: (ref=x8) andc(rs1=x20/0x2BCB89E1)(rs2=x4/0x59F58448) => (rd=x27/0x220A09A1)
-.l_andc_5008_Start:
+# Test 5008: (ref=x8) andn(rs1=x20/0x2BCB89E1)(rs2=x4/0x59F58448) => (rd=x27/0x220A09A1)
+.l_andn_5008_Start:
     li       x20, 0x2BCB89E1
     li        x4, 0x59F58448
-    andc     27 20 4
+    andn     27 20 4
     li        x8, 0x220A09A1
     beq      x27,  x8, 1f
-.l_andc_5008_Fail:
+.l_andn_5008_Fail:
     li        x1, 5008
     la        x2, test_fail
     jalr      x0, x2
@@ -63881,14 +63881,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5044: (ref=x6) andc(rs1=x20/0x62DE820C)(rs2=x18/0x2325BF42) => (rd=x0/0x00000000)
-.l_andc_5044_Start:
+# Test 5044: (ref=x6) andn(rs1=x20/0x62DE820C)(rs2=x18/0x2325BF42) => (rd=x0/0x00000000)
+.l_andn_5044_Start:
     li       x20, 0x62DE820C
     li       x18, 0x2325BF42
-    andc     0 20 18
+    andn     0 20 18
     li        x6, 0x00000000
     beq       x0,  x6, 1f
-.l_andc_5044_Fail:
+.l_andn_5044_Fail:
     li        x1, 5044
     la        x2, test_fail
     jalr      x0, x2
@@ -64337,14 +64337,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5080: (ref=x6) andc(rs1=x18/0x4986ADF1)(rs2=x9/0x056F2623) => (rd=x26/0x488089D0)
-.l_andc_5080_Start:
+# Test 5080: (ref=x6) andn(rs1=x18/0x4986ADF1)(rs2=x9/0x056F2623) => (rd=x26/0x488089D0)
+.l_andn_5080_Start:
     li       x18, 0x4986ADF1
     li        x9, 0x056F2623
-    andc     26 18 9
+    andn     26 18 9
     li        x6, 0x488089D0
     beq      x26,  x6, 1f
-.l_andc_5080_Fail:
+.l_andn_5080_Fail:
     li        x1, 5080
     la        x2, test_fail
     jalr      x0, x2
@@ -64793,14 +64793,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5116: (ref=x3) andc(rs1=x5/0x78CE770C)(rs2=x13/0x250E8D57) => (rd=x16/0x58C07208)
-.l_andc_5116_Start:
+# Test 5116: (ref=x3) andn(rs1=x5/0x78CE770C)(rs2=x13/0x250E8D57) => (rd=x16/0x58C07208)
+.l_andn_5116_Start:
     li        x5, 0x78CE770C
     li       x13, 0x250E8D57
-    andc     16 5 13
+    andn     16 5 13
     li        x3, 0x58C07208
     beq      x16,  x3, 1f
-.l_andc_5116_Fail:
+.l_andn_5116_Fail:
     li        x1, 5116
     la        x2, test_fail
     jalr      x0, x2
@@ -65249,14 +65249,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5152: (ref=x6) andc(rs1=x10/0x1D4A1DCB)(rs2=x10/0x1D4A1DCB) => (rd=x1/0x00000000)
-.l_andc_5152_Start:
+# Test 5152: (ref=x6) andn(rs1=x10/0x1D4A1DCB)(rs2=x10/0x1D4A1DCB) => (rd=x1/0x00000000)
+.l_andn_5152_Start:
     li       x10, 0x1D4A1DCB
     li       x10, 0x1D4A1DCB
-    andc     1 10 10
+    andn     1 10 10
     li        x6, 0x00000000
     beq       x1,  x6, 1f
-.l_andc_5152_Fail:
+.l_andn_5152_Fail:
     li        x1, 5152
     la        x2, test_fail
     jalr      x0, x2
@@ -65705,14 +65705,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5188: (ref=x11) andc(rs1=x22/0x6FD7FA0D)(rs2=x8/0x0D0B8F0F) => (rd=x19/0x62D47000)
-.l_andc_5188_Start:
+# Test 5188: (ref=x11) andn(rs1=x22/0x6FD7FA0D)(rs2=x8/0x0D0B8F0F) => (rd=x19/0x62D47000)
+.l_andn_5188_Start:
     li       x22, 0x6FD7FA0D
     li        x8, 0x0D0B8F0F
-    andc     19 22 8
+    andn     19 22 8
     li       x11, 0x62D47000
     beq      x19, x11, 1f
-.l_andc_5188_Fail:
+.l_andn_5188_Fail:
     li        x1, 5188
     la        x2, test_fail
     jalr      x0, x2
@@ -66161,14 +66161,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5224: (ref=x14) andc(rs1=x25/0x67F90091)(rs2=x25/0x67F90091) => (rd=x27/0x00000000)
-.l_andc_5224_Start:
+# Test 5224: (ref=x14) andn(rs1=x25/0x67F90091)(rs2=x25/0x67F90091) => (rd=x27/0x00000000)
+.l_andn_5224_Start:
     li       x25, 0x67F90091
     li       x25, 0x67F90091
-    andc     27 25 25
+    andn     27 25 25
     li       x14, 0x00000000
     beq      x27, x14, 1f
-.l_andc_5224_Fail:
+.l_andn_5224_Fail:
     li        x1, 5224
     la        x2, test_fail
     jalr      x0, x2
@@ -66617,14 +66617,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5260: (ref=x29) andc(rs1=x27/0x577B0BDE)(rs2=x18/0x5E66A1D4) => (rd=x26/0x01190A0A)
-.l_andc_5260_Start:
+# Test 5260: (ref=x29) andn(rs1=x27/0x577B0BDE)(rs2=x18/0x5E66A1D4) => (rd=x26/0x01190A0A)
+.l_andn_5260_Start:
     li       x27, 0x577B0BDE
     li       x18, 0x5E66A1D4
-    andc     26 27 18
+    andn     26 27 18
     li       x29, 0x01190A0A
     beq      x26, x29, 1f
-.l_andc_5260_Fail:
+.l_andn_5260_Fail:
     li        x1, 5260
     la        x2, test_fail
     jalr      x0, x2
@@ -67073,14 +67073,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5296: (ref=x6) andc(rs1=x24/0x1069D7B6)(rs2=x14/0x607A6532) => (rd=x11/0x10019284)
-.l_andc_5296_Start:
+# Test 5296: (ref=x6) andn(rs1=x24/0x1069D7B6)(rs2=x14/0x607A6532) => (rd=x11/0x10019284)
+.l_andn_5296_Start:
     li       x24, 0x1069D7B6
     li       x14, 0x607A6532
-    andc     11 24 14
+    andn     11 24 14
     li        x6, 0x10019284
     beq      x11,  x6, 1f
-.l_andc_5296_Fail:
+.l_andn_5296_Fail:
     li        x1, 5296
     la        x2, test_fail
     jalr      x0, x2
@@ -67529,14 +67529,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5332: (ref=x31) andc(rs1=x23/0x427AAFDF)(rs2=x25/0x7A5FE688) => (rd=x6/0x00200957)
-.l_andc_5332_Start:
+# Test 5332: (ref=x31) andn(rs1=x23/0x427AAFDF)(rs2=x25/0x7A5FE688) => (rd=x6/0x00200957)
+.l_andn_5332_Start:
     li       x23, 0x427AAFDF
     li       x25, 0x7A5FE688
-    andc     6 23 25
+    andn     6 23 25
     li       x31, 0x00200957
     beq       x6, x31, 1f
-.l_andc_5332_Fail:
+.l_andn_5332_Fail:
     li        x1, 5332
     la        x2, test_fail
     jalr      x0, x2
@@ -67985,14 +67985,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5368: (ref=x28) andc(rs1=x24/0x5A79C4CE)(rs2=x25/0x07B45C55) => (rd=x19/0x5849808A)
-.l_andc_5368_Start:
+# Test 5368: (ref=x28) andn(rs1=x24/0x5A79C4CE)(rs2=x25/0x07B45C55) => (rd=x19/0x5849808A)
+.l_andn_5368_Start:
     li       x24, 0x5A79C4CE
     li       x25, 0x07B45C55
-    andc     19 24 25
+    andn     19 24 25
     li       x28, 0x5849808A
     beq      x19, x28, 1f
-.l_andc_5368_Fail:
+.l_andn_5368_Fail:
     li        x1, 5368
     la        x2, test_fail
     jalr      x0, x2
@@ -68441,14 +68441,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5404: (ref=x18) andc(rs1=x2/0x1B44858C)(rs2=x3/0x4CB67B42) => (rd=x22/0x1340848C)
-.l_andc_5404_Start:
+# Test 5404: (ref=x18) andn(rs1=x2/0x1B44858C)(rs2=x3/0x4CB67B42) => (rd=x22/0x1340848C)
+.l_andn_5404_Start:
     li        x2, 0x1B44858C
     li        x3, 0x4CB67B42
-    andc     22 2 3
+    andn     22 2 3
     li       x18, 0x1340848C
     beq      x22, x18, 1f
-.l_andc_5404_Fail:
+.l_andn_5404_Fail:
     li        x1, 5404
     la        x2, test_fail
     jalr      x0, x2
@@ -68897,14 +68897,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5440: (ref=x3) andc(rs1=x20/0x73E92209)(rs2=x28/0x39AD3AFC) => (rd=x17/0x42400001)
-.l_andc_5440_Start:
+# Test 5440: (ref=x3) andn(rs1=x20/0x73E92209)(rs2=x28/0x39AD3AFC) => (rd=x17/0x42400001)
+.l_andn_5440_Start:
     li       x20, 0x73E92209
     li       x28, 0x39AD3AFC
-    andc     17 20 28
+    andn     17 20 28
     li        x3, 0x42400001
     beq      x17,  x3, 1f
-.l_andc_5440_Fail:
+.l_andn_5440_Fail:
     li        x1, 5440
     la        x2, test_fail
     jalr      x0, x2
@@ -69353,14 +69353,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5476: (ref=x20) andc(rs1=x13/0x6DBD12C9)(rs2=x21/0x4AC2F505) => (rd=x23/0x253D02C8)
-.l_andc_5476_Start:
+# Test 5476: (ref=x20) andn(rs1=x13/0x6DBD12C9)(rs2=x21/0x4AC2F505) => (rd=x23/0x253D02C8)
+.l_andn_5476_Start:
     li       x13, 0x6DBD12C9
     li       x21, 0x4AC2F505
-    andc     23 13 21
+    andn     23 13 21
     li       x20, 0x253D02C8
     beq      x23, x20, 1f
-.l_andc_5476_Fail:
+.l_andn_5476_Fail:
     li        x1, 5476
     la        x2, test_fail
     jalr      x0, x2
@@ -69809,14 +69809,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5512: (ref=x17) andc(rs1=x26/0x6CA936BD)(rs2=x2/0x6FD6A3DF) => (rd=x11/0x00291420)
-.l_andc_5512_Start:
+# Test 5512: (ref=x17) andn(rs1=x26/0x6CA936BD)(rs2=x2/0x6FD6A3DF) => (rd=x11/0x00291420)
+.l_andn_5512_Start:
     li       x26, 0x6CA936BD
     li        x2, 0x6FD6A3DF
-    andc     11 26 2
+    andn     11 26 2
     li       x17, 0x00291420
     beq      x11, x17, 1f
-.l_andc_5512_Fail:
+.l_andn_5512_Fail:
     li        x1, 5512
     la        x2, test_fail
     jalr      x0, x2
@@ -70265,14 +70265,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5548: (ref=x1) andc(rs1=x26/0x45FF784E)(rs2=x18/0x24BBD75E) => (rd=x6/0x41442800)
-.l_andc_5548_Start:
+# Test 5548: (ref=x1) andn(rs1=x26/0x45FF784E)(rs2=x18/0x24BBD75E) => (rd=x6/0x41442800)
+.l_andn_5548_Start:
     li       x26, 0x45FF784E
     li       x18, 0x24BBD75E
-    andc     6 26 18
+    andn     6 26 18
     li        x1, 0x41442800
     beq       x6,  x1, 1f
-.l_andc_5548_Fail:
+.l_andn_5548_Fail:
     li        x1, 5548
     la        x2, test_fail
     jalr      x0, x2
@@ -70721,14 +70721,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5584: (ref=x3) andc(rs1=x20/0x1538D053)(rs2=x1/0x4E57FD9B) => (rd=x9/0x11280040)
-.l_andc_5584_Start:
+# Test 5584: (ref=x3) andn(rs1=x20/0x1538D053)(rs2=x1/0x4E57FD9B) => (rd=x9/0x11280040)
+.l_andn_5584_Start:
     li       x20, 0x1538D053
     li        x1, 0x4E57FD9B
-    andc     9 20 1
+    andn     9 20 1
     li        x3, 0x11280040
     beq       x9,  x3, 1f
-.l_andc_5584_Fail:
+.l_andn_5584_Fail:
     li        x1, 5584
     la        x2, test_fail
     jalr      x0, x2
@@ -71177,14 +71177,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5620: (ref=x2) andc(rs1=x14/0x15E2BE2B)(rs2=x12/0x59545B4A) => (rd=x24/0x04A2A421)
-.l_andc_5620_Start:
+# Test 5620: (ref=x2) andn(rs1=x14/0x15E2BE2B)(rs2=x12/0x59545B4A) => (rd=x24/0x04A2A421)
+.l_andn_5620_Start:
     li       x14, 0x15E2BE2B
     li       x12, 0x59545B4A
-    andc     24 14 12
+    andn     24 14 12
     li        x2, 0x04A2A421
     beq      x24,  x2, 1f
-.l_andc_5620_Fail:
+.l_andn_5620_Fail:
     li        x1, 5620
     la        x2, test_fail
     jalr      x0, x2
@@ -71633,14 +71633,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5656: (ref=x15) andc(rs1=x23/0x6065BD15)(rs2=x22/0x1FD2DDC5) => (rd=x28/0x60252010)
-.l_andc_5656_Start:
+# Test 5656: (ref=x15) andn(rs1=x23/0x6065BD15)(rs2=x22/0x1FD2DDC5) => (rd=x28/0x60252010)
+.l_andn_5656_Start:
     li       x23, 0x6065BD15
     li       x22, 0x1FD2DDC5
-    andc     28 23 22
+    andn     28 23 22
     li       x15, 0x60252010
     beq      x28, x15, 1f
-.l_andc_5656_Fail:
+.l_andn_5656_Fail:
     li        x1, 5656
     la        x2, test_fail
     jalr      x0, x2
@@ -72089,14 +72089,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5692: (ref=x14) andc(rs1=x31/0x48E05170)(rs2=x2/0x5C436DC8) => (rd=x26/0x00A01030)
-.l_andc_5692_Start:
+# Test 5692: (ref=x14) andn(rs1=x31/0x48E05170)(rs2=x2/0x5C436DC8) => (rd=x26/0x00A01030)
+.l_andn_5692_Start:
     li       x31, 0x48E05170
     li        x2, 0x5C436DC8
-    andc     26 31 2
+    andn     26 31 2
     li       x14, 0x00A01030
     beq      x26, x14, 1f
-.l_andc_5692_Fail:
+.l_andn_5692_Fail:
     li        x1, 5692
     la        x2, test_fail
     jalr      x0, x2
@@ -72545,14 +72545,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5728: (ref=x27) andc(rs1=x21/0x0BAA517C)(rs2=x0/0x00000000) => (rd=x6/0x0BAA517C)
-.l_andc_5728_Start:
+# Test 5728: (ref=x27) andn(rs1=x21/0x0BAA517C)(rs2=x0/0x00000000) => (rd=x6/0x0BAA517C)
+.l_andn_5728_Start:
     li       x21, 0x0BAA517C
     li        x0, 0x00000000
-    andc     6 21 0
+    andn     6 21 0
     li       x27, 0x0BAA517C
     beq       x6, x27, 1f
-.l_andc_5728_Fail:
+.l_andn_5728_Fail:
     li        x1, 5728
     la        x2, test_fail
     jalr      x0, x2
@@ -73001,14 +73001,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5764: (ref=x1) andc(rs1=x13/0x3C76AC6C)(rs2=x20/0x3AE3E73E) => (rd=x26/0x04140840)
-.l_andc_5764_Start:
+# Test 5764: (ref=x1) andn(rs1=x13/0x3C76AC6C)(rs2=x20/0x3AE3E73E) => (rd=x26/0x04140840)
+.l_andn_5764_Start:
     li       x13, 0x3C76AC6C
     li       x20, 0x3AE3E73E
-    andc     26 13 20
+    andn     26 13 20
     li        x1, 0x04140840
     beq      x26,  x1, 1f
-.l_andc_5764_Fail:
+.l_andn_5764_Fail:
     li        x1, 5764
     la        x2, test_fail
     jalr      x0, x2
@@ -73457,14 +73457,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5800: (ref=x30) andc(rs1=x18/0x7069E29C)(rs2=x29/0x5E0AD528) => (rd=x19/0x20612294)
-.l_andc_5800_Start:
+# Test 5800: (ref=x30) andn(rs1=x18/0x7069E29C)(rs2=x29/0x5E0AD528) => (rd=x19/0x20612294)
+.l_andn_5800_Start:
     li       x18, 0x7069E29C
     li       x29, 0x5E0AD528
-    andc     19 18 29
+    andn     19 18 29
     li       x30, 0x20612294
     beq      x19, x30, 1f
-.l_andc_5800_Fail:
+.l_andn_5800_Fail:
     li        x1, 5800
     la        x2, test_fail
     jalr      x0, x2
@@ -73913,14 +73913,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5836: (ref=x19) andc(rs1=x10/0x6D982C1A)(rs2=x21/0x42EFFF93) => (rd=x10/0x2D100008)
-.l_andc_5836_Start:
+# Test 5836: (ref=x19) andn(rs1=x10/0x6D982C1A)(rs2=x21/0x42EFFF93) => (rd=x10/0x2D100008)
+.l_andn_5836_Start:
     li       x10, 0x6D982C1A
     li       x21, 0x42EFFF93
-    andc     10 10 21
+    andn     10 10 21
     li       x19, 0x2D100008
     beq      x10, x19, 1f
-.l_andc_5836_Fail:
+.l_andn_5836_Fail:
     li        x1, 5836
     la        x2, test_fail
     jalr      x0, x2
@@ -74369,14 +74369,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5872: (ref=x2) andc(rs1=x29/0x60B27DF2)(rs2=x27/0x7BE1AF1B) => (rd=x21/0x001250E0)
-.l_andc_5872_Start:
+# Test 5872: (ref=x2) andn(rs1=x29/0x60B27DF2)(rs2=x27/0x7BE1AF1B) => (rd=x21/0x001250E0)
+.l_andn_5872_Start:
     li       x29, 0x60B27DF2
     li       x27, 0x7BE1AF1B
-    andc     21 29 27
+    andn     21 29 27
     li        x2, 0x001250E0
     beq      x21,  x2, 1f
-.l_andc_5872_Fail:
+.l_andn_5872_Fail:
     li        x1, 5872
     la        x2, test_fail
     jalr      x0, x2
@@ -74825,14 +74825,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5908: (ref=x13) andc(rs1=x30/0x7E29E1E0)(rs2=x5/0x4D7C027D) => (rd=x6/0x3201E180)
-.l_andc_5908_Start:
+# Test 5908: (ref=x13) andn(rs1=x30/0x7E29E1E0)(rs2=x5/0x4D7C027D) => (rd=x6/0x3201E180)
+.l_andn_5908_Start:
     li       x30, 0x7E29E1E0
     li        x5, 0x4D7C027D
-    andc     6 30 5
+    andn     6 30 5
     li       x13, 0x3201E180
     beq       x6, x13, 1f
-.l_andc_5908_Fail:
+.l_andn_5908_Fail:
     li        x1, 5908
     la        x2, test_fail
     jalr      x0, x2
@@ -75281,14 +75281,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5944: (ref=x14) andc(rs1=x1/0x799780FA)(rs2=x22/0x297D9F91) => (rd=x10/0x5082006A)
-.l_andc_5944_Start:
+# Test 5944: (ref=x14) andn(rs1=x1/0x799780FA)(rs2=x22/0x297D9F91) => (rd=x10/0x5082006A)
+.l_andn_5944_Start:
     li        x1, 0x799780FA
     li       x22, 0x297D9F91
-    andc     10 1 22
+    andn     10 1 22
     li       x14, 0x5082006A
     beq      x10, x14, 1f
-.l_andc_5944_Fail:
+.l_andn_5944_Fail:
     li        x1, 5944
     la        x2, test_fail
     jalr      x0, x2
@@ -75737,14 +75737,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 5980: (ref=x8) andc(rs1=x10/0x725B4F97)(rs2=x9/0x6A8A6519) => (rd=x24/0x10510A86)
-.l_andc_5980_Start:
+# Test 5980: (ref=x8) andn(rs1=x10/0x725B4F97)(rs2=x9/0x6A8A6519) => (rd=x24/0x10510A86)
+.l_andn_5980_Start:
     li       x10, 0x725B4F97
     li        x9, 0x6A8A6519
-    andc     24 10 9
+    andn     24 10 9
     li        x8, 0x10510A86
     beq      x24,  x8, 1f
-.l_andc_5980_Fail:
+.l_andn_5980_Fail:
     li        x1, 5980
     la        x2, test_fail
     jalr      x0, x2
@@ -76193,14 +76193,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6016: (ref=x15) andc(rs1=x23/0x051F6C9A)(rs2=x26/0x71B9D5E8) => (rd=x28/0x04062812)
-.l_andc_6016_Start:
+# Test 6016: (ref=x15) andn(rs1=x23/0x051F6C9A)(rs2=x26/0x71B9D5E8) => (rd=x28/0x04062812)
+.l_andn_6016_Start:
     li       x23, 0x051F6C9A
     li       x26, 0x71B9D5E8
-    andc     28 23 26
+    andn     28 23 26
     li       x15, 0x04062812
     beq      x28, x15, 1f
-.l_andc_6016_Fail:
+.l_andn_6016_Fail:
     li        x1, 6016
     la        x2, test_fail
     jalr      x0, x2
@@ -76649,14 +76649,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6052: (ref=x20) andc(rs1=x8/0x29AE91CC)(rs2=x21/0x5CC3B7AA) => (rd=x9/0x212C0044)
-.l_andc_6052_Start:
+# Test 6052: (ref=x20) andn(rs1=x8/0x29AE91CC)(rs2=x21/0x5CC3B7AA) => (rd=x9/0x212C0044)
+.l_andn_6052_Start:
     li        x8, 0x29AE91CC
     li       x21, 0x5CC3B7AA
-    andc     9 8 21
+    andn     9 8 21
     li       x20, 0x212C0044
     beq       x9, x20, 1f
-.l_andc_6052_Fail:
+.l_andn_6052_Fail:
     li        x1, 6052
     la        x2, test_fail
     jalr      x0, x2
@@ -77105,14 +77105,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6088: (ref=x3) andc(rs1=x17/0x183EAC41)(rs2=x31/0x6D2A1E35) => (rd=x20/0x1014A040)
-.l_andc_6088_Start:
+# Test 6088: (ref=x3) andn(rs1=x17/0x183EAC41)(rs2=x31/0x6D2A1E35) => (rd=x20/0x1014A040)
+.l_andn_6088_Start:
     li       x17, 0x183EAC41
     li       x31, 0x6D2A1E35
-    andc     20 17 31
+    andn     20 17 31
     li        x3, 0x1014A040
     beq      x20,  x3, 1f
-.l_andc_6088_Fail:
+.l_andn_6088_Fail:
     li        x1, 6088
     la        x2, test_fail
     jalr      x0, x2
@@ -77561,14 +77561,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6124: (ref=x12) andc(rs1=x6/0x7587B0F8)(rs2=x9/0x31F8DA39) => (rd=x27/0x440720C0)
-.l_andc_6124_Start:
+# Test 6124: (ref=x12) andn(rs1=x6/0x7587B0F8)(rs2=x9/0x31F8DA39) => (rd=x27/0x440720C0)
+.l_andn_6124_Start:
     li        x6, 0x7587B0F8
     li        x9, 0x31F8DA39
-    andc     27 6 9
+    andn     27 6 9
     li       x12, 0x440720C0
     beq      x27, x12, 1f
-.l_andc_6124_Fail:
+.l_andn_6124_Fail:
     li        x1, 6124
     la        x2, test_fail
     jalr      x0, x2
@@ -78017,14 +78017,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6160: (ref=x16) andc(rs1=x22/0x0803CA42)(rs2=x21/0x2B9715DF) => (rd=x4/0x0000CA00)
-.l_andc_6160_Start:
+# Test 6160: (ref=x16) andn(rs1=x22/0x0803CA42)(rs2=x21/0x2B9715DF) => (rd=x4/0x0000CA00)
+.l_andn_6160_Start:
     li       x22, 0x0803CA42
     li       x21, 0x2B9715DF
-    andc     4 22 21
+    andn     4 22 21
     li       x16, 0x0000CA00
     beq       x4, x16, 1f
-.l_andc_6160_Fail:
+.l_andn_6160_Fail:
     li        x1, 6160
     la        x2, test_fail
     jalr      x0, x2
@@ -78473,14 +78473,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6196: (ref=x18) andc(rs1=x17/0x03389214)(rs2=x31/0x006540B8) => (rd=x29/0x03189204)
-.l_andc_6196_Start:
+# Test 6196: (ref=x18) andn(rs1=x17/0x03389214)(rs2=x31/0x006540B8) => (rd=x29/0x03189204)
+.l_andn_6196_Start:
     li       x17, 0x03389214
     li       x31, 0x006540B8
-    andc     29 17 31
+    andn     29 17 31
     li       x18, 0x03189204
     beq      x29, x18, 1f
-.l_andc_6196_Fail:
+.l_andn_6196_Fail:
     li        x1, 6196
     la        x2, test_fail
     jalr      x0, x2
@@ -78929,14 +78929,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6232: (ref=x23) andc(rs1=x17/0x3FF66F5A)(rs2=x18/0x75CF51D5) => (rd=x18/0x0A302E0A)
-.l_andc_6232_Start:
+# Test 6232: (ref=x23) andn(rs1=x17/0x3FF66F5A)(rs2=x18/0x75CF51D5) => (rd=x18/0x0A302E0A)
+.l_andn_6232_Start:
     li       x17, 0x3FF66F5A
     li       x18, 0x75CF51D5
-    andc     18 17 18
+    andn     18 17 18
     li       x23, 0x0A302E0A
     beq      x18, x23, 1f
-.l_andc_6232_Fail:
+.l_andn_6232_Fail:
     li        x1, 6232
     la        x2, test_fail
     jalr      x0, x2
@@ -79385,14 +79385,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6268: (ref=x28) andc(rs1=x5/0x06EB7500)(rs2=x18/0x60CBE323) => (rd=x26/0x06201400)
-.l_andc_6268_Start:
+# Test 6268: (ref=x28) andn(rs1=x5/0x06EB7500)(rs2=x18/0x60CBE323) => (rd=x26/0x06201400)
+.l_andn_6268_Start:
     li        x5, 0x06EB7500
     li       x18, 0x60CBE323
-    andc     26 5 18
+    andn     26 5 18
     li       x28, 0x06201400
     beq      x26, x28, 1f
-.l_andc_6268_Fail:
+.l_andn_6268_Fail:
     li        x1, 6268
     la        x2, test_fail
     jalr      x0, x2
@@ -79841,14 +79841,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6304: (ref=x31) andc(rs1=x17/0x74D39313)(rs2=x27/0x104E514E) => (rd=x24/0x64918211)
-.l_andc_6304_Start:
+# Test 6304: (ref=x31) andn(rs1=x17/0x74D39313)(rs2=x27/0x104E514E) => (rd=x24/0x64918211)
+.l_andn_6304_Start:
     li       x17, 0x74D39313
     li       x27, 0x104E514E
-    andc     24 17 27
+    andn     24 17 27
     li       x31, 0x64918211
     beq      x24, x31, 1f
-.l_andc_6304_Fail:
+.l_andn_6304_Fail:
     li        x1, 6304
     la        x2, test_fail
     jalr      x0, x2
@@ -80297,14 +80297,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6340: (ref=x5) andc(rs1=x8/0x12D2AFCA)(rs2=x9/0x598C6379) => (rd=x19/0x02528C82)
-.l_andc_6340_Start:
+# Test 6340: (ref=x5) andn(rs1=x8/0x12D2AFCA)(rs2=x9/0x598C6379) => (rd=x19/0x02528C82)
+.l_andn_6340_Start:
     li        x8, 0x12D2AFCA
     li        x9, 0x598C6379
-    andc     19 8 9
+    andn     19 8 9
     li        x5, 0x02528C82
     beq      x19,  x5, 1f
-.l_andc_6340_Fail:
+.l_andn_6340_Fail:
     li        x1, 6340
     la        x2, test_fail
     jalr      x0, x2
@@ -80753,14 +80753,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6376: (ref=x5) andc(rs1=x20/0x6CE3C344)(rs2=x6/0x46959E05) => (rd=x12/0x28624140)
-.l_andc_6376_Start:
+# Test 6376: (ref=x5) andn(rs1=x20/0x6CE3C344)(rs2=x6/0x46959E05) => (rd=x12/0x28624140)
+.l_andn_6376_Start:
     li       x20, 0x6CE3C344
     li        x6, 0x46959E05
-    andc     12 20 6
+    andn     12 20 6
     li        x5, 0x28624140
     beq      x12,  x5, 1f
-.l_andc_6376_Fail:
+.l_andn_6376_Fail:
     li        x1, 6376
     la        x2, test_fail
     jalr      x0, x2
@@ -81209,14 +81209,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6412: (ref=x8) andc(rs1=x6/0x3F14BD13)(rs2=x18/0x153A8EFB) => (rd=x23/0x2A043100)
-.l_andc_6412_Start:
+# Test 6412: (ref=x8) andn(rs1=x6/0x3F14BD13)(rs2=x18/0x153A8EFB) => (rd=x23/0x2A043100)
+.l_andn_6412_Start:
     li        x6, 0x3F14BD13
     li       x18, 0x153A8EFB
-    andc     23 6 18
+    andn     23 6 18
     li        x8, 0x2A043100
     beq      x23,  x8, 1f
-.l_andc_6412_Fail:
+.l_andn_6412_Fail:
     li        x1, 6412
     la        x2, test_fail
     jalr      x0, x2
@@ -81665,14 +81665,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6448: (ref=x11) andc(rs1=x9/0x3DC563A8)(rs2=x21/0x0CA7484E) => (rd=x15/0x314023A0)
-.l_andc_6448_Start:
+# Test 6448: (ref=x11) andn(rs1=x9/0x3DC563A8)(rs2=x21/0x0CA7484E) => (rd=x15/0x314023A0)
+.l_andn_6448_Start:
     li        x9, 0x3DC563A8
     li       x21, 0x0CA7484E
-    andc     15 9 21
+    andn     15 9 21
     li       x11, 0x314023A0
     beq      x15, x11, 1f
-.l_andc_6448_Fail:
+.l_andn_6448_Fail:
     li        x1, 6448
     la        x2, test_fail
     jalr      x0, x2
@@ -82121,14 +82121,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6484: (ref=x21) andc(rs1=x3/0x710ED204)(rs2=x23/0x755DDEB0) => (rd=x20/0x00020004)
-.l_andc_6484_Start:
+# Test 6484: (ref=x21) andn(rs1=x3/0x710ED204)(rs2=x23/0x755DDEB0) => (rd=x20/0x00020004)
+.l_andn_6484_Start:
     li        x3, 0x710ED204
     li       x23, 0x755DDEB0
-    andc     20 3 23
+    andn     20 3 23
     li       x21, 0x00020004
     beq      x20, x21, 1f
-.l_andc_6484_Fail:
+.l_andn_6484_Fail:
     li        x1, 6484
     la        x2, test_fail
     jalr      x0, x2
@@ -82577,14 +82577,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6520: (ref=x31) andc(rs1=x17/0x0EEC397C)(rs2=x0/0x00000000) => (rd=x15/0x0EEC397C)
-.l_andc_6520_Start:
+# Test 6520: (ref=x31) andn(rs1=x17/0x0EEC397C)(rs2=x0/0x00000000) => (rd=x15/0x0EEC397C)
+.l_andn_6520_Start:
     li       x17, 0x0EEC397C
     li        x0, 0x00000000
-    andc     15 17 0
+    andn     15 17 0
     li       x31, 0x0EEC397C
     beq      x15, x31, 1f
-.l_andc_6520_Fail:
+.l_andn_6520_Fail:
     li        x1, 6520
     la        x2, test_fail
     jalr      x0, x2
@@ -83033,14 +83033,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6556: (ref=x23) andc(rs1=x27/0x21343E5E)(rs2=x26/0x4F45F476) => (rd=x19/0x20300A08)
-.l_andc_6556_Start:
+# Test 6556: (ref=x23) andn(rs1=x27/0x21343E5E)(rs2=x26/0x4F45F476) => (rd=x19/0x20300A08)
+.l_andn_6556_Start:
     li       x27, 0x21343E5E
     li       x26, 0x4F45F476
-    andc     19 27 26
+    andn     19 27 26
     li       x23, 0x20300A08
     beq      x19, x23, 1f
-.l_andc_6556_Fail:
+.l_andn_6556_Fail:
     li        x1, 6556
     la        x2, test_fail
     jalr      x0, x2
@@ -83489,14 +83489,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6592: (ref=x29) andc(rs1=x15/0x5E9B7205)(rs2=x11/0x2B688BC8) => (rd=x30/0x54937005)
-.l_andc_6592_Start:
+# Test 6592: (ref=x29) andn(rs1=x15/0x5E9B7205)(rs2=x11/0x2B688BC8) => (rd=x30/0x54937005)
+.l_andn_6592_Start:
     li       x15, 0x5E9B7205
     li       x11, 0x2B688BC8
-    andc     30 15 11
+    andn     30 15 11
     li       x29, 0x54937005
     beq      x30, x29, 1f
-.l_andc_6592_Fail:
+.l_andn_6592_Fail:
     li        x1, 6592
     la        x2, test_fail
     jalr      x0, x2
@@ -83945,14 +83945,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6628: (ref=x31) andc(rs1=x6/0x01709BF9)(rs2=x7/0x55161C6B) => (rd=x6/0x00608390)
-.l_andc_6628_Start:
+# Test 6628: (ref=x31) andn(rs1=x6/0x01709BF9)(rs2=x7/0x55161C6B) => (rd=x6/0x00608390)
+.l_andn_6628_Start:
     li        x6, 0x01709BF9
     li        x7, 0x55161C6B
-    andc     6 6 7
+    andn     6 6 7
     li       x31, 0x00608390
     beq       x6, x31, 1f
-.l_andc_6628_Fail:
+.l_andn_6628_Fail:
     li        x1, 6628
     la        x2, test_fail
     jalr      x0, x2
@@ -84401,14 +84401,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6664: (ref=x30) andc(rs1=x28/0x4DA0174E)(rs2=x4/0x1B933A22) => (rd=x18/0x4420054C)
-.l_andc_6664_Start:
+# Test 6664: (ref=x30) andn(rs1=x28/0x4DA0174E)(rs2=x4/0x1B933A22) => (rd=x18/0x4420054C)
+.l_andn_6664_Start:
     li       x28, 0x4DA0174E
     li        x4, 0x1B933A22
-    andc     18 28 4
+    andn     18 28 4
     li       x30, 0x4420054C
     beq      x18, x30, 1f
-.l_andc_6664_Fail:
+.l_andn_6664_Fail:
     li        x1, 6664
     la        x2, test_fail
     jalr      x0, x2
@@ -84857,14 +84857,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6700: (ref=x5) andc(rs1=x26/0x5BF3B3E5)(rs2=x26/0x5BF3B3E5) => (rd=x23/0x00000000)
-.l_andc_6700_Start:
+# Test 6700: (ref=x5) andn(rs1=x26/0x5BF3B3E5)(rs2=x26/0x5BF3B3E5) => (rd=x23/0x00000000)
+.l_andn_6700_Start:
     li       x26, 0x5BF3B3E5
     li       x26, 0x5BF3B3E5
-    andc     23 26 26
+    andn     23 26 26
     li        x5, 0x00000000
     beq      x23,  x5, 1f
-.l_andc_6700_Fail:
+.l_andn_6700_Fail:
     li        x1, 6700
     la        x2, test_fail
     jalr      x0, x2
@@ -85313,14 +85313,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6736: (ref=x1) andc(rs1=x11/0x57818AB0)(rs2=x26/0x72C22199) => (rd=x2/0x05018A20)
-.l_andc_6736_Start:
+# Test 6736: (ref=x1) andn(rs1=x11/0x57818AB0)(rs2=x26/0x72C22199) => (rd=x2/0x05018A20)
+.l_andn_6736_Start:
     li       x11, 0x57818AB0
     li       x26, 0x72C22199
-    andc     2 11 26
+    andn     2 11 26
     li        x1, 0x05018A20
     beq       x2,  x1, 1f
-.l_andc_6736_Fail:
+.l_andn_6736_Fail:
     li        x1, 6736
     la        x2, test_fail
     jalr      x0, x2
@@ -85769,14 +85769,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6772: (ref=x23) andc(rs1=x15/0x722966B4)(rs2=x19/0x5FB23C73) => (rd=x22/0x20094284)
-.l_andc_6772_Start:
+# Test 6772: (ref=x23) andn(rs1=x15/0x722966B4)(rs2=x19/0x5FB23C73) => (rd=x22/0x20094284)
+.l_andn_6772_Start:
     li       x15, 0x722966B4
     li       x19, 0x5FB23C73
-    andc     22 15 19
+    andn     22 15 19
     li       x23, 0x20094284
     beq      x22, x23, 1f
-.l_andc_6772_Fail:
+.l_andn_6772_Fail:
     li        x1, 6772
     la        x2, test_fail
     jalr      x0, x2
@@ -86225,14 +86225,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6808: (ref=x14) andc(rs1=x26/0x00E35CD3)(rs2=x18/0x17D478C3) => (rd=x0/0x00000000)
-.l_andc_6808_Start:
+# Test 6808: (ref=x14) andn(rs1=x26/0x00E35CD3)(rs2=x18/0x17D478C3) => (rd=x0/0x00000000)
+.l_andn_6808_Start:
     li       x26, 0x00E35CD3
     li       x18, 0x17D478C3
-    andc     0 26 18
+    andn     0 26 18
     li       x14, 0x00000000
     beq       x0, x14, 1f
-.l_andc_6808_Fail:
+.l_andn_6808_Fail:
     li        x1, 6808
     la        x2, test_fail
     jalr      x0, x2
@@ -86681,14 +86681,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6844: (ref=x28) andc(rs1=x27/0x312AAA84)(rs2=x5/0x61930EFA) => (rd=x23/0x1028A004)
-.l_andc_6844_Start:
+# Test 6844: (ref=x28) andn(rs1=x27/0x312AAA84)(rs2=x5/0x61930EFA) => (rd=x23/0x1028A004)
+.l_andn_6844_Start:
     li       x27, 0x312AAA84
     li        x5, 0x61930EFA
-    andc     23 27 5
+    andn     23 27 5
     li       x28, 0x1028A004
     beq      x23, x28, 1f
-.l_andc_6844_Fail:
+.l_andn_6844_Fail:
     li        x1, 6844
     la        x2, test_fail
     jalr      x0, x2
@@ -87137,14 +87137,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6880: (ref=x11) andc(rs1=x5/0x15C39A3F)(rs2=x16/0x6816B204) => (rd=x8/0x15C1083B)
-.l_andc_6880_Start:
+# Test 6880: (ref=x11) andn(rs1=x5/0x15C39A3F)(rs2=x16/0x6816B204) => (rd=x8/0x15C1083B)
+.l_andn_6880_Start:
     li        x5, 0x15C39A3F
     li       x16, 0x6816B204
-    andc     8 5 16
+    andn     8 5 16
     li       x11, 0x15C1083B
     beq       x8, x11, 1f
-.l_andc_6880_Fail:
+.l_andn_6880_Fail:
     li        x1, 6880
     la        x2, test_fail
     jalr      x0, x2
@@ -87593,14 +87593,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6916: (ref=x10) andc(rs1=x21/0x65B05349)(rs2=x0/0x00000000) => (rd=x22/0x65B05349)
-.l_andc_6916_Start:
+# Test 6916: (ref=x10) andn(rs1=x21/0x65B05349)(rs2=x0/0x00000000) => (rd=x22/0x65B05349)
+.l_andn_6916_Start:
     li       x21, 0x65B05349
     li        x0, 0x00000000
-    andc     22 21 0
+    andn     22 21 0
     li       x10, 0x65B05349
     beq      x22, x10, 1f
-.l_andc_6916_Fail:
+.l_andn_6916_Fail:
     li        x1, 6916
     la        x2, test_fail
     jalr      x0, x2
@@ -88049,14 +88049,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6952: (ref=x14) andc(rs1=x10/0x65386687)(rs2=x3/0x1F12E926) => (rd=x12/0x60280681)
-.l_andc_6952_Start:
+# Test 6952: (ref=x14) andn(rs1=x10/0x65386687)(rs2=x3/0x1F12E926) => (rd=x12/0x60280681)
+.l_andn_6952_Start:
     li       x10, 0x65386687
     li        x3, 0x1F12E926
-    andc     12 10 3
+    andn     12 10 3
     li       x14, 0x60280681
     beq      x12, x14, 1f
-.l_andc_6952_Fail:
+.l_andn_6952_Fail:
     li        x1, 6952
     la        x2, test_fail
     jalr      x0, x2
@@ -88505,14 +88505,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 6988: (ref=x18) andc(rs1=x7/0x2F0F8B08)(rs2=x31/0x44763D5A) => (rd=x8/0x2B098200)
-.l_andc_6988_Start:
+# Test 6988: (ref=x18) andn(rs1=x7/0x2F0F8B08)(rs2=x31/0x44763D5A) => (rd=x8/0x2B098200)
+.l_andn_6988_Start:
     li        x7, 0x2F0F8B08
     li       x31, 0x44763D5A
-    andc     8 7 31
+    andn     8 7 31
     li       x18, 0x2B098200
     beq       x8, x18, 1f
-.l_andc_6988_Fail:
+.l_andn_6988_Fail:
     li        x1, 6988
     la        x2, test_fail
     jalr      x0, x2
@@ -88961,14 +88961,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7024: (ref=x31) andc(rs1=x2/0x3BDF15F3)(rs2=x30/0x6E06AD7C) => (rd=x27/0x11D91083)
-.l_andc_7024_Start:
+# Test 7024: (ref=x31) andn(rs1=x2/0x3BDF15F3)(rs2=x30/0x6E06AD7C) => (rd=x27/0x11D91083)
+.l_andn_7024_Start:
     li        x2, 0x3BDF15F3
     li       x30, 0x6E06AD7C
-    andc     27 2 30
+    andn     27 2 30
     li       x31, 0x11D91083
     beq      x27, x31, 1f
-.l_andc_7024_Fail:
+.l_andn_7024_Fail:
     li        x1, 7024
     la        x2, test_fail
     jalr      x0, x2
@@ -89417,14 +89417,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7060: (ref=x19) andc(rs1=x13/0x7CE82BB2)(rs2=x27/0x15ED11DB) => (rd=x9/0x68002A20)
-.l_andc_7060_Start:
+# Test 7060: (ref=x19) andn(rs1=x13/0x7CE82BB2)(rs2=x27/0x15ED11DB) => (rd=x9/0x68002A20)
+.l_andn_7060_Start:
     li       x13, 0x7CE82BB2
     li       x27, 0x15ED11DB
-    andc     9 13 27
+    andn     9 13 27
     li       x19, 0x68002A20
     beq       x9, x19, 1f
-.l_andc_7060_Fail:
+.l_andn_7060_Fail:
     li        x1, 7060
     la        x2, test_fail
     jalr      x0, x2
@@ -89873,14 +89873,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7096: (ref=x8) andc(rs1=x19/0x72F58271)(rs2=x14/0x5F37965E) => (rd=x10/0x20C00021)
-.l_andc_7096_Start:
+# Test 7096: (ref=x8) andn(rs1=x19/0x72F58271)(rs2=x14/0x5F37965E) => (rd=x10/0x20C00021)
+.l_andn_7096_Start:
     li       x19, 0x72F58271
     li       x14, 0x5F37965E
-    andc     10 19 14
+    andn     10 19 14
     li        x8, 0x20C00021
     beq      x10,  x8, 1f
-.l_andc_7096_Fail:
+.l_andn_7096_Fail:
     li        x1, 7096
     la        x2, test_fail
     jalr      x0, x2
@@ -90329,14 +90329,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7132: (ref=x16) andc(rs1=x26/0x2CAC8267)(rs2=x21/0x6BA8EF79) => (rd=x12/0x04040006)
-.l_andc_7132_Start:
+# Test 7132: (ref=x16) andn(rs1=x26/0x2CAC8267)(rs2=x21/0x6BA8EF79) => (rd=x12/0x04040006)
+.l_andn_7132_Start:
     li       x26, 0x2CAC8267
     li       x21, 0x6BA8EF79
-    andc     12 26 21
+    andn     12 26 21
     li       x16, 0x04040006
     beq      x12, x16, 1f
-.l_andc_7132_Fail:
+.l_andn_7132_Fail:
     li        x1, 7132
     la        x2, test_fail
     jalr      x0, x2
@@ -90785,14 +90785,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7168: (ref=x17) andc(rs1=x28/0x6CA0B8DD)(rs2=x8/0x7D89BC10) => (rd=x20/0x002000CD)
-.l_andc_7168_Start:
+# Test 7168: (ref=x17) andn(rs1=x28/0x6CA0B8DD)(rs2=x8/0x7D89BC10) => (rd=x20/0x002000CD)
+.l_andn_7168_Start:
     li       x28, 0x6CA0B8DD
     li        x8, 0x7D89BC10
-    andc     20 28 8
+    andn     20 28 8
     li       x17, 0x002000CD
     beq      x20, x17, 1f
-.l_andc_7168_Fail:
+.l_andn_7168_Fail:
     li        x1, 7168
     la        x2, test_fail
     jalr      x0, x2
@@ -91241,14 +91241,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7204: (ref=x4) andc(rs1=x23/0x19312967)(rs2=x14/0x4C2E8C4D) => (rd=x20/0x11112122)
-.l_andc_7204_Start:
+# Test 7204: (ref=x4) andn(rs1=x23/0x19312967)(rs2=x14/0x4C2E8C4D) => (rd=x20/0x11112122)
+.l_andn_7204_Start:
     li       x23, 0x19312967
     li       x14, 0x4C2E8C4D
-    andc     20 23 14
+    andn     20 23 14
     li        x4, 0x11112122
     beq      x20,  x4, 1f
-.l_andc_7204_Fail:
+.l_andn_7204_Fail:
     li        x1, 7204
     la        x2, test_fail
     jalr      x0, x2
@@ -91697,14 +91697,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7240: (ref=x25) andc(rs1=x29/0x3F33DC6B)(rs2=x5/0x76D265DB) => (rd=x9/0x09219820)
-.l_andc_7240_Start:
+# Test 7240: (ref=x25) andn(rs1=x29/0x3F33DC6B)(rs2=x5/0x76D265DB) => (rd=x9/0x09219820)
+.l_andn_7240_Start:
     li       x29, 0x3F33DC6B
     li        x5, 0x76D265DB
-    andc     9 29 5
+    andn     9 29 5
     li       x25, 0x09219820
     beq       x9, x25, 1f
-.l_andc_7240_Fail:
+.l_andn_7240_Fail:
     li        x1, 7240
     la        x2, test_fail
     jalr      x0, x2
@@ -92153,14 +92153,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7276: (ref=x10) andc(rs1=x11/0x626A88D2)(rs2=x25/0x5178F575) => (rd=x9/0x22020882)
-.l_andc_7276_Start:
+# Test 7276: (ref=x10) andn(rs1=x11/0x626A88D2)(rs2=x25/0x5178F575) => (rd=x9/0x22020882)
+.l_andn_7276_Start:
     li       x11, 0x626A88D2
     li       x25, 0x5178F575
-    andc     9 11 25
+    andn     9 11 25
     li       x10, 0x22020882
     beq       x9, x10, 1f
-.l_andc_7276_Fail:
+.l_andn_7276_Fail:
     li        x1, 7276
     la        x2, test_fail
     jalr      x0, x2
@@ -92609,14 +92609,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7312: (ref=x28) andc(rs1=x6/0x5363FD2A)(rs2=x17/0x08061785) => (rd=x30/0x5361E82A)
-.l_andc_7312_Start:
+# Test 7312: (ref=x28) andn(rs1=x6/0x5363FD2A)(rs2=x17/0x08061785) => (rd=x30/0x5361E82A)
+.l_andn_7312_Start:
     li        x6, 0x5363FD2A
     li       x17, 0x08061785
-    andc     30 6 17
+    andn     30 6 17
     li       x28, 0x5361E82A
     beq      x30, x28, 1f
-.l_andc_7312_Fail:
+.l_andn_7312_Fail:
     li        x1, 7312
     la        x2, test_fail
     jalr      x0, x2
@@ -93065,14 +93065,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7348: (ref=x9) andc(rs1=x0/0x00000000)(rs2=x3/0x5AA05CF7) => (rd=x1/0x00000000)
-.l_andc_7348_Start:
+# Test 7348: (ref=x9) andn(rs1=x0/0x00000000)(rs2=x3/0x5AA05CF7) => (rd=x1/0x00000000)
+.l_andn_7348_Start:
     li        x0, 0x00000000
     li        x3, 0x5AA05CF7
-    andc     1 0 3
+    andn     1 0 3
     li        x9, 0x00000000
     beq       x1,  x9, 1f
-.l_andc_7348_Fail:
+.l_andn_7348_Fail:
     li        x1, 7348
     la        x2, test_fail
     jalr      x0, x2
@@ -93521,14 +93521,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7384: (ref=x16) andc(rs1=x25/0x2606F933)(rs2=x28/0x1F691C9F) => (rd=x22/0x2006E120)
-.l_andc_7384_Start:
+# Test 7384: (ref=x16) andn(rs1=x25/0x2606F933)(rs2=x28/0x1F691C9F) => (rd=x22/0x2006E120)
+.l_andn_7384_Start:
     li       x25, 0x2606F933
     li       x28, 0x1F691C9F
-    andc     22 25 28
+    andn     22 25 28
     li       x16, 0x2006E120
     beq      x22, x16, 1f
-.l_andc_7384_Fail:
+.l_andn_7384_Fail:
     li        x1, 7384
     la        x2, test_fail
     jalr      x0, x2
@@ -93977,14 +93977,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7420: (ref=x23) andc(rs1=x26/0x6CE7CD68)(rs2=x13/0x29265B16) => (rd=x25/0x44C18468)
-.l_andc_7420_Start:
+# Test 7420: (ref=x23) andn(rs1=x26/0x6CE7CD68)(rs2=x13/0x29265B16) => (rd=x25/0x44C18468)
+.l_andn_7420_Start:
     li       x26, 0x6CE7CD68
     li       x13, 0x29265B16
-    andc     25 26 13
+    andn     25 26 13
     li       x23, 0x44C18468
     beq      x25, x23, 1f
-.l_andc_7420_Fail:
+.l_andn_7420_Fail:
     li        x1, 7420
     la        x2, test_fail
     jalr      x0, x2
@@ -94433,14 +94433,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7456: (ref=x16) andc(rs1=x2/0x57874F91)(rs2=x22/0x5EC272D4) => (rd=x25/0x01050D01)
-.l_andc_7456_Start:
+# Test 7456: (ref=x16) andn(rs1=x2/0x57874F91)(rs2=x22/0x5EC272D4) => (rd=x25/0x01050D01)
+.l_andn_7456_Start:
     li        x2, 0x57874F91
     li       x22, 0x5EC272D4
-    andc     25 2 22
+    andn     25 2 22
     li       x16, 0x01050D01
     beq      x25, x16, 1f
-.l_andc_7456_Fail:
+.l_andn_7456_Fail:
     li        x1, 7456
     la        x2, test_fail
     jalr      x0, x2
@@ -94889,14 +94889,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7492: (ref=x13) andc(rs1=x28/0x72DEBDC9)(rs2=x12/0x0AAAFF5D) => (rd=x27/0x70540080)
-.l_andc_7492_Start:
+# Test 7492: (ref=x13) andn(rs1=x28/0x72DEBDC9)(rs2=x12/0x0AAAFF5D) => (rd=x27/0x70540080)
+.l_andn_7492_Start:
     li       x28, 0x72DEBDC9
     li       x12, 0x0AAAFF5D
-    andc     27 28 12
+    andn     27 28 12
     li       x13, 0x70540080
     beq      x27, x13, 1f
-.l_andc_7492_Fail:
+.l_andn_7492_Fail:
     li        x1, 7492
     la        x2, test_fail
     jalr      x0, x2
@@ -95345,14 +95345,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7528: (ref=x8) andc(rs1=x2/0x5175A1D3)(rs2=x10/0x514C43C7) => (rd=x29/0x0031A010)
-.l_andc_7528_Start:
+# Test 7528: (ref=x8) andn(rs1=x2/0x5175A1D3)(rs2=x10/0x514C43C7) => (rd=x29/0x0031A010)
+.l_andn_7528_Start:
     li        x2, 0x5175A1D3
     li       x10, 0x514C43C7
-    andc     29 2 10
+    andn     29 2 10
     li        x8, 0x0031A010
     beq      x29,  x8, 1f
-.l_andc_7528_Fail:
+.l_andn_7528_Fail:
     li        x1, 7528
     la        x2, test_fail
     jalr      x0, x2
@@ -95801,14 +95801,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7564: (ref=x3) andc(rs1=x5/0x2675D109)(rs2=x26/0x4789D115) => (rd=x4/0x20740008)
-.l_andc_7564_Start:
+# Test 7564: (ref=x3) andn(rs1=x5/0x2675D109)(rs2=x26/0x4789D115) => (rd=x4/0x20740008)
+.l_andn_7564_Start:
     li        x5, 0x2675D109
     li       x26, 0x4789D115
-    andc     4 5 26
+    andn     4 5 26
     li        x3, 0x20740008
     beq       x4,  x3, 1f
-.l_andc_7564_Fail:
+.l_andn_7564_Fail:
     li        x1, 7564
     la        x2, test_fail
     jalr      x0, x2
@@ -96257,14 +96257,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7600: (ref=x20) andc(rs1=x16/0x4E68B028)(rs2=x12/0x378E6903) => (rd=x0/0x00000000)
-.l_andc_7600_Start:
+# Test 7600: (ref=x20) andn(rs1=x16/0x4E68B028)(rs2=x12/0x378E6903) => (rd=x0/0x00000000)
+.l_andn_7600_Start:
     li       x16, 0x4E68B028
     li       x12, 0x378E6903
-    andc     0 16 12
+    andn     0 16 12
     li       x20, 0x00000000
     beq       x0, x20, 1f
-.l_andc_7600_Fail:
+.l_andn_7600_Fail:
     li        x1, 7600
     la        x2, test_fail
     jalr      x0, x2
@@ -96713,14 +96713,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7636: (ref=x10) andc(rs1=x30/0x351AF659)(rs2=x12/0x3100F35E) => (rd=x23/0x041A0401)
-.l_andc_7636_Start:
+# Test 7636: (ref=x10) andn(rs1=x30/0x351AF659)(rs2=x12/0x3100F35E) => (rd=x23/0x041A0401)
+.l_andn_7636_Start:
     li       x30, 0x351AF659
     li       x12, 0x3100F35E
-    andc     23 30 12
+    andn     23 30 12
     li       x10, 0x041A0401
     beq      x23, x10, 1f
-.l_andc_7636_Fail:
+.l_andn_7636_Fail:
     li        x1, 7636
     la        x2, test_fail
     jalr      x0, x2
@@ -97169,14 +97169,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7672: (ref=x16) andc(rs1=x7/0x306A3D46)(rs2=x23/0x7271CB3E) => (rd=x9/0x000A3440)
-.l_andc_7672_Start:
+# Test 7672: (ref=x16) andn(rs1=x7/0x306A3D46)(rs2=x23/0x7271CB3E) => (rd=x9/0x000A3440)
+.l_andn_7672_Start:
     li        x7, 0x306A3D46
     li       x23, 0x7271CB3E
-    andc     9 7 23
+    andn     9 7 23
     li       x16, 0x000A3440
     beq       x9, x16, 1f
-.l_andc_7672_Fail:
+.l_andn_7672_Fail:
     li        x1, 7672
     la        x2, test_fail
     jalr      x0, x2
@@ -97625,14 +97625,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7708: (ref=x15) andc(rs1=x5/0x30DDDB39)(rs2=x29/0x6872F4C9) => (rd=x26/0x108D0B30)
-.l_andc_7708_Start:
+# Test 7708: (ref=x15) andn(rs1=x5/0x30DDDB39)(rs2=x29/0x6872F4C9) => (rd=x26/0x108D0B30)
+.l_andn_7708_Start:
     li        x5, 0x30DDDB39
     li       x29, 0x6872F4C9
-    andc     26 5 29
+    andn     26 5 29
     li       x15, 0x108D0B30
     beq      x26, x15, 1f
-.l_andc_7708_Fail:
+.l_andn_7708_Fail:
     li        x1, 7708
     la        x2, test_fail
     jalr      x0, x2
@@ -98081,14 +98081,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7744: (ref=x18) andc(rs1=x6/0x1E87C126)(rs2=x4/0x27A30570) => (rd=x8/0x1804C006)
-.l_andc_7744_Start:
+# Test 7744: (ref=x18) andn(rs1=x6/0x1E87C126)(rs2=x4/0x27A30570) => (rd=x8/0x1804C006)
+.l_andn_7744_Start:
     li        x6, 0x1E87C126
     li        x4, 0x27A30570
-    andc     8 6 4
+    andn     8 6 4
     li       x18, 0x1804C006
     beq       x8, x18, 1f
-.l_andc_7744_Fail:
+.l_andn_7744_Fail:
     li        x1, 7744
     la        x2, test_fail
     jalr      x0, x2
@@ -98537,14 +98537,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7780: (ref=x5) andc(rs1=x9/0x0FEAB171)(rs2=x29/0x16C95EF9) => (rd=x1/0x0922A100)
-.l_andc_7780_Start:
+# Test 7780: (ref=x5) andn(rs1=x9/0x0FEAB171)(rs2=x29/0x16C95EF9) => (rd=x1/0x0922A100)
+.l_andn_7780_Start:
     li        x9, 0x0FEAB171
     li       x29, 0x16C95EF9
-    andc     1 9 29
+    andn     1 9 29
     li        x5, 0x0922A100
     beq       x1,  x5, 1f
-.l_andc_7780_Fail:
+.l_andn_7780_Fail:
     li        x1, 7780
     la        x2, test_fail
     jalr      x0, x2
@@ -98993,14 +98993,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7816: (ref=x30) andc(rs1=x2/0x6BBC2BD2)(rs2=x5/0x52F6CAB8) => (rd=x6/0x29082142)
-.l_andc_7816_Start:
+# Test 7816: (ref=x30) andn(rs1=x2/0x6BBC2BD2)(rs2=x5/0x52F6CAB8) => (rd=x6/0x29082142)
+.l_andn_7816_Start:
     li        x2, 0x6BBC2BD2
     li        x5, 0x52F6CAB8
-    andc     6 2 5
+    andn     6 2 5
     li       x30, 0x29082142
     beq       x6, x30, 1f
-.l_andc_7816_Fail:
+.l_andn_7816_Fail:
     li        x1, 7816
     la        x2, test_fail
     jalr      x0, x2
@@ -99449,14 +99449,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7852: (ref=x28) andc(rs1=x20/0x094D658D)(rs2=x8/0x684A3237) => (rd=x25/0x01054588)
-.l_andc_7852_Start:
+# Test 7852: (ref=x28) andn(rs1=x20/0x094D658D)(rs2=x8/0x684A3237) => (rd=x25/0x01054588)
+.l_andn_7852_Start:
     li       x20, 0x094D658D
     li        x8, 0x684A3237
-    andc     25 20 8
+    andn     25 20 8
     li       x28, 0x01054588
     beq      x25, x28, 1f
-.l_andc_7852_Fail:
+.l_andn_7852_Fail:
     li        x1, 7852
     la        x2, test_fail
     jalr      x0, x2
@@ -99905,14 +99905,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7888: (ref=x25) andc(rs1=x8/0x44DB650E)(rs2=x28/0x6BF47D31) => (rd=x22/0x040B000E)
-.l_andc_7888_Start:
+# Test 7888: (ref=x25) andn(rs1=x8/0x44DB650E)(rs2=x28/0x6BF47D31) => (rd=x22/0x040B000E)
+.l_andn_7888_Start:
     li        x8, 0x44DB650E
     li       x28, 0x6BF47D31
-    andc     22 8 28
+    andn     22 8 28
     li       x25, 0x040B000E
     beq      x22, x25, 1f
-.l_andc_7888_Fail:
+.l_andn_7888_Fail:
     li        x1, 7888
     la        x2, test_fail
     jalr      x0, x2
@@ -100361,14 +100361,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7924: (ref=x20) andc(rs1=x12/0x423538CA)(rs2=x25/0x4C1FE553) => (rd=x7/0x02201888)
-.l_andc_7924_Start:
+# Test 7924: (ref=x20) andn(rs1=x12/0x423538CA)(rs2=x25/0x4C1FE553) => (rd=x7/0x02201888)
+.l_andn_7924_Start:
     li       x12, 0x423538CA
     li       x25, 0x4C1FE553
-    andc     7 12 25
+    andn     7 12 25
     li       x20, 0x02201888
     beq       x7, x20, 1f
-.l_andc_7924_Fail:
+.l_andn_7924_Fail:
     li        x1, 7924
     la        x2, test_fail
     jalr      x0, x2
@@ -100817,14 +100817,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7960: (ref=x21) andc(rs1=x1/0x2FAC13A5)(rs2=x22/0x57958160) => (rd=x4/0x28281285)
-.l_andc_7960_Start:
+# Test 7960: (ref=x21) andn(rs1=x1/0x2FAC13A5)(rs2=x22/0x57958160) => (rd=x4/0x28281285)
+.l_andn_7960_Start:
     li        x1, 0x2FAC13A5
     li       x22, 0x57958160
-    andc     4 1 22
+    andn     4 1 22
     li       x21, 0x28281285
     beq       x4, x21, 1f
-.l_andc_7960_Fail:
+.l_andn_7960_Fail:
     li        x1, 7960
     la        x2, test_fail
     jalr      x0, x2
@@ -101273,14 +101273,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 7996: (ref=x1) andc(rs1=x30/0x667804D7)(rs2=x11/0x1489EF28) => (rd=x18/0x627000D7)
-.l_andc_7996_Start:
+# Test 7996: (ref=x1) andn(rs1=x30/0x667804D7)(rs2=x11/0x1489EF28) => (rd=x18/0x627000D7)
+.l_andn_7996_Start:
     li       x30, 0x667804D7
     li       x11, 0x1489EF28
-    andc     18 30 11
+    andn     18 30 11
     li        x1, 0x627000D7
     beq      x18,  x1, 1f
-.l_andc_7996_Fail:
+.l_andn_7996_Fail:
     li        x1, 7996
     la        x2, test_fail
     jalr      x0, x2
@@ -101729,14 +101729,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8032: (ref=x26) andc(rs1=x3/0x14720153)(rs2=x27/0x67770E01) => (rd=x29/0x10000152)
-.l_andc_8032_Start:
+# Test 8032: (ref=x26) andn(rs1=x3/0x14720153)(rs2=x27/0x67770E01) => (rd=x29/0x10000152)
+.l_andn_8032_Start:
     li        x3, 0x14720153
     li       x27, 0x67770E01
-    andc     29 3 27
+    andn     29 3 27
     li       x26, 0x10000152
     beq      x29, x26, 1f
-.l_andc_8032_Fail:
+.l_andn_8032_Fail:
     li        x1, 8032
     la        x2, test_fail
     jalr      x0, x2
@@ -102185,14 +102185,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8068: (ref=x3) andc(rs1=x26/0x61093587)(rs2=x1/0x55E8A098) => (rd=x25/0x20011507)
-.l_andc_8068_Start:
+# Test 8068: (ref=x3) andn(rs1=x26/0x61093587)(rs2=x1/0x55E8A098) => (rd=x25/0x20011507)
+.l_andn_8068_Start:
     li       x26, 0x61093587
     li        x1, 0x55E8A098
-    andc     25 26 1
+    andn     25 26 1
     li        x3, 0x20011507
     beq      x25,  x3, 1f
-.l_andc_8068_Fail:
+.l_andn_8068_Fail:
     li        x1, 8068
     la        x2, test_fail
     jalr      x0, x2
@@ -102641,14 +102641,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8104: (ref=x24) andc(rs1=x31/0x03E64C91)(rs2=x29/0x128E812E) => (rd=x26/0x01604C91)
-.l_andc_8104_Start:
+# Test 8104: (ref=x24) andn(rs1=x31/0x03E64C91)(rs2=x29/0x128E812E) => (rd=x26/0x01604C91)
+.l_andn_8104_Start:
     li       x31, 0x03E64C91
     li       x29, 0x128E812E
-    andc     26 31 29
+    andn     26 31 29
     li       x24, 0x01604C91
     beq      x26, x24, 1f
-.l_andc_8104_Fail:
+.l_andn_8104_Fail:
     li        x1, 8104
     la        x2, test_fail
     jalr      x0, x2
@@ -103097,14 +103097,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8140: (ref=x29) andc(rs1=x31/0x471C4B18)(rs2=x13/0x194C7B94) => (rd=x6/0x46100008)
-.l_andc_8140_Start:
+# Test 8140: (ref=x29) andn(rs1=x31/0x471C4B18)(rs2=x13/0x194C7B94) => (rd=x6/0x46100008)
+.l_andn_8140_Start:
     li       x31, 0x471C4B18
     li       x13, 0x194C7B94
-    andc     6 31 13
+    andn     6 31 13
     li       x29, 0x46100008
     beq       x6, x29, 1f
-.l_andc_8140_Fail:
+.l_andn_8140_Fail:
     li        x1, 8140
     la        x2, test_fail
     jalr      x0, x2
@@ -103553,14 +103553,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8176: (ref=x28) andc(rs1=x11/0x3B1F546F)(rs2=x30/0x274A5B17) => (rd=x21/0x18150468)
-.l_andc_8176_Start:
+# Test 8176: (ref=x28) andn(rs1=x11/0x3B1F546F)(rs2=x30/0x274A5B17) => (rd=x21/0x18150468)
+.l_andn_8176_Start:
     li       x11, 0x3B1F546F
     li       x30, 0x274A5B17
-    andc     21 11 30
+    andn     21 11 30
     li       x28, 0x18150468
     beq      x21, x28, 1f
-.l_andc_8176_Fail:
+.l_andn_8176_Fail:
     li        x1, 8176
     la        x2, test_fail
     jalr      x0, x2
@@ -104009,14 +104009,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8212: (ref=x2) andc(rs1=x14/0x74229960)(rs2=x10/0x149C9683) => (rd=x17/0x60220960)
-.l_andc_8212_Start:
+# Test 8212: (ref=x2) andn(rs1=x14/0x74229960)(rs2=x10/0x149C9683) => (rd=x17/0x60220960)
+.l_andn_8212_Start:
     li       x14, 0x74229960
     li       x10, 0x149C9683
-    andc     17 14 10
+    andn     17 14 10
     li        x2, 0x60220960
     beq      x17,  x2, 1f
-.l_andc_8212_Fail:
+.l_andn_8212_Fail:
     li        x1, 8212
     la        x2, test_fail
     jalr      x0, x2
@@ -104465,14 +104465,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8248: (ref=x16) andc(rs1=x26/0x0755B0EC)(rs2=x25/0x4F0ED772) => (rd=x4/0x0051208C)
-.l_andc_8248_Start:
+# Test 8248: (ref=x16) andn(rs1=x26/0x0755B0EC)(rs2=x25/0x4F0ED772) => (rd=x4/0x0051208C)
+.l_andn_8248_Start:
     li       x26, 0x0755B0EC
     li       x25, 0x4F0ED772
-    andc     4 26 25
+    andn     4 26 25
     li       x16, 0x0051208C
     beq       x4, x16, 1f
-.l_andc_8248_Fail:
+.l_andn_8248_Fail:
     li        x1, 8248
     la        x2, test_fail
     jalr      x0, x2
@@ -104921,14 +104921,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8284: (ref=x21) andc(rs1=x30/0x41B3F313)(rs2=x25/0x476CF859) => (rd=x6/0x00930302)
-.l_andc_8284_Start:
+# Test 8284: (ref=x21) andn(rs1=x30/0x41B3F313)(rs2=x25/0x476CF859) => (rd=x6/0x00930302)
+.l_andn_8284_Start:
     li       x30, 0x41B3F313
     li       x25, 0x476CF859
-    andc     6 30 25
+    andn     6 30 25
     li       x21, 0x00930302
     beq       x6, x21, 1f
-.l_andc_8284_Fail:
+.l_andn_8284_Fail:
     li        x1, 8284
     la        x2, test_fail
     jalr      x0, x2
@@ -105377,14 +105377,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8320: (ref=x6) andc(rs1=x2/0x28B8BEF3)(rs2=x28/0x161D3BC3) => (rd=x12/0x28A08430)
-.l_andc_8320_Start:
+# Test 8320: (ref=x6) andn(rs1=x2/0x28B8BEF3)(rs2=x28/0x161D3BC3) => (rd=x12/0x28A08430)
+.l_andn_8320_Start:
     li        x2, 0x28B8BEF3
     li       x28, 0x161D3BC3
-    andc     12 2 28
+    andn     12 2 28
     li        x6, 0x28A08430
     beq      x12,  x6, 1f
-.l_andc_8320_Fail:
+.l_andn_8320_Fail:
     li        x1, 8320
     la        x2, test_fail
     jalr      x0, x2
@@ -105833,14 +105833,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8356: (ref=x7) andc(rs1=x20/0x1844CA07)(rs2=x19/0x28830A01) => (rd=x20/0x1044C006)
-.l_andc_8356_Start:
+# Test 8356: (ref=x7) andn(rs1=x20/0x1844CA07)(rs2=x19/0x28830A01) => (rd=x20/0x1044C006)
+.l_andn_8356_Start:
     li       x20, 0x1844CA07
     li       x19, 0x28830A01
-    andc     20 20 19
+    andn     20 20 19
     li        x7, 0x1044C006
     beq      x20,  x7, 1f
-.l_andc_8356_Fail:
+.l_andn_8356_Fail:
     li        x1, 8356
     la        x2, test_fail
     jalr      x0, x2
@@ -106289,14 +106289,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8392: (ref=x8) andc(rs1=x13/0x2903FE54)(rs2=x18/0x0E5519E9) => (rd=x12/0x2102E614)
-.l_andc_8392_Start:
+# Test 8392: (ref=x8) andn(rs1=x13/0x2903FE54)(rs2=x18/0x0E5519E9) => (rd=x12/0x2102E614)
+.l_andn_8392_Start:
     li       x13, 0x2903FE54
     li       x18, 0x0E5519E9
-    andc     12 13 18
+    andn     12 13 18
     li        x8, 0x2102E614
     beq      x12,  x8, 1f
-.l_andc_8392_Fail:
+.l_andn_8392_Fail:
     li        x1, 8392
     la        x2, test_fail
     jalr      x0, x2
@@ -106745,14 +106745,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8428: (ref=x13) andc(rs1=x1/0x6F61711A)(rs2=x24/0x74E6090C) => (rd=x22/0x0B017012)
-.l_andc_8428_Start:
+# Test 8428: (ref=x13) andn(rs1=x1/0x6F61711A)(rs2=x24/0x74E6090C) => (rd=x22/0x0B017012)
+.l_andn_8428_Start:
     li        x1, 0x6F61711A
     li       x24, 0x74E6090C
-    andc     22 1 24
+    andn     22 1 24
     li       x13, 0x0B017012
     beq      x22, x13, 1f
-.l_andc_8428_Fail:
+.l_andn_8428_Fail:
     li        x1, 8428
     la        x2, test_fail
     jalr      x0, x2
@@ -107201,14 +107201,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8464: (ref=x31) andc(rs1=x5/0x722F771D)(rs2=x28/0x103FE81B) => (rd=x29/0x62001704)
-.l_andc_8464_Start:
+# Test 8464: (ref=x31) andn(rs1=x5/0x722F771D)(rs2=x28/0x103FE81B) => (rd=x29/0x62001704)
+.l_andn_8464_Start:
     li        x5, 0x722F771D
     li       x28, 0x103FE81B
-    andc     29 5 28
+    andn     29 5 28
     li       x31, 0x62001704
     beq      x29, x31, 1f
-.l_andc_8464_Fail:
+.l_andn_8464_Fail:
     li        x1, 8464
     la        x2, test_fail
     jalr      x0, x2
@@ -107657,14 +107657,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8500: (ref=x8) andc(rs1=x14/0x25EF7A2C)(rs2=x19/0x368E8B75) => (rd=x23/0x01617008)
-.l_andc_8500_Start:
+# Test 8500: (ref=x8) andn(rs1=x14/0x25EF7A2C)(rs2=x19/0x368E8B75) => (rd=x23/0x01617008)
+.l_andn_8500_Start:
     li       x14, 0x25EF7A2C
     li       x19, 0x368E8B75
-    andc     23 14 19
+    andn     23 14 19
     li        x8, 0x01617008
     beq      x23,  x8, 1f
-.l_andc_8500_Fail:
+.l_andn_8500_Fail:
     li        x1, 8500
     la        x2, test_fail
     jalr      x0, x2
@@ -108113,14 +108113,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8536: (ref=x6) andc(rs1=x31/0x2FDC5CAC)(rs2=x23/0x5006BAC2) => (rd=x31/0x2FD8442C)
-.l_andc_8536_Start:
+# Test 8536: (ref=x6) andn(rs1=x31/0x2FDC5CAC)(rs2=x23/0x5006BAC2) => (rd=x31/0x2FD8442C)
+.l_andn_8536_Start:
     li       x31, 0x2FDC5CAC
     li       x23, 0x5006BAC2
-    andc     31 31 23
+    andn     31 31 23
     li        x6, 0x2FD8442C
     beq      x31,  x6, 1f
-.l_andc_8536_Fail:
+.l_andn_8536_Fail:
     li        x1, 8536
     la        x2, test_fail
     jalr      x0, x2
@@ -108569,14 +108569,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8572: (ref=x15) andc(rs1=x1/0x70795849)(rs2=x26/0x6D1303AC) => (rd=x18/0x10685841)
-.l_andc_8572_Start:
+# Test 8572: (ref=x15) andn(rs1=x1/0x70795849)(rs2=x26/0x6D1303AC) => (rd=x18/0x10685841)
+.l_andn_8572_Start:
     li        x1, 0x70795849
     li       x26, 0x6D1303AC
-    andc     18 1 26
+    andn     18 1 26
     li       x15, 0x10685841
     beq      x18, x15, 1f
-.l_andc_8572_Fail:
+.l_andn_8572_Fail:
     li        x1, 8572
     la        x2, test_fail
     jalr      x0, x2
@@ -109025,14 +109025,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8608: (ref=x12) andc(rs1=x11/0x645FF0CA)(rs2=x26/0x68A76C51) => (rd=x19/0x0458908A)
-.l_andc_8608_Start:
+# Test 8608: (ref=x12) andn(rs1=x11/0x645FF0CA)(rs2=x26/0x68A76C51) => (rd=x19/0x0458908A)
+.l_andn_8608_Start:
     li       x11, 0x645FF0CA
     li       x26, 0x68A76C51
-    andc     19 11 26
+    andn     19 11 26
     li       x12, 0x0458908A
     beq      x19, x12, 1f
-.l_andc_8608_Fail:
+.l_andn_8608_Fail:
     li        x1, 8608
     la        x2, test_fail
     jalr      x0, x2
@@ -109481,14 +109481,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8644: (ref=x22) andc(rs1=x3/0x453D5B41)(rs2=x27/0x0C136878) => (rd=x28/0x412C1301)
-.l_andc_8644_Start:
+# Test 8644: (ref=x22) andn(rs1=x3/0x453D5B41)(rs2=x27/0x0C136878) => (rd=x28/0x412C1301)
+.l_andn_8644_Start:
     li        x3, 0x453D5B41
     li       x27, 0x0C136878
-    andc     28 3 27
+    andn     28 3 27
     li       x22, 0x412C1301
     beq      x28, x22, 1f
-.l_andc_8644_Fail:
+.l_andn_8644_Fail:
     li        x1, 8644
     la        x2, test_fail
     jalr      x0, x2
@@ -109937,14 +109937,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8680: (ref=x9) andc(rs1=x19/0x24E4C170)(rs2=x8/0x75CDBD26) => (rd=x26/0x00204050)
-.l_andc_8680_Start:
+# Test 8680: (ref=x9) andn(rs1=x19/0x24E4C170)(rs2=x8/0x75CDBD26) => (rd=x26/0x00204050)
+.l_andn_8680_Start:
     li       x19, 0x24E4C170
     li        x8, 0x75CDBD26
-    andc     26 19 8
+    andn     26 19 8
     li        x9, 0x00204050
     beq      x26,  x9, 1f
-.l_andc_8680_Fail:
+.l_andn_8680_Fail:
     li        x1, 8680
     la        x2, test_fail
     jalr      x0, x2
@@ -110393,14 +110393,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8716: (ref=x15) andc(rs1=x29/0x5951A338)(rs2=x21/0x14AA507E) => (rd=x13/0x4951A300)
-.l_andc_8716_Start:
+# Test 8716: (ref=x15) andn(rs1=x29/0x5951A338)(rs2=x21/0x14AA507E) => (rd=x13/0x4951A300)
+.l_andn_8716_Start:
     li       x29, 0x5951A338
     li       x21, 0x14AA507E
-    andc     13 29 21
+    andn     13 29 21
     li       x15, 0x4951A300
     beq      x13, x15, 1f
-.l_andc_8716_Fail:
+.l_andn_8716_Fail:
     li        x1, 8716
     la        x2, test_fail
     jalr      x0, x2
@@ -110849,14 +110849,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8752: (ref=x18) andc(rs1=x6/0x2FF728D0)(rs2=x28/0x525977B1) => (rd=x13/0x2DA60840)
-.l_andc_8752_Start:
+# Test 8752: (ref=x18) andn(rs1=x6/0x2FF728D0)(rs2=x28/0x525977B1) => (rd=x13/0x2DA60840)
+.l_andn_8752_Start:
     li        x6, 0x2FF728D0
     li       x28, 0x525977B1
-    andc     13 6 28
+    andn     13 6 28
     li       x18, 0x2DA60840
     beq      x13, x18, 1f
-.l_andc_8752_Fail:
+.l_andn_8752_Fail:
     li        x1, 8752
     la        x2, test_fail
     jalr      x0, x2
@@ -111305,14 +111305,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8788: (ref=x20) andc(rs1=x14/0x69748DEE)(rs2=x15/0x183015E0) => (rd=x4/0x6144880E)
-.l_andc_8788_Start:
+# Test 8788: (ref=x20) andn(rs1=x14/0x69748DEE)(rs2=x15/0x183015E0) => (rd=x4/0x6144880E)
+.l_andn_8788_Start:
     li       x14, 0x69748DEE
     li       x15, 0x183015E0
-    andc     4 14 15
+    andn     4 14 15
     li       x20, 0x6144880E
     beq       x4, x20, 1f
-.l_andc_8788_Fail:
+.l_andn_8788_Fail:
     li        x1, 8788
     la        x2, test_fail
     jalr      x0, x2
@@ -111761,14 +111761,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8824: (ref=x21) andc(rs1=x4/0x6B0671FE)(rs2=x13/0x66B6B8D8) => (rd=x10/0x09004126)
-.l_andc_8824_Start:
+# Test 8824: (ref=x21) andn(rs1=x4/0x6B0671FE)(rs2=x13/0x66B6B8D8) => (rd=x10/0x09004126)
+.l_andn_8824_Start:
     li        x4, 0x6B0671FE
     li       x13, 0x66B6B8D8
-    andc     10 4 13
+    andn     10 4 13
     li       x21, 0x09004126
     beq      x10, x21, 1f
-.l_andc_8824_Fail:
+.l_andn_8824_Fail:
     li        x1, 8824
     la        x2, test_fail
     jalr      x0, x2
@@ -112217,14 +112217,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8860: (ref=x21) andc(rs1=x19/0x1F6D18F9)(rs2=x28/0x34F40663) => (rd=x24/0x0B091898)
-.l_andc_8860_Start:
+# Test 8860: (ref=x21) andn(rs1=x19/0x1F6D18F9)(rs2=x28/0x34F40663) => (rd=x24/0x0B091898)
+.l_andn_8860_Start:
     li       x19, 0x1F6D18F9
     li       x28, 0x34F40663
-    andc     24 19 28
+    andn     24 19 28
     li       x21, 0x0B091898
     beq      x24, x21, 1f
-.l_andc_8860_Fail:
+.l_andn_8860_Fail:
     li        x1, 8860
     la        x2, test_fail
     jalr      x0, x2
@@ -112673,14 +112673,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8896: (ref=x5) andc(rs1=x7/0x12523BAE)(rs2=x30/0x40629A4A) => (rd=x19/0x121021A4)
-.l_andc_8896_Start:
+# Test 8896: (ref=x5) andn(rs1=x7/0x12523BAE)(rs2=x30/0x40629A4A) => (rd=x19/0x121021A4)
+.l_andn_8896_Start:
     li        x7, 0x12523BAE
     li       x30, 0x40629A4A
-    andc     19 7 30
+    andn     19 7 30
     li        x5, 0x121021A4
     beq      x19,  x5, 1f
-.l_andc_8896_Fail:
+.l_andn_8896_Fail:
     li        x1, 8896
     la        x2, test_fail
     jalr      x0, x2
@@ -113129,14 +113129,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8932: (ref=x9) andc(rs1=x14/0x30F2C6F8)(rs2=x2/0x1FA0B62A) => (rd=x6/0x205240D0)
-.l_andc_8932_Start:
+# Test 8932: (ref=x9) andn(rs1=x14/0x30F2C6F8)(rs2=x2/0x1FA0B62A) => (rd=x6/0x205240D0)
+.l_andn_8932_Start:
     li       x14, 0x30F2C6F8
     li        x2, 0x1FA0B62A
-    andc     6 14 2
+    andn     6 14 2
     li        x9, 0x205240D0
     beq       x6,  x9, 1f
-.l_andc_8932_Fail:
+.l_andn_8932_Fail:
     li        x1, 8932
     la        x2, test_fail
     jalr      x0, x2
@@ -113585,14 +113585,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 8968: (ref=x12) andc(rs1=x25/0x704B6FD4)(rs2=x22/0x40B10069) => (rd=x15/0x304A6F94)
-.l_andc_8968_Start:
+# Test 8968: (ref=x12) andn(rs1=x25/0x704B6FD4)(rs2=x22/0x40B10069) => (rd=x15/0x304A6F94)
+.l_andn_8968_Start:
     li       x25, 0x704B6FD4
     li       x22, 0x40B10069
-    andc     15 25 22
+    andn     15 25 22
     li       x12, 0x304A6F94
     beq      x15, x12, 1f
-.l_andc_8968_Fail:
+.l_andn_8968_Fail:
     li        x1, 8968
     la        x2, test_fail
     jalr      x0, x2
@@ -114041,14 +114041,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9004: (ref=x18) andc(rs1=x15/0x128CABCD)(rs2=x22/0x2F440E89) => (rd=x22/0x1088A144)
-.l_andc_9004_Start:
+# Test 9004: (ref=x18) andn(rs1=x15/0x128CABCD)(rs2=x22/0x2F440E89) => (rd=x22/0x1088A144)
+.l_andn_9004_Start:
     li       x15, 0x128CABCD
     li       x22, 0x2F440E89
-    andc     22 15 22
+    andn     22 15 22
     li       x18, 0x1088A144
     beq      x22, x18, 1f
-.l_andc_9004_Fail:
+.l_andn_9004_Fail:
     li        x1, 9004
     la        x2, test_fail
     jalr      x0, x2
@@ -114497,14 +114497,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9040: (ref=x30) andc(rs1=x16/0x7D405431)(rs2=x31/0x72A1F506) => (rd=x4/0x0D400031)
-.l_andc_9040_Start:
+# Test 9040: (ref=x30) andn(rs1=x16/0x7D405431)(rs2=x31/0x72A1F506) => (rd=x4/0x0D400031)
+.l_andn_9040_Start:
     li       x16, 0x7D405431
     li       x31, 0x72A1F506
-    andc     4 16 31
+    andn     4 16 31
     li       x30, 0x0D400031
     beq       x4, x30, 1f
-.l_andc_9040_Fail:
+.l_andn_9040_Fail:
     li        x1, 9040
     la        x2, test_fail
     jalr      x0, x2
@@ -114953,14 +114953,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9076: (ref=x27) andc(rs1=x4/0x3AF277E2)(rs2=x20/0x1112E264) => (rd=x21/0x2AE01582)
-.l_andc_9076_Start:
+# Test 9076: (ref=x27) andn(rs1=x4/0x3AF277E2)(rs2=x20/0x1112E264) => (rd=x21/0x2AE01582)
+.l_andn_9076_Start:
     li        x4, 0x3AF277E2
     li       x20, 0x1112E264
-    andc     21 4 20
+    andn     21 4 20
     li       x27, 0x2AE01582
     beq      x21, x27, 1f
-.l_andc_9076_Fail:
+.l_andn_9076_Fail:
     li        x1, 9076
     la        x2, test_fail
     jalr      x0, x2
@@ -115409,14 +115409,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9112: (ref=x16) andc(rs1=x5/0x22F18269)(rs2=x25/0x4F27E8F1) => (rd=x22/0x20D00208)
-.l_andc_9112_Start:
+# Test 9112: (ref=x16) andn(rs1=x5/0x22F18269)(rs2=x25/0x4F27E8F1) => (rd=x22/0x20D00208)
+.l_andn_9112_Start:
     li        x5, 0x22F18269
     li       x25, 0x4F27E8F1
-    andc     22 5 25
+    andn     22 5 25
     li       x16, 0x20D00208
     beq      x22, x16, 1f
-.l_andc_9112_Fail:
+.l_andn_9112_Fail:
     li        x1, 9112
     la        x2, test_fail
     jalr      x0, x2
@@ -115865,14 +115865,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9148: (ref=x25) andc(rs1=x27/0x360A15C3)(rs2=x11/0x7F25ADC2) => (rd=x21/0x000A1001)
-.l_andc_9148_Start:
+# Test 9148: (ref=x25) andn(rs1=x27/0x360A15C3)(rs2=x11/0x7F25ADC2) => (rd=x21/0x000A1001)
+.l_andn_9148_Start:
     li       x27, 0x360A15C3
     li       x11, 0x7F25ADC2
-    andc     21 27 11
+    andn     21 27 11
     li       x25, 0x000A1001
     beq      x21, x25, 1f
-.l_andc_9148_Fail:
+.l_andn_9148_Fail:
     li        x1, 9148
     la        x2, test_fail
     jalr      x0, x2
@@ -116321,14 +116321,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9184: (ref=x25) andc(rs1=x6/0x489822DA)(rs2=x21/0x28D018DF) => (rd=x3/0x40082200)
-.l_andc_9184_Start:
+# Test 9184: (ref=x25) andn(rs1=x6/0x489822DA)(rs2=x21/0x28D018DF) => (rd=x3/0x40082200)
+.l_andn_9184_Start:
     li        x6, 0x489822DA
     li       x21, 0x28D018DF
-    andc     3 6 21
+    andn     3 6 21
     li       x25, 0x40082200
     beq       x3, x25, 1f
-.l_andc_9184_Fail:
+.l_andn_9184_Fail:
     li        x1, 9184
     la        x2, test_fail
     jalr      x0, x2
@@ -116777,14 +116777,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9220: (ref=x28) andc(rs1=x21/0x2F6D2CCC)(rs2=x16/0x38748F57) => (rd=x1/0x07092088)
-.l_andc_9220_Start:
+# Test 9220: (ref=x28) andn(rs1=x21/0x2F6D2CCC)(rs2=x16/0x38748F57) => (rd=x1/0x07092088)
+.l_andn_9220_Start:
     li       x21, 0x2F6D2CCC
     li       x16, 0x38748F57
-    andc     1 21 16
+    andn     1 21 16
     li       x28, 0x07092088
     beq       x1, x28, 1f
-.l_andc_9220_Fail:
+.l_andn_9220_Fail:
     li        x1, 9220
     la        x2, test_fail
     jalr      x0, x2
@@ -117233,14 +117233,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9256: (ref=x25) andc(rs1=x21/0x2AB5958C)(rs2=x3/0x69EC71EE) => (rd=x16/0x02118400)
-.l_andc_9256_Start:
+# Test 9256: (ref=x25) andn(rs1=x21/0x2AB5958C)(rs2=x3/0x69EC71EE) => (rd=x16/0x02118400)
+.l_andn_9256_Start:
     li       x21, 0x2AB5958C
     li        x3, 0x69EC71EE
-    andc     16 21 3
+    andn     16 21 3
     li       x25, 0x02118400
     beq      x16, x25, 1f
-.l_andc_9256_Fail:
+.l_andn_9256_Fail:
     li        x1, 9256
     la        x2, test_fail
     jalr      x0, x2
@@ -117689,14 +117689,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9292: (ref=x16) andc(rs1=x19/0x44B4B02B)(rs2=x17/0x601A9E89) => (rd=x24/0x04A42022)
-.l_andc_9292_Start:
+# Test 9292: (ref=x16) andn(rs1=x19/0x44B4B02B)(rs2=x17/0x601A9E89) => (rd=x24/0x04A42022)
+.l_andn_9292_Start:
     li       x19, 0x44B4B02B
     li       x17, 0x601A9E89
-    andc     24 19 17
+    andn     24 19 17
     li       x16, 0x04A42022
     beq      x24, x16, 1f
-.l_andc_9292_Fail:
+.l_andn_9292_Fail:
     li        x1, 9292
     la        x2, test_fail
     jalr      x0, x2
@@ -118145,14 +118145,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9328: (ref=x29) andc(rs1=x16/0x1DB35DAE)(rs2=x30/0x0AA3340E) => (rd=x23/0x151049A0)
-.l_andc_9328_Start:
+# Test 9328: (ref=x29) andn(rs1=x16/0x1DB35DAE)(rs2=x30/0x0AA3340E) => (rd=x23/0x151049A0)
+.l_andn_9328_Start:
     li       x16, 0x1DB35DAE
     li       x30, 0x0AA3340E
-    andc     23 16 30
+    andn     23 16 30
     li       x29, 0x151049A0
     beq      x23, x29, 1f
-.l_andc_9328_Fail:
+.l_andn_9328_Fail:
     li        x1, 9328
     la        x2, test_fail
     jalr      x0, x2
@@ -118601,14 +118601,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9364: (ref=x25) andc(rs1=x29/0x227FD4AB)(rs2=x22/0x14460C91) => (rd=x22/0x2239D02A)
-.l_andc_9364_Start:
+# Test 9364: (ref=x25) andn(rs1=x29/0x227FD4AB)(rs2=x22/0x14460C91) => (rd=x22/0x2239D02A)
+.l_andn_9364_Start:
     li       x29, 0x227FD4AB
     li       x22, 0x14460C91
-    andc     22 29 22
+    andn     22 29 22
     li       x25, 0x2239D02A
     beq      x22, x25, 1f
-.l_andc_9364_Fail:
+.l_andn_9364_Fail:
     li        x1, 9364
     la        x2, test_fail
     jalr      x0, x2
@@ -119057,14 +119057,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9400: (ref=x26) andc(rs1=x15/0x7F11DDC4)(rs2=x27/0x77A51471) => (rd=x18/0x0810C984)
-.l_andc_9400_Start:
+# Test 9400: (ref=x26) andn(rs1=x15/0x7F11DDC4)(rs2=x27/0x77A51471) => (rd=x18/0x0810C984)
+.l_andn_9400_Start:
     li       x15, 0x7F11DDC4
     li       x27, 0x77A51471
-    andc     18 15 27
+    andn     18 15 27
     li       x26, 0x0810C984
     beq      x18, x26, 1f
-.l_andc_9400_Fail:
+.l_andn_9400_Fail:
     li        x1, 9400
     la        x2, test_fail
     jalr      x0, x2
@@ -119513,14 +119513,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9436: (ref=x5) andc(rs1=x16/0x792BDFAC)(rs2=x30/0x69C8B705) => (rd=x24/0x102348A8)
-.l_andc_9436_Start:
+# Test 9436: (ref=x5) andn(rs1=x16/0x792BDFAC)(rs2=x30/0x69C8B705) => (rd=x24/0x102348A8)
+.l_andn_9436_Start:
     li       x16, 0x792BDFAC
     li       x30, 0x69C8B705
-    andc     24 16 30
+    andn     24 16 30
     li        x5, 0x102348A8
     beq      x24,  x5, 1f
-.l_andc_9436_Fail:
+.l_andn_9436_Fail:
     li        x1, 9436
     la        x2, test_fail
     jalr      x0, x2
@@ -119969,14 +119969,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9472: (ref=x1) andc(rs1=x6/0x04DFE151)(rs2=x5/0x5B63130C) => (rd=x4/0x049CE051)
-.l_andc_9472_Start:
+# Test 9472: (ref=x1) andn(rs1=x6/0x04DFE151)(rs2=x5/0x5B63130C) => (rd=x4/0x049CE051)
+.l_andn_9472_Start:
     li        x6, 0x04DFE151
     li        x5, 0x5B63130C
-    andc     4 6 5
+    andn     4 6 5
     li        x1, 0x049CE051
     beq       x4,  x1, 1f
-.l_andc_9472_Fail:
+.l_andn_9472_Fail:
     li        x1, 9472
     la        x2, test_fail
     jalr      x0, x2
@@ -120425,14 +120425,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9508: (ref=x17) andc(rs1=x7/0x361C0674)(rs2=x5/0x2EC6D22F) => (rd=x14/0x10180450)
-.l_andc_9508_Start:
+# Test 9508: (ref=x17) andn(rs1=x7/0x361C0674)(rs2=x5/0x2EC6D22F) => (rd=x14/0x10180450)
+.l_andn_9508_Start:
     li        x7, 0x361C0674
     li        x5, 0x2EC6D22F
-    andc     14 7 5
+    andn     14 7 5
     li       x17, 0x10180450
     beq      x14, x17, 1f
-.l_andc_9508_Fail:
+.l_andn_9508_Fail:
     li        x1, 9508
     la        x2, test_fail
     jalr      x0, x2
@@ -120881,14 +120881,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9544: (ref=x18) andc(rs1=x24/0x52ABE0D7)(rs2=x23/0x55D9C2A7) => (rd=x3/0x02222050)
-.l_andc_9544_Start:
+# Test 9544: (ref=x18) andn(rs1=x24/0x52ABE0D7)(rs2=x23/0x55D9C2A7) => (rd=x3/0x02222050)
+.l_andn_9544_Start:
     li       x24, 0x52ABE0D7
     li       x23, 0x55D9C2A7
-    andc     3 24 23
+    andn     3 24 23
     li       x18, 0x02222050
     beq       x3, x18, 1f
-.l_andc_9544_Fail:
+.l_andn_9544_Fail:
     li        x1, 9544
     la        x2, test_fail
     jalr      x0, x2
@@ -121337,14 +121337,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9580: (ref=x24) andc(rs1=x17/0x437117A9)(rs2=x15/0x3BFBFAF3) => (rd=x13/0x40000508)
-.l_andc_9580_Start:
+# Test 9580: (ref=x24) andn(rs1=x17/0x437117A9)(rs2=x15/0x3BFBFAF3) => (rd=x13/0x40000508)
+.l_andn_9580_Start:
     li       x17, 0x437117A9
     li       x15, 0x3BFBFAF3
-    andc     13 17 15
+    andn     13 17 15
     li       x24, 0x40000508
     beq      x13, x24, 1f
-.l_andc_9580_Fail:
+.l_andn_9580_Fail:
     li        x1, 9580
     la        x2, test_fail
     jalr      x0, x2
@@ -121793,14 +121793,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9616: (ref=x19) andc(rs1=x30/0x5A527A3A)(rs2=x0/0x00000000) => (rd=x16/0x5A527A3A)
-.l_andc_9616_Start:
+# Test 9616: (ref=x19) andn(rs1=x30/0x5A527A3A)(rs2=x0/0x00000000) => (rd=x16/0x5A527A3A)
+.l_andn_9616_Start:
     li       x30, 0x5A527A3A
     li        x0, 0x00000000
-    andc     16 30 0
+    andn     16 30 0
     li       x19, 0x5A527A3A
     beq      x16, x19, 1f
-.l_andc_9616_Fail:
+.l_andn_9616_Fail:
     li        x1, 9616
     la        x2, test_fail
     jalr      x0, x2
@@ -122249,14 +122249,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9652: (ref=x10) andc(rs1=x22/0x6AA5D58A)(rs2=x14/0x1EEDF1E4) => (rd=x30/0x6000040A)
-.l_andc_9652_Start:
+# Test 9652: (ref=x10) andn(rs1=x22/0x6AA5D58A)(rs2=x14/0x1EEDF1E4) => (rd=x30/0x6000040A)
+.l_andn_9652_Start:
     li       x22, 0x6AA5D58A
     li       x14, 0x1EEDF1E4
-    andc     30 22 14
+    andn     30 22 14
     li       x10, 0x6000040A
     beq      x30, x10, 1f
-.l_andc_9652_Fail:
+.l_andn_9652_Fail:
     li        x1, 9652
     la        x2, test_fail
     jalr      x0, x2
@@ -122705,14 +122705,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9688: (ref=x13) andc(rs1=x31/0x56101C86)(rs2=x30/0x45C49B2C) => (rd=x14/0x12100482)
-.l_andc_9688_Start:
+# Test 9688: (ref=x13) andn(rs1=x31/0x56101C86)(rs2=x30/0x45C49B2C) => (rd=x14/0x12100482)
+.l_andn_9688_Start:
     li       x31, 0x56101C86
     li       x30, 0x45C49B2C
-    andc     14 31 30
+    andn     14 31 30
     li       x13, 0x12100482
     beq      x14, x13, 1f
-.l_andc_9688_Fail:
+.l_andn_9688_Fail:
     li        x1, 9688
     la        x2, test_fail
     jalr      x0, x2
@@ -123161,14 +123161,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9724: (ref=x29) andc(rs1=x20/0x3E68710C)(rs2=x16/0x133F8961) => (rd=x31/0x2C40700C)
-.l_andc_9724_Start:
+# Test 9724: (ref=x29) andn(rs1=x20/0x3E68710C)(rs2=x16/0x133F8961) => (rd=x31/0x2C40700C)
+.l_andn_9724_Start:
     li       x20, 0x3E68710C
     li       x16, 0x133F8961
-    andc     31 20 16
+    andn     31 20 16
     li       x29, 0x2C40700C
     beq      x31, x29, 1f
-.l_andc_9724_Fail:
+.l_andn_9724_Fail:
     li        x1, 9724
     la        x2, test_fail
     jalr      x0, x2
@@ -123617,14 +123617,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9760: (ref=x15) andc(rs1=x1/0x14E9A7A5)(rs2=x31/0x20495E7C) => (rd=x24/0x14A0A181)
-.l_andc_9760_Start:
+# Test 9760: (ref=x15) andn(rs1=x1/0x14E9A7A5)(rs2=x31/0x20495E7C) => (rd=x24/0x14A0A181)
+.l_andn_9760_Start:
     li        x1, 0x14E9A7A5
     li       x31, 0x20495E7C
-    andc     24 1 31
+    andn     24 1 31
     li       x15, 0x14A0A181
     beq      x24, x15, 1f
-.l_andc_9760_Fail:
+.l_andn_9760_Fail:
     li        x1, 9760
     la        x2, test_fail
     jalr      x0, x2
@@ -124073,14 +124073,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9796: (ref=x16) andc(rs1=x17/0x1BD5AA65)(rs2=x1/0x3D384A0B) => (rd=x1/0x02C5A064)
-.l_andc_9796_Start:
+# Test 9796: (ref=x16) andn(rs1=x17/0x1BD5AA65)(rs2=x1/0x3D384A0B) => (rd=x1/0x02C5A064)
+.l_andn_9796_Start:
     li       x17, 0x1BD5AA65
     li        x1, 0x3D384A0B
-    andc     1 17 1
+    andn     1 17 1
     li       x16, 0x02C5A064
     beq       x1, x16, 1f
-.l_andc_9796_Fail:
+.l_andn_9796_Fail:
     li        x1, 9796
     la        x2, test_fail
     jalr      x0, x2
@@ -124529,14 +124529,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9832: (ref=x17) andc(rs1=x21/0x5C345EFE)(rs2=x7/0x3C13E868) => (rd=x26/0x40241696)
-.l_andc_9832_Start:
+# Test 9832: (ref=x17) andn(rs1=x21/0x5C345EFE)(rs2=x7/0x3C13E868) => (rd=x26/0x40241696)
+.l_andn_9832_Start:
     li       x21, 0x5C345EFE
     li        x7, 0x3C13E868
-    andc     26 21 7
+    andn     26 21 7
     li       x17, 0x40241696
     beq      x26, x17, 1f
-.l_andc_9832_Fail:
+.l_andn_9832_Fail:
     li        x1, 9832
     la        x2, test_fail
     jalr      x0, x2
@@ -124985,14 +124985,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9868: (ref=x19) andc(rs1=x23/0x5F019258)(rs2=x5/0x29B8C315) => (rd=x3/0x56011048)
-.l_andc_9868_Start:
+# Test 9868: (ref=x19) andn(rs1=x23/0x5F019258)(rs2=x5/0x29B8C315) => (rd=x3/0x56011048)
+.l_andn_9868_Start:
     li       x23, 0x5F019258
     li        x5, 0x29B8C315
-    andc     3 23 5
+    andn     3 23 5
     li       x19, 0x56011048
     beq       x3, x19, 1f
-.l_andc_9868_Fail:
+.l_andn_9868_Fail:
     li        x1, 9868
     la        x2, test_fail
     jalr      x0, x2
@@ -125441,14 +125441,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9904: (ref=x9) andc(rs1=x5/0x4C3734B1)(rs2=x11/0x21CE9A94) => (rd=x14/0x4C312421)
-.l_andc_9904_Start:
+# Test 9904: (ref=x9) andn(rs1=x5/0x4C3734B1)(rs2=x11/0x21CE9A94) => (rd=x14/0x4C312421)
+.l_andn_9904_Start:
     li        x5, 0x4C3734B1
     li       x11, 0x21CE9A94
-    andc     14 5 11
+    andn     14 5 11
     li        x9, 0x4C312421
     beq      x14,  x9, 1f
-.l_andc_9904_Fail:
+.l_andn_9904_Fail:
     li        x1, 9904
     la        x2, test_fail
     jalr      x0, x2
@@ -125897,14 +125897,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9940: (ref=x4) andc(rs1=x18/0x1384283D)(rs2=x31/0x51F5C5E8) => (rd=x30/0x02002815)
-.l_andc_9940_Start:
+# Test 9940: (ref=x4) andn(rs1=x18/0x1384283D)(rs2=x31/0x51F5C5E8) => (rd=x30/0x02002815)
+.l_andn_9940_Start:
     li       x18, 0x1384283D
     li       x31, 0x51F5C5E8
-    andc     30 18 31
+    andn     30 18 31
     li        x4, 0x02002815
     beq      x30,  x4, 1f
-.l_andc_9940_Fail:
+.l_andn_9940_Fail:
     li        x1, 9940
     la        x2, test_fail
     jalr      x0, x2
@@ -126353,14 +126353,14 @@ START_TEST:
     jalr      x0, x2
 1:
 
-# Test 9976: (ref=x20) andc(rs1=x6/0x29D0FCA0)(rs2=x3/0x30D88A26) => (rd=x29/0x09007480)
-.l_andc_9976_Start:
+# Test 9976: (ref=x20) andn(rs1=x6/0x29D0FCA0)(rs2=x3/0x30D88A26) => (rd=x29/0x09007480)
+.l_andn_9976_Start:
     li        x6, 0x29D0FCA0
     li        x3, 0x30D88A26
-    andc     29 6 3
+    andn     29 6 3
     li       x20, 0x09007480
     beq      x29, x20, 1f
-.l_andc_9976_Fail:
+.l_andn_9976_Fail:
     li        x1, 9976
     la        x2, test_fail
     jalr      x0, x2

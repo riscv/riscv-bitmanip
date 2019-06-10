@@ -105,7 +105,6 @@ typedef enum riscvCSRIdE {
     CSR_ID      (vstart),       // 0x008
     CSR_ID      (vxsat),        // 0x009
     CSR_ID      (vxrm),         // 0x00A
-    CSR_ID      (vtype),        // 0x00B
     CSR_ID      (uscratch),     // 0x040
     CSR_ID      (uepc),         // 0x041
     CSR_ID      (ucause),       // 0x042
@@ -116,6 +115,7 @@ typedef enum riscvCSRIdE {
     CSR_ID      (instret),      // 0xC02
     CSR_ID_3_31 (hpmcounter),   // 0xC03-0xC1F
     CSR_ID      (vl),           // 0xC20
+    CSR_ID      (vtype),        // 0xC21
     CSR_ID      (cycleh),       // 0xC80
     CSR_ID      (timeh),        // 0xC80
     CSR_ID      (instreth),     // 0xC80
@@ -320,7 +320,7 @@ void riscvRefreshPMKey(riscvP riscv);
 //
 // Update vtype CSR
 //
-void riscvSetVType(riscvP riscv, Uns32 vsew, Uns32 vlmul);
+void riscvSetVType(riscvP riscv, Bool vill, Uns32 vsew, Uns32 vlmul);
 
 //
 // Update vl CSR and aliases of it
@@ -1048,6 +1048,7 @@ CSR_REG_STRUCT_DECL_32(vxsat);
 
 // define write masks
 #define WM32_vxsat  0x00000001
+#define WM64_vxsat  0x00000001
 
 // -----------------------------------------------------------------------------
 // vxrm         (id 0x00A)
@@ -1064,24 +1065,7 @@ CSR_REG_STRUCT_DECL_32(vxrm);
 
 // define write masks
 #define WM32_vxrm   0x00000003
-
-// -----------------------------------------------------------------------------
-// vtype        (id 0x00B)
-// -----------------------------------------------------------------------------
-
-// 32-bit view
-typedef struct {
-    Uns32 vlmul :  2;
-    Uns32 vsew  :  3;
-    Uns32 _u1   : 27;
-} CSR_REG_TYPE_32(vtype);
-
-// define 32 bit type
-CSR_REG_STRUCT_DECL_32(vtype);
-
-// define write masks (NOTE: maximum SEW of 64 in this model)
-#define WM32_vtype  0x0000000f
-#define WM64_vtype  0x0000000f
+#define WM64_vxrm   0x00000003
 
 // -----------------------------------------------------------------------------
 // vl           (id 0xC20)
@@ -1092,6 +1076,33 @@ typedef CSR_REG_TYPE(generic32) CSR_REG_TYPE(vl);
 
 // define write masks
 #define WM32_vl     0x00000000
+
+// -----------------------------------------------------------------------------
+// vtype        (id 0xC21)
+// -----------------------------------------------------------------------------
+
+// 32-bit view
+typedef struct {
+    Uns32 vlmul :  2;
+    Uns32 vsew  :  3;
+    Uns32 _u1   : 26;
+    Uns32 vill  :  1;
+} CSR_REG_TYPE_32(vtype);
+
+// 64-bit view
+typedef struct {
+    Uns64 vlmul :  2;
+    Uns64 vsew  :  3;
+    Uns64 _u1   : 58;
+    Uns64 vill  :  1;
+} CSR_REG_TYPE_64(vtype);
+
+// define 32/64 bit type
+CSR_REG_STRUCT_DECL_32_64(vtype);
+
+// define write masks
+#define WM32_vtype  0x00000000
+#define WM64_vtype  0x00000000
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1114,12 +1125,14 @@ typedef struct riscvCSRsS {
     CSR_REG_DECL(fcsr);         // 0x003
     CSR_REG_DECL(utvec);        // 0x005
     CSR_REG_DECL(vstart);       // 0x008
-    CSR_REG_DECL(vtype);        // 0x00B
+    CSR_REG_DECL(vxsat);        // 0x009
+    CSR_REG_DECL(vxrm);         // 0x00A
     CSR_REG_DECL(uscratch);     // 0x040
     CSR_REG_DECL(uepc);         // 0x041
     CSR_REG_DECL(ucause);       // 0x042
     CSR_REG_DECL(utval);        // 0x043
     CSR_REG_DECL(vl);           // 0xC20
+    CSR_REG_DECL(vtype);        // 0xC21
 
     // SUPERVISOR MODE CSRS
     CSR_REG_DECL(sedeleg);      // 0x102

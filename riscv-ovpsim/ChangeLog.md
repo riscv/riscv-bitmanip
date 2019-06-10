@@ -3,7 +3,19 @@
 #      Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com         #
 # This CHANGELOG contains information specific to the RISCV processor model   #
 ###############################################################################
-
+- Fixed bug that caused the Model Specific Documentation for the SiFive 
+  U54MC model to be missing the sections under Overview.
+- The vector extension is now implemented and enabled if the V bit is set in
+  the misa register. Variants RV32GCV and RV64GCV have been added which enable
+  this extension as standard. See the processor documentation for these variants
+  for more information.
+- New parameter 'add_Extensions' can be used to specify extensions to add to a
+  base variant, by misa letter. For example, value "VD" specifies that vector
+  and double-precision floating point extensions should be added.
+- New parameter 'add_Extensions_mask' can be used to specify that bits in the
+  misa register should be writable, by letter. For example, value "VD" specifies
+  that vector and double-precision floating point extensions can be dynamically
+  enabled.
 - Newlib semihost library for RiscV processors now support the naming convention 
   for defining the start of the heap that is used by the linker scripts in
   the BSPs provided in the SiFive freedom-e-sdk.

@@ -20,8 +20,8 @@
     .int 0x60201013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
 .endm
 
-# DECODE_ENTRY(0, ANDC,    "|0100000|.....|.....|111|.....|0110011|"); // OP
-.macro ANDC rd rs1 rs2
+# DECODE_ENTRY(0, ANDN,    "|0100000|.....|.....|111|.....|0110011|"); // OP
+.macro ANDN rd rs1 rs2
     .int 0x40007033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
@@ -207,17 +207,7 @@
 
 # DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|"); // R-type
 
-# DECODE_ENTRY(0, NEG,  "|011|000|...|00000|01|");
-.macro CNEG rd
-    .short 0x6001 | ((\rd&0x7)<<7)
-.endm
-
 # DECODE_ENTRY(0, NOT,  "|011|001|...|00000|01|");
 .macro CNOT rd
     .short 0x6401 | ((\rd&0x7)<<7)
-.endm
-
-# DECODE_ENTRY(0, BREV, "|011|010|...|00000|01|");
-.macro CBREV rd
-    .short 0x6801 | ((\rd&0x7)<<7)
 .endm

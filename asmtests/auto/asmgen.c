@@ -240,9 +240,9 @@ void do_pcnt(int test) {
     PROLOG_RR(pcnt, test);
     EPILOG(pcnt, test);
 }
-void do_andc(int test) {
-    PROLOG_RRR(andc, test);
-    EPILOG(andc, test);
+void do_andn(int test) {
+    PROLOG_RRR(andn, test);
+    EPILOG(andn, test);
 }
 void do_slo(int test) {
     PROLOG_RRR(slo, test);
@@ -428,7 +428,7 @@ int main(int argc, char **argv) {
         do_clz(++test);
         do_ctz(++test);
         do_pcnt(++test);
-        do_andc(++test);
+        do_andn(++test);
         do_slo(++test);
         do_sro(++test);
         do_sloi(++test);

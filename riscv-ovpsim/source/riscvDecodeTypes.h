@@ -168,6 +168,17 @@ typedef enum riscvITypeE {
     RV_IT_VSS_I,
     RV_IT_VSX_I,
 
+    // V-extension AMO operations (Zvamo)
+    RV_IT_VAMOADD_R,
+    RV_IT_VAMOAND_R,
+    RV_IT_VAMOMAX_R,
+    RV_IT_VAMOMAXU_R,
+    RV_IT_VAMOMIN_R,
+    RV_IT_VAMOMINU_R,
+    RV_IT_VAMOOR_R,
+    RV_IT_VAMOSWAP_R,
+    RV_IT_VAMOXOR_R,
+
     // V-extension IVV/IVX-type common instructions
     RV_IT_VMERGE_VR,
     RV_IT_VADD_VR,
@@ -181,7 +192,9 @@ typedef enum riscvITypeE {
     RV_IT_VOR_VR,
     RV_IT_VXOR_VR,
     RV_IT_VADC_VR,
+    RV_IT_VMADC_VR,
     RV_IT_VSBC_VR,
+    RV_IT_VMSBC_VR,
     RV_IT_VSLL_VR,
     RV_IT_VSRL_VR,
     RV_IT_VSRA_VR,
@@ -195,6 +208,24 @@ typedef enum riscvITypeE {
     RV_IT_VSLE_VR,
     RV_IT_VSGTU_VR,
     RV_IT_VSGT_VR,
+    RV_IT_VRGATHER_VR,
+    RV_IT_VSLIDEUP_VR,
+    RV_IT_VSLIDEDOWN_VR,
+    RV_IT_VSADDU_VR,
+    RV_IT_VSADD_VR,
+    RV_IT_VSSUBU_VR,
+    RV_IT_VSSUB_VR,
+    RV_IT_VAADD_VR,
+    RV_IT_VASUB_VR,
+    RV_IT_VSMUL_VR,
+    RV_IT_VWSMACCU_VR,
+    RV_IT_VWSMACC_VR,
+    RV_IT_VWSMACCSU_VR,
+    RV_IT_VWSMACCUS_VR,
+    RV_IT_VSSRL_VR,
+    RV_IT_VSSRA_VR,
+    RV_IT_VNCLIPU_VR,
+    RV_IT_VNCLIP_VR,
 
     // V-extension MVV/MVX-type common instructions
     RV_IT_VDIVU_VR,
@@ -217,39 +248,24 @@ typedef enum riscvITypeE {
     RV_IT_VWSUBU_WR,
     RV_IT_VWSUB_WR,
     RV_IT_VMADD_VR,
-    RV_IT_VMSUB_VR,
+    RV_IT_VNMSUB_VR,
     RV_IT_VMACC_VR,
-    RV_IT_VMSAC_VR,
+    RV_IT_VNMSAC_VR,
     RV_IT_VWMACCU_VR,
     RV_IT_VWMACC_VR,
-    RV_IT_VWMSACU_VR,
-    RV_IT_VWMSAC_VR,
+    RV_IT_VWMACCSU_VR,
+    RV_IT_VWMACCUS_VR,
 
     // V-extension IVV-type instructions
-    RV_IT_VRGATHER_VV,
-    RV_IT_VSADDU_VV,
-    RV_IT_VSADD_VV,
-    RV_IT_VSSUBU_VV,
-    RV_IT_VSSUB_VV,
-    RV_IT_VAADD_VV,
-    RV_IT_VASUB_VV,
-    RV_IT_VSMUL_VV,
-    RV_IT_VSSRL_VV,
-    RV_IT_VSSRA_VV,
-    RV_IT_VNCLIPU_VV,
-    RV_IT_VNCLIP_VV,
     RV_IT_VWREDSUMU_VS,
     RV_IT_VWREDSUM_VS,
     RV_IT_VDOTU_VV,
     RV_IT_VDOT_VV,
-    RV_IT_VWSMACCU_VV,
-    RV_IT_VWSMACC_VV,
-    RV_IT_VWSMSACU_VV,
-    RV_IT_VWSMSAC_VV,
 
     // V-extension FVV/FVF-type common instructions
     RV_IT_VFADD_VR,
     RV_IT_VFSUB_VR,
+    RV_IT_VFRSUB_VR,
     RV_IT_VFMUL_VR,
     RV_IT_VFDIV_VR,
     RV_IT_VFRDIV_VR,
@@ -324,7 +340,7 @@ typedef enum riscvITypeE {
     RV_IT_VMSBF_M,
     RV_IT_VMSOF_M,
     RV_IT_VMSIF_M,
-    RV_IT_VMIOTA_M,
+    RV_IT_VIOTA_M,
     RV_IT_VID_V,
     RV_IT_VCOMPRESS_VM,
     RV_IT_VMANDNOT_MM,
@@ -346,6 +362,7 @@ typedef enum riscvITypeE {
     RV_IT_VSLIDEUP_VI,
     RV_IT_VSLIDEDOWN_VI,
     RV_IT_VADC_VI,
+    RV_IT_VMADC_VI,
     RV_IT_VMERGE_VI,
     RV_IT_VSEQ_VI,
     RV_IT_VSNE_VI,
@@ -366,29 +383,8 @@ typedef enum riscvITypeE {
     RV_IT_VNCLIPU_VI,
     RV_IT_VNCLIP_VI,
 
-    // V-extension IVX-type instructions
-    RV_IT_VRGATHER_VX,
-    RV_IT_VSLIDEUP_VX,
-    RV_IT_VSLIDEDOWN_VX,
-    RV_IT_VSADDU_VX,
-    RV_IT_VSADD_VX,
-    RV_IT_VSSUBU_VX,
-    RV_IT_VSSUB_VX,
-    RV_IT_VAADD_VX,
-    RV_IT_VASUB_VX,
-    RV_IT_VSMUL_VX,
-    RV_IT_VSSRL_VX,
-    RV_IT_VSSRA_VX,
-    RV_IT_VNCLIPU_VX,
-    RV_IT_VNCLIP_VX,
-    RV_IT_VWSMACCU_VX,
-    RV_IT_VWSMACC_VX,
-    RV_IT_VWSMSACU_VX,
-    RV_IT_VWSMSAC_VX,
-
     // V-extension FVF-type instructions
     RV_IT_VFMV_S_F,
-    RV_IT_VFMERGE_VF,
 
     // V-extension MVX-type instructions
     RV_IT_VMV_S_X,
@@ -464,6 +460,10 @@ typedef enum riscvVITypeE {
     RV_VIT_M,       // instruction type .m
     RV_VIT_MM,      // instruction type .mm
     RV_VIT_VM,      // instruction type .vm
+    RV_VIT_VVM,     // instruction type .vvm
+    RV_VIT_VXM,     // instruction type .vxm
+    RV_VIT_VIM,     // instruction type .vim
+    RV_VIT_VFM,     // instruction type .vfm
 
 } riscvVIType;
 
@@ -503,6 +503,7 @@ typedef struct riscvInstrInfoS {
     Uns32             csr;              // CSR index
     Uns8              vsew;             // vsew value
     Uns8              vlmul;            // vmul value
+    Uns8              nf;               // nf value
     Bool              isFF;             // is this a first-fault instruction?
 
 } riscvInstrInfo;

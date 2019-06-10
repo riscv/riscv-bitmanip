@@ -48,6 +48,7 @@ typedef struct riscvConfigS {
     riscvArchitecture archMask;         // read/write bits in architecture
     riscvUserVer      user_version;     // user-level ISA version
     riscvPrivVer      priv_version;     // privileged architecture version
+    riscvVectVer      vect_version;     // vector architecture version
     const char      **members;          // cluster member variants
 
     // configuration not visible in CSR state
@@ -64,6 +65,9 @@ typedef struct riscvConfigS {
     Uns32             ELEN;             // ELEN (vector extension)
     Uns32             SLEN;             // SLEN (vector extension)
     Uns32             VLEN;             // VLEN (vector extension)
+    Bool              Zvlsseg;          // Zvlsseg implemented?
+    Bool              Zvamo;            // Zvamo implemented?
+    Bool              Zvediv;           // Zvediv implemented?
     Bool              updatePTEA;       // hardware update of PTE A bit?
     Bool              updatePTED;       // hardware update of PTE D bit?
     Bool              unaligned;        // whether unaligned accesses supported

@@ -50,6 +50,7 @@
 #define RISCV_PM_KEY            RISCV_CPU_REG(pmKey)
 #define RISCV_VPRED_MASK        RISCV_CPU_TEMP(vFieldMask)
 #define RISCV_VACTIVE_MASK      RISCV_CPU_TEMP(vActiveMask)
+#define RISCV_VTMP              RISCV_CPU_TEMP(vTmp)
 #define RISCV_VSTATE            RISCV_CPU_TEMP(vState)
 #define RISCV_FF                RISCV_CPU_REG(vFirstFault)
 #define RISCV_VLMAX             RISCV_CPU_TEMP(vlMax)

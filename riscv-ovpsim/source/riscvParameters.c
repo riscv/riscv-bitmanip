@@ -102,6 +102,19 @@ static vmiEnumParameter userVariants[RVUV_LAST+1] = {
 };
 
 //
+// Supported Vector Architecture variants
+//
+static vmiEnumParameter vectorVariants[RVVV_LAST+1] = {
+    [RVVV_20190605] = {
+        .name        = "0.7.1-draft-20190605",
+        .value       = RVVV_20190605,
+        .description = "Vector Architecture Version 0.7.1-draft-20190605",
+    },
+    // KEEP LAST: terminator
+    {0}
+};
+
+//
 // This function type is used to specify the default value for a parameter
 //
 #define RISCV_PDEFAULT_FN(_NAME) void _NAME(riscvConfigCP cfg, vmiParameterP param)
@@ -329,6 +342,13 @@ static RISCV_PDEFAULT_FN(default_VLEN) {
 }
 
 //
+// Set default values of Zvlsseg, Zvamo and Zvediv (vector extensions)
+//
+static RISCV_BOOL_PDEFAULT_CFG_FN(Zvlsseg);
+static RISCV_BOOL_PDEFAULT_CFG_FN(Zvamo);
+static RISCV_BOOL_PDEFAULT_CFG_FN(Zvediv);
+
+//
 // Table of formal parameter specifications
 //
 static riscvParameter formals[] = {
@@ -373,7 +393,9 @@ static riscvParameter formals[] = {
     {  RVPV_ALL,     default_misa_MXL,             VMI_UNS32_PARAM_SPEC (riscvParamValues, misa_MXL,             1, 1,          2,          "Override default value of misa.MXL")},
     {  RVPV_ALL,     0,                            VMI_UNS32_PARAM_SPEC (riscvParamValues, misa_MXL_mask,        0, 0,          3,          "Override mask of writable bits in misa.MXL")},
     {  RVPV_ALL,     default_misa_Extensions,      VMI_UNS32_PARAM_SPEC (riscvParamValues, misa_Extensions,      0, 0,          (1<<26)-1,  "Override default value of misa.Extensions")},
+    {  RVPV_ALL,     0,                            VMI_STRING_PARAM_SPEC(riscvParamValues, add_Extensions,       "",                        "Add extensions specified by letters to misa.Extensions (for example, specify \"VD\" to add V and D features)")},
     {  RVPV_ALL,     default_misa_Extensions_mask, VMI_UNS32_PARAM_SPEC (riscvParamValues, misa_Extensions_mask, 0, 0,          (1<<26)-1,  "Override mask of writable bits in misa.Extensions")},
+    {  RVPV_ALL,     0,                            VMI_STRING_PARAM_SPEC(riscvParamValues, add_Extensions_mask,  "",                        "Add extensions specified by letters to mask of writable bits in misa.Extensions (for example, specify \"VD\" to add V and D features)")},
     {  RVPV_ALL,     default_mvendorid,            VMI_UNS64_PARAM_SPEC (riscvParamValues, mvendorid,            0, 0,          -1,         "Override mvendorid register")},
     {  RVPV_ALL,     default_marchid,              VMI_UNS64_PARAM_SPEC (riscvParamValues, marchid,              0, 0,          -1,         "Override marchid register")},
     {  RVPV_ALL,     default_mimpid,               VMI_UNS64_PARAM_SPEC (riscvParamValues, mimpid,               0, 0,          -1,         "Override mimpid register")},
@@ -383,6 +405,9 @@ static riscvParameter formals[] = {
     {  RVPV_ALL,     default_ELEN,                 VMI_UNS32_PARAM_SPEC (riscvParamValues, ELEN,                 0, ELEN_MIN,   ELEN_MAX,   "Override ELEN (vector extension)")},
     {  RVPV_ALL,     default_SLEN,                 VMI_UNS32_PARAM_SPEC (riscvParamValues, SLEN,                 0, SLEN_MIN,   VLEN_MAX,   "Override SLEN (vector extension)")},
     {  RVPV_ALL,     default_VLEN,                 VMI_UNS32_PARAM_SPEC (riscvParamValues, VLEN,                 0, SLEN_MIN,   VLEN_MAX,   "Override VLEN (vector extension)")},
+    {  RVPV_ALL,     default_Zvlsseg,              VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvlsseg,              False,                     "Specify that Zvlsseg is implemented (vector extension)")},
+    {  RVPV_ALL,     default_Zvamo,                VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvamo,                False,                     "Specify that Zvamo is implemented (vector extension)")},
+    {  RVPV_ALL,     default_Zvediv,               VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvediv,               False,                     "Specify that Zvediv is implemented (vector extension)")},
 
     // KEEP LAST
     {  RVPV_ALL,     0,                            VMI_END_PARAM}
@@ -675,5 +700,12 @@ const char *riscvGetPrivVersionDesc(riscvP riscv) {
 //
 const char *riscvGetUserVersionDesc(riscvP riscv) {
     return userVariants[RISCV_USER_VERSION(riscv)].description;
+}
+
+//
+// Return Vector Architecture description
+//
+const char *riscvGetVectorVersionDesc(riscvP riscv) {
+    return vectorVariants[RISCV_VECT_VERSION(riscv)].description;
 }
 

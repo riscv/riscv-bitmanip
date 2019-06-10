@@ -225,13 +225,13 @@ static RISCV_CSR_READFN(frmR) {
 }
 
 //
-// Force reload of floating point control word if active mode is dynamic and RM
-// has changed
+// Update model rounding mode controls
 //
 static void refreshFPCR(riscvP riscv, Uns8 oldRM) {
 
     Uns8 newRM = RD_CSR_FIELD(riscv, fcsr, frm);
 
+    // update floating point rounding mode
     if(oldRM!=newRM) {
 
         vmiFPRC rc = updateCurrentRMValid(riscv);
@@ -245,6 +245,9 @@ static void refreshFPCR(riscvP riscv, Uns8 oldRM) {
             vmirtSetFPControlWord((vmiProcessorP)riscv, cw);
         }
     }
+
+    // update fixed point rounding mode alias
+    WR_CSR_FIELD(riscv, vxrm, rm, RD_CSR_FIELD(riscv, fcsr, vxrm));
 }
 
 //
@@ -271,12 +274,15 @@ static RISCV_CSR_WRITEFN(frmW) {
 //
 static RISCV_CSR_READFN(fcsrR) {
 
-    // compose register value
+    // compose flags in register value
     WR_CSR_FIELD(riscv, fcsr, NX, riscv->fpFlags.f.P);
     WR_CSR_FIELD(riscv, fcsr, UF, riscv->fpFlags.f.U);
     WR_CSR_FIELD(riscv, fcsr, OF, riscv->fpFlags.f.O);
     WR_CSR_FIELD(riscv, fcsr, DZ, riscv->fpFlags.f.Z);
     WR_CSR_FIELD(riscv, fcsr, NV, riscv->fpFlags.f.I);
+
+    // compose vxsat in register value
+    WR_CSR_FIELD(riscv, fcsr, vxsat, RD_CSR(riscv, vxsat));
 
     // return composed value
     return RD_CSR(riscv, fcsr);
@@ -293,14 +299,17 @@ static RISCV_CSR_WRITEFN(fcsrW) {
     // update the CSR
     WR_CSR(riscv, fcsr, newValue & mask);
 
-    // extract flags
+    // extract flags from register value
     riscv->fpFlags.f.P = RD_CSR_FIELD(riscv, fcsr, NX);
     riscv->fpFlags.f.U = RD_CSR_FIELD(riscv, fcsr, UF);
     riscv->fpFlags.f.O = RD_CSR_FIELD(riscv, fcsr, OF);
     riscv->fpFlags.f.Z = RD_CSR_FIELD(riscv, fcsr, DZ);
     riscv->fpFlags.f.I = RD_CSR_FIELD(riscv, fcsr, NV);
 
-    // handle change to rounding mode
+    // extract vxsat from register value
+    WR_CSR(riscv, vxsat, RD_CSR_FIELD(riscv, fcsr, vxsat));
+
+    // handle change to rounding modes
     refreshFPCR(riscv, oldRM);
 
     // return written value
@@ -1270,58 +1279,15 @@ static RISCV_CSR_WRITEFN(pmpaddrW) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// Read vxrm register
-//
-static RISCV_CSR_READFN(vxrmR) {
-    return RD_CSR_FIELD(riscv, fcsr, vxrm);
-}
-
-//
 // Write vxrm register
 //
 static RISCV_CSR_WRITEFN(vxrmW) {
+
+    // update alias in fcsr
     WR_CSR_FIELD(riscv, fcsr, vxrm, newValue);
-    return newValue;
-}
 
-//
-// Read vxsat register
-//
-static RISCV_CSR_READFN(vxsatR) {
-    return RD_CSR_FIELD(riscv, fcsr, vxsat);
-}
-
-//
-// Write vxsat register
-//
-static RISCV_CSR_WRITEFN(vxsatW) {
-    WR_CSR_FIELD(riscv, fcsr, vxsat, newValue);
-    return newValue;
-}
-
-//
-// Write vxsat register
-//
-static RISCV_CSR_WRITEFN(vtypeW) {
-
-    newValue &= WM32_vtype;
-
-    // get vtype fields
-    CSR_REG_DECL(vtype) = {u32 : {bits:newValue}};
-
-    if(riscvValidSEW(riscv, vtype.u32.fields.vsew)) {
-
-        // write value
-        WR_CSR(riscv, vtype, newValue);
-
-        // set matching polymorphic key
-        riscvRefreshPMKey(riscv);
-
-    } else {
-
-        // illegal SEW specified
-        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "ISEW", "Unsupported SEW");
-    }
+    // update fixed point rounding mode alias
+    WR_CSR_FIELD(riscv, vxrm, rm, newValue);
 
     return newValue;
 }
@@ -1331,27 +1297,26 @@ static RISCV_CSR_WRITEFN(vtypeW) {
 //
 void riscvRefreshPMKey(riscvP riscv) {
 
-    Uns32 vl    = RD_CSR(riscv, vl);
-    Uns32 SEW   = 8<<RD_CSR_FIELD(riscv, vtype, vsew);
-    Uns32 VLMUL = 1<<RD_CSR_FIELD(riscv, vtype, vlmul);
-    Uns32 vlMax = riscv->configInfo.VLEN*VLMUL/SEW;
+    Uns32 vl       = RD_CSR(riscv, vl);
+    Uns32 SEW      = 8<<RD_CSR_FIELD(riscv, vtype, vsew);
+    Uns32 VLMUL    = 1<<RD_CSR_FIELD(riscv, vtype, vlmul);
+    Uns32 vlMax    = riscv->configInfo.VLEN*VLMUL/SEW;
+    Uns32 vtypeKey = RD_CSR(riscv, vtype)<<2;
+    Uns32 villKey  = RD_CSR_FIELD(riscv, vtype, vill)<<2;
     Uns32 pmKey;
 
     // set current maximum vl for SEW/VLMUL combination
     riscv->vlMax = (vl>vlMax) ? vlMax : vl;
 
-    // key always includes VLClass
-    if(!vl) {
+    // compose key
+    if(villKey) {
+        pmKey = VLCLASSMT_UNKNOWN | villKey;
+    } else if(!vl) {
         pmKey = VLCLASSMT_ZERO;
     } else if(riscv->vlMax==vlMax) {
-        pmKey = VLCLASSMT_MAX;
+        pmKey = VLCLASSMT_MAX | vtypeKey;
     } else {
-        pmKey = VLCLASSMT_NONZERO;
-    }
-
-    // key includes vsew and vlmul only if class is not VLCLASSMT_ZERO
-    if(pmKey!=VLCLASSMT_ZERO) {
-        pmKey |= (RD_CSR(riscv, vtype)<<2);
+        pmKey = VLCLASSMT_NONZERO | vtypeKey;
     }
 
     // set initial polymorphic key
@@ -1364,10 +1329,11 @@ void riscvRefreshPMKey(riscvP riscv) {
 //
 // Update vtype CSR
 //
-void riscvSetVType(riscvP riscv, Uns32 vsew, Uns32 vlmul) {
+void riscvSetVType(riscvP riscv, Bool vill, Uns32 vsew, Uns32 vlmul) {
 
     WR_CSR_FIELD(riscv, vtype, vsew,  vsew);
     WR_CSR_FIELD(riscv, vtype, vlmul, vlmul);
+    WR_CSR_FIELD(riscv, vtype, vill,  vill);
 }
 
 //
@@ -1583,9 +1549,8 @@ static const riscvCSRAttrs csrs[CSR_ID(LAST)] = {
     CSR_ATTR_P__     (uie,          0x004, ISA_N,       1_10,   1,0,0,  "User Interrupt Enable",                         0,           uieR,       0,     uieW          ),
     CSR_ATTR_T__     (utvec,        0x005, ISA_N,       1_10,   0,0,0,  "User Trap-Vector Base-Address",                 0,           0,          0,     utvecW        ),
     CSR_ATTR_TV_     (vstart,       0x008, ISA_V,       1_11,   0,0,0,  "Vector Start Index",                            riscvWVStart,0,          0,     0             ),
-    CSR_ATTR_P__     (vxsat,        0x009, ISA_V,       1_11,   0,0,0,  "Fixed-Point Saturate Flag",                     0,           vxsatR,     0,     vxsatW        ),
-    CSR_ATTR_P__     (vxrm,         0x00A, ISA_V,       1_11,   0,0,0,  "Fixed-Point Rounding Mode",                     0,           vxrmR,     0,      vxrmW         ),
-    CSR_ATTR_TC_     (vtype,        0x00B, ISA_V,       1_11,   0,0,0,  "Vector Type",                                   riscvWVType, 0,          0,     vtypeW        ),
+    CSR_ATTR_TC_     (vxsat,        0x009, ISA_V,       1_11,   0,0,0,  "Fixed-Point Saturate Flag",                     0,           0,          0,     0             ),
+    CSR_ATTR_TC_     (vxrm,         0x00A, ISA_V,       1_11,   0,0,0,  "Fixed-Point Rounding Mode",                     0,           0,          0,     vxrmW         ),
     CSR_ATTR_T__     (uscratch,     0x040, ISA_N,       1_10,   0,0,0,  "User Scratch",                                  0,           0,          0,     0             ),
     CSR_ATTR_TV_     (uepc,         0x041, ISA_N,       1_10,   0,0,0,  "User Exception Program Counter",                0,           uepcR,      0,     0             ),
     CSR_ATTR_TV_     (ucause,       0x042, ISA_N,       1_10,   0,0,0,  "User Cause",                                    0,           0,          0,     0             ),
@@ -1596,6 +1561,7 @@ static const riscvCSRAttrs csrs[CSR_ID(LAST)] = {
     CSR_ATTR_P__     (instret,      0xC02, 0,           1_10,   0,1,0,  "Instructions Retired",                          0,           minstretR,  0,     0             ),
     CSR_ATTR_P__3_31 (hpmcounter,   0xC00, 0,           1_10,   0,0,0,  "Performance Monitor Counter ",                  0,           mhpmR,      0,     mhpmW         ),
     CSR_ATTR_T__     (vl,           0xC20, ISA_V,       1_11,   0,0,0,  "Vector Length",                                 0,           0,          0,     0             ),
+    CSR_ATTR_T__     (vtype,        0xC21, ISA_V,       1_11,   0,0,0,  "Vector Type",                                   0,           0,          0,     0             ),
     CSR_ATTR_P__     (cycleh,       0xC80, ISA_XLEN_32, 1_10,   0,1,0,  "Cycle Counter High",                            0,           mcyclehR,   0,     0             ),
     CSR_ATTR_P__     (timeh,        0xC81, ISA_XLEN_32, 1_10,   0,1,0,  "Timer High",                                    0,           mtimehR,    0,     0             ),
     CSR_ATTR_P__     (instreth,     0xC82, ISA_XLEN_32, 1_10,   0,1,0,  "Instructions Retired High",                     0,           minstrethR, 0,     0             ),
@@ -2994,9 +2960,17 @@ void riscvCSRSave(
            break;
 
         case SRT_END_CORE:
+
             // end of individual core
             VMIRT_SAVE_FIELD(cxt, riscv, baseCycles);
             VMIRT_SAVE_FIELD(cxt, riscv, baseInstructions);
+
+            // read-only vector register state requires explicit save
+            if(riscv->configInfo.arch & ISA_V) {
+                VMIRT_SAVE_FIELD(cxt, riscv, csr.vl);
+                VMIRT_SAVE_FIELD(cxt, riscv, csr.vtype);
+            }
+
             break;
 
         case SRT_END:
@@ -3029,9 +3003,18 @@ void riscvCSRRestore(
             break;
 
         case SRT_END_CORE:
+
             // end of individual core
             VMIRT_RESTORE_FIELD(cxt, riscv, baseCycles);
             VMIRT_RESTORE_FIELD(cxt, riscv, baseInstructions);
+
+            // read-only vector register state requires explicit restore
+            if(riscv->configInfo.arch & ISA_V) {
+                VMIRT_RESTORE_FIELD(cxt, riscv, csr.vl);
+                VMIRT_RESTORE_FIELD(cxt, riscv, csr.vtype);
+                riscvRefreshPMKey(riscv);
+            }
+
             break;
 
         case SRT_END:

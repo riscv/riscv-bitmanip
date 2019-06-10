@@ -72,7 +72,9 @@ typedef struct riscvParamValuesS {
     VMI_UNS32_PARAM(misa_MXL);
     VMI_UNS32_PARAM(misa_MXL_mask);
     VMI_UNS32_PARAM(misa_Extensions);
+    VMI_STRING_PARAM(add_Extensions);
     VMI_UNS32_PARAM(misa_Extensions_mask);
+    VMI_STRING_PARAM(add_Extensions_mask);
     VMI_UNS64_PARAM(mvendorid);
     VMI_UNS64_PARAM(marchid);
     VMI_UNS64_PARAM(mimpid);
@@ -82,6 +84,9 @@ typedef struct riscvParamValuesS {
     VMI_UNS32_PARAM(ELEN);
     VMI_UNS32_PARAM(SLEN);
     VMI_UNS32_PARAM(VLEN);
+    VMI_BOOL_PARAM(Zvlsseg);
+    VMI_BOOL_PARAM(Zvamo);
+    VMI_BOOL_PARAM(Zvediv);
 
 } riscvParamValues;
 
@@ -104,3 +109,9 @@ const char *riscvGetPrivVersionDesc(riscvP riscv);
 // Return User Architecture description
 //
 const char *riscvGetUserVersionDesc(riscvP riscv);
+
+//
+// Return Vector Architecture description
+//
+const char *riscvGetVectorVersionDesc(riscvP riscv);
+
