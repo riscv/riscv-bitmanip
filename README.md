@@ -10,7 +10,13 @@ See [bitmanip-0.90.pdf](bitmanip-0.90.pdf) for a pre-built version of the PDF sp
 The source of the PDF specification is in the [texsrc](texsrc) directory with script (`bitmanip.sh`) to build the PDF.
 
 ## Toolchain
-See the [patches](patches) directory for patches for [riscv-opcodes](https://github.com/riscv/riscv-opcodes) and [binutils](https://www.gnu.org/software/binutils/). See [rvintrin.h](https://github.com/riscv/riscv-bitmanip/blob/master/cproofs/rvintrin.h) for compiler intrinsics.
+See the [patches](patches) directory for patches for [riscv-opcodes](https://github.com/riscv/riscv-opcodes),
+[binutils](https://www.gnu.org/software/binutils/), and [riscv-isa-sim](https://github.com/riscv/riscv-isa-sim) (aka spike).
+See [rvintrin.h](https://github.com/riscv/riscv-bitmanip/blob/master/cproofs/rvintrin.h) for compiler intrinsics.
+
+## Test Suite
+
+The [tests](tests) directory contains a test suite for the toolchain and bitmanip instructions.
 
 ## Verilog Reference
 The [verilog](verilog) directory includes various Verilog reference implementations.
@@ -18,7 +24,9 @@ The [verilog](verilog) directory includes various Verilog reference implementati
 ## cproofs
 The [cproofs](cproofs) directory contains the reference C models and a few related formal proofs.
 
-## riscvOVPsim Reference Simulation
+----
+
+# Imperas riscvOVPsim Reference Simulation
 Included in this repository in the directory [riscv-ovpsim](riscv-ovpsim) is a version of the Imperas [riscvOVPsim](riscv-ovpsim/README.md) simulator that includes a full implementation of the RISC-V 32 & 64 Bit ISA specification and an implementation of these new bitmanip instructions. 
 
 To enable the new instructions, enable the B bit in the MISA register
@@ -57,31 +65,7 @@ And then you run the tests:
 
     $ make runtest
     
-This process is self checking, and will report a set of passing/failing tests at the end:
-
-    Test Passed andc
-    Test Passed autoasm
-    Test Passed bdep
-    Test Passed bext
-    Test Passed cbrev
-    Test Passed clz
-    Test Passed cneg
-    Test Passed cnot
-    Test Passed ctz
-    Test Passed grev
-    Test Passed grevi
-    Test Passed gzip
-    Test Passed pcnt
-    Test Passed rol
-    Test Passed ror
-    Test Passed rori
-    Test Passed shfl
-    Test Passed shfli
-    Test Passed slo
-    Test Passed sloi
-    Test Passed sro
-    Test Passed sroi
-    Summary: All Tests Passed
+This process is self checking, and will report a set of passing/failing tests at the end.
 
 ## Clean Sandbox
 To remove all generated files:
