@@ -184,21 +184,23 @@ static void putReg(char **result, riscvRegDesc r, Bool opt, Bool uncooked) {
 }
 
 //
-// Emit mask register argument
+// Emit optional mask register argument
 //
-static void putMask(char **result, riscvRegDesc r, Bool uncooked) {
+static void putOptMask(
+    char       **result,
+    riscvRegDesc mask,
+    const char  *suffix,
+    Bool         uncooked
+) {
+    if(mask) {
 
-    if(r) {
+        putUncookedKey(result, " MASK", uncooked);
 
-        putString(result, riscvGetVRegName(getRIndex(r)));
+        putString(result, riscvGetVRegName(getRIndex(mask)));
 
         if(!uncooked) {
-            putString(result, ".t");
+            putString(result, suffix);
         }
-
-    } else if(uncooked) {
-
-        putChar(result, 'F');
     }
 }
 
@@ -238,34 +240,39 @@ static void putFence(
 //
 // Emit rounding mode argument
 //
-static void putRM(char ** result, riscvRMDesc rm, Bool uncooked) {
+static void putOptRM(char **result, riscvRMDesc rm, Bool uncooked) {
 
-    if(uncooked && (rm==RV_RM_CURRENT)) {
+    if(rm) {
 
-        putString(result, "rmc");
+        putUncookedKey(result, " RM", uncooked);
 
-    } else {
+        if(uncooked && (rm==RV_RM_CURRENT)) {
 
-        static const char *map[] = {
-            [RV_RM_NA]      = "",
-            [RV_RM_CURRENT] = "",
-            [RV_RM_RTE]     = "rte",
-            [RV_RM_RTZ]     = "rtz",
-            [RV_RM_RDN]     = "rdn",
-            [RV_RM_RUP]     = "rup",
-            [RV_RM_RMM]     = "rmm",
-            [RV_RM_BAD5]    = "rm5",
-            [RV_RM_BAD6]    = "rm6",
-        };
+            putString(result, "rmc");
 
-        putString(result, map[rm]);
+        } else {
+
+            static const char *map[] = {
+                [RV_RM_NA]      = "",
+                [RV_RM_CURRENT] = "",
+                [RV_RM_RTE]     = "rte",
+                [RV_RM_RTZ]     = "rtz",
+                [RV_RM_RDN]     = "rdn",
+                [RV_RM_RUP]     = "rup",
+                [RV_RM_RMM]     = "rmm",
+                [RV_RM_BAD5]    = "rm5",
+                [RV_RM_BAD6]    = "rm6",
+            };
+
+            putString(result, map[rm]);
+        }
     }
 }
 
 //
 // Emit VType argument
 //
-static void putVType(char ** result, Uns8 vsew, Uns8 vlmul) {
+static void putVType(char **result, Uns8 vsew, Uns8 vlmul) {
 
     putChar(result, 'e');
     putD(result, 8<<vsew);
@@ -337,6 +344,12 @@ static void putOpcode(char **result, riscvP riscv, riscvInstrInfoP info) {
         type = putType(result, info, info->r[i], type);
     }
 
+    // emit number of fields if required
+    if(info->nf) {
+        putString(result, "seg");
+        putD(result, info->nf+1);
+    }
+
     // emit size modifier if required
     switch(info->memBits) {
         case 8:  putChar(result, 'b'); break;
@@ -363,19 +376,23 @@ static void putOpcode(char **result, riscvP riscv, riscvInstrInfoP info) {
 
     // vector suffixes
     static const char *viDescs[] = {
-        [RV_VIT_NA] = "",
-        [RV_VIT_V]  = ".v",
-        [RV_VIT_VV] = ".vv",
-        [RV_VIT_VI] = ".vi",
-        [RV_VIT_VX] = ".vx",
-        [RV_VIT_WV] = ".wv",
-        [RV_VIT_WX] = ".wx",
-        [RV_VIT_VF] = ".vf",
-        [RV_VIT_WF] = ".wf",
-        [RV_VIT_VS] = ".vs",
-        [RV_VIT_M]  = ".m",
-        [RV_VIT_MM] = ".mm",
-        [RV_VIT_VM] = ".vm",
+        [RV_VIT_NA]  = "",
+        [RV_VIT_V]   = ".v",
+        [RV_VIT_VV]  = ".vv",
+        [RV_VIT_VI]  = ".vi",
+        [RV_VIT_VX]  = ".vx",
+        [RV_VIT_WV]  = ".wv",
+        [RV_VIT_WX]  = ".wx",
+        [RV_VIT_VF]  = ".vf",
+        [RV_VIT_WF]  = ".wf",
+        [RV_VIT_VS]  = ".vs",
+        [RV_VIT_M]   = ".m",
+        [RV_VIT_MM]  = ".mm",
+        [RV_VIT_VM]  = ".vm",
+        [RV_VIT_VVM] = ".vvm",
+        [RV_VIT_VXM] = ".vxm",
+        [RV_VIT_VIM] = ".vim",
+        [RV_VIT_VFM] = ".vfm",
     };
 
     // emit vector suffix
@@ -497,8 +514,10 @@ static void disassembleFormat(
                     putVType(result, info->vsew, info->vlmul);
                     break;
                 case EMIT_RM:
-                    putUncookedKey(result, " RM", uncooked);
-                    putMask(result, info->mask, uncooked);
+                    putOptMask(result, info->mask, ".t", uncooked);
+                    break;
+                case EMIT_RMR:
+                    putOptMask(result, info->mask, "", uncooked);
                     break;
                 case '*':
                     nextOpt = True;
@@ -517,10 +536,7 @@ static void disassembleFormat(
     }
 
     // emit optional rounding mode
-    if(info->rm) {
-        putUncookedKey(result, " RM", uncooked);
-        putRM(result, info->rm, uncooked);
-    }
+    putOptRM(result, info->rm, uncooked);
 
     // strip trailing whitespace and commas
     char *tail = (*result)-1;

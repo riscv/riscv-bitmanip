@@ -690,6 +690,7 @@
     memBits  : MBS_14_12_V,         \
     unsExt   : _UNS ? USX_28 : 0,   \
     ff       : FF_24,               \
+    nf       : NF_31_29,            \
     VIType   : RV_VIT_V,            \
 }
 
@@ -708,6 +709,7 @@
     mask     : RS_V_M_25,           \
     memBits  : MBS_14_12_V,         \
     unsExt   : _UNS ? USX_28 : 0,   \
+    nf       : NF_31_29,            \
     VIType   : RV_VIT_V,            \
 }
 
@@ -726,6 +728,25 @@
     mask     : RS_V_M_25,           \
     memBits  : MBS_14_12_V,         \
     unsExt   : _UNS ? USX_28 : 0,   \
+    nf       : NF_31_29,            \
+    VIType   : RV_VIT_V,            \
+}
+
+//
+// Attribute entries for 32-bit instructions like VAMOADD
+//
+#define ATTR32_VAMOADD(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R3_MEM2_R4_RM,\
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7_Z26,       \
+    r2       : RS_X_19_15,          \
+    r3       : RS_V_24_20,          \
+    r4       : RS_V_11_7,           \
+    mask     : RS_V_M_25,           \
+    memBits  : MBS_12,              \
     VIType   : RV_VIT_V,            \
 }
 
@@ -761,17 +782,49 @@
 }
 
 //
-// Attribute entries for 32-bit instructions like VMACC.VV
+// Attribute entries for 32-bit instructions like VADC.VVM
 //
-#define ATTR32_VV3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+#define ATTR32_VVM_CIN(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
     opcode   : _OPCODE,             \
     pattern  : _PATTERN,            \
-    format   : FMT_R1_R3_R2_RM,     \
+    format   : FMT_R1_R2_R3_RMR,    \
     type     : RV_IT_##_GENERIC,    \
     arch     : _ARCH,               \
     r1       : RS_V_11_7,           \
     r2       : RS_V_24_20,          \
     r3       : RS_V_19_15,          \
+    mask     : RS_V0,               \
+    VIType   : RV_VIT_VVM,          \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMERGE.VVM
+//
+#define ATTR32_VVM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RMR,    \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_V_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VVM,          \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMACC.VV
+//
+#define ATTR32_VV3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_19_15,          \
+    r3       : RS_V_24_20,          \
     mask     : RS_V_M_25,           \
     VIType   : RV_VIT_VV,           \
 }
@@ -782,12 +835,12 @@
 #define ATTR32_VM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
     opcode   : _OPCODE,             \
     pattern  : _PATTERN,            \
-    format   : FMT_R1_R2_R3,        \
+    format   : FMT_R1_R2_RMR,       \
     type     : RV_IT_##_GENERIC,    \
     arch     : _ARCH,               \
     r1       : RS_V_11_7,           \
     r2       : RS_V_24_20,          \
-    r3       : RS_V_19_15,          \
+    mask     : RS_V_19_15,          \
     VIType   : RV_VIT_VM,           \
 }
 
@@ -885,17 +938,49 @@
 }
 
 //
-// Attribute entries for 32-bit instructions like VMACC.VX
+// Attribute entries for 32-bit instructions like VADC.VXM
 //
-#define ATTR32_VX3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+#define ATTR32_VXM_CIN(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
     opcode   : _OPCODE,             \
     pattern  : _PATTERN,            \
-    format   : FMT_R1_R3_R2_RM,     \
+    format   : FMT_R1_R2_R3_RMR,    \
     type     : RV_IT_##_GENERIC,    \
     arch     : _ARCH,               \
     r1       : RS_V_11_7,           \
     r2       : RS_V_24_20,          \
     r3       : RS_X_19_15,          \
+    mask     : RS_V0,               \
+    VIType   : RV_VIT_VXM,          \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMERGE.VXM
+//
+#define ATTR32_VXM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RMR,    \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    r3       : RS_X_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VXM,          \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMACC.VX
+//
+#define ATTR32_VX3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_X_19_15,          \
+    r3       : RS_V_24_20,          \
     mask     : RS_V_M_25,           \
     VIType   : RV_VIT_VX,           \
 }
@@ -917,17 +1002,33 @@
 }
 
 //
-// Attribute entries for 32-bit instructions like VFMADD.VF
+// Attribute entries for 32-bit instructions like VFMERGE.VFM
 //
-#define ATTR32_VF3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+#define ATTR32_VFM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
     opcode   : _OPCODE,             \
     pattern  : _PATTERN,            \
-    format   : FMT_R1_R3_R2_RM,     \
+    format   : FMT_R1_R2_R3_RMR,    \
     type     : RV_IT_##_GENERIC,    \
     arch     : _ARCH,               \
     r1       : RS_V_11_7,           \
     r2       : RS_V_24_20,          \
     r3       : RS_F_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VFM,          \
+}
+
+//
+// Attribute entries for 32-bit instructions like VFMADD.VF
+//
+#define ATTR32_VF3(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_R3_RM,     \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_F_19_15,          \
+    r3       : RS_V_24_20,          \
     mask     : RS_V_M_25,           \
     VIType   : RV_VIT_VF,           \
 }
@@ -962,6 +1063,38 @@
     cs       : CS_S_19_15,          \
     mask     : RS_V_M_25,           \
     VIType   : RV_VIT_VI,           \
+}
+
+//
+// Attribute entries for 32-bit instructions like VADC.VIM
+//
+#define ATTR32_VIM_CIN(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_SIMM_RMR,  \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    cs       : CS_S_19_15,          \
+    mask     : RS_V0,               \
+    VIType   : RV_VIT_VIM,          \
+}
+
+//
+// Attribute entries for 32-bit instructions like VMERGE.VIM
+//
+#define ATTR32_VIM(_NAME, _GENERIC, _ARCH, _OPCODE, _PATTERN) [IT32_##_NAME] = { \
+    opcode   : _OPCODE,             \
+    pattern  : _PATTERN,            \
+    format   : FMT_R1_R2_SIMM_RMR,  \
+    type     : RV_IT_##_GENERIC,    \
+    arch     : _ARCH,               \
+    r1       : RS_V_11_7,           \
+    r2       : RS_V_24_20,          \
+    cs       : CS_S_19_15,          \
+    mask     : RS_V_M_25,           \
+    VIType   : RV_VIT_VIM,          \
 }
 
 //
@@ -1067,6 +1200,7 @@
     r1       : RS_F_11_7,           \
     r2       : RS_V_24_20,          \
     VIType   : RV_VIT_NA,           \
+    wF       : WF_ARCH,             \
 }
 
 //
@@ -1081,6 +1215,7 @@
     r1       : RS_V_11_7,           \
     r2       : RS_F_19_15,          \
     VIType   : RV_VIT_NA,           \
+    wF       : WF_ARCH,             \
 }
 
 //

@@ -133,11 +133,6 @@ void riscvConfigureVector(riscvP riscv);
 void riscvWVStart(riscvMorphStateP state, Bool useRS1);
 
 //
-// Adjust JIT code generator state after write of vtype CSR
-//
-void riscvWVType(riscvMorphStateP state, Bool useRS1);
-
-//
 // Is the specified SEW valid?
 //
 riscvSEWMt riscvValidSEW(riscvP riscv, Uns8 vsew);

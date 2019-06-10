@@ -77,6 +77,7 @@ typedef enum riscvArchitectureE {
     RV32G    = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A |                 ISA_F | ISA_D,
     RV32GC   = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D,
     RV32GCN  = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D | ISA_N,
+    RV32GCV  = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D         | ISA_V,
     RV32EC   = ISA_XLEN_32  |                         ISA_C | ISA_E,
 
     RV32CF   = RV32F|RV32C,
@@ -96,6 +97,7 @@ typedef enum riscvArchitectureE {
     RV64G    = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A |                 ISA_F | ISA_D,
     RV64GC   = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D,
     RV64GCN  = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D | ISA_N,
+    RV64GCV  = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D         | ISA_V,
 
     RVANY    = ISA_XLEN_ANY,
     RVANYI   = ISA_XLEN_ANY | ISA_I,
@@ -110,6 +112,7 @@ typedef enum riscvArchitectureE {
 
     RVANYDF  = RVANYD|RVANYF,
     RVANYCD  = RVANYC|RVANYD,
+    RVANYVA  = RVANYV|RVANYA,
 
 } riscvArchitecture;
 
@@ -141,9 +144,21 @@ typedef enum riscvPrivVerE {
     RVPV_DEFAULT = RVPV_20190405,   // default version
 } riscvPrivVer;
 
+//
+// Supported Vector Architecture versions
+//
+typedef enum riscvVectVerE {
+    RVVV_20190605,                  // version 0.7.1-draft-20190605
+    RVVV_LAST,                      // for sizing
+    RVVV_DEFAULT = RVVV_20190605,   // default version
+} riscvVectVer;
+
 // macro returning User Architecture version
 #define RISCV_USER_VERSION(_P) ((_P)->configInfo.user_version)
 
 // macro returning Privileged Architecture version
 #define RISCV_PRIV_VERSION(_P) ((_P)->configInfo.priv_version)
+
+// macro returning Vector Architecture version
+#define RISCV_VECT_VERSION(_P) ((_P)->configInfo.vect_version)
 

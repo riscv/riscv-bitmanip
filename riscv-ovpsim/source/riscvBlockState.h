@@ -60,6 +60,15 @@ typedef enum riscvVLClassE {
 } riscvVLClassMt;
 
 //
+// This indicates the VLMUL for which a vector register is known to have top
+// zero (either a single register, or a component of a group)
+//
+typedef enum riscvTZE {
+    VTZ_SINGLE,
+    VTZ_GROUP,
+} riscvTZ;
+
+//
 // This defines a bit in the polymorphic key indicating whether the current
 // rounding mode is valid
 //

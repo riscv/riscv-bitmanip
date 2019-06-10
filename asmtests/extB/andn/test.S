@@ -30,12 +30,12 @@
 # use s0(r8)  - s1(r9)
 # use s2(r18) - s11(r27)
 
-.macro test_ANDC imm1 imm2
+.macro test_ANDN imm1 imm2
     WRITE_LOG_N str1
     WRITE_S sep
     li s3, \imm1
     li s4, \imm2
-    ANDC 18 19 20
+    ANDN 18 19 20
     WRITE_RAW s3
     WRITE_S op
     WRITE_RAW s4
@@ -46,11 +46,11 @@
 
 #if defined(XLEN64)
     #define test_OP(i1, i2) \
-        test_ANDC 0x ## i1 0x ## i2; \
-        test_ANDC 0x ## i1 ## i1 0x ## i2 ## i2;
+        test_ANDN 0x ## i1 0x ## i2; \
+        test_ANDN 0x ## i1 ## i1 0x ## i2 ## i2;
 #else
     #define test_OP(i1, i2) \
-        test_ANDC 0x ## i1 0x ## i2;
+        test_ANDN 0x ## i1 0x ## i2;
 #endif
 
 START_TEST:
@@ -66,7 +66,7 @@ START_TEST:
     EXIT_TEST
 
 str1:
-    .string "Testing ANDC"
+    .string "Testing ANDN"
 
 sep:
     .string " "

@@ -249,8 +249,8 @@ typedef struct riscvS {
     Uns8               vFieldMask;                  // vector field mask
     Uns8               vActiveMask;                 // vector active element mask
     Bool               vFirstFault;                 // vector first fault active?
-    Uns32              vlMax;                       // maximum vl element number
-    Uns64              vState;                      // vector mask operation state
+    Uns64              vlMax;                       // maximum vl element number
+    Uns64              vTmp;                        // vector operation temporary
     riscvVRegBank      v;                           // vector registers (configurable size)
     UnsPS              vBase[NUM_BASE_REGS];        // indexed base registers
     riscvStrideOffset  offsetsLMULx2[VBYTES_MAX*2]; // LMULx2 stride offsets
