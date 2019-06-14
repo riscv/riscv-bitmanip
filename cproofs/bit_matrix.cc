@@ -128,3 +128,27 @@ extern "C" void round_pow2_check(uint64_t x)
 }
 
 // ---------------------------------------------------------
+
+extern "C" void strlen_check(uint64_t x)
+{
+	unsigned char b0 = x;
+	unsigned char b1 = x >> 8;
+	unsigned char b2 = x >> 16;
+	unsigned char b3 = x >> 24;
+	unsigned char b4 = x >> 32;
+	unsigned char b5 = x >> 40;
+	unsigned char b6 = x >> 48;
+	unsigned char b7 = x >> 56;
+	int cnt = !b0 ? 0 : !b1 ? 1 : !b2 ? 2 : !b3 ? 3 : !b4 ? 4 : !b5 ? 5 : !b6 ? 6 : !b7 ? 7 : 8;
+
+	uint64_t m = 0x0101010101010101LL;
+	int cnt2 = ctz(~bmatflip(bmator(x, m)));
+
+	// 'm' above is just bmatflip(255). So this also works:
+	int cnt3 = ctz(~bmator(255, bmatflip(x)));
+
+	assert(cnt == cnt2);
+	assert(cnt == cnt3);
+}
+
+// ---------------------------------------------------------
