@@ -149,6 +149,11 @@ extern "C" void strlen_check(uint64_t x)
 
 	assert(cnt == cnt2);
 	assert(cnt == cnt3);
+
+	if (!(bmator(x, -1LL)+1))
+		assert(cnt == 8);
+	else
+		assert(cnt != 8);
 }
 
 // ---------------------------------------------------------

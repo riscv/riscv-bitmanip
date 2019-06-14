@@ -105,6 +105,48 @@ instruction, or something like the following sequence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Counting trailing non-zero bytes}
+
+Counting the trailing (LSB-end) non-zero bytes in a 64-bit word
+is a helpful operation in optimized implementations of strlen
+and strcpy:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int count_trailing_nonzero_bytes(int64_t x)
+  {
+    uint64_t m = 0x0101010101010101LL;
+    return ctz(~bmatflip(bmator(x, m)));
+  }
+\end{verbatim}
+\end{minipage}
+
+Because {\tt 0x0101010101010101LL} is {\tt bmatflip(255)} we can also write
+this as following:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int count_trailing_nonzero_bytes(int64_t x)
+  {
+    return ctz(~bmator(255, bmatflip(x)));
+  }
+\end{verbatim}
+\end{minipage}
+
+And the following code can be used to simply check if all 8 bytes in a 64-bit word
+are nonzero:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  bool all_nonzero_bytes(int64_t x)
+  {
+    return !(bmator(x, -1LL) + 1);
+  }
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Fill right of most significant set bit}
 
 The ``fill right'' or ``fold right'' operation is a pattern commonly used in bit manipulation code.~\cite{MAGIC}
