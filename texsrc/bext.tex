@@ -1135,6 +1135,10 @@ word {\tt rs2} is non-zero, and {\tt rs3} if the control word is zero.
 
 \input{bextcref-cmov}
 
+The {\tt cmov} instruction helps avoiding branches, which can lead to better
+performance, and helps with constant-time code as used in some cryptography
+applications.
+
 \subsection{Funnel shift ({\tt fsl}, {\tt fsr}, {\tt fsri})}
 
 \begin{rvb}
