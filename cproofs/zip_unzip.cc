@@ -512,6 +512,44 @@ extern "C" void check_pack_bytes(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 
 // ---------------------------------------------------------
 
+extern "C" void check_bfly_mask_0(uint32_t x)
+{
+	int a = rv32b::pack(x, 0);
+	a = rv32b::zip(a);
+	a |= a << 1;
+
+	int b = rv32b::pack(x, x);
+	b = rv32b::zip(b);
+
+	assert(a == b);
+}
+
+extern "C" void check_bfly_mask_1(uint32_t x)
+{
+	int a = rv32b::pack(x, 0);
+	a = rv32b::zip2(a);
+	a |= a << 2;
+
+	int b = rv32b::pack(x, x);
+	b = rv32b::zip2(b);
+
+	assert(a == b);
+}
+
+extern "C" void check_bfly_mask_2(uint32_t x)
+{
+	int a = rv32b::pack(x, 0);
+	a = rv32b::zip4(a);
+	a |= a << 4;
+
+	int b = rv32b::pack(x, x);
+	b = rv32b::zip4(b);
+
+	assert(a == b);
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	printf("\n0:");

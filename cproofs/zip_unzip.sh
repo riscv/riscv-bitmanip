@@ -40,4 +40,8 @@ cbmc --trace --function check_shflw            zip_unzip.cc
 cbmc --trace --function check_unshflw          zip_unzip.cc
 cbmc --trace --function check_pack_bytes       zip_unzip.cc
 
+cbmc --trace --function check_bfly_mask_0      zip_unzip.cc
+cbmc --trace --function check_bfly_mask_1      zip_unzip.cc
+cbmc --trace --function check_bfly_mask_2      zip_unzip.cc
+
 echo OK

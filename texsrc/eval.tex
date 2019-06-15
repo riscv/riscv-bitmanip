@@ -442,23 +442,20 @@ The following macro performs a stage-{\tt N} butterfly operation on the word in
 The bitmask in {\tt a1} must be preformatted correctly for the selected butterfly
 stage. A butterfly operation only has a XLEN/2 wide control word. The following
 macros format the mask assuming those XLEN/2 bits in the lower half of {\tt a1}
-on entry (preformatted mask in {\tt a1} on exit):
+on entry:
 
 \begin{verbatim}
 bfly_msk_0:
+  pack a1, a1, a1
   zip a1, a1
-  slli a2, a1, 1
-  or a1, a1, a2
 
 bfly_msk_1:
+  pack a1, a1, a1
   zip2 a1, a1
-  slli a2, a1, 2
-  or a1, a1, a2
 
 bfly_msk_2:
+  pack a1, a1, a1
   zip4 a1, a1
-  slli a2, a1, 4
-  or a1, a1, a2
 
 ...
 \end{verbatim}
