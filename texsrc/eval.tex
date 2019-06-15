@@ -113,9 +113,9 @@ and strcpy:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  int count_trailing_nonzero_bytes(int64_t x)
+  int count_trailing_nonzero_bytes(long x)
   {
-    uint64_t m = 0x0101010101010101LL;
+    uint64_t m = 0x0101010101010101L;
     return ctz(~bmatflip(bmator(x, m)));
   }
 \end{verbatim}
@@ -126,7 +126,7 @@ this as following:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  int count_trailing_nonzero_bytes(int64_t x)
+  int count_trailing_nonzero_bytes(long x)
   {
     return ctz(~bmator(255, bmatflip(x)));
   }
@@ -138,9 +138,35 @@ are nonzero:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  bool all_nonzero_bytes(int64_t x)
+  bool all_bytes_nonzero(long x)
   {
-    return !(bmator(x, -1LL) + 1);
+    return bmator(x, -1L) == -1L;
+  }
+\end{verbatim}
+\end{minipage}
+
+And without bit-matrix multiply:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int count_trailing_nonzero_bytes(long x)
+  {
+    x |= grev(x, 1);
+    x |= grev(x, 2);
+    x |= grev(x, 4);
+    return ctz(~x) >> 3;
+  }
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int all_bytes_nonzero(long x)
+  {
+    x |= grev(x, 1);
+    x |= grev(x, 2);
+    x |= grev(x, 4);
+    return x == -1L;
   }
 \end{verbatim}
 \end{minipage}

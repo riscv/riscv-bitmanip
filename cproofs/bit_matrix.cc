@@ -141,19 +141,29 @@ extern "C" void strlen_check(uint64_t x)
 	unsigned char b7 = x >> 56;
 	int cnt = !b0 ? 0 : !b1 ? 1 : !b2 ? 2 : !b3 ? 3 : !b4 ? 4 : !b5 ? 5 : !b6 ? 6 : !b7 ? 7 : 8;
 
-	uint64_t m = 0x0101010101010101LL;
+	uint64_t m = 0x0101010101010101L;
 	int cnt2 = ctz(~bmatflip(bmator(x, m)));
 
 	// 'm' above is just bmatflip(255). So this also works:
 	int cnt3 = ctz(~bmator(255, bmatflip(x)));
 
+	int64_t t = x;
+	t = t | grev(t, 1);
+	t = t | grev(t, 2);
+	t = t | grev(t, 4);
+	int cnt4 = ctz(~t) >> 3;
+
 	assert(cnt == cnt2);
 	assert(cnt == cnt3);
+	assert(cnt == cnt4);
 
-	if (!(bmator(x, -1LL)+1))
+	if (bmator(x, -1L) == -1L) {
+		assert(t == -1L);
 		assert(cnt == 8);
-	else
+	} else {
+		assert(t != -1L);
 		assert(cnt != 8);
+	}
 }
 
 // ---------------------------------------------------------
