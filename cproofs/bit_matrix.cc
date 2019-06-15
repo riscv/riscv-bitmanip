@@ -147,15 +147,19 @@ extern "C" void strlen_check(uint64_t x)
 	// 'm' above is just bmatflip(255). So this also works:
 	int cnt3 = ctz(~bmator(255, bmatflip(x)));
 
+	// less elegant, but more compressed instructions:
+	int cnt4 = ctz(~bmator(x, -1L)) >> 3;
+
 	int64_t t = x;
 	t = t | grev(t, 1);
 	t = t | grev(t, 2);
 	t = t | grev(t, 4);
-	int cnt4 = ctz(~t) >> 3;
+	int cnt5 = ctz(~t) >> 3;
 
 	assert(cnt == cnt2);
 	assert(cnt == cnt3);
 	assert(cnt == cnt4);
+	assert(cnt == cnt5);
 
 	if (bmator(x, -1L) == -1L) {
 		assert(t == -1L);

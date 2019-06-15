@@ -121,7 +121,7 @@ and strcpy:
 \end{verbatim}
 \end{minipage}
 
-Because {\tt 0x0101010101010101LL} is {\tt bmatflip(255)} we can also write
+Because {\tt 0x0101010101010101LL} is {\tt bmatflip(255)}, and $(AB)^T = (B^T)(A^T)$, we can also write
 this as following:
 
 \begin{minipage}{\linewidth}
@@ -129,6 +129,17 @@ this as following:
   int count_trailing_nonzero_bytes(long x)
   {
     return ctz(~bmator(255, bmatflip(x)));
+  }
+\end{verbatim}
+\end{minipage}
+
+Or, less elegant, but with better utilization of compressed instructions:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int count_trailing_nonzero_bytes(long x)
+  {
+    return ctz(~bmator(x, -1L)) >> 3;
   }
 \end{verbatim}
 \end{minipage}
