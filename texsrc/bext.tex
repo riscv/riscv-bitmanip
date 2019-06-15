@@ -1925,17 +1925,16 @@ Assembler pseudo-ops for {\tt not} postfix fusion:
 \begin{verbatim}
   nand rd, rs1, rs2        ->   and rd, rs1, rs2; not rd, rd
   nor  rd, rs1, rs2        ->   or  rd, rs1, rs2; not rd, rd
-  xnor rd, rs1, rs2        ->   xor rd, rs1, rs2; not rd, rd
 \end{verbatim}
 \end{minipage}
 
-Assembler bitfield pseudo-ops for {\tt c.sr[la]i} postfix fusion:
+Assembler bitfield pseudo-ops for {\tt sr[la]i} postfix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  bfext  rd, rs, len, pos    ->   slli rd, rs, (XLEN-len-pos); c.srai rd, (XLEN-len)
-  bfextu rd, rs, len, pos    ->   slli rd, rs, (XLEN-len-pos); c.srli rd, (XLEN-len)
-  bfmak  rd, len, pos        ->   sroi rd, zero, len; c.srli rd, (XLEN-len-pos)
+  bfext  rd, rs, len, pos    ->   slli rd, rs, (XLEN-len-pos); srai rd, rd, (XLEN-len)
+  bfextu rd, rs, len, pos    ->   slli rd, rs, (XLEN-len-pos); srli rd, rd, (XLEN-len)
+  bfmak  rd, len, pos        ->   sroi rd, zero, len; srli rd, rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
 
@@ -1946,8 +1945,8 @@ Sign-extending bytes and half-words are special cases of {\tt bfext}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  sext.b rd, rs   ->   slli rd, rs, (XLEN-8);  c.srai rd, (XLEN-8)
-  sext.h rd, rs   ->   slli rd, rs, (XLEN-16); c.srai rd, (XLEN-16)
+  sext.b rd, rs   ->   slli rd, rs, (XLEN-8);  srai rd, rd, (XLEN-8)
+  sext.h rd, rs   ->   slli rd, rs, (XLEN-16); srai rd, rd, (XLEN-16)
 \end{verbatim}
 \end{minipage}
 
