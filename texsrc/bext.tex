@@ -749,7 +749,7 @@ Or for RV64:
 The above pattern should be intuitive to understand in order to extend
 this definition in an obvious manner for RV128.
 
-Alternatively (un)shuffle) can be implemented in a single network with one more
+Alternatively (un)shuffle can be implemented in a single network with one more
 stage than GREV, with the additional first and last stage executing a
 permutation that effectively reverses the order of the inner stages. However,
 since the inner stages only mux half of the bits in the word each, a hardware
