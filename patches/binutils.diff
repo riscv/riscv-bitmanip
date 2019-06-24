@@ -300,10 +300,10 @@ index 764c4d4d..d41749e7 100644
  	  print (info->stream, "0x%x",
  		 (unsigned)EXTRACT_UTYPE_IMM (l) >> RISCV_IMM_BITS);
 diff --git a/opcodes/riscv-opc.c b/opcodes/riscv-opc.c
-index bd652590..c64ebfa6 100644
+index bd652590..eda1d5f6 100644
 --- a/opcodes/riscv-opc.c
 +++ b/opcodes/riscv-opc.c
-@@ -495,6 +495,120 @@ const struct riscv_opcode riscv_opcodes[] =
+@@ -495,6 +495,124 @@ const struct riscv_opcode riscv_opcodes[] =
  {"remw",     64, {"M", 0}, "d,s,t",  MATCH_REMW, MASK_REMW, match_opcode, 0 },
  {"remuw",    64, {"M", 0}, "d,s,t",  MATCH_REMUW, MASK_REMUW, match_opcode, 0 },
  
@@ -378,6 +378,10 @@ index bd652590..c64ebfa6 100644
 +{"bmatxor",  64, {"B", 0},   "d,s,t",  MATCH_BMATXOR, MASK_BMATXOR, match_opcode, 0 },
 +{"addiwu",   64, {"B", 0},   "d,s,j",  MATCH_ADDIWU, MASK_ADDIWU, match_opcode, 0 },
 +{"slliu.w",  64, {"B", 0},   "d,s,>",  MATCH_SLLIU_W, MASK_SLLIU_W, match_opcode, 0 },
++{"addwu",    64, {"B", 0},   "d,s,t",  MATCH_ADDWU, MASK_ADDWU, match_opcode, 0 },
++{"subwu",    64, {"B", 0},   "d,s,t",  MATCH_SUBWU, MASK_SUBWU, match_opcode, 0 },
++{"addu.w",   64, {"B", 0},   "d,s,t",  MATCH_ADDU_W, MASK_ADDU_W, match_opcode, 0 },
++{"subu.w",   64, {"B", 0},   "d,s,t",  MATCH_SUBU_W, MASK_SUBU_W, match_opcode, 0 },
 +{"greviw",   64, {"B", 0},   "d,s,>",  MATCH_GREVIW, MASK_GREVIW, match_opcode, 0 },
 +{"sloiw",    64, {"B", 0},   "d,s,>",  MATCH_SLOIW, MASK_SLOIW, match_opcode, 0 },
 +{"sroiw",    64, {"B", 0},   "d,s,>",  MATCH_SROIW, MASK_SROIW, match_opcode, 0 },
