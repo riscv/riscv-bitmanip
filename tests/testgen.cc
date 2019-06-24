@@ -11,6 +11,7 @@
 #include "test_zbr.c"
 #include "test_zbm.c"
 #include "test_zbt.c"
+#include "test_stdc.c"
 
 uint64_t args[128];
 
@@ -65,6 +66,7 @@ int main()
 	printf("#include \"test_zbr.c\"\n");
 	printf("#include \"test_zbm.c\"\n");
 	printf("#include \"test_zbt.c\"\n");
+	printf("#include \"test_stdc.c\"\n");
 	printf("uint64_t args[128] = {\n");
 	for (int i = 0; i < 128; i++) {
 		printf("  0x%016llxLL%s\n", (long long)args[i], i < 127 ? "," : "");
@@ -74,7 +76,7 @@ int main()
 	printf("{\n");
 
 #define RUN_TEST(_tst) \
-	printf("  printf(\"test_" #_tst "\");\n"); \
+	printf("  printf(\"%-9s\");\n", "test_" #_tst); \
 	printf("  fflush(stdout);\n"); \
 	uint64_t test_ ## _tst ## _result = test_ ## _tst (args, 128); \
 	printf("  long test_" #_tst "_result = test_" #_tst "(args, 128);\n"); \
@@ -89,6 +91,7 @@ int main()
 	RUN_TEST(zbr)
 	RUN_TEST(zbm)
 	RUN_TEST(zbt)
+	RUN_TEST(stdc)
 
 	printf("  printf(\"ALL TESTS PASSED.\\n\");\n");
 	printf("  return 0;\n");
