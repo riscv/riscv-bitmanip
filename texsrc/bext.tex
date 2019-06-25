@@ -415,13 +415,11 @@ register, in order. This is also called `circular shift'.
 This instruction provides a single hardware instruction that can implement all
 of byte-order swap, bitwise reversal, short-order-swap, word-order-swap
 (RV64), nibble-order swap, bitwise reversal in a byte, etc, all from a single
-hardware instruction. It takes in a single register value and an immediate that
-controls which function occurs, through controlling the levels in the recursive
-tree at which reversals occur.
+hardware instruction.
 
-This operation iteratively checks each bit $i$ in rs2 from $i=0$ to
-$\textrm{XLEN}-1$, and if the corresponding bit is set, swaps each adjacent
-pair of $2^i$ bits.
+The Generalized Reverse (GREV) operation iteratively checks each bit $i$ in the
+2nd argument from $i=0$ to $log_2(\textrm{XLEN})-1$, and if the corresponding bit is
+set, swaps each adjacent pair of $2^i$ bits.
 
 \begin{figure}[t]
 \begin{center}
@@ -751,7 +749,7 @@ Or for RV64:
 The above pattern should be intuitive to understand in order to extend
 this definition in an obvious manner for RV128.
 
-Alternatively (un)shuffle) can be implemented in a single network with one more
+Alternatively (un)shuffle can be implemented in a single network with one more
 stage than GREV, with the additional first and last stage executing a
 permutation that effectively reverses the order of the inner stages. However,
 since the inner stages only mux half of the bits in the word each, a hardware

@@ -8,6 +8,7 @@ if ! test -d gcc-9.1.0; then
 	cd gcc-9.1.0
 	git init; git add .; git commit -m upstream
 	patch -p1 < ../gcc.diff
+	git add -N gcc/config/riscv/bitmanip.md
 	cd ..
 fi
 mkdir gcc-build

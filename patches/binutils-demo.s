@@ -87,6 +87,10 @@ bmatxor x1,x2,x3
 
 addiwu x1,x2,1234
 slliu.w x1,x2,12
+addwu x1,x2,x3
+subwu x1,x2,x3
+addu.w x1,x2,x3
+subu.w x1,x2,x3
 
 slow x1,x2,x3
 slow x1,x2,5
