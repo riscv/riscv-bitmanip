@@ -14,7 +14,7 @@ index eeb75717d..2555589b0 100644
      delete current_subset_list;
  
 diff --git a/gcc/config/riscv/bitmanip.md b/gcc/config/riscv/bitmanip.md
-index e69de29bb..963f26473 100644
+index e69de29bb..090307012 100644
 --- a/gcc/config/riscv/bitmanip.md
 +++ b/gcc/config/riscv/bitmanip.md
 @@ -0,0 +1,252 @@
@@ -260,14 +260,14 @@ index e69de29bb..963f26473 100644
 +;; is too many to combine.  With a constant loading fix we might be able to
 +;; match in combine.
 +
-+(define_insn "*slliuw"
-+  [(set (match_operand:DI 0 "register_operand" "=r")
-+	(ashift:DI (zero_extend:DI
-+		    (subreg:SI (match_operand:DI 1 "register_operand" "r") 0))
-+		   (match_operand:QI 2 "immediate_operand" "I")))]
-+  "TARGET_BITMANIP"
-+  "slliu.w\t%0,%1,%2"
-+  [(set_attr "type" "bitmanip")])
++;;(define_insn "*slliuw"
++;;  [(set (match_operand:DI 0 "register_operand" "=r")
++;;	(ashift:DI (zero_extend:DI
++;;		    (subreg:SI (match_operand:DI 1 "register_operand" "r") 0))
++;;		   (match_operand:QI 2 "immediate_operand" "I")))]
++;;  "TARGET_BITMANIP"
++;;  "slliu.w\t%0,%1,%2"
++;;  [(set_attr "type" "bitmanip")])
 +
 +;; ??? bfxp
 diff --git a/gcc/config/riscv/riscv-builtins.c b/gcc/config/riscv/riscv-builtins.c
@@ -307,8 +307,26 @@ index eefe3033e..f91dac7d2 100644
  DEF_RISCV_FTYPE (1, (USI, VOID))
  DEF_RISCV_FTYPE (1, (VOID, USI))
 +DEF_RISCV_FTYPE (1, (SI, SI))
+diff --git a/gcc/config/riscv/riscv.h b/gcc/config/riscv/riscv.h
+index c93743f95..9e881c5d4 100644
+--- a/gcc/config/riscv/riscv.h
++++ b/gcc/config/riscv/riscv.h
+@@ -664,6 +664,13 @@ typedef struct {
+ 
+ #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
+ 
++/* Configure CLZ/CTZ behavior. */
++
++#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
++  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
++#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
++  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
++
+ /* Control the assembler format that we output.  */
+ 
+ /* Output to assembler file text saying following lines
 diff --git a/gcc/config/riscv/riscv.md b/gcc/config/riscv/riscv.md
-index e3799a5bd..1b4a4512a 100644
+index e3799a5bd..400fd23f1 100644
 --- a/gcc/config/riscv/riscv.md
 +++ b/gcc/config/riscv/riscv.md
 @@ -43,6 +43,9 @@
@@ -335,16 +353,16 @@ index e3799a5bd..1b4a4512a 100644
  ;; Extension insns.
  
 -(define_insn_and_split "zero_extendsidi2"
-+(define_expand "zero_extendsidi2"
-+  [(set (match_operand:DI 0 "register_operand")
-+	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))])
++;;(define_expand "zero_extendsidi2"
++;;  [(set (match_operand:DI 0 "register_operand")
++;;	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))])
 +
-+(define_insn_and_split "*zero_extendsidi2_internal"
++(define_insn_and_split "*zero_extendsidi2" ;; XXX "*zero_extendsidi2_internal"
    [(set (match_operand:DI     0 "register_operand"     "=r,r")
  	(zero_extend:DI
  	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
 -  "TARGET_64BIT"
-+  "TARGET_64BIT && !TARGET_BITMANIP"
++  "TARGET_64BIT" ;; XXX "TARGET_64BIT && !TARGET_BITMANIP"
    "@
     #
     lwu\t%0,%1"
@@ -353,16 +371,16 @@ index e3799a5bd..1b4a4512a 100644
     (set_attr "mode" "DI")])
  
 -(define_insn_and_split "zero_extendhi<GPR:mode>2"
-+(define_expand "zero_extendhi<GPR:mode>2"
-+  [(set (match_operand:GPR 0 "register_operand")
-+	(zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand")))])
++;;(define_expand "zero_extendhi<GPR:mode>2"
++;;  [(set (match_operand:GPR 0 "register_operand")
++;;	(zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand")))])
 +
-+(define_insn_and_split "*zero_extendhi<GPR:mode>2_internal"
++(define_insn_and_split "*zero_extendhi<GPR:mode>2" ;; XXX "*zero_extendhi<GPR:mode>2_internal"
    [(set (match_operand:GPR    0 "register_operand"     "=r,r")
  	(zero_extend:GPR
  	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
 -  ""
-+  "!TARGET_BITMANIP"
++  "" ;; XXX "!TARGET_BITMANIP"
    "@
     #
     lhu\t%0,%1"
