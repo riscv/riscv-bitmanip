@@ -27,9 +27,39 @@ int clz(int i)
 	return __builtin_clz(i);
 }
 
+int clz2(int i)
+{
+	return i ? __builtin_clz(i) : 0;
+}
+
+int clz3(int i)
+{
+	return i ? __builtin_clz(i) : 32;
+}
+
+int clz4(long i)
+{
+	return i ? __builtin_clzl(i) : 64;
+}
+
 int ctz(int i)
 {
 	return __builtin_ctz(i);
+}
+
+int ctz2(int i)
+{
+	return i ? __builtin_ctz(i) : 0;
+}
+
+int ctz3(int i)
+{
+	return i ? __builtin_ctz(i) : 32;
+}
+
+int ctz4(long i)
+{
+	return i ? __builtin_ctzl(i) : 64;
 }
 
 int popcount(int i)
