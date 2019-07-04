@@ -2308,6 +2308,13 @@ inline static vmiFPRC mapRMDescToRC(riscvRMDesc rm) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
+// Validate current polymorphic block key
+//
+inline static void emitCheckPolymorphic(void) {
+    vmimtPolymorphicBlock(16, RISCV_PM_KEY);
+}
+
+//
 // Validate the given rounding mode is legal and emit an Illegal Instruction
 // exception call if not
 //
@@ -2323,8 +2330,8 @@ static Bool emitCheckLegalRM(riscvP riscv, riscvRMDesc rm) {
     } else if(rm==RV_RM_CURRENT) {
 
         // dynamic check of current mode required
-        vmimtPolymorphicBlock(RISCV_PM_KEY);
-        validRM = (riscv->pmKey & RM_VALID_MASK);
+        emitCheckPolymorphic();
+        validRM = (riscv->pmKey & PMK_RM_VALID);
     }
 
     // illegal instruction if invalid rounding mode
@@ -3141,7 +3148,7 @@ static riscvVLMULMt getVLMULMt(riscvP riscv) {
 
     if(VLMUL==VLMULMT_UNKNOWN) {
 
-        vmimtPolymorphicBlock(RISCV_PM_KEY);
+        emitCheckPolymorphic();
 
         blockState->VLMULMt = VLMUL = vlmulToVLMUL(RD_CSR_FIELD(riscv, vtype, vlmul));
     }
@@ -3159,7 +3166,7 @@ static riscvSEWMt getSEWMt(riscvP riscv) {
 
     if(SEW==SEWMT_UNKNOWN) {
 
-        vmimtPolymorphicBlock(RISCV_PM_KEY);
+        emitCheckPolymorphic();
 
         blockState->SEWMt = SEW = vsewToSEW(RD_CSR_FIELD(riscv, vtype, vsew));
     }
@@ -3183,7 +3190,7 @@ static riscvVLClassMt getVLClassMt(riscvMorphStateP state) {
         riscvVLMULMt VLMUL = getVLMULMt(riscv);
         Uns32        vlMax = riscv->configInfo.VLEN*VLMUL/SEW;
 
-        vmimtPolymorphicBlock(RISCV_PM_KEY);
+        emitCheckPolymorphic();
 
         if(!vl) {
             vlClass = VLCLASSMT_ZERO;
@@ -4427,6 +4434,9 @@ static Bool emitCheckVILL(riscvMorphStateP state) {
 
     Bool vill = RD_CSR_FIELD(state->riscv, vtype, vill);
 
+    // indicate this is a vector instruction
+    vmimtInstructionClassAdd(OCL_IC_VECTOR);
+
     if(vill) {
         ILLEGAL_INSTRUCTION_MESSAGE(state->riscv, "VILL", "vtype.vill=1");
     }
@@ -4594,7 +4604,7 @@ static Uns32 setVLSEWLMULInt(riscvP riscv, Uns32 vl, Uns32 vsew, Uns32 vlmul) {
     riscvSetVL(riscv, vl);
 
     // set matching polymorphic key and clamped vl
-    riscvRefreshPMKey(riscv);
+    riscvRefreshVectorPMKey(riscv);
 
     return RD_CSR(riscv, vl);
 }
@@ -5204,16 +5214,16 @@ static void seedXd(riscvMorphStateP state, iterDescP id, Int32 c) {
 }
 
 //
-// Initialization callback for VMPOPC
+// Initialization callback for VPOPC
 //
-static RISCV_MORPHV_FN(initVMPOPCCB) {
+static RISCV_MORPHV_FN(initVPOPCCB) {
     seedXd(state, id, 0);
 }
 
 //
-// Per-element callback for VMPOPC
+// Per-element callback for VPOPC
 //
-static RISCV_MORPHV_FN(emitVMPOPCCB) {
+static RISCV_MORPHV_FN(emitVPOPCCB) {
 
     riscvP       riscv = state->riscv;
     riscvRegDesc rdA   = getRVReg(state, 0);
@@ -5235,16 +5245,16 @@ static RISCV_MORPHV_FN(emitVMPOPCCB) {
 }
 
 //
-// Initialization callback for VMFIRST
+// Initialization callback for VFIRST
 //
-static RISCV_MORPHV_FN(initVMFIRSTCB) {
+static RISCV_MORPHV_FN(initVFIRSTCB) {
     seedXd(state, id, -1);
 }
 
 //
-// Per-element callback for VMFIRST
+// Per-element callback for VFIRST
 //
-static RISCV_MORPHV_FN(emitVMFIRSTCB) {
+static RISCV_MORPHV_FN(emitVFIRSTCB) {
 
     riscvP       riscv = state->riscv;
     riscvRegDesc rdA   = getRVReg(state, 0);
@@ -7042,8 +7052,8 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VREDMAXU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MAX,  vShape:RVVW_111_SI,  vstart0:1},
     [RV_IT_VREDMAX_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMAX, vShape:RVVW_111_SI,  vstart0:1},
     [RV_IT_VEXT_X_V]         = {morph:emitScalarOp, opTCB:emitVEXTXV,                                                              vShape:RVVW_EXT_II,  vstart0:0},
-    [RV_IT_VMPOPC_M]         = {morph:emitVectorOp, opTCB:emitVMPOPCCB,                    initCB:initVMPOPCCB,                    vShape:RVVW_111_PP,  vstart0:1},
-    [RV_IT_VMFIRST_M]        = {morph:emitVectorOp, opTCB:emitVMFIRSTCB,                   initCB:initVMFIRSTCB,                   vShape:RVVW_111_PP,  vstart0:1},
+    [RV_IT_VPOPC_M]          = {morph:emitVectorOp, opTCB:emitVPOPCCB,                     initCB:initVPOPCCB,                     vShape:RVVW_111_PP,  vstart0:1},
+    [RV_IT_VFIRST_M]         = {morph:emitVectorOp, opTCB:emitVFIRSTCB,                    initCB:initVFIRSTCB,                    vShape:RVVW_111_PP,  vstart0:1},
     [RV_IT_VMSBF_M]          = {morph:emitVectorOp, opTCB:emitVMSBFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:1},
     [RV_IT_VMSOF_M]          = {morph:emitVectorOp, opTCB:emitVMSOFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:1},
     [RV_IT_VMSIF_M]          = {morph:emitVectorOp, opTCB:emitVMSIFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:1},

@@ -1,8 +1,15 @@
 ELF32 = $(wildcard extB/object/*/test.32.elf)
-LOG32 = $(ELF32:.32.elf=.32.log)
 ELF64 = $(wildcard extB/object/*/test.64.elf)
-LOG64 = $(ELF64:.64.elf=.64.log)
 
+AUTOTEST ?= 0
+ifeq ($(AUTOTEST),1)
+	ELF32 = extB/object/autoasm/test.32.elf
+	ELF64 = extB/object/autoasm/test.64.elf
+endif
+export AUTOTEST
+
+LOG64 = $(ELF64:.64.elf=.64.log)
+LOG32 = $(ELF32:.32.elf=.32.log)
 ELF   = $(ELF32) $(ELF64)
 LOG   = $(LOG32) $(LOG64)
 
@@ -38,14 +45,14 @@ verify:
 	@ bash verify.sh
 
 %.32.log: %.32.elf FORCE
-	$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).tmp
 	#$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).trc --trace --tracechange $(REDIR)
+	$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).tmp
 	@ -grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 
 %.64.log: %.64.elf FORCE
-	$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).tmp
 	#$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).trc --trace --tracechange $(REDIR)
+	$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).tmp
 	@ -grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 
