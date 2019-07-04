@@ -35,7 +35,7 @@ To enable the new instructions, enable the B bit in the MISA register
 
 And in the log you will see it enabled, for example:
 
-    Info (RISCV_EXTB) extB Version(0.37-Draft) March 22 2019
+    Info (RISCV_EXTB) extB Version(0.90) June 10 2019
 
 This simulation is instruction accurate, is provided as a pre-compiled binary, and the source of the new instructions in the model can be found in [extB.c](Imperas/ImperasLib/source/riscv.ovpworld.org/intercept/extB/1.0/model/extB.c). If you want to make changes to the instructions, please contact the working group chair or [Imperas](mailto:info@imperas.com).
 
