@@ -31,7 +31,7 @@ Included in this repository in the directory [riscv-ovpsim](riscv-ovpsim) is a v
 
 To enable the new instructions, enable the B bit in the MISA register
 
-    riscvOVPsim.exe --override riscvOVPsim/cpu/misa_Extensions=0x14112f
+    riscvOVPsim.exe --override riscvOVPsim/cpu/add_Extensions=B
 
 And in the log you will see it enabled, for example:
 
