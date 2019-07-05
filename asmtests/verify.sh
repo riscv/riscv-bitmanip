@@ -8,7 +8,11 @@
 declare -i status=0
 declare -i rc=0
 
-golden=$(ls extB/*/golden.log)
+if [ "${AUTOTEST}" -eq 1 ]; then
+    golden=$(ls extB/autoasm/golden.log)
+else
+    golden=$(ls extB/*/golden.log)
+fi
 
 for g in ${golden}; do
     d1=$(dirname $g)

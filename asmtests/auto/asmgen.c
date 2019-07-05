@@ -25,15 +25,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-
-//#define XLEN 32
-//#define LOG2_XLEN 5
+#include <time.h>
 
 #if (XLEN==32)
     typedef uint32_t uint_xlen_t;
@@ -56,11 +53,138 @@
 #endif
 
 #include "insns.h"
-//#undef XLEN
-//#undef LOG2_XLEN
-
 #include "../auto/asmgen.h"
 
+#define XLEN_W 32
+uint32_t grevw(uint64_t rs1, uint64_t rs2) {
+    return grev32(rs1, rs2);
+}
+
+uint32_t slow(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return ~(~rs1 << shamt);
+}
+
+uint32_t srow(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return ~(~rs1 >> shamt);
+}
+
+uint32_t rolw(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return (rs1 << shamt) | (rs1 >> ((XLEN_W - shamt) & (XLEN_W - 1)));
+}
+uint32_t rorw(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return (rs1 >> shamt) | (rs1 << ((XLEN_W - shamt) & (XLEN_W - 1)));
+}
+uint32_t sbsetw(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return rs1 | (uint32_t(1) << shamt);
+}
+uint32_t sbclrw(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return rs1 & ~(uint32_t(1) << shamt);
+}
+uint32_t sbinvw(uint32_t rs1, uint32_t rs2){
+    int shamt = rs2 & (XLEN_W - 1);
+    return rs1 ^ (uint32_t(1) << shamt);
+}
+uint32_t sbextw(uint32_t rs1, uint32_t rs2) {
+    int shamt = rs2 & (XLEN_W - 1);
+    return 1 & (rs1 >> shamt);
+}
+uint32_t fslw(uint32_t rs1, uint32_t rs2, uint32_t rs3) {
+    int shamt = rs2 & (2*XLEN_W - 1);
+    uint32_t A = rs1, B = rs3;
+    if (shamt >= XLEN_W) {
+        shamt -= XLEN_W;
+        A = rs3;
+        B = rs1;
+    }
+    return shamt ? (A << shamt) | (B >> (XLEN_W-shamt)) : A;
+}
+uint32_t fsrw(uint32_t rs1, uint32_t rs2, uint32_t rs3)
+{
+    int shamt = rs2 & (2*XLEN_W - 1);
+    uint32_t A = rs1, B = rs3;
+    if (shamt >= XLEN_W) {
+        shamt -= XLEN_W;
+        A = rs3;
+        B = rs1;
+    }
+    return shamt ? (A >> shamt) | (B << (XLEN_W-shamt)) : A;
+}
+uint32_t clzw(uint32_t rs1) {
+    for (int count = 0; count < XLEN_W; count++)
+        if ((rs1 << count) >> (XLEN_W - 1))
+            return count;
+    return XLEN_W;
+}
+uint32_t ctzw(uint32_t rs1) {
+    for (int count = 0; count < XLEN_W; count++)
+        if ((rs1 >> count) & 1)
+            return count;
+    return XLEN_W;
+}
+uint32_t pcntw(uint32_t rs1) {
+    int count = 0;
+    for (int index = 0; index < XLEN_W; index++)
+        count += (rs1 >> index) & 1;
+    return count;
+}
+uint32_t clmulw(uint32_t rs1, uint32_t rs2) {
+    uint32_t x = 0;
+    for (int i = 0; i < XLEN_W; i++)
+        if ((rs2 >> i) & 1)
+            x ^= rs1 << i;
+    return x;
+}
+uint32_t clmulhw(uint32_t rs1, uint32_t rs2) {
+    uint32_t x = 0;
+    for (int i = 1; i < XLEN_W; i++)
+        if ((rs2 >> i) & 1)
+            x ^= rs1 >> (XLEN_W-i);
+    return x;
+}
+uint32_t clmulrw(uint32_t rs1, uint32_t rs2) {
+    uint32_t x = 0;
+    for (int i = 0; i < XLEN_W; i++)
+        if ((rs2 >> i) & 1)
+            x ^= rs1 >> (XLEN_W-i-1);
+    return x;
+}
+uint32_t shflw(uint32_t rs1, uint32_t rs2) {
+    return shfl32(rs1, rs2);
+}
+uint32_t unshflw(uint32_t rs1, uint32_t rs2) {
+    return unshfl32(rs1, rs2);
+}
+uint32_t bdepw(uint32_t rs1, uint32_t rs2) {
+    uint32_t r = 0;
+    for (int i = 0, j = 0; i < XLEN_W; i++)
+        if ((rs2 >> i) & 1) {
+            if ((rs1 >> j) & 1)
+                r |= uint32_t(1) << i;
+            j++;
+        }
+    return r;
+}
+uint32_t bextw(uint32_t rs1, uint32_t rs2) {
+    uint32_t r = 0;
+    for (int i = 0, j = 0; i < XLEN_W; i++)
+        if ((rs2 >> i) & 1) {
+            if ((rs1 >> i) & 1)
+                r |= uint32_t(1) << j;
+            j++;
+        }
+    return r;
+}
+uint32_t packw(uint32_t rs1, uint32_t rs2) {
+    uint32_t lower = (rs1 << XLEN_W/2) >> XLEN_W/2;
+    uint32_t upper = rs2 << XLEN_W/2;
+    return upper | lower;
+}
 
 int getnum(int lo, int hi) {
     int id = lo + (random() % (1+hi-lo));
@@ -160,6 +284,25 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
+#define PROLOG_RRI(FUNC,FUNCI,TEST) \
+    char rdN[8], rdRef[8], rs1N[8]; \
+    uint_xlen_t rs1V, rdV; \
+    int rd  = get_r(rdN); \
+    int rs1 = get_r(rs1N); \
+    int imm = getnum(0,63); \
+    get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
+    rs1V = 0; \
+    rdV  = 0; \
+    if (rs1) rs1V = randomV(); \
+    if (rd)  rdV = FUNC(rs1V, imm); \
+    printf("# Test %d: (ref=%s) (rs1=%s/" FMT_CONST ") %s (imm=%d) => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, rs1N, rs1V, #FUNCI, imm, rdN, rdV); \
+    printf(".l_" #FUNCI "_%d_Start:\n", TEST); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs1N,  rs1V); \
+    printf("    %-8s %d %d %d\n",      #FUNCI, rd,    rs1,   imm); \
+    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
+    printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
+
+// rd, rs1, rs3, rs2
 #define PROLOG_RRRR(FUNC,TEST) \
     char rdN[8], rdRef[8], rs1N[8], rs2N[8], rs3N[8]; \
     uint_xlen_t rs1V, rs2V, rs3V, rdV; \
@@ -195,23 +338,32 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
     printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
 
-#define PROLOG_RRI(FUNC,FUNCI,TEST) \
-    char rdN[8], rdRef[8], rs1N[8]; \
-    uint_xlen_t rs1V, rdV; \
+// rd, rs1, rs3, imm
+#define PROLOG_RRRI(FUNC,FUNCI,TEST) \
+    char rdN[8], rdRef[8], rs1N[8], rs3N[8]; \
+    uint_xlen_t rs1V, rs3V, rdV; \
     int rd  = get_r(rdN); \
     int rs1 = get_r(rs1N); \
-    int imm = getnum(0,63); \
-    get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
+    int rs3 = get_r(rs3N); \
+    int imm = getnum(0,31); \
+    get_cmp(rdRef, rdN, rs1N, rs1N, rs3N); \
     rs1V = 0; \
+    rs3V = 0; \
     rdV  = 0; \
     if (rs1) rs1V = randomV(); \
-    if (rd)  rdV = FUNC(rs1V, imm); \
-    printf("# Test %d: (ref=%s) (rs1=%s/" FMT_CONST ") %s (imm=%d) => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, rs1N, rs1V, #FUNCI, imm, rdN, rdV); \
+    if (rs3) rs3V = randomV(); \
+    \
+    if (rs1 == rs3) { \
+        rs3V = rs1V; \
+    } \
+    if (rd)  rdV = FUNC(rs1V, imm, rs3V); \
+    printf("# Test %d: (ref=%s) %s(rs1=%s/" FMT_CONST ")(imm=%d)(rs3=%s/" FMT_CONST ") => (rd=%s/" FMT_CONST ")\n", TEST, rdRef, #FUNCI, rs1N, rs1V, imm, rs3N, rs3V, rdN, rdV); \
     printf(".l_" #FUNCI "_%d_Start:\n", TEST); \
-    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rs1N,  rs1V); \
-    printf("    %-8s %d %d %d\n",      #FUNCI, rd,    rs1,   imm); \
-    printf("    %-8s %3s, " FMT_CONST "\n",   "li",  rdRef, rdV); \
-    printf("    %-8s %3s, %3s, 1f\n",  "beq", rdN,   rdRef);
+    printf("    %-8s %3s, " FMT_CONST "\n",    "li",  rs1N,  rs1V); \
+    printf("    %-8s %3s, " FMT_CONST "\n",    "li",  rs3N,  rs3V); \
+    printf("    %-8s %d %d %d %d\n",    #FUNCI, rd,    rs1,   imm,  rs3); \
+    printf("    %-8s %3s, " FMT_CONST "\n",    "li",  rdRef, rdV); \
+    printf("    %-8s %3s, %3s, 1f\n",  "beq",  rdN,   rdRef);
 
 #define EPILOG(FUNC,TEST) \
     printf(".l_" #FUNC "_%d_Fail:\n", TEST); \
@@ -232,49 +384,161 @@ void do_clz(int test) {
     PROLOG_RR(clz, test);
     EPILOG(clz, test);
 }
+void do_clzw(int test) {
+    PROLOG_RR(clzw, test);
+    EPILOG(clzw, test);
+}
 void do_ctz(int test) {
     PROLOG_RR(ctz, test);
     EPILOG(ctz, test);
+}
+void do_ctzw(int test) {
+    PROLOG_RR(ctzw, test);
+    EPILOG(ctzw, test);
 }
 void do_pcnt(int test) {
     PROLOG_RR(pcnt, test);
     EPILOG(pcnt, test);
 }
+void do_pcntw(int test) {
+    PROLOG_RR(pcntw, test);
+    EPILOG(pcntw, test);
+}
 void do_andn(int test) {
     PROLOG_RRR(andn, test);
     EPILOG(andn, test);
+}
+void do_orn(int test) {
+    PROLOG_RRR(orn, test);
+    EPILOG(orn, test);
+}
+void do_xnor(int test) {
+    PROLOG_RRR(xnor, test);
+    EPILOG(xnor, test);
 }
 void do_slo(int test) {
     PROLOG_RRR(slo, test);
     EPILOG(slo, test);
 }
+void do_slow(int test) {
+    PROLOG_RRR(slow, test);
+    EPILOG(slow, test);
+}
 void do_sro(int test) {
     PROLOG_RRR(sro, test);
     EPILOG(sro, test);
+}
+void do_srow(int test) {
+    PROLOG_RRR(srow, test);
+    EPILOG(srow, test);
 }
 void do_sloi(int test) {
     PROLOG_RRI(slo, sloi, test);
     EPILOG(sloi, test);
 }
+void do_sloiw(int test) {
+    PROLOG_RRI(slow, sloiw, test);
+    EPILOG(sloiw, test);
+}
 void do_sroi(int test) {
     PROLOG_RRI(sro, sroi, test);
     EPILOG(sroi, test);
+}
+void do_sroiw(int test) {
+    PROLOG_RRI(srow, sroiw, test);
+    EPILOG(sroiw, test);
 }
 void do_rol(int test) {
     PROLOG_RRR(rol, test);
     EPILOG(rol, test);
 }
+void do_rolw(int test) {
+    PROLOG_RRR(rolw, test);
+    EPILOG(rolw, test);
+}
 void do_ror(int test) {
     PROLOG_RRR(ror, test);
     EPILOG(ror, test);
+}
+void do_rorw(int test) {
+    PROLOG_RRR(rorw, test);
+    EPILOG(rorw, test);
+}
+void do_sbset(int test) {
+    PROLOG_RRR(sbset, test);
+    EPILOG(sbset, test);
+}
+void do_sbsetw(int test) {
+    PROLOG_RRR(sbsetw, test);
+    EPILOG(sbsetw, test);
+}
+void do_sbclr(int test) {
+    PROLOG_RRR(sbclr, test);
+    EPILOG(sbclr, test);
+}
+void do_sbclrw(int test) {
+    PROLOG_RRR(sbclrw, test);
+    EPILOG(sbclrw, test);
+}
+void do_sbinv(int test) {
+    PROLOG_RRR(sbinv, test);
+    EPILOG(sbinv, test);
+}
+void do_sbinvw(int test) {
+    PROLOG_RRR(sbinvw, test);
+    EPILOG(sbinvw, test);
+}
+void do_sbext(int test) {
+    PROLOG_RRR(sbext, test);
+    EPILOG(sbext, test);
+}
+void do_sbextw(int test) {
+    PROLOG_RRR(sbextw, test);
+    EPILOG(sbextw, test);
+}
+void do_sbseti(int test) {
+    PROLOG_RRI(sbset, sbseti, test);
+    EPILOG(sbseti, test);
+}
+void do_sbsetiw(int test) {
+    PROLOG_RRI(sbsetw, sbsetiw, test);
+    EPILOG(sbsetiw, test);
+}
+void do_sbclri(int test) {
+    PROLOG_RRI(sbclr, sbclri, test);
+    EPILOG(sbclri, test);
+}
+void do_sbclriw(int test) {
+    PROLOG_RRI(sbclrw, sbclriw, test);
+    EPILOG(sbclriw, test);
+}
+void do_sbinvi(int test) {
+    PROLOG_RRI(sbinv, sbinvi, test);
+    EPILOG(sbinvi, test);
+}
+void do_sbinviw(int test) {
+    PROLOG_RRI(sbinvw, sbinviw, test);
+    EPILOG(sbinviw, test);
+}
+void do_sbexti(int test) {
+    PROLOG_RRI(sbext, sbexti, test);
+    EPILOG(sbexti, test);
 }
 void do_rori(int test) {
     PROLOG_RRI(ror, rori, test);
     EPILOG(rori, test);
 }
+void do_roriw(int test) {
+    PROLOG_RRI(rorw, roriw, test);
+    EPILOG(roriw, test);
+}
 void do_grev(int test) {
     PROLOG_RRR(grev, test);
     EPILOG(grev, test);
+}
+void do_grevw(int test) {
+    PROLOG_RRR(grevw, test);
+    EPILOG(grevw, test);
 }
 void do_grevi(int test) {
     PROLOG_RRI(grev, grevi, test);
@@ -284,6 +548,10 @@ void do_shfl(int test) {
     PROLOG_RRR(shfl, test);
     EPILOG(shfl, test);
 }
+void do_shflw(int test) {
+    PROLOG_RRR(shflw, test);
+    EPILOG(shflw, test);
+}
 void do_shfli(int test) {
     PROLOG_RRI(shfl, shfli, test);
     EPILOG(shfli, test);
@@ -291,6 +559,10 @@ void do_shfli(int test) {
 void do_unshfl(int test) {
     PROLOG_RRR(unshfl, test);
     EPILOG(unshfl, test);
+}
+void do_unshflw(int test) {
+    PROLOG_RRR(unshflw, test);
+    EPILOG(unshflw, test);
 }
 void do_unshfli(int test) {
     PROLOG_RRI(unshfl, unshfli, test);
@@ -300,9 +572,25 @@ void do_bext(int test) {
     PROLOG_RRR(bext, test);
     EPILOG(bext, test);
 }
+void do_bextw(int test) {
+    PROLOG_RRR(bextw, test);
+    EPILOG(bextw, test);
+}
 void do_bdep(int test) {
     PROLOG_RRR(bdep, test);
     EPILOG(bdep, test);
+}
+void do_bdepw(int test) {
+    PROLOG_RRR(bdepw, test);
+    EPILOG(bdepw, test);
+}
+void do_pack(int test) {
+    PROLOG_RRR(pack, test);
+    EPILOG(pack, test);
+}
+void do_packw(int test) {
+    PROLOG_RRR(packw, test);
+    EPILOG(packw, test);
 }
 void do_not(int test) {
     PROLOG_CR2(fnot, not, test);
@@ -338,27 +626,38 @@ void do_cmix(int test) {
     PROLOG_RRRR(cmix, test);
     EPILOG(cmix, test);
 }
-
 void do_cmov(int test) {
     PROLOG_RRRR(cmov, test);
     EPILOG(cmov, test);
 }
-
 void do_fsl(int test) {
     PROLOG_RRRR(fsl, test);
     EPILOG(fsl, test);
 }
-
+void do_fslw(int test) {
+    PROLOG_RRRR(fslw, test);
+    EPILOG(fslw, test);
+}
 void do_fsr(int test) {
     PROLOG_RRRR(fsr, test);
     EPILOG(fsr, test);
 }
-
+void do_fsri(int test) {
+    PROLOG_RRRI(fsr, fsri, test);
+    EPILOG(fsri, test);
+}
+void do_fsrw(int test) {
+    PROLOG_RRRR(fsrw, test);
+    EPILOG(fsrw, test);
+}
+void do_fsriw(int test) {
+    PROLOG_RRRI(fsrw, fsriw, test);
+    EPILOG(fsriw, test);
+}
 void do_min(int test) {
     PROLOG_RRR(min, test);
     EPILOG(min, test);
 }
-
 void do_max(int test) {
     PROLOG_RRR(max, test);
     EPILOG(max, test);
@@ -378,10 +677,47 @@ void do_clmul(int test) {
     PROLOG_RRR(clmul, test);
     EPILOG(clmul, test);
 }
+void do_clmulw(int test) {
+    PROLOG_RRR(clmulw, test);
+    EPILOG(clmulw, test);
+}
+
+void do_clmulr(int test) {
+    PROLOG_RRR(clmulr, test);
+    EPILOG(clmulr, test);
+}
+void do_clmulrw(int test) {
+    PROLOG_RRR(clmulrw, test);
+    EPILOG(clmulrw, test);
+}
 
 void do_clmulh(int test) {
     PROLOG_RRR(clmulh, test);
     EPILOG(clmulh, test);
+}
+void do_clmulhw(int test) {
+    PROLOG_RRR(clmulhw, test);
+    EPILOG(clmulhw, test);
+}
+void do_addiwu(int test) {
+    PROLOG_RRI(addwu, addiwu, test);
+    EPILOG(addiwu, test);
+}
+void do_addwu(int test) {
+    PROLOG_RRR(addwu, test);
+    EPILOG(addwu, test);
+}
+void do_subwu(int test) {
+    PROLOG_RRR(subwu, test);
+    EPILOG(subwu, test);
+}
+void do_adduw(int test) {
+    PROLOG_RRR(adduw, test);
+    EPILOG(adduw, test);
+}
+void do_subuw(int test) {
+    PROLOG_RRR(subuw, test);
+    EPILOG(subuw, test);
 }
 
 #if (XLEN==64)
@@ -411,68 +747,10 @@ void do_bmatflip(int test) {
 int main(int argc, char **argv) {
     printf(".include \"extB.S.include\"\n");
     printf("\n");
-    printf("START_TEST:\n");
-    printf("    la x2, test_result\n");
-    printf("    li x1, 0\n");
-    printf("    sw x1, 0(x2)\n");
     printf("\n");
 
-    int iter = 1000;
-    if (argc > 1) iter = atoi(argv[1]);
-
-    int test = 0;
-//    while (test < iter) {
-//        do_fsr(++test);
-//    }
-    while (test < iter) {
-        do_clz(++test);
-        do_ctz(++test);
-        do_pcnt(++test);
-        do_andn(++test);
-        do_slo(++test);
-        do_sro(++test);
-        do_sloi(++test);
-        do_sroi(++test);
-        do_rol(++test);
-        do_ror(++test);
-        do_rori(++test);
-        do_grev(++test);
-        do_grevi(++test);
-        do_shfl(++test);
-        do_unshfl(++test);
-        do_shfli(++test);
-        do_unshfli(++test);
-        do_bext(++test);
-        do_bdep(++test);
-        do_cmix(++test);
-        do_cmov(++test);
-        do_fsl(++test);
-        do_fsr(++test);
-        do_min(++test);
-        do_max(++test);
-        do_minu(++test);
-        do_maxu(++test);
-        do_clmul(++test);
-        do_clmulh(++test);
-        do_crc32_b(++test);
-        do_crc32_h(++test);
-        do_crc32_w(++test);
-        do_crc32c_b(++test);
-        do_crc32c_h(++test);
-        do_crc32c_w(++test);
-#if (XLEN==64)
-        do_crc32_d(++test);
-        do_crc32c_d(++test);
-        do_bmatxor(++test);
-        do_bmator(++test);
-        do_bmatflip(++test);
-#endif
-        do_not(++test);
-    }
-
-    printf("test_complete:\n");
-    printf("    %-8s  x0, %s\n", "jal", "test_pass");
-    printf("\n");
+    printf("INIT_START_TEST:\n");
+    printf("    j START_TEST\n");
 
     printf("test_fail:\n");
     printf("    WRITE_LOG str_Test_Fail\n");
@@ -491,11 +769,142 @@ int main(int argc, char **argv) {
     printf("    EXIT_TEST\n");
     printf("\n");
 
-    printf(".align 8\n");
+    printf("START_TEST:\n");
+    printf("    la x2, test_result\n");
+    printf("    li x1, 0\n");
+    printf("    sw x1, 0(x2)\n");
     printf("\n");
+
+    int iter = 100;
+    if (argc > 1) iter = atoi(argv[1]);
+    if (argc > 2) {
+        // Randomize
+        int seed = time(NULL);
+        srand(seed);
+    }
+
+    int test = 0;
+//    while (test < iter) {
+//        do_orn(++test);
+//    }
+    while (test < iter) {
+        do_andn(++test);
+        do_orn(++test);
+        do_xnor(++test);
+        do_grev(++test);
+        do_slo(++test);
+        do_sro(++test);
+        do_rol(++test);
+        do_ror(++test);
+        do_sbset(++test);
+        do_sbclr(++test);
+        do_sbinv(++test);
+        do_sbext(++test);
+        do_grevi(++test);
+        do_sloi(++test);
+        do_sroi(++test);
+        do_rori(++test);
+        do_sbseti(++test);
+        do_sbclri(++test);
+        do_sbinvi(++test);
+        do_sbexti(++test);
+        do_cmix(++test);
+        do_cmov(++test);
+        do_fsl(++test);
+        do_fsr(++test);
+        do_fsri(++test);
+        do_clz(++test);
+        do_ctz(++test);
+        do_pcnt(++test);
+#if (XLEN==64)
+        do_bmatflip(++test);
+#endif
+        do_crc32_b(++test);
+        do_crc32_h(++test);
+        do_crc32_w(++test);
+#if (XLEN==64)
+        do_crc32_d(++test);
+#endif
+        do_crc32c_b(++test);
+        do_crc32c_h(++test);
+        do_crc32c_w(++test);
+#if (XLEN==64)
+        do_crc32c_d(++test);
+#endif
+        do_clmul(++test);
+        do_clmulr(++test);
+        do_clmulh(++test);
+        do_min(++test);
+        do_max(++test);
+        do_minu(++test);
+        do_maxu(++test);
+        do_shfl(++test);
+        do_unshfl(++test);
+        do_bdep(++test);
+        do_bext(++test);
+        do_pack(++test);
+#if (XLEN==64)
+        do_bmator(++test);
+        do_bmatxor(++test);
+#endif
+        do_shfli(++test);
+        do_unshfli(++test);
+
+#if (XLEN==64)
+        do_addiwu(++test);
+        do_addwu(++test);
+        do_subwu(++test);
+        do_adduw(++test);
+        do_subuw(++test);
+        do_grevw(++test);
+        do_slow(++test);
+        do_srow(++test);
+        do_rolw(++test);
+        do_rorw(++test);
+        do_sbsetw(++test);
+        do_sbclrw(++test);
+        do_sbinvw(++test);
+        do_sbextw(++test);
+        do_sloiw(++test);
+        do_sroiw(++test);
+        do_roriw(++test);
+        do_sbsetiw(++test);
+        do_sbclriw(++test);
+        do_sbinviw(++test);
+        do_fslw(++test);
+        do_fsrw(++test);
+        do_fsriw(++test);
+        do_clzw(++test);
+        do_ctzw(++test);
+        do_pcntw(++test);
+        do_clmulw(++test);
+        do_clmulrw(++test);
+        do_clmulhw(++test);
+        do_shflw(++test);
+        do_unshflw(++test);
+        do_bdepw(++test);
+        do_bextw(++test);
+        do_packw(++test);
+#endif
+
+#if (XLEN==64)
+        do_crc32_d(++test);
+        do_crc32c_d(++test);
+        do_bmatxor(++test);
+        do_bmator(++test);
+        do_bmatflip(++test);
+#endif
+        do_not(++test);
+    }
+
+    printf("test_complete:\n");
+    printf("    la x2, test_pass\n");
+    printf("    jr x2\n");
+    printf("\n");
+
+    printf(".align 4\n");
     printf("test_result:\n");
     printf("    .fill 1, 4, -1\n");
-
     printf("str_Test_Pass:\n");
     printf("    .string \"Test Pass\"\n");
     printf("str_Test_Fail:\n");

@@ -69,10 +69,14 @@ typedef enum riscvTZE {
 } riscvTZ;
 
 //
-// This defines a bit in the polymorphic key indicating whether the current
-// rounding mode is valid
+// This subdivides the polymorphic key into parts used by the vector extension,
+// floating point and transaction mode
 //
-#define RM_VALID_MASK   (1<<6)
+typedef enum riscvPMKE {
+    PMK_VECTOR      = 0x00ff,
+    PMK_TRANSACTION = 0x4000,
+    PMK_RM_VALID    = 0x8000,
+} riscvPMK;
 
 //
 // This structure holds state for a code block as it is morphed

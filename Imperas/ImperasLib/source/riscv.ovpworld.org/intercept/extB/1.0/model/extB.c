@@ -38,7 +38,7 @@
 
 #define CPU_PREFIX "Bit Manipulation"
 
-#define EXTB_REVISION "extB Version(0.37-Draft) May 20 2019"
+#define EXTB_REVISION "extB Version(0.90) June 10 2019"
 
 #define RISCV_GPR_NUM  32
 #define RV_MAX_AREGS   4
@@ -66,8 +66,9 @@ static const char *map[32] = {
 #define RS2(_I)   WIDTH(5,(_I)>>20)
 #define RS3(_I)   WIDTH(5,(_I)>>27) // TBD
 #define CU5(_I)   WIDTH(5,(_I)>>20)
-#define CU7(_I)   WIDTH(7,(_I)>>20)
 #define CU6(_I)   WIDTH(6,(_I)>>20)
+#define CU7(_I)   WIDTH(7,(_I)>>20)
+#define CU12(_I)  WIDTH(12,(_I)>>20)
 
 DEFINE_S (riscv);
 
@@ -93,7 +94,7 @@ typedef struct vmiosObjectS {
     Uns64  t0;
     vmiReg reg_t0;
 
-    Uns32 cu5, cu7;
+    Uns32 cu5, cu6, cu7, cu12;
 
     Uns32 xlen;
 
@@ -125,12 +126,14 @@ typedef enum riscvExtBInstrType {
     EXTB_CTZ,
     EXTB_PCNT,
     EXTB_ANDN,
+    EXTB_ORN,
+    EXTB_XNOR,
     EXTB_SLO,
-    EXTB_SLOI,
     EXTB_SRO,
-    EXTB_SROI,
     EXTB_ROL,
     EXTB_ROR,
+    EXTB_SLOI,
+    EXTB_SROI,
     EXTB_RORI,
     EXTB_GREV,
     EXTB_GREVI,
@@ -140,6 +143,17 @@ typedef enum riscvExtBInstrType {
     EXTB_UNSHFLI,
     EXTB_BEXT,
     EXTB_BDEP,
+    EXTB_PACK,
+
+    EXTB_SBSET,
+    EXTB_SBCLR,
+    EXTB_SBINV,
+    EXTB_SBEXT,
+
+    EXTB_SBSETI,
+    EXTB_SBCLRI,
+    EXTB_SBINVI,
+    EXTB_SBEXTI,
 
     // extension B 16bit Instructions
     EXTB_NOT,
@@ -149,6 +163,7 @@ typedef enum riscvExtBInstrType {
     EXTB_CMOV,
     EXTB_FSL,
     EXTB_FSR,
+    EXTB_FSRI,
 
     // Additional Instructions all
     EXTB_MIN,
@@ -156,6 +171,7 @@ typedef enum riscvExtBInstrType {
     EXTB_MINU,
     EXTB_MAXU,
     EXTB_CLMUL,
+    EXTB_CLMULR,
     EXTB_CLMULH,
     EXTB_CRC32_B,
     EXTB_CRC32_H,
@@ -168,6 +184,51 @@ typedef enum riscvExtBInstrType {
     EXTB_BMATXOR,
     EXTB_BMATOR,
     EXTB_BMATFLIP,
+
+    EXTB_ADDIWU,
+    EXTB_SLLIU_W,
+    EXTB_ADDWU,
+    EXTB_SUBWU,
+    EXTB_ADDU_W,
+    EXTB_SUBU_W,
+
+    EXTB_GREVW,
+    EXTB_SLOW,
+    EXTB_SROW,
+    EXTB_ROLW,
+    EXTB_RORW,
+
+    EXTB_SBSETW,
+    EXTB_SBCLRW,
+    EXTB_SBINVW,
+    EXTB_SBEXTW,
+
+    EXTB_GREVIW,
+    EXTB_SLOIW,
+    EXTB_SROIW,
+    EXTB_RORIW,
+
+    EXTB_SBSETIW,
+    EXTB_SBCLRIW,
+    EXTB_SBINVIW,
+
+    EXTB_FSLW,
+    EXTB_FSRW,
+    EXTB_FSRIW,
+
+    EXTB_CLZW,
+    EXTB_CTZW,
+    EXTB_PCNTW,
+
+    EXTB_CLMULW,
+    EXTB_CLMULRW,
+    EXTB_CLMULHW,
+
+    EXTB_SHFLW,
+    EXTB_UNSHFLW,
+    EXTB_BDEPW,
+    EXTB_BEXTW,
+    EXTB_PACKW,
 
     // KEEP LAST: for sizing the array
     EXTB_LAST
@@ -191,22 +252,47 @@ static vmidDecodeTableP createDecodeTable32(void) {
 //    |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 //    |---------------------------------------------------------------|
 
-    //                         F7      RS2   RS1   F3  RD    OP
+    //                          F7      RS2   RS1   F3  RD    OP
     DECODE_ENTRY(0, ANDN,     "|0100000|.....|.....|111|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, ORN,      "|0100000|.....|.....|110|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, XNOR,     "|0100000|.....|.....|100|.....|0110011|");  // R-type
 
     DECODE_ENTRY(0, GREV,     "|0100000|.....|.....|001|.....|0110011|");  // R-type
     DECODE_ENTRY(0, SLO,      "|0010000|.....|.....|001|.....|0110011|");  // R-type
     DECODE_ENTRY(0, SRO,      "|0010000|.....|.....|101|.....|0110011|");  // R-type
     DECODE_ENTRY(0, ROL,      "|0110000|.....|.....|001|.....|0110011|");  // R-type
     DECODE_ENTRY(0, ROR,      "|0110000|.....|.....|101|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, FSL,      "|.....10|.....|.....|001|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, FSR,      "|.....10|.....|.....|101|.....|0110011|"); // R4-type
+
+    DECODE_ENTRY(0, SBSET,    "|0010100|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SBCLR,    "|0100100|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SBINV,    "|0110100|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, SBEXT,    "|0100100|.....|.....|101|.....|0110011|");  // R-type
 
     DECODE_ENTRY(0, GREVI,    "|01000|.......|.....|001|.....|0010011|");  // I-type
     DECODE_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, SROI,     "|00100|.......|.....|101|.....|0010011|");  // I-type
-    DECODE_ENTRY(0, RORI,     "|01100|.......|.....|101|.....|0010011|");  // I-type
-    // FSRI
+    DECODE_ENTRY(0, SROI,     "|00100|0......|.....|101|.....|0010011|");  // I-type (force RV32/64)
+    DECODE_ENTRY(0, RORI,     "|01100|0......|.....|101|.....|0010011|");  // I-type (force RV32/64)
+
+    DECODE_ENTRY(0, SBSETI,   "|00101|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SBCLRI,   "|01001|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SBINVI,   "|01101|.......|.....|001|.....|0010011|");  // I-type
+    DECODE_ENTRY(0, SBEXTI,   "|01001|0......|.....|101|.....|0010011|");  // I-type (force RV32/64)
+
+    DECODE_ENTRY(0, CMIX,     "|.....11|.....|.....|010|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, CMOV,     "|.....11|.....|.....|011|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSL,      "|.....10|.....|.....|001|.....|0110011|"); // R4-type
+    DECODE_ENTRY(0, FSR,      "|.....10|.....|.....|101|.....|0110011|"); // R4-type
+// Clash RORI, SBEXTI, SROI
+//    Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+//    Error (DEC_DTEC1)     RORI       mask : 0xf800707f pattern : 0x60005013)
+//    Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+//    Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+//    Error (DEC_DTEC1)     SBEXTI     mask : 0xf800707f pattern : 0x48005013)
+//    Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+//    Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+//    Error (DEC_DTEC1)     SROI       mask : 0xf800707f pattern : 0x20005013)
+//    Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+    DECODE_ENTRY(0, FSRI,     "|.....1.|.....|.....|101|.....|0010011|"); // R4-type
 
     DECODE_ENTRY(0, CLZ,      "|0110000|00000|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CTZ,      "|0110000|00001|.....|001|.....|0010011|");  // R-type
@@ -222,53 +308,70 @@ static vmidDecodeTableP createDecodeTable32(void) {
     DECODE_ENTRY(0, CRC32C_W, "|0110000|11010|.....|001|.....|0010011|");  // R-type
     DECODE_ENTRY(0, CRC32C_D, "|0110000|11011|.....|001|.....|0010011|");  // R-type
 
-    DECODE_ENTRY(0, CMIX,     "|.....11|.....|.....|010|.....|0110011|"); // R4-type
-    DECODE_ENTRY(0, CMOV,     "|.....11|.....|.....|011|.....|0110011|"); // R4-type
-
-
-    DECODE_ENTRY(0, CLMUL,    "|0000101|.....|.....|000|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, CLMULH,   "|0000101|.....|.....|001|.....|0110011|");  // R-type
-    // CLMULHX
+    DECODE_ENTRY(0, CLMUL,    "|0000101|.....|.....|001|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CLMULR,   "|0000101|.....|.....|010|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, CLMULH,   "|0000101|.....|.....|011|.....|0110011|");  // R-type
     DECODE_ENTRY(0, MIN,      "|0000101|.....|.....|100|.....|0110011|");  // R-type
     DECODE_ENTRY(0, MAX,      "|0000101|.....|.....|101|.....|0110011|");  // R-type
     DECODE_ENTRY(0, MINU,     "|0000101|.....|.....|110|.....|0110011|");  // R-type
     DECODE_ENTRY(0, MAXU,     "|0000101|.....|.....|111|.....|0110011|");  // R-type
 
-    // PACK
-    DECODE_ENTRY(0, BDEP,     "|0000100|.....|.....|100|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, BEXT,     "|0000100|.....|.....|000|.....|0110011|");  // R-type
     DECODE_ENTRY(0, SHFL,     "|0000100|.....|.....|001|.....|0110011|");  // R-type
     DECODE_ENTRY(0, UNSHFL,   "|0000100|.....|.....|101|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, BMATXOR,  "|0000101|.....|.....|010|.....|0110011|");  // R-type
-    DECODE_ENTRY(0, BMATOR,   "|0000101|.....|.....|011|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BDEP,     "|0000100|.....|.....|010|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BEXT,     "|0000100|.....|.....|110|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, PACK,     "|0000100|.....|.....|100|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BMATOR,   "|0000100|.....|.....|011|.....|0110011|");  // R-type
+    DECODE_ENTRY(0, BMATXOR,  "|0000100|.....|.....|111|.....|0110011|");  // R-type
 
     DECODE_ENTRY(0, SHFLI,    "|000010|......|.....|001|.....|0010011|");  // I-type
     DECODE_ENTRY(0, UNSHFLI,  "|000010|......|.....|101|.....|0010011|");  // I-type
 
-    // GREVW
-    // SLOW
-    // SROW
-    // ROLW
-    // RORW
-    // FSLW
-    // FSRW
-    // GREVIW
-    // SLOIW
-    // SROIW
-    // ROLIW
-    // RORIW
-    // FSRIW
-    // CLZW
-    // CTZW
-    // PCNTW
-    // CLMULW
-    // PACKW
-    // BDEPW
-    // BEXTW
-    // SHFLW
-    // UNSHFLW
-    // SHFLIW
-    // UNSHFLIW
+    DECODE_ENTRY(0, ADDIWU,   "|............|.....|100|.....|0011011|");  // I-type
+    DECODE_ENTRY(0, SLLIU_W,  "|00001|.......|.....|001|.....|0011011|");  // I-type
+
+    DECODE_ENTRY(0, ADDWU,    "|0000101|.....|.....|000|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SUBWU,    "|0100101|.....|.....|000|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, ADDU_W,   "|0000100|.....|.....|000|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SUBU_W,   "|0100100|.....|.....|000|.....|0111011|");  // R-type
+
+    DECODE_ENTRY(0, GREVW,    "|0100000|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SLOW,     "|0010000|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SROW,     "|0010000|.....|.....|101|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, ROLW,     "|0110000|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, RORW,     "|0110000|.....|.....|101|.....|0111011|");  // R-type
+
+    DECODE_ENTRY(0, SBSETW,   "|0010100|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SBCLRW,   "|0100100|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SBINVW,   "|0110100|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, SBEXTW,   "|0100100|.....|.....|101|.....|0111011|");  // R-type
+
+    DECODE_ENTRY(0, GREVIW,   "|0100000|.....|.....|001|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, SLOIW,    "|0010000|.....|.....|001|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, SROIW,    "|0010000|.....|.....|101|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, RORIW,    "|0110000|.....|.....|101|.....|0011011|");  // R-type
+
+    DECODE_ENTRY(0, SBSETIW,  "|0010100|.....|.....|001|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, SBCLRIW,  "|0100100|.....|.....|001|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, SBINVIW,  "|0110100|.....|.....|001|.....|0011011|");  // R-type
+
+    DECODE_ENTRY(0, FSLW,     "|.....10|.....|.....|001|.....|0111011|"); // R4-type
+    DECODE_ENTRY(0, FSRW,     "|.....10|.....|.....|101|.....|0111011|"); // R4-type
+    DECODE_ENTRY(0, FSRIW,    "|.....10|.....|.....|101|.....|0011011|"); // R4-type
+
+    DECODE_ENTRY(0, CLZW,     "|0110000|00000|.....|001|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, CTZW,     "|0110000|00001|.....|001|.....|0011011|");  // R-type
+    DECODE_ENTRY(0, PCNTW,    "|0110000|00010|.....|001|.....|0011011|");  // R-type
+
+    DECODE_ENTRY(0, CLMULW,   "|0000101|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, CLMULRW,  "|0000101|.....|.....|010|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, CLMULHW,  "|0000101|.....|.....|011|.....|0111011|");  // R-type
+
+    DECODE_ENTRY(0, SHFLW,    "|0000100|.....|.....|001|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, UNSHFLW,  "|0000100|.....|.....|101|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, BDEPW,    "|0000100|.....|.....|010|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, BEXTW,    "|0000100|.....|.....|110|.....|0111011|");  // R-type
+    DECODE_ENTRY(0, PACKW,    "|0000100|.....|.....|100|.....|0111011|");  // R-type
 
     return table;
 }
@@ -401,10 +504,12 @@ static void regProlog (
         object->rs1 = RS1(instruction);
         object->rs2 = RS2(instruction);
     }
-    object->rs3 = RS3(instruction);
-    object->t0  = 5;
-    object->cu5 = CU5(instruction);
-    object->cu7 = CU7(instruction);
+    object->rs3  = RS3(instruction);
+    object->t0   = 5;
+    object->cu5  = CU5(instruction);
+    object->cu6  = CU6(instruction);
+    object->cu7  = CU7(instruction);
+    object->cu12 = CU12(instruction);
 
     object->reg_rs1  = vmimtGetExtReg(processor,  &object->rs1);
     object->reg_rs2  = vmimtGetExtReg(processor,  &object->rs2);
@@ -448,16 +553,34 @@ EXTB_MORPH_FN(emitCLZ) {
     vmimtUnopRR(object->xlen, vmi_CLZ, object->reg_rd, object->reg_rs1, 0);
     regEpilog(processor, object, instruction);
 }
+EXTB_MORPH_FN(emitCLZW) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtUnopRR(32, vmi_CLZ, object->reg_rd, object->reg_rs1, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    regEpilog(processor, object, instruction);
+}
 
 EXTB_MORPH_FN(emitCTZ) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(object->xlen, vmi_CTZ, object->reg_rd, object->reg_rs1, 0);
     regEpilog(processor, object, instruction);
 }
+EXTB_MORPH_FN(emitCTZW) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtUnopRR(32, vmi_CTZ, object->reg_rd, object->reg_rs1, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    regEpilog(processor, object, instruction);
+}
 
 EXTB_MORPH_FN(emitPCNT) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(object->xlen, vmi_CNTO, object->reg_rd, object->reg_rs1, 0);
+    regEpilog(processor, object, instruction);
+}
+EXTB_MORPH_FN(emitPCNTW) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtUnopRR(32, vmi_CNTO, object->reg_rd, object->reg_rs1, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
     regEpilog(processor, object, instruction);
 }
 
@@ -467,79 +590,399 @@ EXTB_MORPH_FN(emitANDN) {
     regEpilog(processor, object, instruction);
 }
 
-EXTB_MORPH_FN(emitSLO) {
+EXTB_MORPH_FN(emitORN) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtBinopRRR(object->xlen, vmi_SHL, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
-    // tmp1 = FFFFFFFF
-    vmimtMoveRC(object->xlen, object->reg_tmp1, -1);
-    // tmp2(FFFFFFFF) >> SHR amount
-    vmimtBinopRRC(object->xlen, vmi_AND, object->reg_tmp2, object->reg_rs2, (object->xlen - 1), 0);
-    vmimtBinopRCR(object->xlen, vmi_SUB, object->reg_tmp2, object->xlen, object->reg_tmp2, 0);
-    // tmp1 >> (object->xlen - tmp2)
-    vmimtSetShiftMask((object->xlen*2) - 1);
-    vmimtBinopRR(object->xlen, vmi_SHR, object->reg_tmp1, object->reg_tmp2, 0);
-    // rd |= tmp1
-    vmimtBinopRR(object->xlen, vmi_OR, object->reg_rd, object->reg_tmp1, 0);
+    vmimtBinopRRR(object->xlen, vmi_ORN, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
+    regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitXNOR) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtBinopRRR(object->xlen, vmi_XNOR, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
+    regEpilog(processor, object, instruction);
+}
+
+static void commonSB (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    vmiBitop      op,
+    Uns32         word
+) {
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+    Uns32 shift_mask = (result - 1);
+
+    vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
+
+    vmimtMoveRR(result, object->reg_tmp1, object->reg_rs1);
+    vmimtBinopRRC(result, vmi_AND, object->reg_tmp2, object->reg_rs2, shift_mask, 0);
+    if (op == vmi_BT) {
+        // get the 'set' value
+        vmimtBitopVR(result, 32, op, object->reg_tmp1, object->reg_tmp2, object->reg_rd);
+        vmimtMoveExtendRR(result, object->reg_rd, 8, object->reg_rd, 0);
+    } else {
+        // get the 'rv' value
+        vmimtBitopVR(result, 32, op, object->reg_tmp1, object->reg_tmp2, VMI_NOREG);
+        vmimtMoveRR(result, object->reg_rd, object->reg_tmp1);
+    }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+// rd = rs1 | (1 << (rs2 & (XLEN -1))
+EXTB_MORPH_FN(emitSBSET) {
+    commonSB(processor, object, instruction, vmi_BTS, 0);
+}
+EXTB_MORPH_FN(emitSBSETW) {
+    commonSB(processor, object, instruction, vmi_BTS, 1);
+}
+
+// rd = rs1 & ~(1 << (rs2 & (XLEN -1))
+EXTB_MORPH_FN(emitSBCLR) {
+    commonSB(processor, object, instruction, vmi_BTR, 0);
+}
+EXTB_MORPH_FN(emitSBCLRW) {
+    commonSB(processor, object, instruction, vmi_BTR, 1);
+}
+
+// rd = rs1 ^ (1 << (rs2 & (XLEN -1))
+EXTB_MORPH_FN(emitSBINV) {
+    commonSB(processor, object, instruction, vmi_BTC, 0);
+}
+EXTB_MORPH_FN(emitSBINVW) {
+    commonSB(processor, object, instruction, vmi_BTC, 1);
+}
+
+// rd = 1 & (rs1 >> (rs2 & (XLEN -1))
+EXTB_MORPH_FN(emitSBEXT) {
+    commonSB(processor, object, instruction, vmi_BT, 0);
+}
+EXTB_MORPH_FN(emitSBEXTW) {
+    commonSB(processor, object, instruction, vmi_BT, 1);
+}
+
+static void commonSBI (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    vmiBitop      op,
+    Uns32         word
+) {
+
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
+    vmimtMoveRR(result, object->reg_tmp1, object->reg_rs1);
+
+    Uns32 shift = object->cu7 & (object->xlen - 1);
+    vmimtMoveRC(result, object->reg_tmp2, shift);
+    if (op == vmi_BT) {
+        // get the 'set' value
+        vmimtBitopVR(result, 32, op, object->reg_tmp1, object->reg_tmp2, object->reg_rd);
+        vmimtMoveExtendRR(result, object->reg_rd, 8, object->reg_rd, 0);
+    } else {
+        // get the 'rv' value
+        vmimtBitopVR(result, 32, op, object->reg_tmp1, object->reg_tmp2, VMI_NOREG);
+        vmimtMoveRR(result, object->reg_rd, object->reg_tmp1);
+    }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+// rd = rs1 | (1 << (imm & (XLEN -1))
+EXTB_MORPH_FN(emitSBSETI) {
+    commonSBI(processor, object, instruction, vmi_BTS, 0);
+}
+EXTB_MORPH_FN(emitSBSETIW) {
+    commonSBI(processor, object, instruction, vmi_BTS, 1);
+}
+
+// rd = rs1 & ~(1 << (imm & (XLEN -1))
+EXTB_MORPH_FN(emitSBCLRI) {
+    commonSBI(processor, object, instruction, vmi_BTR, 0);
+}
+EXTB_MORPH_FN(emitSBCLRIW) {
+    commonSBI(processor, object, instruction, vmi_BTR, 1);
+}
+
+// rd = rs1 ^ (1 << (imm & (XLEN -1))
+EXTB_MORPH_FN(emitSBINVI) {
+    commonSBI(processor, object, instruction, vmi_BTC, 0);
+}
+EXTB_MORPH_FN(emitSBINVIW) {
+    commonSBI(processor, object, instruction, vmi_BTC, 1);
+}
+
+// rd = 1 & (rs1 >> (imm & (XLEN -1))
+EXTB_MORPH_FN(emitSBEXTI) {
+    commonSBI(processor, object, instruction, vmi_BT, 0);
+}
+
+Uns32 fsr32_c(Uns32 rs1, Uns32 rs2, Uns32 rs3) {
+    Int32 XLEN = 32;
+    Int32 shamt = rs2 & (2*XLEN - 1);
+    Uns32 A = rs1, B = rs3;
+    if (shamt >= XLEN) {
+        shamt -= XLEN; A = rs3; B = rs1;
+    }
+    return shamt ? (A >> shamt) | (B << (XLEN-shamt)) : A;
+}
+
+Uns64 fsr64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
+    Int32 XLEN = 64;
+    Int32 shamt = rs2 & (2*XLEN - 1);
+    Uns64 A = rs1, B = rs3;
+    if (shamt >= XLEN) {
+        shamt -= XLEN; A = rs3; B = rs1;
+    }
+    return shamt ? (A >> shamt) | (B << (XLEN-shamt)) : A;
+}
+
+static void commonFSRI (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
+    regProlog(processor, object, instruction, BM_RRR);
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    if (result==32) {
+        vmimtArgUns32(object->cu6);
+    } else {
+        vmimtArgUns64(object->cu6);
+    }
+    vmimtArgReg(result, object->reg_rs3);
+    if (object->xlen==32 || word) {
+        vmimtCallResult((vmiCallFn)fsr32_c, object->xlen, object->reg_rd);
+    } else {
+        vmimtCallResult((vmiCallFn)fsr64_c, object->xlen, object->reg_rd);
+    }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitFSRI) {
+    commonFSRI(processor, object, instruction, 0);
+}
+
+EXTB_MORPH_FN(emitFSRIW) {
+    commonFSRI(processor, object, instruction, 1);
+}
+
+// clear rs1 (XLEN-1):32 BEFORE operation
+EXTB_MORPH_FN(emitSLLIU_W) {
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 shift = object->cu7 & (object->xlen - 1);
+    vmimtMoveExtendRR(object->xlen, object->reg_tmp1, 32, object->reg_rs1, 0);
+    vmimtBinopRRC(object->xlen, vmi_SHL, object->reg_rd, object->reg_tmp1, shift, 0);
+
+    regEpilog(processor, object, instruction);
+}
+
+// clear rs2 (XLEN-1):32 BEFORE operation
+EXTB_MORPH_FN(emitADDU_W) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveExtendRR(object->xlen, object->reg_tmp1, 32, object->reg_rs2, 0);
+    vmimtBinopRRR(object->xlen, vmi_ADD, object->reg_rd, object->reg_rs1, object->reg_tmp1, 0);
+    regEpilog(processor, object, instruction);
+}
+
+// clear rs2 (XLEN-1):32 BEFORE operation
+EXTB_MORPH_FN(emitSUBU_W) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveExtendRR(object->xlen, object->reg_tmp1, 32, object->reg_rs2, 0);
+    vmimtBinopRRR(object->xlen, vmi_SUB, object->reg_rd, object->reg_rs1, object->reg_tmp1, 0);
+    regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitADDIWU) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtBinopRRC(32, vmi_ADD, object->reg_rd, object->reg_rs1, object->cu12, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    regEpilog(processor, object, instruction);
+}
+
+// clear (XLEN-1):32 AFTER operation
+EXTB_MORPH_FN(emitADDWU) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtBinopRRR(32, vmi_ADD, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitSUBWU) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtBinopRRR(32, vmi_SUB, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    regEpilog(processor, object, instruction);
+}
+
+static void commonPACK (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    Uns32 shift = result / 2;
+    vmimtMoveRR(result, object->reg_tmp1, object->reg_rs1);
+    vmimtBinopRC(result, vmi_SHL, object->reg_tmp1, shift, 0);
+    vmimtBinopRC(result, vmi_SHR, object->reg_tmp1, shift, 0);
+
+    vmimtBinopRRC(result, vmi_SHL, object->reg_tmp2, object->reg_rs2, shift, 0);
+
+    vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+// lower = (rs1 << (XLEN/2) >> XLEN/2
+// upper = rs2 << XLEN/2
+EXTB_MORPH_FN(emitPACK) {
+    commonPACK(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitPACKW) {
+    commonPACK(processor, object, instruction, 1);
+}
+
+static void commonSxO(
+        vmiProcessorP processor,
+        vmiosObjectP  object,
+        Uns32         instruction,
+        vmiBinop      op,
+        Uns32         word) {
+
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    // tmp1 = ~rs1
+    vmimtMoveRR(result, object->reg_tmp1, object->reg_rs1);
+    vmimtUnopR(result, vmi_NOT, object->reg_tmp1, 0);
+    // tmp1 << (rs2 & (XLEN-1))
+    vmimtBinopRR(result, op, object->reg_tmp1, object->reg_rs2, 0);
+    // rd = ~tmp1
+    vmimtUnopR(result, vmi_NOT, object->reg_tmp1, 0);
+    vmimtMoveRR(result, object->reg_rd, object->reg_tmp1);
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitSLO) {
+    commonSxO(processor, object, instruction, vmi_SHL, 0);
+}
+
+EXTB_MORPH_FN(emitSLOW){
+    commonSxO(processor, object, instruction, vmi_SHL, 1);
+}
+
+static void commonSxOI(
+        vmiProcessorP processor,
+        vmiosObjectP  object,
+        Uns32         instruction,
+        vmiBinop      op,
+        Uns32         word) {
+
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    // SH and ONES
+    Uns32 shamt = (result==32) ? object->cu5 : object->cu7;
+    Uns32 shone = (object->xlen - shamt);
+    Uns64 ones  = 0;
+    if (shamt) {
+        if (result==32) {
+            if (op==vmi_SHL) {
+                ones = (Uns32)-1 >> shone;
+            }
+            if (op==vmi_SHR) {
+                ones = (Uns32)-1 << shone;
+            }
+        } else {
+            if (op==vmi_SHL) {
+                ones = (Uns64)-1 >> shone;
+            }
+            if (op==vmi_SHR) {
+                ones = (Uns64)-1 << shone;
+            }
+        }
+    }
+
+    vmimtBinopRRC(result, op, object->reg_rd, object->reg_rs1, shamt, 0);
+    vmimtBinopRC(result, vmi_OR, object->reg_rd, ones, 0);
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
 }
 
 EXTB_MORPH_FN(emitSLOI) {
-    regProlog(processor, object, instruction, BM_RR);
+    commonSxOI(processor, object, instruction, vmi_SHL, 0);
+}
 
-    // SH and ONES
-    Uns32 shamt = (object->xlen == 32) ? (object->cu7 & 0x1f) : object->cu7;
-    Uns64 ones  = 0;
-    if (shamt) {
-        if (object->xlen == 32) {
-            ones = (Uns32)-1 >> (object->xlen - shamt);
-        } else {
-            ones = (Uns64)-1 >> (object->xlen - shamt);
-        }
-    }
-
-    vmimtBinopRRC(object->xlen, vmi_SHL, object->reg_rd, object->reg_rs1, shamt, 0);
-    vmimtBinopRC(object->xlen, vmi_OR, object->reg_rd, ones, 0);
-    regEpilog(processor, object, instruction);
+EXTB_MORPH_FN(emitSLOIW) {
+    commonSxOI(processor, object, instruction, vmi_SHL, 1);
 }
 
 EXTB_MORPH_FN(emitSRO) {
-    regProlog(processor, object, instruction, BM_RR);
-    vmimtBinopRRR(object->xlen, vmi_SHR, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
-    // tmp1 = FFFFFFFF
-    vmimtMoveRC(object->xlen, object->reg_tmp1, -1);
-    // tmp2 = SHL amount
-    vmimtBinopRRC(object->xlen, vmi_AND, object->reg_tmp2, object->reg_rs2, (object->xlen - 1), 0);
-    vmimtBinopRCR(object->xlen, vmi_SUB, object->reg_tmp2, object->xlen, object->reg_tmp2, 0);
-    // tmp1 >> (object->xlen - tmp2)
-    vmimtSetShiftMask((object->xlen*2) - 1);
-    vmimtBinopRR(object->xlen, vmi_SHL, object->reg_tmp1, object->reg_tmp2, 0);
-    // rd |= tmp1
-    vmimtBinopRR(object->xlen, vmi_OR, object->reg_rd, object->reg_tmp1, 0);
-    regEpilog(processor, object, instruction);
+    commonSxO(processor, object, instruction, vmi_SHR, 0);
+}
+
+EXTB_MORPH_FN(emitSROW) {
+    commonSxO(processor, object, instruction, vmi_SHR, 1);
 }
 
 EXTB_MORPH_FN(emitSROI) {
-    regProlog(processor, object, instruction, BM_RR);
+    commonSxOI(processor, object, instruction, vmi_SHR, 0);
+}
 
-    // SH and ONES
-    Uns32 shamt = (object->xlen == 32) ? (object->cu7 & 0x1f) : object->cu7;
-    Uns64 ones  = 0;
-    if (shamt) {
-        if (object->xlen == 32) {
-            ones = (Uns32)-1 << (object->xlen - shamt);
-        } else {
-            ones = (Uns64)-1 << (object->xlen - shamt);
-        }
-    }
-
-    vmimtBinopRRC(object->xlen, vmi_SHR, object->reg_rd, object->reg_rs1, shamt, 0);
-    vmimtBinopRC(object->xlen, vmi_OR, object->reg_rd, ones, 0);
-    regEpilog(processor, object, instruction);
+EXTB_MORPH_FN(emitSROIW) {
+    commonSxOI(processor, object, instruction, vmi_SHR, 1);
 }
 
 EXTB_MORPH_FN(emitROL) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_ROL, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
+    regEpilog(processor, object, instruction);
+}
+EXTB_MORPH_FN(emitROLW) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
+    vmimtBinopRRR(32, vmi_ROL, object->reg_tmp1, object->reg_rs1, object->reg_rs2, 0);
+    vmimtMoveRR(object->xlen, object->reg_rd, object->reg_tmp1);
     regEpilog(processor, object, instruction);
 }
 
@@ -549,9 +992,25 @@ EXTB_MORPH_FN(emitROR) {
     regEpilog(processor, object, instruction);
 }
 
+EXTB_MORPH_FN(emitRORW) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
+    vmimtBinopRRR(32, vmi_ROR, object->reg_tmp1, object->reg_rs1, object->reg_rs2, 0);
+    vmimtMoveRR(object->xlen, object->reg_rd, object->reg_tmp1);
+    regEpilog(processor, object, instruction);
+}
+
 EXTB_MORPH_FN(emitRORI) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRC(object->xlen, vmi_ROR, object->reg_rd, object->reg_rs1, object->cu7, 0);
+    regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitRORIW) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
+    vmimtBinopRRC(32, vmi_ROR, object->reg_tmp1, object->reg_rs1, object->cu5, 0);
+    vmimtMoveRR(object->xlen, object->reg_rd, object->reg_tmp1);
     regEpilog(processor, object, instruction);
 }
 
@@ -579,30 +1038,67 @@ static Uns64 grev64_c(Uns64 rs1, Uns64 rs2) {
     if (shamt & 32) x = ((x & 0x00000000FFFFFFFFLL) << 32) | ((x & 0xFFFFFFFF00000000LL) >> 32);
     return x;
 }
+static void commonGREV(
+        vmiProcessorP processor,
+        vmiosObjectP  object,
+        Uns32         instruction,
+        Uns32         word) {
 
-EXTB_MORPH_FN(emitGREV) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)grev32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)grev64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
 }
 
-EXTB_MORPH_FN(emitGREVI) {
+EXTB_MORPH_FN(emitGREV) {
+    commonGREV(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitGREVW){
+    commonGREV(processor, object, instruction, 1);
+}
+
+static void commonGREVI(
+        vmiProcessorP processor,
+        vmiosObjectP  object,
+        Uns32         instruction,
+        Uns32         word) {
+
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    if (object->xlen==32 || word) {
         vmimtArgUns32(object->cu7);
         vmimtCallResult((vmiCallFn)grev32_c, object->xlen, object->reg_rd);
     } else {
         vmimtArgUns64(object->cu7);
         vmimtCallResult((vmiCallFn)grev64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitGREVI) {
+    commonGREVI(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitGREVIW){
+    commonGREVI(processor, object, instruction, 1);
 }
 
 //
@@ -658,28 +1154,66 @@ static Uns64 unshfl64_c(Uns64 rs1, Uns64 rs2) {
     return x;
 }
 
-EXTB_MORPH_FN(emitSHFL) {
+static void commonSHFL (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)shfl32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)shfl64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
 }
 
-EXTB_MORPH_FN(emitUNSHFL) {
+EXTB_MORPH_FN(emitSHFL) {
+    commonSHFL(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitSHFLW) {
+    commonSHFL(processor, object, instruction, 1);
+}
+
+static void commonUNSHFL (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)unshfl32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)unshfl64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitUNSHFL) {
+    commonUNSHFL(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitUNSHFLW) {
+    commonUNSHFL(processor, object, instruction, 1);
 }
 
 EXTB_MORPH_FN(emitSHFLI) {
@@ -764,28 +1298,66 @@ Uns64 bdep64_c(Uns64 rs1, Uns64 rs2) {
     return r;
 }
 
-EXTB_MORPH_FN(emitBEXT) {
+static void commonBEXT (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)bext32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)bext64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
 }
 
-EXTB_MORPH_FN(emitBDEP) {
+EXTB_MORPH_FN(emitBEXT) {
+    commonBEXT(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitBEXTW) {
+    commonBEXT(processor, object, instruction, 1);
+}
+
+static void commonBDEP (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)bdep32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)bdep64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitBDEP) {
+    commonBDEP(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitBDEPW) {
+    commonBDEP(processor, object, instruction, 1);
 }
 
 EXTB_MORPH_FN(emitCNOT) {
@@ -834,52 +1406,68 @@ Uns64 fsl64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
     return shamt ? (A << shamt) | (B >> (XLEN-shamt)) : A;
 }
 
-// TBD - need pseudo code
-EXTB_MORPH_FN(emitFSL) {
+static void commonFSL (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RRR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    vmimtArgReg(object->xlen, object->reg_rs3);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    vmimtArgReg(result, object->reg_rs3);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)fsl32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)fsl64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
 }
 
-Uns32 fsr32_c(Uns32 rs1, Uns32 rs2, Uns32 rs3) {
-    Int32 XLEN = 32;
-    Int32 shamt = rs2 & (2*XLEN - 1);
-    Uns32 A = rs1, B = rs3;
-    if (shamt >= XLEN) {
-        shamt -= XLEN; A = rs3; B = rs1;
-    }
-    return shamt ? (A >> shamt) | (B << (XLEN-shamt)) : A;
+EXTB_MORPH_FN(emitFSL) {
+    commonFSL(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitFSLW) {
+    commonFSL(processor, object, instruction, 1);
 }
 
-Uns64 fsr64_c(Uns64 rs1, Uns64 rs2, Uns64 rs3) {
-    Int32 XLEN = 64;
-    Int32 shamt = rs2 & (2*XLEN - 1);
-    Uns64 A = rs1, B = rs3;
-    if (shamt >= XLEN) {
-        shamt -= XLEN; A = rs3; B = rs1;
-    }
-    return shamt ? (A >> shamt) | (B << (XLEN-shamt)) : A;
-}
-
-// TBD - need pseudo code
-EXTB_MORPH_FN(emitFSR) {
+static void commonFSR (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RRR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    vmimtArgReg(object->xlen, object->reg_rs3);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    vmimtArgReg(result, object->reg_rs3);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)fsr32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)fsr64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitFSR) {
+    commonFSR(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitFSRW) {
+    commonFSR(processor, object, instruction, 1);
 }
 
 EXTB_MORPH_FN(emitMIN) {
@@ -932,16 +1520,90 @@ Uns64 clmul64_c(Uns64 rs1, Uns64 rs2) {
     }
     return x;
 }
-EXTB_MORPH_FN(emitCLMUL) {
+static void commonCLMUL (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
+
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)clmul32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)clmul64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
+}
+EXTB_MORPH_FN(emitCLMUL) {
+    commonCLMUL(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitCLMULW) {
+    commonCLMUL(processor, object, instruction, 1);
+}
+
+Uns32 clmulr32_c(Uns32 rs1, Uns32 rs2) {
+    Int32 XLEN = 32;
+    Uns32 x = 0;
+    Uns32 i;
+    for (i = 1; i < XLEN; i++) {
+        if ((rs2 >> i) & 1) {
+            x ^= rs1 >> (XLEN-i-1);
+        }
+    }
+    return x;
+}
+Uns64 clmulr64_c(Uns64 rs1, Uns64 rs2) {
+    Int32 XLEN = 64;
+    Uns64 x = 0;
+    Uns32 i;
+    for (i = 1; i < XLEN; i++) {
+        if ((rs2 >> i) & 1) {
+            x ^= rs1 >> (XLEN-i-1);
+        }
+    }
+    return x;
+}
+
+static void commonCLMULR (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
+
+    regProlog(processor, object, instruction, BM_RR);
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
+        vmimtCallResult((vmiCallFn)clmulr32_c, object->xlen, object->reg_rd);
+    } else {
+        vmimtCallResult((vmiCallFn)clmulr64_c, object->xlen, object->reg_rd);
+    }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+EXTB_MORPH_FN(emitCLMULR) {
+    commonCLMULR(processor, object, instruction, 0);
+
+}
+EXTB_MORPH_FN(emitCLMULRW) {
+    commonCLMULR(processor, object, instruction, 1);
 }
 
 Uns32 clmulh32_c(Uns32 rs1, Uns32 rs2) {
@@ -966,16 +1628,35 @@ Uns64 clmulh64_c(Uns64 rs1, Uns64 rs2) {
     }
     return x;
 }
-EXTB_MORPH_FN(emitCLMULH) {
+static void commonCLMULH (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtArgReg(object->xlen, object->reg_rs1);
-    vmimtArgReg(object->xlen, object->reg_rs2);
-    if (object->xlen == 32) {
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    vmimtArgReg(result, object->reg_rs1);
+    vmimtArgReg(result, object->reg_rs2);
+    if (object->xlen==32 || word) {
         vmimtCallResult((vmiCallFn)clmulh32_c, object->xlen, object->reg_rd);
     } else {
         vmimtCallResult((vmiCallFn)clmulh64_c, object->xlen, object->reg_rd);
     }
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
     regEpilog(processor, object, instruction);
+}
+
+EXTB_MORPH_FN(emitCLMULH) {
+    commonCLMULH(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitCLMULHW) {
+    commonCLMULH(processor, object, instruction, 1);
 }
 
 Uns32 crc32_c(Uns32 x, Uns32 nbits) {
@@ -1180,6 +1861,43 @@ static VMIOS_MORPH_FN(doMorph) {
         emitPCNT(processor, object, instruction);
     } else if (type==EXTB_ANDN   ) {
         emitANDN(processor, object, instruction);
+
+    } else if (type==EXTB_ORN   ) {
+        emitORN(processor, object, instruction);
+    } else if (type==EXTB_XNOR   ) {
+        emitXNOR(processor, object, instruction);
+    } else if (type==EXTB_SBSET  ) {
+        emitSBSET(processor, object, instruction);
+    } else if (type==EXTB_SBCLR  ) {
+        emitSBCLR(processor, object, instruction);
+    } else if (type==EXTB_SBINV  ) {
+        emitSBINV(processor, object, instruction);
+    } else if (type==EXTB_SBEXT  ) {
+        emitSBEXT(processor, object, instruction);
+    } else if (type==EXTB_SBSETI ) {
+        emitSBSETI(processor, object, instruction);
+    } else if (type==EXTB_SBCLRI ) {
+        emitSBCLRI(processor, object, instruction);
+    } else if (type==EXTB_SBINVI ) {
+        emitSBINVI(processor, object, instruction);
+    } else if (type==EXTB_SBEXTI ) {
+        emitSBEXTI(processor, object, instruction);
+    } else if (type==EXTB_FSRI   ) {
+        emitFSRI(processor, object, instruction);
+
+    } else if (type==EXTB_ADDIWU && (object->xlen==64)) {
+        emitADDIWU(processor, object, instruction);
+    } else if (type==EXTB_SLLIU_W && (object->xlen==64)) {
+        emitSLLIU_W(processor, object, instruction);
+    } else if (type==EXTB_ADDU_W && (object->xlen==64)) {
+        emitADDU_W(processor, object, instruction);
+    } else if (type==EXTB_SUBU_W && (object->xlen==64)) {
+        emitSUBU_W(processor, object, instruction);
+    } else if (type==EXTB_ADDWU && (object->xlen==64)) {
+        emitADDWU(processor, object, instruction);
+    } else if (type==EXTB_SUBWU && (object->xlen==64)) {
+        emitSUBWU(processor, object, instruction);
+
     } else if (type==EXTB_SLO    ) {
         emitSLO(processor, object, instruction);
     } else if (type==EXTB_SLOI   ) {
@@ -1208,6 +1926,8 @@ static VMIOS_MORPH_FN(doMorph) {
         emitUNSHFLI(processor, object, instruction);
     } else if (type==EXTB_BEXT   ) {
         emitBEXT(processor, object, instruction);
+    } else if (type==EXTB_PACK   ) {
+        emitPACK(processor, object, instruction);
     } else if (type==EXTB_BDEP   ) {
         emitBDEP(processor, object, instruction);
     } else if (type==EXTB_NOT    ) {
@@ -1238,6 +1958,8 @@ static VMIOS_MORPH_FN(doMorph) {
         emitMAXU(processor, object, instruction);
     } else if (type==EXTB_CLMUL      ) {
         emitCLMUL(processor, object, instruction);
+    } else if (type==EXTB_CLMULR     ) {
+        emitCLMULR(processor, object, instruction);
     } else if (type==EXTB_CLMULH     ) {
         emitCLMULH(processor, object, instruction);
     } else if (type==EXTB_CRC32_B    ) {
@@ -1262,6 +1984,68 @@ static VMIOS_MORPH_FN(doMorph) {
         emitBMATOR(processor, object, instruction);
     } else if (type==EXTB_BMATFLIP && (object->xlen==64)) {
         emitBMATFLIP(processor, object, instruction);
+
+    // Additions in version 0.90
+    } else if (type==EXTB_GREVW && (object->xlen==64)) {
+        emitGREVW(processor, object, instruction);
+    } else if (type==EXTB_SLOW && (object->xlen==64)) {
+        emitSLOW(processor, object, instruction);
+    } else if (type==EXTB_SROW && (object->xlen==64)) {
+        emitSROW(processor, object, instruction);
+    } else if (type==EXTB_ROLW && (object->xlen==64)) {
+        emitROLW(processor, object, instruction);
+    } else if (type==EXTB_RORW && (object->xlen==64)) {
+        emitRORW(processor, object, instruction);
+    } else if (type==EXTB_SBSETW && (object->xlen==64)) {
+        emitSBSETW(processor, object, instruction);
+    } else if (type==EXTB_SBCLRW && (object->xlen==64)) {
+        emitSBCLRW(processor, object, instruction);
+    } else if (type==EXTB_SBINVW && (object->xlen==64)) {
+        emitSBINVW(processor, object, instruction);
+    } else if (type==EXTB_SBEXTW && (object->xlen==64)) {
+        emitSBEXTW(processor, object, instruction);
+    } else if (type==EXTB_GREVIW && (object->xlen==64)) {
+        emitGREVIW(processor, object, instruction);
+    } else if (type==EXTB_SLOIW && (object->xlen==64)) {
+        emitSLOIW(processor, object, instruction);
+    } else if (type==EXTB_SROIW && (object->xlen==64)) {
+        emitSROIW(processor, object, instruction);
+    } else if (type==EXTB_RORIW && (object->xlen==64)) {
+        emitRORIW(processor, object, instruction);
+    } else if (type==EXTB_SBSETIW && (object->xlen==64)) {
+        emitSBSETIW(processor, object, instruction);
+    } else if (type==EXTB_SBCLRIW && (object->xlen==64)) {
+        emitSBCLRIW(processor, object, instruction);
+    } else if (type==EXTB_SBINVIW && (object->xlen==64)) {
+        emitSBINVIW(processor, object, instruction);
+    } else if (type==EXTB_FSLW && (object->xlen==64)) {
+        emitFSLW(processor, object, instruction);
+    } else if (type==EXTB_FSRW && (object->xlen==64)) {
+        emitFSRW(processor, object, instruction);
+    } else if (type==EXTB_FSRIW && (object->xlen==64)) {
+        emitFSRIW(processor, object, instruction);
+    } else if (type==EXTB_CLZW && (object->xlen==64)) {
+        emitCLZW(processor, object, instruction);
+    } else if (type==EXTB_CTZW && (object->xlen==64)) {
+        emitCTZW(processor, object, instruction);
+    } else if (type==EXTB_PCNTW && (object->xlen==64)) {
+        emitPCNTW(processor, object, instruction);
+    } else if (type==EXTB_CLMULW && (object->xlen==64)) {
+        emitCLMULW(processor, object, instruction);
+    } else if (type==EXTB_CLMULRW && (object->xlen==64)) {
+        emitCLMULRW(processor, object, instruction);
+    } else if (type==EXTB_CLMULHW && (object->xlen==64)) {
+        emitCLMULHW(processor, object, instruction);
+    } else if (type==EXTB_SHFLW && (object->xlen==64)) {
+        emitSHFLW(processor, object, instruction);
+    } else if (type==EXTB_UNSHFLW && (object->xlen==64)) {
+        emitUNSHFLW(processor, object, instruction);
+    } else if (type==EXTB_BDEPW && (object->xlen==64)) {
+        emitBDEPW(processor, object, instruction);
+    } else if (type==EXTB_BEXTW && (object->xlen==64)) {
+        emitBEXTW(processor, object, instruction);
+    } else if (type==EXTB_PACKW && (object->xlen==64)) {
+        emitPACKW(processor, object, instruction);
 
     } else {
         *opaque = False;
@@ -1318,6 +2102,38 @@ static void diss_rd_rs1_rs2_rs3(vmiosObjectP object, Addr thisPC, char *buffer, 
 }
 #define DISS_RD_RS1_RS2_RS3(NAME) diss_rd_rs1_rs2_rs3(object, thisPC, buffer, NAME, instruction, attrs)
 
+static void diss_rd_rs1_rs3_imm5(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, vmiDisassAttrs attrs) {
+    Uns32 rd  = RD(instruction);
+    Uns32 rs1 = RS1(instruction);
+    Uns32 rs3 = RS3(instruction);
+    Uns32 cu5 = CU5(instruction);
+
+    diss_addr(object->xlen, thisPC, &buffer, instruction, attrs);
+    sprintf(buffer, "%-7s %s,%s,%s,%u", name, map[rd], map[rs1], map[rs3], cu5);
+}
+#define DISS_RD_RS1_RS3_IMM5(NAME) diss_rd_rs1_rs3_imm5(object, thisPC, buffer, NAME, instruction, attrs)
+
+static void diss_rd_rs1_rs3_imm6(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, vmiDisassAttrs attrs) {
+    Uns32 rd  = RD(instruction);
+    Uns32 rs1 = RS1(instruction);
+    Uns32 rs3 = RS3(instruction);
+    Uns32 cu6 = CU6(instruction);
+
+    diss_addr(object->xlen, thisPC, &buffer, instruction, attrs);
+    sprintf(buffer, "%-7s %s,%s,%s,%u", name, map[rd], map[rs1], map[rs3], cu6);
+}
+#define DISS_RD_RS1_RS3_IMM6(NAME) diss_rd_rs1_rs3_imm6(object, thisPC, buffer, NAME, instruction, attrs)
+
+static void diss_rd_rs1_imm12(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, vmiDisassAttrs attrs) {
+    Uns32 rd   = RD(instruction);
+    Uns32 rs1  = RS1(instruction);
+    Uns32 cu12 = CU12(instruction);
+
+    diss_addr(object->xlen, thisPC, &buffer, instruction, attrs);
+    sprintf(buffer, "%-7s %s,%s,%u", name, map[rd], map[rs1], cu12);
+}
+#define DISS_RD_RS1_IMM12(NAME) diss_rd_rs1_imm12(object, thisPC, buffer, NAME, instruction, attrs)
+
 static void diss_rd_rs1_imm7(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
@@ -1337,6 +2153,17 @@ static void diss_rd_rs1_imm6(vmiosObjectP object, Addr thisPC, char *buffer, cha
     sprintf(buffer, "%-7s %s,%s,%u", name, map[rd], map[rs1], cu6);
 }
 #define DISS_RD_RS1_IMM6(NAME) diss_rd_rs1_imm6(object, thisPC, buffer, NAME, instruction, attrs)
+
+
+static void diss_rd_rs1_imm5(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, vmiDisassAttrs attrs) {
+    Uns32 rd  = RD(instruction);
+    Uns32 rs1 = RS1(instruction);
+    Uns32 cu5 = CU5(instruction);
+
+    diss_addr(object->xlen, thisPC, &buffer, instruction, attrs);
+    sprintf(buffer, "%-7s %s,%s,%u", name, map[rd], map[rs1], cu5);
+}
+#define DISS_RD_RS1_IMM5(NAME) diss_rd_rs1_imm5(object, thisPC, buffer, NAME, instruction, attrs)
 
 static VMIOS_DISASSEMBLE_FN(doDisass) {
 
@@ -1358,6 +2185,43 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
             DISS_RD_RS1("pcnt");
         } else if (type==EXTB_ANDN   ) {
             DISS_RD_RS1_RS2("andn");
+
+        } else if (type==EXTB_ORN   ) {
+            DISS_RD_RS1_RS2("orn");
+        } else if (type==EXTB_XNOR   ) {
+            DISS_RD_RS1_RS2("xnor");
+        } else if (type==EXTB_SBSET  ) {
+            DISS_RD_RS1_RS2("sbset");
+        } else if (type==EXTB_SBCLR  ) {
+            DISS_RD_RS1_RS2("sbclr");
+        } else if (type==EXTB_SBINV  ) {
+            DISS_RD_RS1_RS2("sbinv");
+        } else if (type==EXTB_SBEXT  ) {
+            DISS_RD_RS1_RS2("sbext");
+        } else if (type==EXTB_SBSETI ) {
+            DISS_RD_RS1_IMM7("sbseti");
+        } else if (type==EXTB_SBCLRI ) {
+            DISS_RD_RS1_IMM7("sbclri");
+        } else if (type==EXTB_SBINVI ) {
+            DISS_RD_RS1_IMM7("sbinvi");
+        } else if (type==EXTB_SBEXTI ) {
+            DISS_RD_RS1_IMM7("sbexti");
+        } else if (type==EXTB_FSRI   ) {
+            DISS_RD_RS1_RS3_IMM6("fsri");
+
+        } else if (type==EXTB_ADDIWU ) {
+            DISS_RD_RS1_IMM12("addiwu");
+        } else if (type==EXTB_SLLIU_W ) {
+            DISS_RD_RS1_IMM7("slliu.w");
+        } else if (type==EXTB_ADDWU ) {
+            DISS_RD_RS1_RS2("addwu");
+        } else if (type==EXTB_SUBWU ) {
+            DISS_RD_RS1_RS2("subwu");
+        } else if (type==EXTB_ADDU_W ) {
+            DISS_RD_RS1_RS2("addu.w");
+        } else if (type==EXTB_SUBU_W ) {
+            DISS_RD_RS1_RS2("subu.w");
+
         } else if (type==EXTB_SLO    ) {
             DISS_RD_RS1_RS2("slo");
         } else if (type==EXTB_SLOI   ) {
@@ -1388,10 +2252,6 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
             DISS_RD_RS1_RS2("bext");
         } else if (type==EXTB_BDEP   ) {
             DISS_RD_RS1_RS2("bdep");
-
-        //
-        // Compressed TBD
-        //
         } else if (type==EXTB_NOT    ) {
             DISS_RDP("c.not");
 
@@ -1419,6 +2279,70 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
             DISS_RD_RS1_RS2("maxu");
         } else if (type==EXTB_CLMUL      ) {
             DISS_RD_RS1_RS2("clmul");
+        } else if (type==EXTB_CLMULR     ) {
+
+        // Additions in version 0.90
+        } else if (type==EXTB_GREVW) {
+            DISS_RD_RS1_RS2("grevw");
+        } else if (type==EXTB_SLOW) {
+            DISS_RD_RS1_RS2("slow");
+        } else if (type==EXTB_SROW) {
+            DISS_RD_RS1_RS2("srow");
+        } else if (type==EXTB_ROLW) {
+            DISS_RD_RS1_RS2("rolw");
+        } else if (type==EXTB_RORW) {
+            DISS_RD_RS1_RS2("rorw");
+        } else if (type==EXTB_SBSETW) {
+            DISS_RD_RS1_RS2("sbsetw");
+        } else if (type==EXTB_SBCLRW) {
+            DISS_RD_RS1_RS2("sbclrw");
+        } else if (type==EXTB_SBINVW) {
+            DISS_RD_RS1_RS2("sbinvw");
+        } else if (type==EXTB_SBEXTW) {
+            DISS_RD_RS1_RS2("sbextw");
+        } else if (type==EXTB_GREVIW) {
+            DISS_RD_RS1_IMM5("greviw");
+        } else if (type==EXTB_SLOIW) {
+            DISS_RD_RS1_IMM5("sloiw");
+        } else if (type==EXTB_SROIW) {
+            DISS_RD_RS1_IMM5("sroiw");
+        } else if (type==EXTB_RORIW) {
+            DISS_RD_RS1_IMM5("roriw");
+        } else if (type==EXTB_SBSETIW) {
+            DISS_RD_RS1_IMM5("sbsetiw");
+        } else if (type==EXTB_SBCLRIW) {
+            DISS_RD_RS1_IMM5("sbclriw");
+        } else if (type==EXTB_SBINVIW) {
+            DISS_RD_RS1_IMM5("sbinviw");
+        } else if (type==EXTB_FSLW) {
+            DISS_RD_RS1_RS2_RS3("fslw");
+        } else if (type==EXTB_FSRW) {
+            DISS_RD_RS1_RS2_RS3("fsrw");
+        } else if (type==EXTB_FSRIW) {
+            DISS_RD_RS1_RS3_IMM5("fsriw");
+        } else if (type==EXTB_CLZW) {
+            DISS_RD_RS1("clzw");
+        } else if (type==EXTB_CTZW) {
+            DISS_RD_RS1("ctzw");
+        } else if (type==EXTB_PCNTW) {
+            DISS_RD_RS1("pcntw");
+        } else if (type==EXTB_CLMULW) {
+            DISS_RD_RS1_RS2("clmulw");
+        } else if (type==EXTB_CLMULRW) {
+            DISS_RD_RS1_RS2("clmulrw");
+        } else if (type==EXTB_CLMULHW) {
+            DISS_RD_RS1_RS2("clmulhw");
+        } else if (type==EXTB_SHFLW) {
+            DISS_RD_RS1_RS2("shflw");
+        } else if (type==EXTB_UNSHFLW) {
+            DISS_RD_RS1_RS2("unshflw");
+        } else if (type==EXTB_BDEPW) {
+            DISS_RD_RS1_RS2("bdepw");
+        } else if (type==EXTB_BEXTW) {
+            DISS_RD_RS1_RS2("bextw");
+        } else if (type==EXTB_PACKW) {
+            DISS_RD_RS1_RS2("pack");
+
         } else if (type==EXTB_CLMULH     ) {
             DISS_RD_RS1_RS2("clmulh");
         } else if (type==EXTB_CRC32_B    ) {
@@ -1443,8 +2367,9 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
             DISS_RD_RS1_RS2("bmator");
         } else if (type==EXTB_BMATFLIP ) {
             DISS_RD_RS1("bmatflip");
+
         } else {
-            VMI_ABORT("Invalid decode");
+            return 0;
         }
 
         return buffer;

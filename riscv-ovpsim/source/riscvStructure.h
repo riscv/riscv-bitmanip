@@ -175,7 +175,7 @@ typedef struct riscvS {
     Bool               artifactAccess;  // whether current access is an artifact
     Bool               externalActive;  // whether external CSR access active
     Bool               inSaveRestore;   // is save/restore active?
-    Uns8               pmKey;           // polymorphic key
+    Uns16              pmKey;           // polymorphic key
     Uns32              flags;           // model control flags
     Uns32              flagsRestore;    // saved flags during restore
     riscvConfig        configInfo;      // model configuration
