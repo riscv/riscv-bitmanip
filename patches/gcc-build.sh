@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 if ! test -f gcc-9.1.0.tar.xz; then
-  wget ftp://ftp.lip6.fr/pub/gcc/releases/gcc-9.1.0/gcc-9.1.0.tar.xz
+	wget ftp://ftp.lip6.fr/pub/gcc/releases/gcc-9.1.0/gcc-9.1.0.tar.xz
 fi
 if ! test -d gcc-9.1.0; then
 	tar xJf gcc-9.1.0.tar.xz

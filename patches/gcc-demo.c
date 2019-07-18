@@ -84,26 +84,22 @@ int xnor(int i, int j)
 
 unsigned int zexth(short s)
 {
-	return (unsigned short)
-		s;
+	return (unsigned short)s;
 }
 
 unsigned long zexth2(short s)
 {
-	return (unsigned short)
-		s;
+	return (unsigned short)s;
 }
 
 unsigned long zextw(int i)
 {
-	return (unsigned int)
-		i;
+	return (unsigned int) i;
 }
 
 int min(int i, int j)
 {
-	return i < j ? i:
-	j;
+	return i < j ? i : j;
 }
 
 int max(int i, int j)
@@ -166,6 +162,101 @@ long subuw(long i, long j)
 /* ??? See the slliuw pattern in bitmanip.md.  */
 long slliuw(long i)
 {
-	return (long)(unsigned int)
-		i << 10;
+	return (long)(unsigned int)i << 10;
+}
+
+long addiwu_li(void)
+{
+	return 0xffffffff;
+}
+
+long sbset(long i, int index)
+{
+	return i | (1L << index);
+}
+
+int sbsetw(int i, int index)
+{
+	return i | (1 << index);
+}
+
+long sbseti(long i)
+{
+	return i | (1L << 20);
+}
+
+int sbsetiw(int i)
+{
+	return i | (1 << 20);
+}
+
+long sbclr(long i, int index)
+{
+	return i & ~(1L << index);
+}
+
+int sbclrw(int i, int index)
+{
+	return i & ~(1 << index);
+}
+
+long sbclri(long i)
+{
+	return i & ~(1L << 20);
+}
+
+int sbclriw(int i)
+{
+	return i & ~(1 << 20);
+}
+
+long sbinv(long i, int index)
+{
+	return i ^ (1L << index);
+}
+
+int sbinvw(int i, int index)
+{
+	return i ^ (1 << index);
+}
+
+long sbinvi(long i)
+{
+	return i ^ (1L << 20);
+}
+
+int sbinviw(int i)
+{
+	return i ^ (1 << 20);
+}
+
+long sbext(long i, int index)
+{
+	return (i >> index) & 1;
+}
+
+int sbextw(int i, int index)
+{
+	return (i >> index) & 1;
+}
+
+long sbexti(long i)
+{
+	return (i >> 20) & 1;
+}
+
+int sbextiw(int i)
+{
+	return (i >> 20) & 1;
+}
+
+long sbseti_li(void)
+{
+	return 0x200000000L;
+}
+
+// https://github.com/riscv/riscv-bitmanip/issues/36
+unsigned int issue36(unsigned int a)
+{
+        return a & ~(1 << 29);
 }
