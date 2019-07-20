@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../cproofs/common.h"
+#include "../../cproofs/common.h"
 using namespace rv32b;
 
 int main()
