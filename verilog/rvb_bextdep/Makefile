@@ -1,4 +1,10 @@
-all: testbench_0.ok testbench_1.ok testbench_2.ok testbench_3.ok
+test: testbench_0.ok testbench_1.ok testbench_2.ok testbench_3.ok
+
+synth: synth.out
+	cat synth.out
+
+synth.out: rvb_bextdep.v
+	python3 synth.py
 
 testdata: testdata.cc
 	c++ -Wall -o testdata testdata.cc
@@ -39,6 +45,6 @@ testbench_3.ok: testbench_3 testdata_3.hex
 	touch testbench_3.ok
 
 clean:
-	rm -f testbench.vcd testdata testdata_?.hex testbench_? testbench_?.ok
+	rm -f testbench.vcd testdata testdata_?.hex testbench_? testbench_?.ok synth.out synth.tmp synth.ys
 
-.PHONY: all clean
+.PHONY: test synth clean

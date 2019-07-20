@@ -2,3 +2,6 @@
 /testdata_?.hex
 /testbench_?
 /testbench_?.ok
+/synth.out
+/synth.tmp
+/synth.ys
