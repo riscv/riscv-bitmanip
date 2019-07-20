@@ -53,9 +53,14 @@ module rvb_bextdep #(
 	wire [XLEN-1:0] din_rs2_w = din_rs2 & (din_insn3 ? (din_insn13 ? 64'h 0000_0000_ffff_ffff : 64'h 0000_0000_ffff_ffdf) : 64'h ffff_ffff_ffff_ffff);
 	wire [XLEN-1:0] dout_rd_w;
 
-	reg [2:0] din_insn3_q;
-	always @(posedge clock) din_insn3_q <= {din_insn3_q, din_insn3};
-	wire dout_insn3 = FFS ? din_insn3_q[FFS-1] : din_insn3;
+	wire dout_insn3;
+	generate if (FFS) begin
+		reg [FFS-1:0] din_insn3_q;
+		always @(posedge clock) din_insn3_q <= {din_insn3_q, din_insn3};
+		assign dout_insn3 = din_insn3_q[FFS-1];
+	end else begin
+		assign dout_insn3 = din_insn3;
+	end endgenerate
 
 	assign dout_rd = dout_insn3 ? {{32{dout_rd_w[31]}}, dout_rd_w[31:0]} : dout_rd_w;
 
