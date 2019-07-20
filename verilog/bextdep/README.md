@@ -1,7 +1,7 @@
-A fast and efficient pipelined implementation of the RISC-V Zbe `bext` and `bdep`
+A fast and efficient pipelined implementation of the RISC-V "Zbe" extension `bext` and `bdep`
 instructions, based on the implementations from https://github.com/cliffordwolf/bextdep.
 
-Optionally this core also implements the GREV instruction.
+Optionally this core also implements the `grev` instruction.
 
 Module paramters:
 
