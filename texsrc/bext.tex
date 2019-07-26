@@ -537,7 +537,24 @@ In other words, the prefix controls the number of zero bits at the LSB end of th
 control word, and the suffix controls the number of zeros at the MSB end of the control
 word.
 
-{\tt rev8} reverses the order of bytes in a word, thus performs endianness conversion.
+{\tt rev8} reverses the order of bytes in a word, thus performs endianness conversion. This
+is equivalent to the ARM {\tt REV} instructions or {\tt BSWAP} on x86. ARM also has instructions
+for swapping the bytes in 16-bit and 32-bit words, and reversing the bit order (see table~\ref{grevi-cmp}).
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{l|l|l}
+RISC-V & ARM & X86 \\
+\hline
+{\tt rev}    & {\tt RBIT}  & --- \\
+{\tt rev8.h} & {\tt REV16} & --- \\
+{\tt rev8.w} & {\tt REV32} & --- \\
+{\tt rev8}   & {\tt REV}   & {\tt BSWAP} \\
+\end{tabular}
+\end{center}
+\caption{Comparison of bit/byte reversal instructions}
+\label{grevi-cmp}
+\end{table}
 
 % \subsection{References}
 %
