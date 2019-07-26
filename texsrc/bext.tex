@@ -1087,6 +1087,8 @@ operator and boolean OR as addition operator.
 \texttt{bmatflip} is a unary operator that transposes the source matrix. It is
 equivalent to \texttt{zip; zip; zip} on RV64.
 
+\input{bextcref-bmat}
+
 Among other things, \texttt{bmatxor}/\texttt{bmator} can be used to perform
 arbitrary permutations of bits within each byte (permutation matrix as 2nd
 operand) or perform arbitrary permutations of bytes within a 64-bit word
@@ -1099,7 +1101,7 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 
 The x86 EVEX/VEX/SSE instruction GF2P8AFFINEQB is equivalent to {\tt bmatxor}.
 
-\input{bextcref-bmat}
+The {\tt bmm.8} instruction proposed in \cite{Hilewitz08} is also equivalent to {\tt bmatxor}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
