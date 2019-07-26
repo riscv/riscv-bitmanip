@@ -20,10 +20,10 @@ look like exactly, but it will probably look something like this:
  \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
  \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
- \node (sbset) [right=4.5cm of clz.west,anchor=west] { \texttt{sbset} };
- \node (sbclr) [right=4.5cm of slo.west,anchor=west] { \texttt{sbclr} };
- \node (sbinv) [right=4.5cm of min.west,anchor=west] { \texttt{sbinv} };
- \node (sbext) [right=4.5cm of addwu.west,anchor=west] { \texttt{sbext} };
+ \node (sbset) [right=4.1cm of clz.west,anchor=west] { \texttt{sbset[i]} };
+ \node (sbclr) [right=4.1cm of slo.west,anchor=west] { \texttt{sbclr[i]} };
+ \node (sbinv) [right=4.1cm of min.west,anchor=west] { \texttt{sbinv[i]} };
+ \node (sbext) [right=4.1cm of addwu.west,anchor=west] { \texttt{sbext[i]} };
 
  \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
@@ -66,9 +66,9 @@ look like exactly, but it will probably look something like this:
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (rev8.south west) + (3.5cm,0) $);
 
-   \node (bs) at ($ (sbset.west) + (2.0cm,0) $) [right, text=blue] { \textbf{Zbs} };
+   \node (bs) at ($ (sbset.west) + (2.4cm,0) $) [right, text=blue] { \textbf{Zbs} };
    \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (sbset.north west) + (-0.2cm,0) $) rectangle ($ (sbext.south west) + (2.0cm,0) $);
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (sbset.north west) + (-0.2cm,0) $) rectangle ($ (sbext.south west) + (2.4cm,0) $);
 
    \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
    \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (bit permutation) };
