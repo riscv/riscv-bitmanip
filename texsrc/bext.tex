@@ -1351,6 +1351,12 @@ The single-bit instructions are also encoded within the shift opcodes, with
 \end{verbatim}
 \end{minipage}
 
+There is no {\tt sbextiw} instruction as it can be emulated trivially using
+{\tt sbexti}. However, there is {\tt sbsetiw}, {\tt sbclriw}, and {\tt sbinviw}
+as changing bit 31 would change the sign extend. There are non-immediate *W
+instructions of all single-bit instructions, including {\tt sbextw}, because
+the number of used bits in rs2 is different in {\tt sbext} and {\tt sbextw}.
+
 The remaining instructions are encoded within {\tt funct7=0000100} and
 {\tt funct7=0000101}.
 
