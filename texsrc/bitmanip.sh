@@ -12,3 +12,5 @@ for ((i=0; i<${1:-1}; i++)); do
 	pdflatex bitmanip
 	bibtex bitmanip
 done
+
+checkcites bitmanip.aux
