@@ -3,7 +3,7 @@ test: testbench_0.ok testbench_1.ok
 synth: synth.out
 	cat synth.out
 
-synth.out: rvb_clmul.v
+synth.out: rvb_clmul.v synth.py
 	python3 synth.py
 
 testdata: testdata.cc

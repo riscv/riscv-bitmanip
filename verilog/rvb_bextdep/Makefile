@@ -3,7 +3,7 @@ test: testbench_0.ok testbench_1.ok testbench_2.ok testbench_3.ok
 synth: synth.out
 	cat synth.out
 
-synth.out: rvb_bextdep.v
+synth.out: rvb_bextdep.v synth.py
 	python3 synth.py
 
 testdata: testdata.cc

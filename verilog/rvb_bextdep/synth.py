@@ -10,7 +10,8 @@ with open("synth.ys", "w") as f:
                 print("read_verilog -defer rvb_bextdep.v", file=f)
                 print("hierarchy -top rvb_bextdep -chparam XLEN %d -chparam GREV %d -chparam FFS %d" % (xlen, grev, ffs), file=f)
                 print("rename rvb_bextdep rvb_bextdep_xlen%d_grev%d_ffs%d" % (xlen, grev, ffs), file=f)
-                print("synth -flatten; abc -dff -g cmos4; opt -fast; tee -a synth.tmp stat -tech cmos", file=f)
+                print("synth -flatten; abc -dff;; abc -dff -g cmos4; opt -fast", file=f)
+                print("tee -a synth.tmp stat -tech cmos", file=f)
 
 try:
     os.remove("synth.tmp")

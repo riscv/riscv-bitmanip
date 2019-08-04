@@ -78,7 +78,7 @@ module rvb_clmul #(
 		end
 	endfunction
 
-	assign din_ready = !state && (!busy || (dout_valid && dout_ready)) && !reset;
+	assign din_ready = (!busy || (dout_valid && dout_ready)) && !reset;
 	assign dout_valid = !state && busy && !reset;
 
 	reg [XLEN-1:0] dout_rd_reg;
