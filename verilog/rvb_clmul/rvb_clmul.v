@@ -53,17 +53,11 @@ module rvb_clmul #(
 	reg [XLEN-1:0] A, B, X;
 	reg funct_w, funct_r, funct_h;
 
-	reg [XLEN-1:0] next_X;
-	always @* begin
-		next_X = (     X << 1) ^ (B[XLEN-1] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-2] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-3] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-4] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-5] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-6] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-7] ? A : 0);
-		next_X = (next_X << 1) ^ (B[XLEN-8] ? A : 0);
-	end
+	wire [XLEN-1:0] next_X = (X << 8) ^
+			(B[XLEN-1] ? A << 7 : 0) ^ (B[XLEN-2] ? A << 6 : 0) ^
+			(B[XLEN-3] ? A << 5 : 0) ^ (B[XLEN-4] ? A << 4 : 0) ^
+			(B[XLEN-5] ? A << 3 : 0) ^ (B[XLEN-6] ? A << 2 : 0) ^
+			(B[XLEN-7] ? A << 1 : 0) ^ (B[XLEN-8] ? A << 0 : 0);
 
 	function [XLEN-1:0] bitrev;
 		input [XLEN-1:0] in;
@@ -114,7 +108,6 @@ module rvb_clmul #(
 		end
 		if (!state) begin
 			if (din_valid && din_ready) begin
-				X <= 0;
 				funct_r <= din_insn13;
 				funct_h <= din_insn13 && din_insn12;
 				if (din_insn3 && XLEN != 32) begin
