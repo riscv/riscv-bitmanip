@@ -66,7 +66,8 @@ module testbench_ff #(
 	reg [32+64+64+64-1:0] testdata [0:999];
 	initial $readmemh(`TESTDATA, testdata);
 
-	reg  din_valid;
+	reg din_valid = 0;
+	reg dout_ready = 0;
 	wire din_ready;
 	wire dout_valid;
 
@@ -89,6 +90,7 @@ module testbench_ff #(
 	always @(posedge clock) begin
 		din_index <= next_din_index;
 		din_valid <= (next_din_index < 1000) && |($random & 3);
+		dout_ready <= |($random & 7);
 		din_rs1 <= next_rs1;
 		din_rs2 <= next_rs2;
 		if (XLEN > 32)
@@ -104,7 +106,7 @@ module testbench_ff #(
 	wire [XLEN-1:0] check_rd = testdata[dout_index][64:0];
 
 	always @(posedge clock) begin
-		if (!reset && dout_valid && dout_index < 1000) begin
+		if (!reset && dout_valid && dout_ready && dout_index < 1000) begin
 			$display("%s %m: idx=%03d insn=0x%08x rs1=0x%016x rs2=0x%016x rd=0x%016x expected=0x%016x %-s",
 					`TESTDATA, dout_index, check_insn, check_rs1, check_rs2, dout_rd, check_rd,
 					dout_rd !== check_rd ? "ERROR" : "OK");
@@ -128,6 +130,7 @@ module testbench_ff #(
 		.din_insn13 (din_insn13),
 		.din_insn14 (din_insn14),
 		.dout_valid (dout_valid),
+		.dout_ready (dout_ready),
 		.dout_rd    (dout_rd   )
 	);
 endmodule

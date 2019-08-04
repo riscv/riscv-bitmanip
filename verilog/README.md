@@ -18,11 +18,12 @@ instructions. They all provide the same interface:
 
     // data output
     output            dout_valid;     // output is valid
+    input             dout_ready;     // accept output
     output [XLEN-1:0] dout_rd;        // output value
 
 Some of the cores are combinatorial. Those cores simply ignore
-`clock` and `reset`, drive `din_ready` constant high, and connect
+`clock` and `reset`, connect `dout_ready` to `din_ready`, and connect
 `din_valid` to `dout_valid`.
 
 Some of the cores are simple pipelines. Those cores drive
-`din_ready` constant high.
+`din_ready` with `!dout_valid || dout_ready`.
