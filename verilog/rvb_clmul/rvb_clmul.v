@@ -95,7 +95,7 @@ module rvb_clmul #(
 		if (funct_r) begin
 			if (funct_w && XLEN != 32) begin
 				dout_rd_reg = bitrev32(dout_rd_reg);
-				dout_rd_reg[XLEN != 32 ? 32 : 0] = 0;
+				dout_rd_reg[XLEN-32] = 0;
 			end else begin
 				dout_rd_reg = bitrev(dout_rd_reg);
 			end
