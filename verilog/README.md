@@ -30,7 +30,8 @@ Some of the cores are simple pipelines. Those cores drive
 
 The cores in this directory (`rvb_*/`) implement the following instructions. When configured with XLEN=64 they also implement the `*W` versions of these instructions, if the exist in the ISA. When configured with XLEN=32 they all ignore the `din_insn3` input.
 
-|     Core     | Instructions (optional instructions in parentheses) |
-|:-------------|:----------------------------------------------------|
-| rvb_bextdep  | bext bdep (grev)                                    |
-| rvb_clmul    | clmul clmulr clmulh                                 |
+|     Core     | Instructions (optional instructions in parentheses)             |
+|:-------------|:----------------------------------------------------------------|
+| rvb_bextdep  | bext bdep (grev)                                                |
+| rvb_clmul    | clmul clmulr clmulh                                             |
+| rvb_shifter  | sll srl sra slo sro rol ror fsl fsr (sbset sbclr sbinv sbext)   |
