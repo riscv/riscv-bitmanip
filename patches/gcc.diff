@@ -1,5 +1,5 @@
 diff --git a/gcc/common/config/riscv/riscv-common.c b/gcc/common/config/riscv/riscv-common.c
-index eeb75717d..c13438f33 100644
+index eeb75717d..a33edbd57 100644
 --- a/gcc/common/config/riscv/riscv-common.c
 +++ b/gcc/common/config/riscv/riscv-common.c
 @@ -73,6 +73,8 @@ private:
@@ -236,7 +236,7 @@ index eeb75717d..c13438f33 100644
    subset_list = riscv_subset_list::parse (isa, loc);
    if (!subset_list)
      return;
-@@ -568,6 +766,25 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
+@@ -568,6 +766,31 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
    if (subset_list->lookup ("c"))
      *flags |= MASK_RVC;
  
@@ -248,21 +248,27 @@ index eeb75717d..c13438f33 100644
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBB;
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBC;
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBE;
++      *bitmanip_flags &= ~OPTION_MASK_BITMANIP_ZBF;
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBM;
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBP;
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBR;
 +      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBS;
++      *bitmanip_flags &= ~OPTION_MASK_BITMANIP_ZBT;
 +    }
 +
 +  /* Check if we were passed any bitmanip extensions separately.
-+     If true, then add them to the bit-mask as well. */
++     If true, then clear all the bitmanip flags and start over,
++     assuming that the user wants fine-grained subset control. */
 +  if (riscv_bitmanip_have_ext_string_p (opts, subset_list))
++    {
++      *bitmanip_flags = 0;
 +      riscv_parse_bitmanip_ext_string (opts, subset_list);
++    }
 +
    if (current_subset_list)
      delete current_subset_list;
  
-@@ -585,7 +802,7 @@ riscv_handle_option (struct gcc_options *opts,
+@@ -585,7 +808,7 @@ riscv_handle_option (struct gcc_options *opts,
    switch (decoded->opt_index)
      {
      case OPT_march_:
