@@ -1,20 +1,284 @@
 diff --git a/gcc/common/config/riscv/riscv-common.c b/gcc/common/config/riscv/riscv-common.c
-index eeb75717d..2555589b0 100644
+index eeb75717d..a33edbd57 100644
 --- a/gcc/common/config/riscv/riscv-common.c
 +++ b/gcc/common/config/riscv/riscv-common.c
-@@ -568,6 +568,10 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
+@@ -73,6 +73,8 @@ private:
+   const char *parse_sv_or_non_std_ext (const char *, const char *,
+ 				       const char *);
+ 
++  const char *parse_bitmanip_ext (const char *);
++
+ public:
+   ~riscv_subset_list ();
+ 
+@@ -395,6 +397,20 @@ riscv_subset_list::parse_std_ext (const char *p)
+       subset[0] = std_ext;
+ 
+       add (subset, major_version, minor_version);
++
++      /* Parse any additional ISA subset selectors. */
++      switch (std_ext)
++	{
++	case 'b':
++	  p = parse_bitmanip_ext (p);
++	  break;
++
++	default:
++	  break;
++	}
++
++      if (!p)
++	return NULL;
+     }
+   return p;
+ }
+@@ -464,6 +480,139 @@ riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
+   return p;
+ }
+ 
++static int
++riscv_bitmanip_ext_suffix_p (char ch)
++{
++  switch (ch)
++    {
++    case 'b':
++    case 'c':
++    case 'e':
++    case 'f':
++    case 'm':
++    case 'p':
++    case 'r':
++    case 's':
++    case 't':
++      return 1;
++
++    default:
++      return 0;
++    }
++}
++
++static long int
++riscv_bitmanip_ext_mask (char ch)
++{
++  switch (ch)
++    {
++    case 'b': return OPTION_MASK_BITMANIP_ZBB;
++    case 'c': return OPTION_MASK_BITMANIP_ZBC;
++    case 'e': return OPTION_MASK_BITMANIP_ZBE;
++    case 'f': return OPTION_MASK_BITMANIP_ZBF;
++    case 'm': return OPTION_MASK_BITMANIP_ZBM;
++    case 'p': return OPTION_MASK_BITMANIP_ZBP;
++    case 'r': return OPTION_MASK_BITMANIP_ZBR;
++    case 's': return OPTION_MASK_BITMANIP_ZBS;
++    case 't': return OPTION_MASK_BITMANIP_ZBT;
++    default:
++      gcc_unreachable ();
++      return 0;
++    }
++}
++
++static int
++riscv_bitmanip_ext_index (char ch)
++{
++  long int mask = riscv_bitmanip_ext_mask (ch);
++  return ctz_hwi (mask);
++}
++
++const char * const *
++riscv_bitmanip_ext_strtab (void)
++{
++  static const char * const strtab[] =
++    {
++     "Zbb", "Zbc", "Zbe", "Zbf",
++     "Zbm", "Zbp", "Zbr", "Zbs",
++     "Zbt",
++
++     NULL
++    };
++
++  return strtab;
++}
++
++static int
++riscv_bitmanip_ext_count (void)
++{
++  int count = 0;
++  const char * const *ext = riscv_bitmanip_ext_strtab ();
++
++  for (; *ext; ext++, count++);
++
++  return count;
++}
++
++/* Parsing function for bitmanip `Zb{b,c,e,f,m,p,r,s,t}` extensions.
++
++   Return Value:
++     Points to the end of extensions.
++
++   Arguments:
++   `p`: Current parsing position. */
++
++const char *
++riscv_subset_list::parse_bitmanip_ext (const char *p)
++{
++  const char * const * ext_tab = riscv_bitmanip_ext_strtab ();
++
++  unsigned int major_version = 0;
++  unsigned int minor_version = 0;
++  const char *ext = NULL;
++  char buffer[4] = {0, 0, 0, '\0'};
++
++  while (1) {
++    if (*p == '_')
++      {
++	p++;
++	continue;
++      }
++
++    strncpy (buffer, p, 3);
++
++    /* Assert that this is a known bitmanip extension. */
++    if ( strlen (buffer) < 3
++	 || !(p[0] == 'Z'
++	      && p[1] == 'b'
++	      && riscv_bitmanip_ext_suffix_p (p[2])) )
++      {
++	return p;
++      }
++
++    /* Ok, we have a valid bitmanip extension. Select it. */
++    ext = ext_tab[ riscv_bitmanip_ext_index (p[2]) ];
++
++    /* Try to get the version string, if there is one. */
++    p += 3;
++    p = parsing_subset_version (p, &major_version, &minor_version,
++				/* default_major_version= */ 2,
++				/* default_minor_version= */ 0,
++				/* std_ext_p= */ FALSE);
++
++    /* Check that if this isn't conjoined with another extension,
++       e.g. "ZbmZbt" */
++    if (*p != '\0' && *p != '_')
++      {
++	error_at (m_loc, "%<-march=%s%>: %s must separate with _",
++		  m_arch, buffer);
++	return NULL;
++      }
++
++    add (ext, major_version, minor_version);
++  }
++}
++
+ /* Parsing arch string to subset list, return NULL if parsing failed.  */
+ 
+ riscv_subset_list *
+@@ -529,13 +678,62 @@ riscv_arch_str ()
+   return current_subset_list->to_string ();
+ }
+ 
++/* Returns true if we have atleast one "Zbx" bitmanip ISA subset selector
++   present in the `-march` directive, and false otherwise. */
++
++static int
++riscv_bitmanip_have_ext_string_p (struct gcc_options *opts,
++				  riscv_subset_list *subset_list)
++{
++  const char * const * ext_tab = riscv_bitmanip_ext_strtab ();
++
++  int count = riscv_bitmanip_ext_count ();
++
++  for (int i = 0; i < count; ++i)
++    {
++      if (subset_list->lookup (ext_tab[i]))
++	return 1;
++    }
++
++  return 0;
++}
++
++/* Check if any of the bitmanip ISA subset selectors are set,
++   and if so set the appropriate bit in the `x->riscv_bitmanip_flags` mask. */
++
++static void
++riscv_parse_bitmanip_ext_string (struct gcc_options *opts,
++				 riscv_subset_list *subset_list)
++{
++  const char * const * ext_tab = riscv_bitmanip_ext_strtab ();
++  long int mask = 0;
++
++  int count = riscv_bitmanip_ext_count ();
++
++  for (int i = 0; i < count; ++i)
++    {
++      if (subset_list->lookup (ext_tab[i]))
++	{
++	  mask = (1ULL << i);
++	  opts->x_riscv_bitmanip_flags |= mask;
++	}
++    }
++}
++
+ /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
+    dependent mask bits, in case more than one -march string is passed.  */
+ 
+ static void
+-riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
++riscv_parse_arch_string (const char *isa, struct gcc_options *opts, location_t loc)
+ {
+   riscv_subset_list *subset_list;
++
++  /* Standard ISA specifiers. */
++  int *flags = &opts->x_target_flags;
++
++  /* Bitmanip ISA specifiers. */
++  long int *bitmanip_flags = &opts->x_riscv_bitmanip_flags;
++
+   subset_list = riscv_subset_list::parse (isa, loc);
+   if (!subset_list)
+     return;
+@@ -568,6 +766,31 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
    if (subset_list->lookup ("c"))
      *flags |= MASK_RVC;
  
 +  *flags &= ~MASK_BITMANIP;
++  *bitmanip_flags = 0;
 +  if (subset_list->lookup ("b"))
-+    *flags |= MASK_BITMANIP;
++    {
++      *flags |= MASK_BITMANIP;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBB;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBC;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBE;
++      *bitmanip_flags &= ~OPTION_MASK_BITMANIP_ZBF;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBM;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBP;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBR;
++      *bitmanip_flags |= OPTION_MASK_BITMANIP_ZBS;
++      *bitmanip_flags &= ~OPTION_MASK_BITMANIP_ZBT;
++    }
++
++  /* Check if we were passed any bitmanip extensions separately.
++     If true, then clear all the bitmanip flags and start over,
++     assuming that the user wants fine-grained subset control. */
++  if (riscv_bitmanip_have_ext_string_p (opts, subset_list))
++    {
++      *bitmanip_flags = 0;
++      riscv_parse_bitmanip_ext_string (opts, subset_list);
++    }
 +
    if (current_subset_list)
      delete current_subset_list;
  
+@@ -585,7 +808,7 @@ riscv_handle_option (struct gcc_options *opts,
+   switch (decoded->opt_index)
+     {
+     case OPT_march_:
+-      riscv_parse_arch_string (decoded->arg, &opts->x_target_flags, loc);
++      riscv_parse_arch_string (decoded->arg, opts, loc);
+       return true;
+ 
+     default:
 diff --git a/gcc/config/riscv/bitmanip.md b/gcc/config/riscv/bitmanip.md
-index e69de29bb..67d5160b1 100644
+index e69de29bb..66a5b7903 100644
 --- a/gcc/config/riscv/bitmanip.md
 +++ b/gcc/config/riscv/bitmanip.md
 @@ -0,0 +1,365 @@
@@ -54,42 +318,42 @@ index e69de29bb..67d5160b1 100644
 +(define_insn "clzsi2"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(clz:SI (match_operand:SI 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB"
 +  { return TARGET_64BIT ? "clzw\t%0,%1" : "clz\t%0,%1"; }
 +  [(set_attr "type" "bitmanip")])
 +
 +(define_insn "clzdi2"
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(clz:DI (match_operand:DI 1 "register_operand" "r")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "clz\t%0,%1"
 +  [(set_attr "type" "bitmanip")])
 +
 +(define_insn "ctzsi2"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(ctz:SI (match_operand:SI 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB"
 +  { return TARGET_64BIT ? "ctzw\t%0,%1" : "ctz\t%0,%1"; }
 +  [(set_attr "type" "bitmanip")])
 +
 +(define_insn "ctzdi2"
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(ctz:DI (match_operand:DI 1 "register_operand" "r")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "ctz\t%0,%1"
 +  [(set_attr "type" "bitmanip")])
 +
 +(define_insn "popcountsi2"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(popcount:SI (match_operand:SI 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB"
 +  { return TARGET_64BIT ? "pcntw\t%0,%1" : "pcnt\t%0,%1"; }
 +  [(set_attr "type" "bitmanip")])
 +
 +(define_insn "popcountdi2"
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(popcount:DI (match_operand:DI 1 "register_operand" "r")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "pcnt\t%0,%1"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -97,7 +361,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:X 0 "register_operand" "=r")
 +	(bitmanip_bitwise:X (not:X (match_operand:X 1 "register_operand" "r"))
 +			    (match_operand:X 2 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP"
 +  "<insn>n\t%0,%2,%1"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -105,7 +369,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:X 0 "register_operand" "=r")
 +	(not:X (xor:X (match_operand:X 1 "register_operand" "r")
 +		      (match_operand:X 2 "register_operand" "r"))))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP"
 +  "xnor\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 + 
@@ -115,7 +379,7 @@ index e69de29bb..67d5160b1 100644
 +(define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
 +  [(set (match_operand:GPR 0 "register_operand" "=r,r")
 +	(zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP"
 +{
 +  if (which_alternative == 0)
 +   return TARGET_64BIT ? "packw\t%0,%1,x0" : "pack\t%0,%1,x0";
@@ -128,7 +392,7 @@ index e69de29bb..67d5160b1 100644
 +(define_insn "*zero_extendsidi2_bitmanip"
 +  [(set (match_operand:DI 0 "register_operand" "=r,r")
 +	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && (TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP)"
 +  "@
 +   pack\t%0,%1,x0
 +   lwu\t%0,%1"
@@ -138,7 +402,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:X 0 "register_operand" "=r")
 +	(any_minmax:X (match_operand:X 1 "register_operand" "r")
 +		      (match_operand:X 2 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB"
 +  "<bitmanip_insn>\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -149,7 +413,7 @@ index e69de29bb..67d5160b1 100644
 +	(ior:X (ashift:X (const_int 1)
 +			 (match_operand:QI 2 "register_operand" "=r"))
 +	       (match_operand:X 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbset\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -157,7 +421,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:X 0 "register_operand" "=r")
 +	(ior:X (match_operand:X 1 "register_operand" "r")
 +	       (match_operand 2 "single_bit_mask_operand" "i")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbseti\t%0,%1,%S2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -169,7 +433,7 @@ index e69de29bb..67d5160b1 100644
 +		   (ashift:SI (const_int 1)
 +			      (match_operand:QI 2 "register_operand" "=r")) 0)
 +		  (match_operand:DI 1 "register_operand" "r")) 0)))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBS"
 +  "sbsetw\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -178,7 +442,7 @@ index e69de29bb..67d5160b1 100644
 +	(and:X (rotate:X (const_int -2)
 +			 (match_operand:QI 2 "register_operand" "=r"))
 +	       (match_operand:X 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbclr\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -186,7 +450,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:X 0 "register_operand" "=r")
 +	(and:X (match_operand:X 1 "register_operand" "r")
 +	       (match_operand 2 "not_single_bit_mask_operand" "i")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbclri\t%0,%1,%T2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -199,7 +463,7 @@ index e69de29bb..67d5160b1 100644
 +		    (ashift:SI (const_int 1)
 +			       (match_operand:QI 2 "register_operand" "=r")) 0))
 +	   (match_operand:DI 1 "register_operand" "r")) 0)))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBS"
 +  "sbclrw\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -208,7 +472,7 @@ index e69de29bb..67d5160b1 100644
 +	(xor:X (ashift:X (const_int 1)
 +			 (match_operand:QI 2 "register_operand" "=r"))
 +	       (match_operand:X 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbinv\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -216,7 +480,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:X 0 "register_operand" "=r")
 +	(xor:X (match_operand:X 1 "register_operand" "r")
 +	       (match_operand 2 "single_bit_mask_operand" "i")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbinvi\t%0,%1,%S2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -228,7 +492,7 @@ index e69de29bb..67d5160b1 100644
 +		   (ashift:SI (const_int 1)
 +			      (match_operand:QI 2 "register_operand" "=r")) 0)
 +		  (match_operand:DI 1 "register_operand" "r")) 0)))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBS"
 +  "sbinvw\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -238,7 +502,7 @@ index e69de29bb..67d5160b1 100644
 +			(const_int 1)
 +			(zero_extend:X
 +			 (match_operand:QI 2 "register_operand" "r"))))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbext\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -247,7 +511,7 @@ index e69de29bb..67d5160b1 100644
 +	(zero_extract:X (match_operand:X 1 "register_operand" "r")
 +			(const_int 1)
 +			(match_operand 2 "immediate_operand" "i")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBS"
 +  "sbexti\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -258,7 +522,7 @@ index e69de29bb..67d5160b1 100644
 +	  (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
 +		       (match_operand:QI 2 "register_operand" "r")) 0)
 +	 (const_int 1)))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBS"
 +  "sbextw\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -268,7 +532,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
 +		     (match_operand:SI 2 "arith_operand" "rI")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP"
 +  { return TARGET_64BIT ? "ror%i2w\t%0,%1,%2" : "ror%i2\t%0,%1,%2"; }
 +  [(set_attr "type" "bitmanip")])
 +
@@ -276,7 +540,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
 +		     (match_operand:DI 2 "arith_operand" "rI")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && (TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP)"
 +  "ror%i2\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -284,7 +548,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 +		   (match_operand:SI 2 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP"
 +  { return TARGET_64BIT ? "rolw\t%0,%1,%2" : "rol\t%0,%1,%2"; }
 +  [(set_attr "type" "bitmanip")])
 +
@@ -292,7 +556,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(rotate:DI (match_operand:DI 1 "register_operand" "r")
 +		   (match_operand:DI 2 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBB || TARGET_BITMANIP_ZBP"
 +  "rol\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -302,7 +566,7 @@ index e69de29bb..67d5160b1 100644
 +(define_insn "bswapsi2"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBP"
 +  { return TARGET_64BIT ? "greviw\t%0,%1,0x18" : "grevi\t%0,%1,0x18"; }
 +  [(set_attr "type" "bitmanip")])
 +
@@ -310,7 +574,7 @@ index e69de29bb..67d5160b1 100644
 +(define_insn "bswapdi2"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBP"
 +  "grevi\t%0,%1,0x38"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -330,7 +594,7 @@ index e69de29bb..67d5160b1 100644
 +			     (match_operand:X 3 "register_operand" "r"))
 +		      (match_operand:X 2 "register_operand" "r"))
 +	       (match_dup 3)))]
-+  "TARGET_BITMANIP"
++  "TARGET_BITMANIP_ZBT"
 +  "cmix\t%0,%2,%1,%3"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -342,7 +606,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(zero_extend:DI (plus:SI (match_operand:SI 1 "register_operand" "r")
 +				 (match_operand:SI 2 "arith_operand" "rI"))))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "add%i2wu\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -350,7 +614,7 @@ index e69de29bb..67d5160b1 100644
 +  [(set (match_operand:DI 0 "register_operand" "=r")
 +	(zero_extend:DI (minus:SI (match_operand:SI 1 "register_operand" "r")
 +				  (match_operand:SI 2 "register_operand" "r"))))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "subwu\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -359,7 +623,7 @@ index e69de29bb..67d5160b1 100644
 +	(plus:DI (zero_extend:DI
 +		  (subreg:SI (match_operand:DI 2 "register_operand" "r") 0))
 +		 (match_operand:DI 1 "register_operand" "r")))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "addu.w\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -368,7 +632,7 @@ index e69de29bb..67d5160b1 100644
 +	(minus:DI (match_operand:DI 1 "register_operand" "r")
 +		  (zero_extend:DI
 +		   (subreg:SI (match_operand:DI 2 "register_operand" "r") 0))))]
-+  "TARGET_64BIT && TARGET_BITMANIP"
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB"
 +  "subu.w\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
 +
@@ -377,7 +641,7 @@ index e69de29bb..67d5160b1 100644
 +	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
 +			   (match_operand:QI 2 "immediate_operand" "I"))
 +		(match_operand 3 "immediate_operand" "")))]
-+  "TARGET_64BIT && TARGET_BITMANIP
++  "TARGET_64BIT && TARGET_BITMANIP_ZBB
 +   && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
 +  "slliu.w\t%0,%1,%2"
 +  [(set_attr "type" "bitmanip")])
@@ -694,10 +958,20 @@ index e3799a5bd..33668a48e 100644
  (include "sifive-7.md")
 +(include "bitmanip.md")
 diff --git a/gcc/config/riscv/riscv.opt b/gcc/config/riscv/riscv.opt
-index 3b25f9a10..2be866d20 100644
+index 3b25f9a10..0a743afda 100644
 --- a/gcc/config/riscv/riscv.opt
 +++ b/gcc/config/riscv/riscv.opt
-@@ -118,6 +118,8 @@ Mask(64BIT)
+@@ -21,6 +21,9 @@
+ HeaderInclude
+ config/riscv/riscv-opts.h
+ 
++Variable
++HOST_WIDE_INT riscv_bitmanip_flags = 0
++
+ mbranch-cost=
+ Target RejectNegative Joined UInteger Var(riscv_branch_cost)
+ -mbranch-cost=N	Set the cost of branches to roughly N instructions.
+@@ -118,6 +121,8 @@ Mask(64BIT)
  
  Mask(MUL)
  
@@ -706,3 +980,46 @@ index 3b25f9a10..2be866d20 100644
  Mask(ATOMIC)
  
  Mask(HARD_FLOAT)
+@@ -128,6 +133,42 @@ Mask(RVC)
+ 
+ Mask(RVE)
+ 
++mbmi-zbb
++Target Mask(BITMANIP_ZBB) Var(riscv_bitmanip_flags)
++Support the base subset of the Bitmanip extension.
++
++mbmi-zbc
++Target Mask(BITMANIP_ZBC) Var(riscv_bitmanip_flags)
++Support the carry-less multiply subset of the Bitmanip extension.
++
++mbmi-zbe
++Target Mask(BITMANIP_ZBE) Var(riscv_bitmanip_flags)
++Support the bit extract/deposit subset of the Bitmanip extension.
++
++mbmi-zbf
++Target Mask(BITMANIP_ZBF) Var(riscv_bitmanip_flags)
++Support the extract-and-place subset of the Bitmanip extension.
++
++mbmi-zbm
++Target Mask(BITMANIP_ZBM) Var(riscv_bitmanip_flags)
++Support the bit matrix subset of the Bitmanip extension.
++
++mbmi-zbp
++Target Mask(BITMANIP_ZBP) Var(riscv_bitmanip_flags)
++Support the bit permutation subset of the Bitmanip extension.
++
++mbmi-zbr
++Target Mask(BITMANIP_ZBR) Var(riscv_bitmanip_flags)
++Support the CRC subset of the Bitmanip extension.
++
++mbmi-zbs
++Target Mask(BITMANIP_ZBS) Var(riscv_bitmanip_flags)
++Support the single bit subset of the Bitmanip extension.
++
++mbmi-zbt
++Target Mask(BITMANIP_ZBT) Var(riscv_bitmanip_flags)
++Support the ternary subset of the Bitmanip extension.
++
+ mriscv-attribute
+ Target Report Var(riscv_emit_attribute_p) Init(-1)
+ Emit RISC-V ELF attribute.
