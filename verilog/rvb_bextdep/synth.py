@@ -7,10 +7,8 @@ with open("synth.ys", "w") as f:
         for grev in (0, 1):
             for shfl in (0, 1):
                 for ffs in (0, 1, 2, 3):
-                    if (xlen, grev, shfl, ffs) == (32, 0, 1, 3): continue  # work-around ABC bug
-                    if (xlen, grev, shfl, ffs) == (32, 1, 1, 3): continue  # work-around ABC bug
-                    if (xlen, grev, shfl, ffs) == (64, 0, 1, 3): continue  # work-around ABC bug
-                    if (xlen, grev, shfl, ffs) == (64, 1, 1, 3): continue  # work-around ABC bug
+                    if (shfl, ffs) == (1, 3): continue # work around ABC bug
+                    if (xlen, grev, shfl, ffs) != (32, 1, 1, 0): continue
                     print("design -reset", file=f)
                     print("read_verilog -defer rvb_bextdep.v", file=f)
                     print("hierarchy -top rvb_bextdep -chparam XLEN %d -chparam GREV %d -chparam SHFL %d -chparam FFS %d" % (xlen, grev, shfl, ffs), file=f)

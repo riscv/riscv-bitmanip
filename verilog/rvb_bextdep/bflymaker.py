@@ -31,14 +31,13 @@ def print_bfly(modname, stages):
                 grpsize = 4*pwr2
                 grppos = i % grpsize
                 grpseg = (4*grppos) // grpsize
-                # print("//", i, grpsize, grppos, grpseg)
                 if grpseg == 1: sidx = i + grpsize/4
                 if grpseg == 2: sidx = i - grpsize/4
 
             if sidx is None:
                 print("  assign bfly%d[%d] = x%d[%d] ? %s[%d] : %s[%d];" % (pwr2, i, pwr2, xidx, cursor, oidx, cursor, i))
             else:
-                print("  assign bfly%d[%d] = x%d[%d] ? %s[%d] : SHFL && sh[%d] ? %s[%d] : %s[%d];" % (pwr2, i, pwr2, xidx, cursor, oidx, stage, cursor, sidx, cursor, i))
+                print("  assign bfly%d[%d] = sh[%d] ? %s[%d] : (x%d[%d] ? %s[%d] : %s[%d]);" % (pwr2, i, stage, cursor, sidx, pwr2, xidx, cursor, oidx, cursor, i))
 
         cursor = "bfly%d" % pwr2
 
