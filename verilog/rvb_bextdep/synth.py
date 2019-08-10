@@ -5,13 +5,14 @@ import os
 with open("synth.ys", "w") as f:
     for xlen in (32, 64):
         for grev in (0, 1):
-            for ffs in (0, 1, 2, 3):
-                print("design -reset", file=f)
-                print("read_verilog -defer rvb_bextdep.v", file=f)
-                print("hierarchy -top rvb_bextdep -chparam XLEN %d -chparam GREV %d -chparam FFS %d" % (xlen, grev, ffs), file=f)
-                print("rename rvb_bextdep rvb_bextdep_xlen%d_grev%d_ffs%d" % (xlen, grev, ffs), file=f)
-                print("synth -flatten; abc -dff -g cmos; opt -fast", file=f)
-                print("tee -a synth.tmp stat -tech cmos", file=f)
+            for shfl in (0, 1):
+                for ffs in (0, 1, 2, 3):
+                    print("design -reset", file=f)
+                    print("read_verilog -defer rvb_bextdep.v", file=f)
+                    print("hierarchy -top rvb_bextdep -chparam XLEN %d -chparam GREV %d -chparam SHFL %d -chparam FFS %d" % (xlen, grev, shfl, ffs), file=f)
+                    print("rename rvb_bextdep rvb_bextdep_xlen%d_grev%d_shfl%d_ffs%d" % (xlen, grev, shfl, ffs), file=f)
+                    print("synth -flatten; abc -dff -g cmos; opt -fast", file=f)
+                    print("tee -a synth.tmp stat -tech cmos", file=f)
 
 try:
     os.remove("synth.tmp")

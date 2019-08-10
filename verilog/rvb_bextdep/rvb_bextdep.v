@@ -18,6 +18,7 @@
 module rvb_bextdep #(
 	parameter integer XLEN = 64,
 	parameter integer GREV = 1,
+	parameter integer SHFL = 1,
 	parameter integer FFS = 1
 ) (
 	// control signals
@@ -32,30 +33,45 @@ module rvb_bextdep #(
 	input             din_insn3,      // value of instruction bit 3
 	input             din_insn13,     // value of instruction bit 13
 	input             din_insn14,     // value of instruction bit 14
+	input             din_insn30,     // value of instruction bit 30
 	
 	// data output
 	output            dout_valid,     // output is valid
 	input             dout_ready,     // accept output
 	output [XLEN-1:0] dout_rd         // output value
 );
-	// 14 13  3   Function
-	// --------   --------
-	//  0  0  0   GREV
-	//  0  1  0   BDEP
-	//  1  1  0   BEXT
-	// --------   --------
-	//  0  0  1   GREVW
-	//  0  1  1   BDEPW
-	//  1  1  1   BEXTW
+	// 30 14 13  3   Function
+	// -----------   --------
+	//  1  0  0  0   GREV
+	//  0  0  0  0   SHFL
+	//  0  1  0  0   UNSHFL
+	//  0  0  1  0   BDEP
+	//  0  1  1  0   BEXT
+	// -----------   --------
+	//  1  0  0  1   GREVW
+	//  0  0  0  1   SHFLW
+	//  0  1  0  1   UNSHFLW
+	//  0  0  1  1   BDEPW
+	//  0  1  1  1   BEXTW
 
 	wire enable = !dout_valid || dout_ready;
 	assign din_ready = enable && !reset;
 
-	wire [1:0] din_mode = din_insn14 ? 2'b00 : din_insn13 ? 2'b01 : 2'b10;
+	//  2  1  0   Function
+	// --------   --------
+	//  0  1  0   GREV
+	//  1  1  1   SHFL
+	//  1  1  0   UNSHFL
+	//  0  0  1   BDEP
+	//  0  0  0   BEXT
+	wire [2:0] din_mode = (GREV && din_insn30) ? 3'b010 : (SHFL && !din_insn13) ? {2'b11, !din_insn14} : {2'b00, !din_insn14};
 
 	wire [XLEN-1:0] din_rs1_w = din_rs1 & (din_insn3 ? 64'h 0000_0000_ffff_ffff : 64'h ffff_ffff_ffff_ffff);
 	wire [XLEN-1:0] din_rs2_w = din_rs2 & (din_insn3 ? (din_insn13 ? 64'h 0000_0000_ffff_ffff : 64'h 0000_0000_ffff_ffdf) : 64'h ffff_ffff_ffff_ffff);
 	wire [XLEN-1:0] dout_rd_w;
+
+	wire [5:0] shfl_mask = (XLEN == 32 || din_insn3) ? din_rs2_w[3:0] : din_rs2_w[4:0];
+	wire [XLEN-1:0] din_mask = (SHFL && din_mode[2]) ? {din_rs2_w[XLEN-1:6], shfl_mask} : din_rs2_w;
 
 	wire dout_insn3;
 	generate if (FFS) begin
@@ -73,6 +89,7 @@ module rvb_bextdep #(
 
 	rvb_bextdep_xlen_pipeline #(
 		.GREV(GREV),
+		.SHFL(SHFL),
 		.XLEN(XLEN),
 		.FFS(FFS)
 	) core (
@@ -82,17 +99,18 @@ module rvb_bextdep #(
 		.din_valid   (din_valid     ),
 		.din_mode    (din_mode      ),
 		.din_value   (din_rs1_w     ),
-		.din_mask    (din_rs2_w     ),
+		.din_mask    (din_mask      ),
 		.dout_valid  (dout_valid_t  ),
 		.dout_result (dout_rd_w     )
 	);
 endmodule
 
-`define rvb_bextdep_butterfly_idx_a(k, i) ((2 << (k))*((i)/(1 << (k))) + (i)%(1 << (k)))
-`define rvb_bextdep_butterfly_idx_b(k, i) (`rvb_bextdep_butterfly_idx_a(k, i) + (1<<(k)))
+`define rvb_bextdep_butterfly_idx_a(k, i) (((2 << (k))*((i)/(1 << (k))) + (i)%(1 << (k))) % XLEN)
+`define rvb_bextdep_butterfly_idx_b(k, i) ((`rvb_bextdep_butterfly_idx_a(k, i) + (1<<(k))) % XLEN)
 
 module rvb_bextdep_xlen_pipeline #(
 	parameter integer GREV = 1,
+	parameter integer SHFL = 1,
 	parameter integer XLEN = 32,
 	parameter integer FFS = 1
 ) (
@@ -101,7 +119,7 @@ module rvb_bextdep_xlen_pipeline #(
 	input                 enable,
 
 	input                 din_valid,
-	input      [     1:0] din_mode,
+	input      [     2:0] din_mode,
 	input      [XLEN-1:0] din_value,
 	input      [XLEN-1:0] din_mask,
 
@@ -127,11 +145,11 @@ module rvb_bextdep_xlen_pipeline #(
 	);
 
 	reg valid_t;
-	reg [1:0] din_mode_t;
+	reg [2:0] din_mode_t;
 	reg [XLEN-1:0] din_value_t, din_mask_t;
 
 	reg valid_r;
-	reg [1:0] din_mode_r;
+	reg [2:0] din_mode_r;
 	reg [XLEN-1:0] din_value_r, din_mask_r;
 	reg [XLEN/2-1:0] decoder_s1_r, decoder_s2_r, decoder_s4_r;
 	reg [XLEN/2-1:0] decoder_s8_r, decoder_s16_r, decoder_s32_r;
@@ -206,28 +224,32 @@ module rvb_bextdep_xlen_pipeline #(
 	wire [XLEN-1:0] result_bwd;
 
 	rvb_bextdep_butterfly_fwd #(
-		.XLEN(XLEN)
+		.XLEN(XLEN),
+		.SHFL(SHFL)
 	) butterfly_fwd (
 		.din  (din_value_r   ),
-		.s1   (~decoder_s1_r ),
-		.s2   (~decoder_s2_r ),
-		.s4   (~decoder_s4_r ),
-		.s8   (~decoder_s8_r ),
-		.s16  (~decoder_s16_r),
-		.s32  (~decoder_s32_r),
+		.s1   ((SHFL && din_mode_r[1]) ? {XLEN/2{din_mask_r[0]}} : ~decoder_s1_r ),
+		.s2   ((SHFL && din_mode_r[1]) ? {XLEN/2{din_mask_r[1]}} : ~decoder_s2_r ),
+		.s4   ((SHFL && din_mode_r[1]) ? {XLEN/2{din_mask_r[2]}} : ~decoder_s4_r ),
+		.s8   ((SHFL && din_mode_r[1]) ? {XLEN/2{din_mask_r[3]}} : ~decoder_s8_r ),
+		.s16  ((SHFL && din_mode_r[1]) ? {XLEN/2{din_mask_r[4]}} : ~decoder_s16_r),
+		.s32  ((SHFL && din_mode_r[1]) ? {XLEN/2{din_mask_r[5]}} : ~decoder_s32_r),
+		.shfl (SHFL && din_mode_r[2]),
 		.dout (result_fwd    )
 	);
 
 	rvb_bextdep_butterfly_bwd #(
-		.XLEN(XLEN)
+		.XLEN(XLEN),
+		.SHFL(SHFL)
 	) butterfly_bwd (
-		.din  ((GREV && din_mode_r[1]) ? din_value_r : (din_value_r & din_mask_r)),
-		.s1   ((GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[0]}} : ~decoder_s1_r ),
-		.s2   ((GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[1]}} : ~decoder_s2_r ),
-		.s4   ((GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[2]}} : ~decoder_s4_r ),
-		.s8   ((GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[3]}} : ~decoder_s8_r ),
-		.s16  ((GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[4]}} : ~decoder_s16_r),
-		.s32  ((GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[5]}} : ~decoder_s32_r),
+		.din  (((GREV || SHFL) && din_mode_r[1]) ? din_value_r : (din_value_r & din_mask_r)),
+		.s1   (((GREV || SHFL) && din_mode_r[1]) ? {XLEN/2{din_mask_r[0]}} : ~decoder_s1_r ),
+		.s2   (((GREV || SHFL) && din_mode_r[1]) ? {XLEN/2{din_mask_r[1]}} : ~decoder_s2_r ),
+		.s4   (((GREV || SHFL) && din_mode_r[1]) ? {XLEN/2{din_mask_r[2]}} : ~decoder_s4_r ),
+		.s8   (((GREV || SHFL) && din_mode_r[1]) ? {XLEN/2{din_mask_r[3]}} : ~decoder_s8_r ),
+		.s16  (((GREV || SHFL) && din_mode_r[1]) ? {XLEN/2{din_mask_r[4]}} : ~decoder_s16_r),
+		.s32  (((GREV || SHFL) && din_mode_r[1]) ? {XLEN/2{din_mask_r[5]}} : ~decoder_s32_r),
+		.shfl (SHFL && din_mode_r[2]),
 		.dout (result_bwd)
 	);
 
@@ -235,7 +257,7 @@ module rvb_bextdep_xlen_pipeline #(
 		always @(posedge clock) begin
 			if (enable) begin
 				dout_valid <= valid_r;
-				dout_result <= din_mode_r[0] ? (result_fwd & din_mask_r) : result_bwd;
+				dout_result <= din_mode_r[0] ? ((SHFL && din_mode_r[1]) ? result_fwd : (result_fwd & din_mask_r)) : result_bwd;
 			end
 			if (reset) begin
 				dout_valid <= 0;
@@ -244,7 +266,7 @@ module rvb_bextdep_xlen_pipeline #(
 	end else begin
 		always @* begin
 			dout_valid = din_valid;
-			dout_result = din_mode_r[0] ? (result_fwd & din_mask_r) : result_bwd;
+			dout_result = din_mode_r[0] ? ((SHFL && din_mode_r[1]) ? result_fwd : (result_fwd & din_mask_r)) : result_bwd;
 		end
 	end endgenerate
 endmodule
@@ -372,10 +394,12 @@ endmodule
 
 module rvb_bextdep_butterfly_fwd #(
 	parameter integer XLEN = 32,
+	parameter integer SHFL = 1,
 	parameter integer FFSTAGE = 1
 ) (
 	input [XLEN-1:0] din,
 	input [XLEN/2-1:0] s1, s2, s4, s8, s16, s32,
+	input shfl,
 	output [XLEN-1:0] dout
 );
 	reg [XLEN-1:0] butterfly;
@@ -385,44 +409,67 @@ module rvb_bextdep_butterfly_fwd #(
 	always @* begin
 		butterfly = din;
 
-		if (64 <= XLEN) begin
+		if (XLEN == 64) begin
 			for (i = 0; i < XLEN/2; i = i+1)
 				if (s32[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(5, i)], butterfly[`rvb_bextdep_butterfly_idx_b(5, i)]} =
 							{butterfly[`rvb_bextdep_butterfly_idx_b(5, i)], butterfly[`rvb_bextdep_butterfly_idx_a(5, i)]};
 		end
 
-		if (32 <= XLEN) begin
+		if (SHFL && shfl) begin
+			if (XLEN == 64 && s16[0])
+				{butterfly[16 +: 16], butterfly[32 % XLEN +: 16]} = {butterfly[32 % XLEN +: 16], butterfly[16 +: 16]};
+		end else begin
 			for (i = 0; i < XLEN/2; i = i+1)
 				if (s16[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(4, i)], butterfly[`rvb_bextdep_butterfly_idx_b(4, i)]} =
 							{butterfly[`rvb_bextdep_butterfly_idx_b(4, i)], butterfly[`rvb_bextdep_butterfly_idx_a(4, i)]};
 		end
 
-		if (16 <= XLEN) begin
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+32)
+				if (s8[0]) {butterfly[i+8 +: 8], butterfly[i+16 +: 8]} = {butterfly[i+16 +: 8], butterfly[i+8 +: 8]};
+		end else begin
 			for (i = 0; i < XLEN/2; i = i+1)
 				if (s8[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(3, i)], butterfly[`rvb_bextdep_butterfly_idx_b(3, i)]} =
 							{butterfly[`rvb_bextdep_butterfly_idx_b(3, i)], butterfly[`rvb_bextdep_butterfly_idx_a(3, i)]};
 		end
 
-		for (i = 0; i < XLEN/2; i = i+1)
-			if (s4[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(2, i)], butterfly[`rvb_bextdep_butterfly_idx_b(2, i)]} =
-						{butterfly[`rvb_bextdep_butterfly_idx_b(2, i)], butterfly[`rvb_bextdep_butterfly_idx_a(2, i)]};
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+16)
+				if (s4[0]) {butterfly[i+4 +: 4], butterfly[i+8 +: 4]} = {butterfly[i+8 +: 4], butterfly[i+4 +: 4]};
+		end else begin
+			for (i = 0; i < XLEN/2; i = i+1)
+				if (s4[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(2, i)], butterfly[`rvb_bextdep_butterfly_idx_b(2, i)]} =
+							{butterfly[`rvb_bextdep_butterfly_idx_b(2, i)], butterfly[`rvb_bextdep_butterfly_idx_a(2, i)]};
+		end
 
-		for (i = 0; i < XLEN/2; i = i+1)
-			if (s2[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(1, i)], butterfly[`rvb_bextdep_butterfly_idx_b(1, i)]} =
-						{butterfly[`rvb_bextdep_butterfly_idx_b(1, i)], butterfly[`rvb_bextdep_butterfly_idx_a(1, i)]};
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+8)
+				if (s2[0]) {butterfly[i+2 +: 2], butterfly[i+4 +: 2]} = {butterfly[i+4 +: 2], butterfly[i+2 +: 2]};
+		end else begin
+			for (i = 0; i < XLEN/2; i = i+1)
+				if (s2[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(1, i)], butterfly[`rvb_bextdep_butterfly_idx_b(1, i)]} =
+							{butterfly[`rvb_bextdep_butterfly_idx_b(1, i)], butterfly[`rvb_bextdep_butterfly_idx_a(1, i)]};
+		end
 
-		for (i = 0; i < XLEN/2; i = i+1)
-			if (s1[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(0, i)], butterfly[`rvb_bextdep_butterfly_idx_b(0, i)]} =
-						{butterfly[`rvb_bextdep_butterfly_idx_b(0, i)], butterfly[`rvb_bextdep_butterfly_idx_a(0, i)]};
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+4)
+				if (s1[0]) {butterfly[i+1], butterfly[i+2]} = {butterfly[i+2], butterfly[i+1]};
+		end else begin
+			for (i = 0; i < XLEN/2; i = i+1)
+				if (s1[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(0, i)], butterfly[`rvb_bextdep_butterfly_idx_b(0, i)]} =
+							{butterfly[`rvb_bextdep_butterfly_idx_b(0, i)], butterfly[`rvb_bextdep_butterfly_idx_a(0, i)]};
+		end
 	end
 endmodule
 
 module rvb_bextdep_butterfly_bwd #(
 	parameter integer XLEN = 32,
+	parameter integer SHFL = 1,
 	parameter integer FFSTAGE = 1
 ) (
 	input [XLEN-1:0] din,
 	input [XLEN/2-1:0] s1, s2, s4, s8, s16, s32,
+	input shfl,
 	output [XLEN-1:0] dout
 );
 	reg [XLEN-1:0] butterfly;
@@ -432,31 +479,52 @@ module rvb_bextdep_butterfly_bwd #(
 	always @* begin
 		butterfly = din;
 
-		for (i = 0; i < XLEN/2; i = i+1)
-			if (s1[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(0, i)], butterfly[`rvb_bextdep_butterfly_idx_b(0, i)]} =
-						{butterfly[`rvb_bextdep_butterfly_idx_b(0, i)], butterfly[`rvb_bextdep_butterfly_idx_a(0, i)]};
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+4)
+				if (s1[0]) {butterfly[i+1], butterfly[i+2]} = {butterfly[i+2], butterfly[i+1]};
+		end else begin
+			for (i = 0; i < XLEN/2; i = i+1)
+				if (s1[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(0, i)], butterfly[`rvb_bextdep_butterfly_idx_b(0, i)]} =
+							{butterfly[`rvb_bextdep_butterfly_idx_b(0, i)], butterfly[`rvb_bextdep_butterfly_idx_a(0, i)]};
+		end
 
-		for (i = 0; i < XLEN/2; i = i+1)
-			if (s2[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(1, i)], butterfly[`rvb_bextdep_butterfly_idx_b(1, i)]} =
-						{butterfly[`rvb_bextdep_butterfly_idx_b(1, i)], butterfly[`rvb_bextdep_butterfly_idx_a(1, i)]};
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+8)
+				if (s2[0]) {butterfly[i+2 +: 2], butterfly[i+4 +: 2]} = {butterfly[i+4 +: 2], butterfly[i+2 +: 2]};
+		end else begin
+			for (i = 0; i < XLEN/2; i = i+1)
+				if (s2[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(1, i)], butterfly[`rvb_bextdep_butterfly_idx_b(1, i)]} =
+							{butterfly[`rvb_bextdep_butterfly_idx_b(1, i)], butterfly[`rvb_bextdep_butterfly_idx_a(1, i)]};
+		end
 
-		for (i = 0; i < XLEN/2; i = i+1)
-			if (s4[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(2, i)], butterfly[`rvb_bextdep_butterfly_idx_b(2, i)]} =
-						{butterfly[`rvb_bextdep_butterfly_idx_b(2, i)], butterfly[`rvb_bextdep_butterfly_idx_a(2, i)]};
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+16)
+				if (s4[0]) {butterfly[i+4 +: 4], butterfly[i+8 +: 4]} = {butterfly[i+8 +: 4], butterfly[i+4 +: 4]};
+		end else begin
+			for (i = 0; i < XLEN/2; i = i+1)
+				if (s4[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(2, i)], butterfly[`rvb_bextdep_butterfly_idx_b(2, i)]} =
+							{butterfly[`rvb_bextdep_butterfly_idx_b(2, i)], butterfly[`rvb_bextdep_butterfly_idx_a(2, i)]};
+		end
 
-		if (16 <= XLEN) begin
+		if (SHFL && shfl) begin
+			for (i = 0; i < XLEN; i = i+32)
+				if (s8[0]) {butterfly[i+8 +: 8], butterfly[i+16 +: 8]} = {butterfly[i+16 +: 8], butterfly[i+8 +: 8]};
+		end else begin
 			for (i = 0; i < XLEN/2; i = i+1)
 				if (s8[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(3, i)], butterfly[`rvb_bextdep_butterfly_idx_b(3, i)]} =
 							{butterfly[`rvb_bextdep_butterfly_idx_b(3, i)], butterfly[`rvb_bextdep_butterfly_idx_a(3, i)]};
 		end
 
-		if (32 <= XLEN) begin
+		if (SHFL && shfl) begin
+			if (XLEN == 64 && s16[0])
+				{butterfly[16 +: 16], butterfly[32 % XLEN +: 16]} = {butterfly[32 % XLEN +: 16], butterfly[16 +: 16]};
+		end else begin
 			for (i = 0; i < XLEN/2; i = i+1)
 				if (s16[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(4, i)], butterfly[`rvb_bextdep_butterfly_idx_b(4, i)]} =
 							{butterfly[`rvb_bextdep_butterfly_idx_b(4, i)], butterfly[`rvb_bextdep_butterfly_idx_a(4, i)]};
 		end
 
-		if (64 <= XLEN) begin
+		if (XLEN == 64) begin
 			for (i = 0; i < XLEN/2; i = i+1)
 				if (s32[i]) {butterfly[`rvb_bextdep_butterfly_idx_a(5, i)], butterfly[`rvb_bextdep_butterfly_idx_b(5, i)]} =
 							{butterfly[`rvb_bextdep_butterfly_idx_b(5, i)], butterfly[`rvb_bextdep_butterfly_idx_a(5, i)]};

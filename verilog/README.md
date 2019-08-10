@@ -32,6 +32,6 @@ The cores in this directory (`rvb_*/`) implement the following instructions. Whe
 
 |     Core     | Instructions (optional instructions in parentheses)             |
 |:-------------|:----------------------------------------------------------------|
-| rvb_bextdep  | bext bdep (grev)                                                |
+| rvb_bextdep  | bext bdep (grev shfl unshfl)                                    |
 | rvb_clmul    | clmul clmulr clmulh                                             |
 | rvb_shifter  | sll srl sra slo sro rol ror fsl fsr (sbset sbclr sbinv sbext)   |

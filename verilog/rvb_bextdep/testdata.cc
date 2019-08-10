@@ -22,7 +22,7 @@ int main()
 {
 	FILE *f;
 
-	for (int k = 0; k < 4; k++)
+	for (int k = 0; k < 8; k++)
 	{
 		char filename[128];
 		snprintf(filename, 128, "testdata_%d.hex", k);
@@ -30,6 +30,7 @@ int main()
 
 		bool enable_64bit = (k & 1) == 0;
 		bool enable_grev = (k & 2) == 0;
+		bool enable_shfl = (k & 3) == 0;
 
 		for (int i = 0; i < 1000; i++)
 		{
@@ -38,7 +39,7 @@ int main()
 			uint64_t din_rs2 = xorshift64();
 			uint64_t dout_rd;
 
-			switch (xorshift32() % 6)
+			switch (xorshift32() % 10)
 			{
 			case 0: // BDEP
 				if (!enable_64bit) { i--; continue; }
@@ -50,21 +51,43 @@ int main()
 				din_insn = 0x08006033;
 				dout_rd = rv64b::bext(din_rs1, din_rs2);
 				break;
-			case 2: // GREV
+			case 2: // SHFL
+				if (!enable_64bit) { i--; continue; }
+				if (!enable_shfl) { i--; continue; }
+				din_insn = 0x08001033;
+				dout_rd = rv64b::shfl(din_rs1, din_rs2);
+				break;
+			case 3: // UNSHFL
+				if (!enable_64bit) { i--; continue; }
+				if (!enable_shfl) { i--; continue; }
+				din_insn = 0x08005033;
+				dout_rd = rv64b::unshfl(din_rs1, din_rs2);
+				break;
+			case 4: // GREV
 				if (!enable_64bit) { i--; continue; }
 				if (!enable_grev) { i--; continue; }
 				din_insn = 0x40001033;
 				dout_rd = rv64b::grev(din_rs1, din_rs2);
 				break;
-			case 3: // BDEPW
+			case 5: // BDEPW
 				din_insn = enable_64bit ? 0x0800203b : 0x08002033;
 				dout_rd = int32_t(rv32b::bdep(din_rs1, din_rs2));
 				break;
-			case 4: // BEXTW
+			case 6: // BEXTW
 				din_insn = enable_64bit ? 0x0800603b : 0x08006033;
 				dout_rd = int32_t(rv32b::bext(din_rs1, din_rs2));
 				break;
-			case 5: // GREVW
+			case 7: // SHFLW
+				if (!enable_shfl) { i--; continue; }
+				din_insn = enable_64bit ? 0x0800103b : 0x08001033;
+				dout_rd = int32_t(rv32b::shfl(din_rs1, din_rs2));
+				break;
+			case 8: // UNSHFLW
+				if (!enable_shfl) { i--; continue; }
+				din_insn = enable_64bit ? 0x0800503b : 0x08005033;
+				dout_rd = int32_t(rv32b::unshfl(din_rs1, din_rs2));
+				break;
+			case 9: // GREVW
 				if (!enable_grev) { i--; continue; }
 				din_insn = enable_64bit ? 0x4000103b : 0x40001033;
 				dout_rd = int32_t(rv32b::grev(din_rs1, din_rs2));
