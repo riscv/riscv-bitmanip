@@ -3,14 +3,17 @@
 def print_bfly(modname, stages):
     print("module %s #(" % modname)
     print("  parameter integer XLEN = 32,")
-    print("  parameter integer SHFL = 1")
+    print("  parameter integer SHFL = 1,")
+    print("  parameter integer GORC = 1")
     print(") (")
+    print("  input gorc,")
     print("  input shfl_en,")
     print("  input [4:0] shfl,")
     print("  input [XLEN-1:0] din,")
     print("  input [XLEN/2-1:0] s1, s2, s4, s8, s16, s32,")
     print("  output [XLEN-1:0] dout")
     print(");")
+    print("  wire orc = GORC && gorc;")
     print("  wire [4:0] sh = SHFL && shfl_en ? (XLEN == 64 ? shfl : shfl[3:0]) : 5'b0;")
     print("  wire [31:0] x1 = s1, x2 = s2, x4 = s4, x8 = s8, x16 = s16;")
     print("  wire [31:0] x32 = XLEN == 64 ? s32 : 32'b0;")
@@ -35,9 +38,11 @@ def print_bfly(modname, stages):
                 if grpseg == 2: sidx = i - grpsize/4
 
             if sidx is None:
-                print("  assign bfly%d[%d] = x%d[%d] ? %s[%d] : %s[%d];" % (pwr2, i, pwr2, xidx, cursor, oidx, cursor, i))
+                print("  assign bfly%d[%d] = x%d[%d] ? (%s[%d] | (orc & %s[%d])): %s[%d];" %
+                        (pwr2, i, pwr2, xidx, cursor, oidx, cursor, i, cursor, i))
             else:
-                print("  assign bfly%d[%d] = sh[%d] ? %s[%d] : (x%d[%d] ? %s[%d] : %s[%d]);" % (pwr2, i, stage, cursor, sidx, pwr2, xidx, cursor, oidx, cursor, i))
+                print("  assign bfly%d[%d] = sh[%d] ? %s[%d] : (x%d[%d] ? (%s[%d] | (orc & %s[%d])) : %s[%d]);" %
+                        (pwr2, i, stage, cursor, sidx, pwr2, xidx, cursor, oidx, cursor, i, cursor, i))
 
         cursor = "bfly%d" % pwr2
 
