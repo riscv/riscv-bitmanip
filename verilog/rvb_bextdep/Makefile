@@ -1,5 +1,16 @@
 test: testbench_0.ok testbench_1.ok testbench_2.ok testbench_3.ok testbench_4.ok testbench_5.ok testbench_6.ok testbench_7.ok
 
+regen:
+	grep -B999999 -A1 '^// -x- ' rvb_bextdep.v > rvb_bextdep.v.new
+	python3 ppsmaker.py    -i 1 -o 8 -n 4  -m rvb_bextdep_pps4   >> rvb_bextdep.v.new
+	python3 ppsmaker.py    -i 1 -o 8 -n 8  -m rvb_bextdep_pps8   >> rvb_bextdep.v.new
+	python3 ppsmaker.py    -i 1 -o 8 -n 16 -m rvb_bextdep_pps16  >> rvb_bextdep.v.new
+	python3 ppsmaker.py    -i 1 -o 8 -n 32 -m rvb_bextdep_pps32  >> rvb_bextdep.v.new
+	python3 ppsmaker.py    -i 1 -o 8 -n 64 -m rvb_bextdep_pps64  >> rvb_bextdep.v.new
+	python3 ppsmaker.py -f -i 1 -o 8 -n 32 -m rvb_bextdep_pps32f >> rvb_bextdep.v.new
+	python3 ppsmaker.py -f -i 1 -o 8 -n 64 -m rvb_bextdep_pps64f >> rvb_bextdep.v.new
+	mv rvb_bextdep.v.new rvb_bextdep.v
+
 synth: synth.out
 	cat synth.out
 
