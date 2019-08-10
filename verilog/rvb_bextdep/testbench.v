@@ -35,16 +35,22 @@ module testbench;
 	localparam integer GREV = 0;
 `endif
 
+`ifdef ENABLE_SHFL
+	localparam integer SHFL = 1;
+`else
+	localparam integer SHFL = 0;
+`endif
+
 	reg clock;
 	always #5 clock = (clock === 1'b0);
 
 	reg reset = 1;
 	always @(posedge clock) reset <= 0;
 
-	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .FFS(0)) uut0 (.clock(clock), .reset(reset));
-	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .FFS(1)) uut1 (.clock(clock), .reset(reset));
-	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .FFS(2)) uut2 (.clock(clock), .reset(reset));
-	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .FFS(3)) uut3 (.clock(clock), .reset(reset));
+	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .SHFL(SHFL), .FFS(0)) uut0 (.clock(clock), .reset(reset));
+	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .SHFL(SHFL), .FFS(1)) uut1 (.clock(clock), .reset(reset));
+	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .SHFL(SHFL), .FFS(2)) uut2 (.clock(clock), .reset(reset));
+	testbench_ff #(.XLEN(XLEN), .GREV(GREV), .SHFL(SHFL), .FFS(3)) uut3 (.clock(clock), .reset(reset));
 
 	always @(posedge clock) begin
 		if (!reset && uut0.dout_index >= NUM_TESTS && uut1.dout_index >= NUM_TESTS &&
@@ -59,6 +65,7 @@ endmodule
 module testbench_ff #(
 	parameter integer XLEN = 32,
 	parameter integer GREV = 1,
+	parameter integer SHFL = 1,
 	parameter integer FFS = 1
 ) (
 	input clock, reset
@@ -120,6 +127,7 @@ module testbench_ff #(
 	rvb_bextdep #(
 		.XLEN(XLEN),
 		.GREV(GREV),
+		.SHFL(SHFL),
 		.FFS(FFS)
 	) uut (
 		.clock      (clock     ),

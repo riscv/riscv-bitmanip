@@ -30,7 +30,7 @@ int main()
 
 		bool enable_64bit = (k & 1) == 0;
 		bool enable_grev = (k & 2) == 0;
-		bool enable_shfl = (k & 3) == 0;
+		bool enable_shfl = (k & 4) == 0;
 
 		for (int i = 0; i < 1000; i++)
 		{

@@ -21,28 +21,28 @@ testdata_6.hex: testdata_0.hex
 testdata_7.hex: testdata_0.hex
 
 testbench_0: testbench.v rvb_bextdep.v
-	iverilog -o testbench_0 -s testbench -DTESTDATA='"testdata_0.hex"' -DENABLE_64BIT -DENABLE_GREV testbench.v rvb_bextdep.v
+	iverilog -o testbench_0 -s testbench -DTESTDATA='"testdata_0.hex"' -DENABLE_SHFL -DENABLE_GREV -DENABLE_64BIT testbench.v rvb_bextdep.v
 
 testbench_1: testbench.v rvb_bextdep.v
-	iverilog -o testbench_1 -s testbench -DTESTDATA='"testdata_1.hex"' -DENABLE_GREV testbench.v rvb_bextdep.v
+	iverilog -o testbench_1 -s testbench -DTESTDATA='"testdata_1.hex"' -DENABLE_SHFL -DENABLE_GREV testbench.v rvb_bextdep.v
 
 testbench_2: testbench.v rvb_bextdep.v
-	iverilog -o testbench_2 -s testbench -DTESTDATA='"testdata_2.hex"' -DENABLE_64BIT testbench.v rvb_bextdep.v
+	iverilog -o testbench_2 -s testbench -DTESTDATA='"testdata_2.hex"' -DENABLE_SHFL -DENABLE_64BIT testbench.v rvb_bextdep.v
 
 testbench_3: testbench.v rvb_bextdep.v
-	iverilog -o testbench_3 -s testbench -DTESTDATA='"testdata_3.hex"' testbench.v rvb_bextdep.v
+	iverilog -o testbench_3 -s testbench -DTESTDATA='"testdata_3.hex"' -DENABLE_SHFL testbench.v rvb_bextdep.v
 
 testbench_4: testbench.v rvb_bextdep.v
-	iverilog -o testbench_0 -s testbench -DTESTDATA='"testdata_4.hex"' -DENABLE_SHFL -DENABLE_64BIT -DENABLE_GREV testbench.v rvb_bextdep.v
+	iverilog -o testbench_4 -s testbench -DTESTDATA='"testdata_4.hex"' -DENABLE_GREV -DENABLE_64BIT testbench.v rvb_bextdep.v
 
 testbench_5: testbench.v rvb_bextdep.v
-	iverilog -o testbench_1 -s testbench -DTESTDATA='"testdata_5.hex"' -DENABLE_SHFL -DENABLE_GREV testbench.v rvb_bextdep.v
+	iverilog -o testbench_5 -s testbench -DTESTDATA='"testdata_5.hex"' -DENABLE_GREV testbench.v rvb_bextdep.v
 
 testbench_6: testbench.v rvb_bextdep.v
-	iverilog -o testbench_2 -s testbench -DTESTDATA='"testdata_6.hex"' -DENABLE_SHFL -DENABLE_64BIT testbench.v rvb_bextdep.v
+	iverilog -o testbench_6 -s testbench -DTESTDATA='"testdata_6.hex"' -DENABLE_64BIT testbench.v rvb_bextdep.v
 
 testbench_7: testbench.v rvb_bextdep.v
-	iverilog -o testbench_3 -s testbench -DTESTDATA='"testdata_7.hex"' -DENABLE_SHFL testbench.v rvb_bextdep.v
+	iverilog -o testbench_7 -s testbench -DTESTDATA='"testdata_7.hex"' testbench.v rvb_bextdep.v
 
 testbench_0.ok: testbench_0 testdata_0.hex
 	vvp -N ./testbench_0
