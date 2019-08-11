@@ -1,0 +1,10 @@
+/checkout.sh
+/riscv-binutils
+/riscv-binutils-build
+/riscv-gcc
+/riscv-gcc-build
+/riscv-isa-sim
+/riscv-isa-sim-build
+/riscv-newlib
+/riscv-newlib-build
+/riscv-opcodes
