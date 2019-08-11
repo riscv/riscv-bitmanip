@@ -10,7 +10,7 @@ sudo chown $USER: /opt/riscv64b
 Then run:
 
 ```
-bash build-all.
+bash build-all.sh
 ```
 
 This builds and installs binutils, gcc, newlib, riscv-pk, and riscv-isa-sim.
