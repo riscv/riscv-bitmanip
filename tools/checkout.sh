@@ -47,3 +47,9 @@ if [ ! -d riscv-newlib ]; then
 	git clone git@github.com:riscv/riscv-newlib.git riscv-newlib-new
 	mv riscv-newlib-new riscv-newlib
 fi
+
+if [ ! -d riscv-pk ]; then
+	rm -rf riscv-pk-new
+	git clone git@github.com:riscv/riscv-pk.git riscv-pk-new
+	mv riscv-pk-new riscv-pk
+fi

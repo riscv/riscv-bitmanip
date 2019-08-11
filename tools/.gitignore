@@ -7,4 +7,6 @@
 /riscv-isa-sim-build
 /riscv-newlib
 /riscv-newlib-build
+/riscv-pk
+/riscv-pk-build
 /riscv-opcodes
