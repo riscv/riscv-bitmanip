@@ -10,12 +10,10 @@ See [bitmanip-0.90.pdf](bitmanip-0.90.pdf) for a pre-built version of the PDF sp
 The source of the PDF specification is in the [texsrc](texsrc) directory with script (`bitmanip.sh`) to build the PDF.
 
 ## Toolchain
-See the [patches](patches) directory for patches for [riscv-opcodes](https://github.com/riscv/riscv-opcodes),
-[binutils](https://www.gnu.org/software/binutils/), and [riscv-isa-sim](https://github.com/riscv/riscv-isa-sim) (aka spike).
+See the [tools](tools) directory for build scripts for a compiler toolchain with RISC-V Bitmanip support.
 See [rvintrin.h](https://github.com/riscv/riscv-bitmanip/blob/master/cproofs/rvintrin.h) for compiler intrinsics.
 
 ## Test Suite
-
 The [tests](tests) directory contains a test suite for the toolchain and bitmanip instructions.
 
 ## Verilog Reference
