@@ -2,6 +2,7 @@
 set -ex
 test -w /opt/riscv64b
 bash checkout.sh
+bash update.sh
 bash riscv-binutils-build.sh
 bash riscv-gcc-build.sh
 bash riscv-newlib-build.sh
