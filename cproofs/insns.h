@@ -336,6 +336,92 @@ GREV_PSEUDO_OP(63, rev)
 
 #undef GREV_PSEUDO_OP
 
+// --REF-BEGIN-- gorc
+uint32_t gorc32(uint32_t rs1, uint32_t rs2)
+{
+	uint32_t x = rs1;
+	int shamt = rs2 & 31;
+	if (shamt &  1) x |= ((x & 0x55555555) <<  1) | ((x & 0xAAAAAAAA) >>  1);
+	if (shamt &  2) x |= ((x & 0x33333333) <<  2) | ((x & 0xCCCCCCCC) >>  2);
+	if (shamt &  4) x |= ((x & 0x0F0F0F0F) <<  4) | ((x & 0xF0F0F0F0) >>  4);
+	if (shamt &  8) x |= ((x & 0x00FF00FF) <<  8) | ((x & 0xFF00FF00) >>  8);
+	if (shamt & 16) x |= ((x & 0x0000FFFF) << 16) | ((x & 0xFFFF0000) >> 16);
+	return x;
+}
+
+uint64_t gorc64(uint64_t rs1, uint64_t rs2)
+{
+	uint64_t x = rs1;
+	int shamt = rs2 & 63;
+	if (shamt &  1) x |= ((x & 0x5555555555555555LL) <<  1) |
+	                     ((x & 0xAAAAAAAAAAAAAAAALL) >>  1);
+	if (shamt &  2) x |= ((x & 0x3333333333333333LL) <<  2) |
+	                     ((x & 0xCCCCCCCCCCCCCCCCLL) >>  2);
+	if (shamt &  4) x |= ((x & 0x0F0F0F0F0F0F0F0FLL) <<  4) |
+	                     ((x & 0xF0F0F0F0F0F0F0F0LL) >>  4);
+	if (shamt &  8) x |= ((x & 0x00FF00FF00FF00FFLL) <<  8) |
+	                     ((x & 0xFF00FF00FF00FF00LL) >>  8);
+	if (shamt & 16) x |= ((x & 0x0000FFFF0000FFFFLL) << 16) |
+	                     ((x & 0xFFFF0000FFFF0000LL) >> 16);
+	if (shamt & 32) x |= ((x & 0x00000000FFFFFFFFLL) << 32) |
+	                     ((x & 0xFFFFFFFF00000000LL) >> 32);
+	return x;
+}
+// --REF-END--
+
+uint_xlen_t gorc(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+#if XLEN == 32
+	return gorc32(rs1, rs2);
+#else
+	return gorc64(rs1, rs2);
+#endif
+}
+
+#define GORC_PSEUDO_OP(_arg, _name) uint_xlen_t _name(uint_xlen_t rs1) { return gorc(rs1, _arg); }
+
+#if XLEN == 32
+GORC_PSEUDO_OP( 1, orc_p)
+GORC_PSEUDO_OP( 2, orc2_n)
+GORC_PSEUDO_OP( 3, orc_n)
+GORC_PSEUDO_OP( 4, orc4_p)
+GORC_PSEUDO_OP( 6, orc2_b)
+GORC_PSEUDO_OP( 7, orc_b)
+GORC_PSEUDO_OP( 8, orc8_h)
+GORC_PSEUDO_OP(12, orc4_h)
+GORC_PSEUDO_OP(14, orc2_h)
+GORC_PSEUDO_OP(15, orc_h)
+GORC_PSEUDO_OP(16, orc16)
+GORC_PSEUDO_OP(24, orc8)
+GORC_PSEUDO_OP(28, orc4)
+GORC_PSEUDO_OP(30, orc2)
+GORC_PSEUDO_OP(31, orc)
+#else
+GORC_PSEUDO_OP( 1, orc_p)
+GORC_PSEUDO_OP( 2, orc2_n)
+GORC_PSEUDO_OP( 3, orc_n)
+GORC_PSEUDO_OP( 4, orc4_p)
+GORC_PSEUDO_OP( 6, orc2_b)
+GORC_PSEUDO_OP( 7, orc_b)
+GORC_PSEUDO_OP( 8, orc8_h)
+GORC_PSEUDO_OP(12, orc4_h)
+GORC_PSEUDO_OP(14, orc2_h)
+GORC_PSEUDO_OP(15, orc_h)
+GORC_PSEUDO_OP(16, orc16_w)
+GORC_PSEUDO_OP(24, orc8_w)
+GORC_PSEUDO_OP(28, orc4_w)
+GORC_PSEUDO_OP(30, orc2_w)
+GORC_PSEUDO_OP(31, orc_w)
+GORC_PSEUDO_OP(32, orc32)
+GORC_PSEUDO_OP(48, orc16)
+GORC_PSEUDO_OP(56, orc8)
+GORC_PSEUDO_OP(60, orc4)
+GORC_PSEUDO_OP(62, orc2)
+GORC_PSEUDO_OP(63, orc)
+#endif
+
+#undef GORC_PSEUDO_OP
+
 // --REF-BEGIN-- gzip32
 uint32_t shuffle32_stage(uint32_t src, uint32_t maskL, uint32_t maskR, int N)
 {
