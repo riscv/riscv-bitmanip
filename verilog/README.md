@@ -28,11 +28,22 @@ Some of the cores are combinatorial. Those cores simply ignore
 Some of the cores are simple pipelines. Those cores drive
 `din_ready` with `!dout_valid || dout_ready`.
 
-The cores in this directory (`rvb_*/`) implement the following instructions. When configured with XLEN=64 they also implement the `*W` versions of these instructions, if the exist in the ISA. When configured with XLEN=32 they all ignore the `din_insn3` input.
+The cores in this directory (`rvb_*/`) implement the following instructions.
+When configured with XLEN=64 they also implement the `*W` versions of these
+instructions, if the exist in the ISA. When configured with XLEN=32 they all
+ignore the `din_insn3` input.
 
-|     Core     | Instructions (optional instructions in parentheses)                         |
-|:-------------|:----------------------------------------------------------------------------|
-| rvb_bextdep  | bext bdep (grev gorc shfl unshfl)                                           |
-| rvb_clmul    | clmul clmulr clmulh                                                         |
-| rvb_shifter  | sll srl sra slo sro rol ror fsl fsr slliu.w (sbset sbclr sbinv sbext bfp)   |
-| rvb_bmatxor  | bmatxor bmator                                                              |
+These cores can decode immediate-instructions, but the immediate values are
+expected to be present in `din_rs2` and are not extracted by the core from
+the instruction word.
+
+The behavior of these cores when the instruction at the `din_insn*` inputs
+is not one of the instructions implemented by the core, is undefined.
+
+|     Core     | Instructions (optional instructions in parentheses)                                 |
+|:-------------|:------------------------------------------------------------------------------------|
+| rvb_bextdep  | bext bdep (grev gorc shfl unshfl)                                                   |
+| rvb_clmul    | clmul clmulr clmulh                                                                 |
+| rvb_shifter  | sll srl sra slo sro rol ror fsl fsr slliu.w (sbset sbclr sbinv sbext bfp)           |
+| rvb_bmatxor  | bmatxor bmator                                                                      |
+| rvb_simple   | min max minu maxu andn orn xnor pack packw cmix cmov addiwu addwu subwu adduw subuw |
