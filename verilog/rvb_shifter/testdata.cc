@@ -30,6 +30,7 @@ int main()
 
 		bool enable_64bit = (k & 1) == 0;
 		bool enable_sbop = (k & 2) != 0;
+		bool enable_bfp = (k & 4) != 0;
 
 		for (int i = 0; i < 1000; i++)
 		{
@@ -39,7 +40,7 @@ int main()
 			uint64_t din_rs3 = xorshift64();
 			uint64_t dout_rd;
 
-			switch (xorshift32() % 26)
+			switch (xorshift32() % 28)
 			{
 			case 0: // SLL
 				if (!enable_64bit) { i--; continue; }
@@ -165,6 +166,17 @@ int main()
 				if (!enable_sbop) { i--; continue; }
 				din_insn = 0x48005033 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::sbext(din_rs1, din_rs2));
+				break;
+			case 26: // BFP
+				if (!enable_bfp) { i--; continue; }
+				if (!enable_64bit) { i--; continue; }
+				din_insn = 0x48004033;
+				dout_rd = rv64b::bfp(din_rs1, din_rs2);
+				break;
+			case 27: // BFPW
+				if (!enable_bfp) { i--; continue; }
+				din_insn = 0x48004033 | (enable_64bit ? 8 : 0);
+				dout_rd = int32_t(rv32b::bfp(din_rs1, din_rs2));
 				break;
 			}
 			fprintf(f, "%08llx_%016llx_%016llx_%016llx_%016llx\n", (long long)din_insn,
