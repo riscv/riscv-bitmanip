@@ -47,3 +47,4 @@ is not one of the instructions implemented by the core, is undefined.
 | rvb_shifter  | sll srl sra slo sro rol ror fsl fsr slliu.w (sbset sbclr sbinv sbext bfp)           |
 | rvb_bmatxor  | bmatxor bmator                                                                      |
 | rvb_simple   | min max minu maxu andn orn xnor pack packw cmix cmov addiwu addwu subwu adduw subuw |
+| rvb_bitcnt   | clz ctz pcnt (bmatflip)                                                             |

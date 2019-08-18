@@ -16,7 +16,7 @@
  */
 
 module rvb_simple #(
-	parameter integer XLEN = 0
+	parameter integer XLEN = 64
 ) (
 	// control signals
 	input             clock,          // positive edge clock
@@ -27,7 +27,7 @@ module rvb_simple #(
 	output            din_ready,      // core accepts input
 	input  [XLEN-1:0] din_rs1,        // value of 1st argument
 	input  [XLEN-1:0] din_rs2,        // value of 2nd argument
-	input  [XLEN-1:0] din_rs3,        // value of 2nd argument
+	input  [XLEN-1:0] din_rs3,        // value of 3rd argument
 	input             din_insn3,      // value of instruction bit 3
 	input             din_insn5,      // value of instruction bit 5
 	input             din_insn12,     // value of instruction bit 12

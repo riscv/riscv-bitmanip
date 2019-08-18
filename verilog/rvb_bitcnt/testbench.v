@@ -29,13 +29,19 @@ module testbench;
 	localparam integer XLEN = 32;
 `endif
 
+`ifdef ENABLE_BMAT
+	localparam integer BMAT = 1;
+`else
+	localparam integer BMAT = 0;
+`endif
+
 	reg clock;
 	always #5 clock = (clock === 1'b0);
 
 	reg reset = 1;
 	always @(posedge clock) reset <= 0;
 
-	testbench_ff #(.XLEN(XLEN)) uut0 (.clock(clock), .reset(reset));
+	testbench_ff #(.XLEN(XLEN), .BMAT(BMAT)) uut0 (.clock(clock), .reset(reset));
 
 	always @(posedge clock) begin
 		if (!reset && uut0.dout_index >= NUM_TESTS) begin
@@ -47,11 +53,12 @@ module testbench;
 endmodule
 
 module testbench_ff #(
-	parameter integer XLEN = 32
+	parameter integer XLEN = 32,
+	parameter integer BMAT = 0
 ) (
 	input clock, reset
 );
-	reg [32+64+64+64+64-1:0] testdata [0:999];
+	reg [32+64+64-1:0] testdata [0:999];
 	initial $readmemh(`TESTDATA, testdata);
 
 	reg din_valid = 0;
@@ -60,85 +67,57 @@ module testbench_ff #(
 	wire dout_valid;
 
 	reg [XLEN-1:0] din_rs1;
-	reg [XLEN-1:0] din_rs2;
-	reg [XLEN-1:0] din_rs3;
 
 	reg din_insn3;
-	reg din_insn5;
-	reg din_insn12;
-	reg din_insn13;
-	reg din_insn14;
-	reg din_insn25;
-	reg din_insn26;
-	reg din_insn27;
-	reg din_insn30;
+	reg din_insn20;
+	reg din_insn21;
 
 	wire [XLEN-1:0] dout_rd;
 
 	integer din_index = 0;
 
 	wire [31:0] next_din_index = reset ? 0 : din_index + (din_valid && din_ready);
-	wire [31:0] next_insn = testdata[next_din_index][4*64 +: 32];
-	wire [XLEN-1:0] next_rs1 = testdata[next_din_index][3*64 +: 64];
-	wire [XLEN-1:0] next_rs2 = testdata[next_din_index][2*64 +: 64];
-	wire [XLEN-1:0] next_rs3 = testdata[next_din_index][1*64 +: 64];
+	wire [31:0] next_insn = testdata[next_din_index][2*64 +: 32];
+	wire [XLEN-1:0] next_rs1 = testdata[next_din_index][1*64 +: 64];
 
 	always @(posedge clock) begin
 		din_index <= next_din_index;
 		din_valid <= (next_din_index < 1000) && |($random & 3);
 		dout_ready <= |($random & 7);
 		din_rs1 <= next_rs1;
-		din_rs2 <= next_rs2;
-		din_rs3 <= next_rs3;
-		if (XLEN == 64) begin
+		if (XLEN == 64)
 			din_insn3 <= next_insn[3];
-			din_insn5 <= next_insn[5];
-		end
-		din_insn12 <= next_insn[12];
-		din_insn13 <= next_insn[13];
-		din_insn14 <= next_insn[14];
-		din_insn25 <= next_insn[25];
-		din_insn26 <= next_insn[26];
-		din_insn27 <= next_insn[27];
-		din_insn30 <= next_insn[30];
+		din_insn20 <= next_insn[20];
+		din_insn21 <= next_insn[21];
 	end
 
 	integer dout_index = 0;
-	wire [31:0] check_insn = testdata[dout_index][4*64 +: 32];
-	wire [XLEN-1:0] check_rs1 = testdata[dout_index][3*64 +: 64];
-	wire [XLEN-1:0] check_rs2 = testdata[dout_index][2*64 +: 64];
-	wire [XLEN-1:0] check_rs3 = testdata[dout_index][1*64 +: 64];
+	wire [31:0] check_insn = testdata[dout_index][2*64 +: 32];
+	wire [XLEN-1:0] check_rs1 = testdata[dout_index][1*64 +: 64];
 	wire [XLEN-1:0] check_rd = testdata[dout_index][64:0];
 
 	always @(posedge clock) begin
 		if (!reset && dout_valid && dout_ready && dout_index < 1000) begin
-			$display("%s %m: idx=%03d insn=0x%08x rs1=0x%016x rs2=0x%016x rs3=0x%016x rd=0x%016x expected=0x%016x %-s",
-					`TESTDATA, dout_index, check_insn, check_rs1, check_rs2, check_rs3, dout_rd, check_rd,
+			$display("%s %m: idx=%03d insn=0x%08x rs1=0x%016x rd=0x%016x expected=0x%016x %-s",
+					`TESTDATA, dout_index, check_insn, check_rs1, dout_rd, check_rd,
 					dout_rd !== check_rd ? "ERROR" : "OK");
 			if (dout_rd !== check_rd) $stop;
 			dout_index <= dout_index + 1;
 		end
 	end
 
-	rvb_simple #(
-		.XLEN(XLEN)
+	rvb_bitcnt #(
+		.XLEN(XLEN),
+		.BMAT(BMAT)
 	) uut (
 		.clock      (clock     ),
 		.reset      (reset     ),
 		.din_valid  (din_valid ),
 		.din_ready  (din_ready ),
 		.din_rs1    (din_rs1   ),
-		.din_rs2    (din_rs2   ),
-		.din_rs3    (din_rs3   ),
 		.din_insn3  (din_insn3 ),
-		.din_insn5  (din_insn5 ),
-		.din_insn12 (din_insn12),
-		.din_insn13 (din_insn13),
-		.din_insn14 (din_insn14),
-		.din_insn25 (din_insn25),
-		.din_insn26 (din_insn26),
-		.din_insn27 (din_insn27),
-		.din_insn30 (din_insn30),
+		.din_insn20 (din_insn20),
+		.din_insn21 (din_insn21),
 		.dout_valid (dout_valid),
 		.dout_ready (dout_ready),
 		.dout_rd    (dout_rd   )
