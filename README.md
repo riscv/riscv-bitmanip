@@ -2,7 +2,7 @@
 
 This is the repository for the RISC-V Foundations Bitmanip Extension working group.
 
-### NOTE: These RISC-V Bitmanip instructions are a work in progress.
+**NOTE: These RISC-V Bitmanip instructions are a work in progress.**
 These instructions and their specification may change before being accepted as a standard by the RISC-V Foundation and so it is highly likely that implementations made using this draft specification will not conform to the future standard.
 
 ## Specification 
