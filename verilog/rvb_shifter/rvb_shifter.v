@@ -36,6 +36,8 @@ module rvb_shifter #(
 	//  1  1  0  0  0  1  W   ROL
 	//  1  1  0  0  1  1  W   ROR
 	// --------------------   --------
+	//  0  0  1  0  0  1  1   SLLIU.W
+	// --------------------   --------
 	//  -  -  -  1  0  1  W   FSL
 	//  -  -  -  1  1  1  W   FSR
 	// --------------------   --------
@@ -49,13 +51,14 @@ module rvb_shifter #(
 	assign dout_valid = din_valid;
 	assign din_ready = dout_ready;
 
-	wire wmode = (XLEN == 32) || din_insn3;
-	wire sbmode = SBOP && {din_insn30, din_insn29} && din_insn27 && !din_insn26;
+	wire slliumode = (XLEN == 64) && !(din_insn30 || din_insn29) && (din_insn27 && !din_insn26);
+	wire wmode = (XLEN == 32) || (din_insn3 && !slliumode);
+	wire sbmode = SBOP && (din_insn30 || din_insn29) && (din_insn27 && !din_insn26);
 	wire bfpmode = BFP && !din_insn12;
 
 	reg [63:0] Y;
 	wire [63:0] A, B, X, Z;
-	assign A = din_rs1, B = din_rs3;
+	assign A = slliumode ? din_rs1[31:0] : din_rs1, B = din_rs3;
 	assign dout_rd = wmode ? {{32{Y[31]}}, Y[31:0]} : Y;
 
 	reg [63:0] aa, bb;
