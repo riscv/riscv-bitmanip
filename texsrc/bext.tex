@@ -48,7 +48,7 @@ look like exactly, but it will probably look something like this:
  \node (cmov) [right=3.5cm of clmul.west,anchor=north west] { \texttt{cmov, cmix} };
  \node (fsl) [below=0.40cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
 
- \node (bfxp) [right=3.5cm of crc32c.west,anchor=west] { \texttt{bfxp[u]} };
+ \node (bfp) [right=3.5cm of crc32c.west,anchor=west] { \texttt{bfp} };
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
@@ -92,8 +92,8 @@ look like exactly, but it will probably look something like this:
    \node (bternary) [below=-0.1cm of bt.south west,anchor=north west] { (ternary) };
    \draw [draw=black, fill=red, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
 
-   \node (bt) at ($ (bfxp.west) + (3.0cm,0) $) [right, text=gray] { \textbf{Zbf} };
-   \draw [draw=black, fill=gray, opacity=0.1] ($ (bfxp.north west) + (-0.2cm,0) $) rectangle ($ (bfxp.south west) + (3.0cm,0) $);
+   \node (bt) at ($ (bfp.west) + (3.0cm,0) $) [right, text=gray] { \textbf{Zbf} };
+   \draw [draw=black, fill=gray, opacity=0.1] ($ (bfp.north west) + (-0.2cm,0) $) rectangle ($ (bfp.south west) + (3.0cm,0) $);
  \end{scope}
 \end{tikzpicture}
 \end{center}
@@ -854,6 +854,83 @@ as {\tt zip8} and {\tt zip16}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Generalized OR-Combine (\texttt{gorc, gorci})}
+
+\begin{rvb}
+  RV32, RV64:
+    gorc  rd, rs1, rs2
+    gorci rd, rs1, imm
+
+  RV64 only:
+    gorcw  rd, rs1, rs2
+    gorciw rd, rs1, imm
+\end{rvb}
+
+The GORC operation is similar to GREV, except that instead of swapping pairs of bits,
+GORC ORs them together, and writes the new value in both positions.
+
+\input{bextcref-gorc}
+
+GORC can be usefull for copying naturally aligned fields in a word, and testing such
+fields for being equal zero.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit-Field Place (\texttt{bfp})}
+
+\begin{rvb}
+  RV32, RV64:
+    bfp rd, rs1, rs2
+
+  RV64 only:
+    bfpw rd, rs1, rs2
+\end{rvb}
+
+The bit field place ({\tt bfp}) instruction places up to 16 LSB bit from {\tt rs2} into
+the value in {\tt rs1}. The upper bits of {\tt rs2} control the length of the bit field
+and target position.
+
+\input{bextcref-bfp}
+
+The layout of the control word in rs2 is as follows. {\tt LEN=0} encodes for {\tt LEN=16}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    |  3                   2                   1                    |
+    |1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
+    |-------------------------------|-------------------------------|
+    |       |  LEN  |      OFF      |             DATA              |
+    |---------------------------------------------------------------|
+\end{verbatim}
+\end{minipage}
+
+Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  addi t0, zero, {length[3:0], offset[7:0]}
+  pack t0, a0, t0
+  bfp t0, a1, t0
+\end{verbatim}
+\end{minipage}
+
+(On RV64 {\tt packw} would be used as second instruction in that sequence.)
+
+Placing up to 16 constant bits in any contiguous region:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui t0, ...
+  addi t0, t0, ...
+  bfp t0, a1, t0
+\end{verbatim}
+\end{minipage}
+
+Note that either above sequence only modifies one register, which makes them
+fuse-able sequences.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
 
 \begin{rvb}
@@ -931,7 +1008,7 @@ in~\cite{Hilewitz06} and demonstrated in~\cite{Wolf17B}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Carry-less multiply (\texttt{clmul, clmulh, clmulr})}
+\section{Carry-Less Multiply (\texttt{clmul, clmulh, clmulr})}
 
 \begin{rvb}
   RV32, RV64:
@@ -985,7 +1062,7 @@ TI C6000 introduced a similar instruction (XORMPY) in C64x+.~\cite{c64xp}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{CRC instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
+\section{CRC Instructions (\texttt{crc32.[bhwd], crc32c.[bhwd]})}
 
 \begin{rvb}
   RV32, RV64:
@@ -1064,7 +1141,7 @@ crc32_w:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bit-matrix operations (\texttt{bmatxor, bmator, bmatflip}, RV64 only)}
+\section{Bit-Matrix Instructions (\texttt{bmatxor, bmator, bmatflip}, RV64 only)}
 
 \begin{rvb}
   RV64 only:
@@ -1105,11 +1182,11 @@ The {\tt bmm.8} instruction proposed in \cite{Hilewitz08} is also equivalent to 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Ternary bit-manipulation instructions}
+\section{Ternary Bit-Manipulation Instructions}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Conditional mix ({\tt cmix})}
+\subsection{Conditional Mix ({\tt cmix})}
 
 \begin{rvb}
   RV32, RV64:
@@ -1139,7 +1216,7 @@ Using {\tt cmix} a single butterfly stage can be implemented in only two
 instructions. Thus, arbitrary bit-permutations can be implemented using only
 18 instruction (32 bit) or 22 instructions (64 bits).
 
-\subsection{Conditional move ({\tt cmov})}
+\subsection{Conditional Move ({\tt cmov})}
 
 \begin{rvb}
   RV32, RV64:
@@ -1159,7 +1236,7 @@ The {\tt cmov} instruction helps avoiding branches, which can lead to better
 performance, and helps with constant-time code as used in some cryptography
 applications.
 
-\subsection{Funnel shift ({\tt fsl}, {\tt fsr}, {\tt fsri})}
+\subsection{Funnel Shift ({\tt fsl}, {\tt fsr}, {\tt fsri})}
 
 \begin{rvb}
   RV32, RV64:
@@ -1578,6 +1655,23 @@ and are marked with a {\tt *}.
 \end{verbatim}
 \end{minipage}
 
+Pending changes for v0.91 of the RISC-V Bitmanip Spec ({\tt +} for addition,
+{\tt -} for removal):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+|  3                   2                   1                    |
+|1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
+|===============================================================|
+|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  - GREV
+|  0110100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  + GREV
+|  0010100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  + GORC
+|---------------------------------------------------------------|
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + BFP
+|---------------------------------------------------------------|
+\end{verbatim}
+\end{minipage}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Future compressed instructions}
@@ -1680,34 +1774,6 @@ approximately $1\%$ of bitmanipulation code size.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Future 64-bit instructions for bit-field extract and place}
-
-When instruction encodings for instructions $>$32-bit are defined, a {\bf Zbf} (bit-field)
-extension should be considered that defines the following {\it bit-field extract and place}
-instructions.
-
-\begin{rvb}
-  RV32, RV64:
-    bfxp  rd, rs1, rs2, src_off, src_len, dst_off, dst_len
-    bfxpu rd, rs1, rs2, src_off, src_len, dst_off, dst_len
-
-  RV64 only:
-    bfxpw  rd, rs1, rs2, src_off, src_len, dst_off, dst_len
-    bfxpuw rd, rs1, rs2, src_off, src_len, dst_off, dst_len
-\end{rvb}
-
-These instructions extract {\tt src\_len} bits at offset {\tt src\_off} from {\tt rs1},
-and place them in the field of {\tt dst\_len} bits at offset {\tt dst\_off} in the
-value from {\tt rs2}. {\tt bfxp} sign-extends if {\tt dst\_len}$>${\tt src\_len},
-and {\tt bfxpu} zero-extends. When {\tt src\_len == 0} then {\tt bfxp} sets bits
-in the output and {\tt bfxpu} clears bits. {\tt dst\_len == 0} encodes for
-{\tt dst\_len == XLEN}. When {\tt src\_len}$+${\tt src\_off} $>$ XLEN
-or {\tt dst\_len}$+${\tt dst\_off} $>$ XLEN then the bit-field wraps around.
-
-\input{bextcref-bfxp}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Micro architectural considerations and macro-op fusion for bit-manipulation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1793,6 +1859,31 @@ instruction, not just {\tt pack}:
 And finally, a 64-bit core should fuse sequences with {\tt addiwu} as well as
 {\tt addi}, for loading unsigned 32-bit numbers that have their MSB set. This is
 often the case with masks in bit manipulation code.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fused {\tt *-bfp} sequences}
+
+The {\tt bfp} instruction is most commonly used in one of the following sequences:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  addi rd, zero, ...
+  pack rd, rs2, rd
+  bfp rd, rs1, rd
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, ...
+  addi rd, rd, ...
+  bfp rd, rs1, rd
+\end{verbatim}
+\end{minipage}
+
+Either sequence only reads at most two registers and only writes one register, making
+them ideal candidates for macro-op fusion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -845,37 +845,15 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 	return x >> shamt;
 }
 
-// --REF-BEGIN-- bfxp
-uint_xlen_t bfxp(uint_xlen_t rs1, uint_xlen_t rs2,
-		unsigned src_off, unsigned src_len, unsigned dst_off, unsigned dst_len)
+// --REF-BEGIN-- bfp
+uint_xlen_t bfp(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	assert(src_off < XLEN && src_len < XLEN && dst_off < XLEN && dst_len < XLEN);
-
-	uint_xlen_t src_mask = rol(slo(0, src_len), src_off);
-	uint_xlen_t dst_mask = rol(slo(0, dst_len), dst_off);
-	if (dst_len == 0) dst_mask = ~(uint_xlen_t)0;
-
-	uint_xlen_t value = ror((rs1 & src_mask), src_off);
-
-	// sign-extend
-	value = sra(sll(value, XLEN-src_len), XLEN-src_len);
-	if (src_len == 0) value = ~(uint_xlen_t)0;
-
-	return (rs2 & ~dst_mask) | (rol(value, dst_off) & dst_mask);
-}
-
-uint_xlen_t bfxpu(uint_xlen_t rs1, uint_xlen_t rs2,
-		unsigned src_off, unsigned src_len, unsigned dst_off, unsigned dst_len)
-{
-	assert(src_off < XLEN && src_len < XLEN && dst_off < XLEN && dst_len < XLEN);
-
-	uint_xlen_t src_mask = rol(slo(0, src_len), src_off);
-	uint_xlen_t dst_mask = rol(slo(0, dst_len), dst_off);
-	if (dst_len == 0) dst_mask = ~(uint_xlen_t)0;
-
-	uint_xlen_t value = ror((rs1 & src_mask), src_off);
-
-	return (rs2 & ~dst_mask) | (rol(value, dst_off) & dst_mask);
+	int len = (rs2 >> 24) & 15;
+	int off = (rs2 >> 16) & (XLEN-1);
+	len = len ? len : 16;
+	uint_xlen_t mask = rol(slo(0, len), off);
+	uint_xlen_t data = rol(rs2, off);
+	return (data & mask) | (rs1 & ~mask);
 }
 // --REF-END--
 
