@@ -35,3 +35,4 @@ The cores in this directory (`rvb_*/`) implement the following instructions. Whe
 | rvb_bextdep  | bext bdep (grev gorc shfl unshfl)                                   |
 | rvb_clmul    | clmul clmulr clmulh                                                 |
 | rvb_shifter  | sll srl sra slo sro rol ror fsl fsr (sbset sbclr sbinv sbext bfp)   |
+| rvb_bmatxor  | bmatxor bmator                                                      |
