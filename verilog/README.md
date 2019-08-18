@@ -41,10 +41,10 @@ The behavior of these cores when the instruction at the `din_insn*` inputs
 is not one of the instructions implemented by the core, is undefined.
 
 |     Core     | Instructions (optional instructions in parentheses)                                 |
-|:-------------|:------------------------------------------------------------------------------------|
-| rvb_bextdep  | bext bdep (grev gorc shfl unshfl)                                                   |
-| rvb_clmul    | clmul clmulr clmulh                                                                 |
-| rvb_shifter  | sll srl sra slo sro rol ror fsl fsr slliu.w (sbset sbclr sbinv sbext bfp)           |
-| rvb_bmatxor  | bmatxor bmator                                                                      |
-| rvb_simple   | min max minu maxu andn orn xnor pack packw cmix cmov addiwu addwu subwu adduw subuw |
-| rvb_bitcnt   | clz ctz pcnt (bmatflip)                                                             |
+|:-------------|:------------------------------------------------------------------------------|
+| rvb_bextdep  | bext bdep (grev gorc shfl unshfl)                                             |
+| rvb_clmul    | clmul clmulr clmulh                                                           |
+| rvb_shifter  | sll srl sra slo sro rol ror fsl fsr slliu.w (sbset sbclr sbinv sbext bfp)     |
+| rvb_bmatxor  | bmatxor bmator                                                                |
+| rvb_simple   | min max minu maxu andn orn xnor pack cmix cmov addiwu addwu subwu adduw subuw |
+| rvb_bitcnt   | clz ctz pcnt (bmatflip)                                                       |
