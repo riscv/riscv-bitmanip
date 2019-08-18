@@ -29,71 +29,63 @@ look like exactly, but it will probably look something like this:
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
- \node (revp) [right=4.0cm of rev8.west,anchor=west] { \texttt{rev.p} };
- \node (grev) [right=6.5cm of rev8.west,anchor=west] { \texttt{grev[i]} };
+ \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b} };
 
- \node (zip) [below=1.0cm of rev8.west,anchor=west] { \texttt{zip, unzip, zip.n} };
- \node (shuffle) [right=6.5cm of zip.west,anchor=west] { \texttt{shfl[i], unshfl[i]} };
+ \node (grev) [right=4.3cm of rev8.west,anchor=west] { \texttt{grev[i]} };
+ \node (gorc) [right=4.3cm of orcb.west,anchor=west] { \texttt{gorc[i]} };
+ \node (shuffle) [below=0.5cm of gorc.east,anchor=east] { \texttt{[un]shfl[i]} };
 
- \node (bext) [below=1.0cm of zip.west,anchor=west] { \texttt{bext, bdep} };
+ \node (bext) [below=2.0cm of rev8.west,anchor=west] { \texttt{bext, bdep} };
 
- \node (clmul) [below=1.0cm of bext.west,anchor=west] { \texttt{clmul[hr]} };
+ \node (clmul) [below=3.0cm of rev8.west,anchor=west] { \texttt{clmul[hr]} };
 
- \node (bmatxor) [right=3.5cm of bext.west,anchor=west] { \texttt{bmat[x]or} };
- \node (bmatflip) [below=0.45cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
+ \node (bfp) [right=3.5cm of bext.west,anchor=west] { \texttt{bfp} };
 
- \node (crc32) [below=1.0cm of clmul.west,anchor=west] { \texttt{crc32.[bhwd]} };
- \node (crc32c) [below=0.5cm of crc32.west,anchor=west] { \texttt{crc32c.[bhwd]} };
+ \node (bmatxor) [below=1.0cm of clmul.west,anchor=west] { \texttt{\texttt{bmat[x]or}} };
+ \node (bmatflip) [below=0.5cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
 
- \node (cmov) [right=3.5cm of clmul.west,anchor=north west] { \texttt{cmov, cmix} };
- \node (fsl) [below=0.40cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
+ \node (crc32) [right=3.5cm of clmul.west,anchor=west] { \texttt{crc32[c]} };
 
- \node (bfp) [right=3.5cm of crc32c.west,anchor=west] { \texttt{bfp} };
+ \node (cmov) [right=3.5cm of bmatxor.west,anchor=west] { \texttt{cmov, cmix} };
+ \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
    \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- coordinate (A) ($ (clmul.south west) + (3.15cm,-0.2cm) $) coordinate (B)
-     |- ($ (zip.south west) + (6.0cm,-0.2cm) $) |- ($ (clz.north west) + (0,+0.2cm) $);
-
-   \draw [draw=black, dashed, opacity=0.2] (A) |- ($ (crc32c.south) + (0,-0.2cm) $) -| (B);
-
-   \draw [draw=black, dashed, opacity=0.2] ($ (slliuw.west) + (6.0cm,0) $) -| coordinate (A) ($ (shuffle.east) + (+0.2cm,0) $)
-     |- ($ (cmov.north west) + (-0.35cm,+0.12cm) $);
-
-   \node (B) at ($ (A) + (0,0) $) [above left, text=gray, opacity=0.5] { \textbf{B$^?$} };
+     |- ($ (bext.south west) + (6.0cm,-0.2cm) $) |- ($ (clz.north west) + (0,+0.2cm) $);
 
    \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (rev8.south west) + (3.5cm,0) $);
+   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (orcb.south west) + (3.5cm,0) $);
 
    \node (bs) at ($ (sbset.west) + (2.4cm,0) $) [right, text=blue] { \textbf{Zbs} };
    \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (sbset.north west) + (-0.2cm,0) $) rectangle ($ (sbext.south west) + (2.4cm,0) $);
 
    \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
-   \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (bit permutation) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) |- ($ (shuffle.south east) + (0,0) $)
-     |- ($ (revp.north west) + (2.5cm,0.2cm) $) |- ($ (andn.north west) + (-0.2cm,0) $);
+   \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (permutation) };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) |- ($ (shuffle.south east) + (0.5cm,0) $)
+     |- ($ (andn.north west) + (-0.2cm,0) $);
 
    \node (be) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbe} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
 
-   \node (bm) at ($ (bmatxor.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbm} };
-   \node (bmatrix) [below=-0.1cm of bm.south west,anchor=north west] { (bit matrix) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (bmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
+   \node (bf) at ($ (bfp.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbf} };
+   \draw [draw=black, fill=red, opacity=0.2] ($ (bfp.north west) + (-0.2cm,0) $) rectangle ($ (bfp.south west) + (3.0cm,0) $);
 
    \node (bc) at ($ (clmul.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbc} };
    \draw [draw=black, fill=red, opacity=0.2] ($ (clmul.north west) + (-0.5cm,0) $) rectangle ($ (clmul.south west) + (3.0cm,0) $);
 
-   \node (br) at ($ (crc32.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbr} };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.5cm,0) $) rectangle ($ (crc32c.south west) + (3.0cm,0) $);
+   \node (bm) at ($ (bmatxor.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbm} };
+   \node (bmatrix) [below=-0.1cm of bm.south east,anchor=north east] { (matrix) };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (bmatxor.north west) + (-0.2cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
 
    \node (bt) at ($ (cmov.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbt} };
    \node (bternary) [below=-0.1cm of bt.south west,anchor=north west] { (ternary) };
    \draw [draw=black, fill=red, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
 
-   \node (bt) at ($ (bfp.west) + (3.0cm,0) $) [right, text=gray] { \textbf{Zbf} };
-   \draw [draw=black, fill=gray, opacity=0.1] ($ (bfp.north west) + (-0.2cm,0) $) rectangle ($ (bfp.south west) + (3.0cm,0) $);
+   \node (br) at ($ (crc32.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbr} };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.2cm,0) $) rectangle ($ (crc32.south west) + (3.0cm,0) $);
  \end{scope}
 \end{tikzpicture}
 \end{center}
@@ -110,7 +102,7 @@ The main open questions are:
 \item Which ``Zbp'' pseudo-ops should be included in ``B''? Which in ``Zbb''? Should ``Zbp'' be included in ``B'' as a whole?
 \end{itemize}
 
-For the purpose of tool-chain development ``B'' is currently everything (excluding ``Zbf'').
+For the purpose of tool-chain development ``B'' is currently everything.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -873,6 +865,9 @@ GORC ORs them together, and writes the new value in both positions.
 
 GORC can be usefull for copying naturally aligned fields in a word, and testing such
 fields for being equal zero.
+
+{\tt gorci} pseudo-instructions follow the same naming scheme as {\tt grevi}
+pseudo-instructions, except the prefix {\tt orc} is used instead of {\tt rev}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
