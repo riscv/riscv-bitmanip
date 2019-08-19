@@ -104,6 +104,11 @@ The main open questions are:
 
 For the purpose of tool-chain development ``B'' is currently everything.
 
+For extensions that only implement certain pseudo-instructions (such as ``Zbb''
+implements {\tt rev8} and {\tt rev}, which are pseudo-instructions for {\tt grevi rd, rs1, -8}
+and {\tt grevi rd, rs1, -1} respectively, the same binary encoding is used for those
+instructions as are used on a core with full support for the {\tt grev[i]} instruction.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Basic bit manipulation instructions}
