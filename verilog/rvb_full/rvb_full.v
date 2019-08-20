@@ -40,9 +40,9 @@ module rvb_full #(
 	wire insn_bitcnt;
 	wire insn_bmatxor;
 	wire insn_clmul;
+	wire insn_crc;
 	wire insn_shifter;
 	wire insn_simple;
-	wire insn_crc;
 
 	wire [XLEN-1:0] imm = $signed(din_insn[31:20]);
 	wire [XLEN-1:0] rs2 = din_insn[5] ? din_rs2 : imm;
@@ -53,14 +53,14 @@ module rvb_full #(
 		.insn_bitcnt (insn_bitcnt ),
 		.insn_bmatxor(insn_bmatxor),
 		.insn_clmul  (insn_clmul  ),
+		.insn_crc    (insn_crc    ),
 		.insn_shifter(insn_shifter),
-		.insn_simple (insn_simple ),
-		.insn_crc    (insn_crc    )
+		.insn_simple (insn_simple )
 	);
 
-	wire busy;
-	assign din_decoded = insn_bextdep || insn_bitcnt || insn_bmatxor || insn_clmul || insn_shifter || insn_simple || insn_crc;
-	assign din_ready = !reset && !busy && din_decoded;
+	wire stall;
+	assign din_decoded = insn_bextdep || insn_bitcnt || insn_bmatxor || insn_clmul || insn_crc || insn_shifter || insn_simple;
+	assign din_ready = !reset && !stall && din_decoded;
 
 
 	// ---- Input Stage ----
@@ -69,17 +69,17 @@ module rvb_full #(
 	reg in_bitcnt;
 	reg in_bmatxor;
 	reg in_clmul;
+	reg in_crc;
 	reg in_shifter;
 	reg in_simple;
-	reg in_crc;
 
 	wire in_bextdep_ready;
 	wire in_bitcnt_ready;
 	wire in_bmatxor_ready;
 	wire in_clmul_ready;
+	wire in_crc_ready = in_crc;
 	wire in_shifter_ready;
 	wire in_simple_ready;
-	wire in_crc_ready = in_crc;
 
 	reg [XLEN-1:0] in_rs1, in_rs2, in_rs3;
 	reg [31:0] in_insn;
@@ -89,18 +89,18 @@ module rvb_full #(
 		if (in_bitcnt_ready ) in_bitcnt  <= 0;
 		if (in_bmatxor_ready) in_bmatxor <= 0;
 		if (in_clmul_ready  ) in_clmul   <= 0;
+		if (in_crc_ready    ) in_crc     <= 0;
 		if (in_shifter_ready) in_shifter <= 0;
 		if (in_simple_ready ) in_simple  <= 0;
-		if (in_crc_ready    ) in_crc     <= 0;
 
 		if (din_ready && din_valid) begin
 			in_bextdep <= insn_bextdep;
 			in_bitcnt  <= insn_bitcnt;
 			in_bmatxor <= insn_bmatxor;
 			in_clmul   <= insn_clmul;
+			in_crc     <= insn_crc;
 			in_shifter <= insn_shifter;
 			in_simple  <= insn_simple;
-			in_crc     <= insn_crc;
 			in_rs1     <= din_rs1;
 			in_rs2     <= din_rs2;
 			in_rs3     <= din_rs3;
@@ -112,9 +112,9 @@ module rvb_full #(
 			in_bitcnt  <= 0;
 			in_bmatxor <= 0;
 			in_clmul   <= 0;
+			in_crc     <= 0;
 			in_shifter <= 0;
 			in_simple  <= 0;
-			in_crc     <= 0;
 		end
 	end
 
@@ -125,17 +125,17 @@ module rvb_full #(
 	wire [XLEN-1:0] out_bitcnt;
 	wire [XLEN-1:0] out_bmatxor;
 	wire [XLEN-1:0] out_clmul;
+	wire [XLEN-1:0] out_crc = 0;
 	wire [XLEN-1:0] out_shifter;
 	wire [XLEN-1:0] out_simple;
-	wire [XLEN-1:0] out_crc = 0;
 
 	wire out_bextdep_valid;
 	wire out_bitcnt_valid;
 	wire out_bmatxor_valid;
 	wire out_clmul_valid;
+	wire out_crc_valid = in_crc;
 	wire out_shifter_valid;
 	wire out_simple_valid;
-	wire out_crc_valid = in_crc;
 	wire out_ready;
 
 	rvb_bextdep #(
@@ -281,9 +281,9 @@ module rvb_full #(
 				out_bitcnt_valid:  begin output_valid <= 1; output_value <= out_bitcnt;  end
 				out_bmatxor_valid: begin output_valid <= 1; output_value <= out_bmatxor; end
 				out_clmul_valid:   begin output_valid <= 1; output_value <= out_clmul;   end
+				out_crc_valid:     begin output_valid <= 1; output_value <= out_crc;     end
 				out_shifter_valid: begin output_valid <= 1; output_value <= out_shifter; end
 				out_simple_valid:  begin output_valid <= 1; output_value <= out_simple;  end
-				out_crc_valid:     begin output_valid <= 1; output_value <= out_crc;     end
 			endcase
 		end
 		if (reset) begin
@@ -297,20 +297,25 @@ module rvb_full #(
 
 	// ---- Arbiter ----
 
-	reg busy_reg;
-	wire out_any_valid = out_bextdep_valid || out_bitcnt_valid || out_bmatxor_valid || out_clmul_valid || out_shifter_valid || out_simple_valid || out_crc_valid;
-	assign busy = busy_reg && !(out_ready && out_any_valid);
+	reg busy, busy_reg;
+	wire out_any_valid = out_bextdep_valid || out_bitcnt_valid || out_bmatxor_valid || out_clmul_valid || out_crc_valid || out_shifter_valid || out_simple_valid;
+	assign stall = busy;
+
+	always @* begin
+		busy = busy_reg;
+		if (in_bextdep) busy = 1;
+		if (in_bitcnt ) busy = 1;
+		if (in_bmatxor) busy = 1;
+		if (in_clmul  ) busy = 1;
+		if (in_crc    ) busy = 1;
+		if (in_shifter) busy = 1;
+		if (in_simple ) busy = 1;
+		if (out_ready && out_any_valid) busy = 0;
+		if (reset) busy = 0;
+	end
 
 	always @(posedge clock) begin
-		if (in_bextdep) busy_reg <= 1;
-		if (in_bitcnt ) busy_reg <= 1;
-		if (in_bmatxor) busy_reg <= 1;
-		if (in_clmul  ) busy_reg <= 1;
-		if (in_shifter) busy_reg <= 1;
-		if (in_simple ) busy_reg <= 1;
-		if (in_crc    ) busy_reg <= 1;
-		if (out_ready && out_any_valid) busy_reg <= 0;
-		if (reset) busy_reg <= 0;
+		busy_reg <= busy;
 	end
 endmodule
 
@@ -322,144 +327,160 @@ module rvb_full_decoder #(
 	output reg insn_bitcnt,
 	output reg insn_bmatxor,
 	output reg insn_clmul,
+	output reg insn_crc,
 	output reg insn_shifter,
-	output reg insn_simple,
-	output reg insn_crc
+	output reg insn_simple
 );
 	always @* begin
 		insn_bextdep = 0;
 		insn_bitcnt  = 0;
 		insn_bmatxor = 0;
 		insn_clmul   = 0;
+		insn_crc     = 0;
 		insn_shifter = 0;
 		insn_simple  = 0;
-		insn_crc     = 0;
 
 		(* parallel_case *)
-		casez (insn)
-			32'b 0100000_zzzzz_zzzzz_111_zzzzz_0110011: insn_simple = 1;  // ANDN
-			32'b 0100000_zzzzz_zzzzz_110_zzzzz_0110011: insn_simple = 1;  // ORN
-			32'b 0100000_zzzzz_zzzzz_100_zzzzz_0110011: insn_simple = 1;  // XNOR
+		casez ({insn, XLEN == 64})
+			33'b 0100000_zzzzz_zzzzz_111_zzzzz_0110011_z: insn_simple = 1;  // ANDN
+			33'b 0100000_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_simple = 1;  // ORN
+			33'b 0100000_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple = 1;  // XNOR
 
-			32'b 0000000_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // SLL
-			32'b 0000000_zzzzz_zzzzz_101_zzzzz_0110011: insn_shifter = 1; // SRL
-			32'b 0100000_zzzzz_zzzzz_001_zzzzz_0110011: insn_bextdep = 1; // GREV
-			32'b 0100000_zzzzz_zzzzz_101_zzzzz_0110011: insn_shifter = 1; // SRA
-			32'b 0010000_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // SLO
-			32'b 0010000_zzzzz_zzzzz_101_zzzzz_0110011: insn_shifter = 1; // SRO
-			32'b 0110000_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // ROL
-			32'b 0110000_zzzzz_zzzzz_101_zzzzz_0110011: insn_shifter = 1; // ROR
+			33'b 0000000_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // SLL
+			33'b 0000000_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // SRL
+			33'b 0100000_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_bextdep = 1; // GREV
+			33'b 0100000_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // SRA
+			33'b 0010000_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // SLO
+			33'b 0010000_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // SRO
+			33'b 0110000_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // ROL
+			33'b 0110000_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // ROR
 
-			32'b 0010100_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // SBSET
-			32'b 0100100_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // SBCLR
-			32'b 0110100_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // SBINV
-			32'b 0100100_zzzzz_zzzzz_101_zzzzz_0110011: insn_shifter = 1; // SBEXT
+			33'b 0010100_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // SBSET
+			33'b 0100100_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // SBCLR
+			33'b 0110100_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // SBINV
+			33'b 0100100_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // SBEXT
 
-			32'b 00000_0zzzzzz_zzzzz_001_zzzzz_0010011: insn_shifter = 1; // SLLI
-			32'b 00000_0zzzzzz_zzzzz_101_zzzzz_0010011: insn_shifter = 1; // SRLI
-			32'b 01000_0zzzzzz_zzzzz_001_zzzzz_0010011: insn_bextdep = 1; // GREVI
-			32'b 01000_0zzzzzz_zzzzz_101_zzzzz_0010011: insn_shifter = 1; // SRAI
-			32'b 00100_0zzzzzz_zzzzz_001_zzzzz_0010011: insn_shifter = 1; // SLOI
-			32'b 00100_0zzzzzz_zzzzz_101_zzzzz_0010011: insn_shifter = 1; // SROI
-			32'b 01100_0zzzzzz_zzzzz_101_zzzzz_0010011: insn_shifter = 1; // RORI
+			33'b 00000_00zzzzz_zzzzz_001_zzzzz_0010011_0: insn_shifter = 1; // SLLI (RV32)
+			33'b 00000_00zzzzz_zzzzz_101_zzzzz_0010011_0: insn_shifter = 1; // SRLI (RV32)
+			33'b 01000_00zzzzz_zzzzz_001_zzzzz_0010011_0: insn_bextdep = 1; // GREVI (RV32)
+			33'b 01000_00zzzzz_zzzzz_101_zzzzz_0010011_0: insn_shifter = 1; // SRAI (RV32)
+			33'b 00100_00zzzzz_zzzzz_001_zzzzz_0010011_0: insn_shifter = 1; // SLOI (RV32)
+			33'b 00100_00zzzzz_zzzzz_101_zzzzz_0010011_0: insn_shifter = 1; // SROI (RV32)
+			33'b 01100_00zzzzz_zzzzz_101_zzzzz_0010011_0: insn_shifter = 1; // RORI (RV32)
 
-			32'b 00101_0zzzzzz_zzzzz_001_zzzzz_0010011: insn_shifter = 1; // SBSETI
-			32'b 01001_0zzzzzz_zzzzz_001_zzzzz_0010011: insn_shifter = 1; // SBCLRI
-			32'b 01101_0zzzzzz_zzzzz_001_zzzzz_0010011: insn_shifter = 1; // SBINVI
-			32'b 01001_0zzzzzz_zzzzz_101_zzzzz_0010011: insn_shifter = 1; // SBEXTI
+			33'b 00000_0zzzzzz_zzzzz_001_zzzzz_0010011_1: insn_shifter = 1; // SLLI (RV64)
+			33'b 00000_0zzzzzz_zzzzz_101_zzzzz_0010011_1: insn_shifter = 1; // SRLI (RV64)
+			33'b 01000_0zzzzzz_zzzzz_001_zzzzz_0010011_1: insn_bextdep = 1; // GREVI (RV64)
+			33'b 01000_0zzzzzz_zzzzz_101_zzzzz_0010011_1: insn_shifter = 1; // SRAI (RV64)
+			33'b 00100_0zzzzzz_zzzzz_001_zzzzz_0010011_1: insn_shifter = 1; // SLOI (RV64)
+			33'b 00100_0zzzzzz_zzzzz_101_zzzzz_0010011_1: insn_shifter = 1; // SROI (RV64)
+			33'b 01100_0zzzzzz_zzzzz_101_zzzzz_0010011_1: insn_shifter = 1; // RORI (RV64)
 
-			32'b zzzzz11_zzzzz_zzzzz_001_zzzzz_0110011: insn_simple  = 1; // CMIX
-			32'b zzzzz11_zzzzz_zzzzz_101_zzzzz_0110011: insn_simple  = 1; // CMOV
-			32'b zzzzz10_zzzzz_zzzzz_001_zzzzz_0110011: insn_shifter = 1; // FSL
-			32'b zzzzz10_zzzzz_zzzzz_101_zzzzz_0110011: insn_shifter = 1; // FSR
-			32'b zzzzz1_zzzzzz_zzzzz_101_zzzzz_0010011: insn_shifter = 1; // FSRI
+			33'b 00101_00zzzzz_zzzzz_001_zzzzz_0010011_0: insn_shifter = 1; // SBSETI (RV32)
+			33'b 01001_00zzzzz_zzzzz_001_zzzzz_0010011_0: insn_shifter = 1; // SBCLRI (RV32)
+			33'b 01101_00zzzzz_zzzzz_001_zzzzz_0010011_0: insn_shifter = 1; // SBINVI (RV32)
+			33'b 01001_00zzzzz_zzzzz_101_zzzzz_0010011_0: insn_shifter = 1; // SBEXTI (RV32)
 
-			32'b 0110000_00000_zzzzz_001_zzzzz_0010011: insn_bitcnt  = 1; // CLZ
-			32'b 0110000_00001_zzzzz_001_zzzzz_0010011: insn_bitcnt  = 1; // CTZ
-			32'b 0110000_00010_zzzzz_001_zzzzz_0010011: insn_bitcnt  = 1; // PCNT
-			32'b 0110000_00011_zzzzz_001_zzzzz_0010011: if (XLEN == 64) insn_bitcnt  = 1; // BMATFLIP
+			33'b 00101_0zzzzzz_zzzzz_001_zzzzz_0010011_1: insn_shifter = 1; // SBSETI (RV64)
+			33'b 01001_0zzzzzz_zzzzz_001_zzzzz_0010011_1: insn_shifter = 1; // SBCLRI (RV64)
+			33'b 01101_0zzzzzz_zzzzz_001_zzzzz_0010011_1: insn_shifter = 1; // SBINVI (RV64)
+			33'b 01001_0zzzzzz_zzzzz_101_zzzzz_0010011_1: insn_shifter = 1; // SBEXTI (RV64)
 
-			32'b 0110000_10000_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32.B
-			32'b 0110000_10001_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32.H
-			32'b 0110000_10010_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32.W
-			32'b 0110000_10011_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32.D
-			32'b 0110000_11000_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32C.B
-			32'b 0110000_11001_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32C.H
-			32'b 0110000_11010_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32C.W
-			32'b 0110000_11011_zzzzz_001_zzzzz_0010011: insn_crc     = 1; // CRC32C.D
+			33'b zzzzz11_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_simple  = 1; // CMIX
+			33'b zzzzz11_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_simple  = 1; // CMOV
+			33'b zzzzz10_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // FSL
+			33'b zzzzz10_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // FSR
+			33'b zzzzz1_zzzzzz_zzzzz_101_zzzzz_0010011_z: insn_shifter = 1; // FSRI
 
-			32'b 0000101_zzzzz_zzzzz_001_zzzzz_0110011: insn_clmul   = 1; // CLMUL
-			32'b 0000101_zzzzz_zzzzz_010_zzzzz_0110011: insn_clmul   = 1; // CLMULR
-			32'b 0000101_zzzzz_zzzzz_011_zzzzz_0110011: insn_clmul   = 1; // CLMULH
-			32'b 0000101_zzzzz_zzzzz_100_zzzzz_0110011: insn_simple  = 1; // MIN
-			32'b 0000101_zzzzz_zzzzz_101_zzzzz_0110011: insn_simple  = 1; // MAX
-			32'b 0000101_zzzzz_zzzzz_110_zzzzz_0110011: insn_simple  = 1; // MINU
-			32'b 0000101_zzzzz_zzzzz_111_zzzzz_0110011: insn_simple  = 1; // MAXU
+			33'b 0110000_00000_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // CLZ
+			33'b 0110000_00001_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // CTZ
+			33'b 0110000_00010_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // PCNT
+			33'b 0110000_00011_zzzzz_001_zzzzz_0010011_1: insn_bitcnt  = 1; // BMATFLIP
 
-			32'b 0000100_zzzzz_zzzzz_001_zzzzz_0110011: insn_bextdep = 1; // SHFL
-			32'b 0000100_zzzzz_zzzzz_101_zzzzz_0110011: insn_bextdep = 1; // UNSHFL
-			32'b 0000100_zzzzz_zzzzz_010_zzzzz_0110011: insn_bextdep = 1; // BDEP
-			32'b 0000100_zzzzz_zzzzz_110_zzzzz_0110011: insn_bextdep = 1; // BEXT
-			32'b 0000100_zzzzz_zzzzz_100_zzzzz_0110011: insn_simple  = 1; // PACK
-			32'b 0100100_zzzzz_zzzzz_100_zzzzz_0110011: insn_shifter = 1; // BFP
-			32'b 0000100_zzzzz_zzzzz_011_zzzzz_0110011: if (XLEN == 64) insn_bmatxor = 1; // BMATOR
-			32'b 0000100_zzzzz_zzzzz_111_zzzzz_0110011: if (XLEN == 64) insn_bmatxor = 1; // BMATXOR
+			33'b 0110000_10000_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.B
+			33'b 0110000_10001_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.H
+			33'b 0110000_10010_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.W
+			33'b 0110000_10011_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.D
+			33'b 0110000_11000_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32C.B
+			33'b 0110000_11001_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32C.H
+			33'b 0110000_11010_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32C.W
+			33'b 0110000_11011_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32C.D
 
-			32'b 000010_zzzzzz_zzzzz_001_zzzzz_0010011: insn_bextdep = 1; // SHFLI
-			32'b 000010_zzzzzz_zzzzz_101_zzzzz_0010011: insn_bextdep = 1; // UNSHFLI
+			33'b 0000101_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_clmul   = 1; // CLMUL
+			33'b 0000101_zzzzz_zzzzz_010_zzzzz_0110011_z: insn_clmul   = 1; // CLMULR
+			33'b 0000101_zzzzz_zzzzz_011_zzzzz_0110011_z: insn_clmul   = 1; // CLMULH
+			33'b 0000101_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple  = 1; // MIN
+			33'b 0000101_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_simple  = 1; // MAX
+			33'b 0000101_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_simple  = 1; // MINU
+			33'b 0000101_zzzzz_zzzzz_111_zzzzz_0110011_z: insn_simple  = 1; // MAXU
 
-			32'b zzzzzz_zzzzzz_zzzzz_100_zzzzz_0011011: if (XLEN == 64) insn_simple  = 1; // ADDIWU
-			32'b 00001_zzzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SLLIU.W
+			33'b 0000100_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_bextdep = 1; // SHFL
+			33'b 0000100_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_bextdep = 1; // UNSHFL
+			33'b 0000100_zzzzz_zzzzz_010_zzzzz_0110011_z: insn_bextdep = 1; // BDEP
+			33'b 0000100_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_bextdep = 1; // BEXT
+			33'b 0000100_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple  = 1; // PACK
+			33'b 0100100_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_shifter = 1; // BFP
+			33'b 0000100_zzzzz_zzzzz_011_zzzzz_0110011_1: insn_bmatxor = 1; // BMATOR
+			33'b 0000100_zzzzz_zzzzz_111_zzzzz_0110011_1: insn_bmatxor = 1; // BMATXOR
 
-			32'b 0000101_zzzzz_zzzzz_000_zzzzz_0111011: if (XLEN == 64) insn_simple  = 1; // ADDWU
-			32'b 0100101_zzzzz_zzzzz_000_zzzzz_0111011: if (XLEN == 64) insn_simple  = 1; // SUBWU
-			32'b 0000100_zzzzz_zzzzz_000_zzzzz_0111011: if (XLEN == 64) insn_simple  = 1; // ADDUW
-			32'b 0100100_zzzzz_zzzzz_000_zzzzz_0111011: if (XLEN == 64) insn_simple  = 1; // SUBUW
+			33'b 000010_00zzzz_zzzzz_001_zzzzz_0010011_0: insn_bextdep = 1; // SHFLI (RV32)
+			33'b 000010_00zzzz_zzzzz_101_zzzzz_0010011_0: insn_bextdep = 1; // UNSHFLI (RV32)
 
-			32'b 0000000_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SLLW
-			32'b 0000000_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SRLW
-			32'b 0100000_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_bextdep = 1; // GREVW
-			32'b 0100000_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SRAW
-			32'b 0010000_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SLOW
-			32'b 0010000_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SROW
-			32'b 0110000_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // ROLW
-			32'b 0110000_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // RORW
+			33'b 000010_0zzzzz_zzzzz_001_zzzzz_0010011_1: insn_bextdep = 1; // SHFLI (RV64)
+			33'b 000010_0zzzzz_zzzzz_101_zzzzz_0010011_1: insn_bextdep = 1; // UNSHFLI (RV64)
 
-			32'b 0010100_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SBSETW
-			32'b 0100100_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SBCLRW
-			32'b 0110100_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SBINVW
-			32'b 0100100_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // SBEXTW
+			33'b zzzzzz_zzzzzz_zzzzz_100_zzzzz_0011011_1: insn_simple  = 1; // ADDIWU
+			33'b 00001_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SLLIU.W
 
-			32'b 00000_0zzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SLLIW
-			32'b 00000_0zzzzzz_zzzzz_101_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SRLIW
-			32'b 01000_0zzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_bextdep = 1; // GREVIW
-			32'b 01000_0zzzzzz_zzzzz_101_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SRAIW
-			32'b 00100_0zzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SLOIW
-			32'b 00100_0zzzzzz_zzzzz_101_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SROIW
-			32'b 01100_0zzzzzz_zzzzz_101_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // RORIW
+			33'b 0000101_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // ADDWU
+			33'b 0100101_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // SUBWU
+			33'b 0000100_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // ADDUW
+			33'b 0100100_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // SUBUW
 
-			32'b 00101_0zzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SBSETIW
-			32'b 01001_0zzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SBCLRIW
-			32'b 01101_0zzzzzz_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // SBINVIW
+			33'b 0000000_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // SLLW
+			33'b 0000000_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // SRLW
+			33'b 0100000_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_bextdep = 1; // GREVW
+			33'b 0100000_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // SRAW
+			33'b 0010000_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // SLOW
+			33'b 0010000_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // SROW
+			33'b 0110000_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // ROLW
+			33'b 0110000_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // RORW
 
-			32'b zzzzz10_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // FSLW
-			32'b zzzzz10_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // FSRW
-			32'b zzzzz1_zzzzzz_zzzzz_101_zzzzz_0011011: if (XLEN == 64) insn_shifter = 1; // FSRIW
+			33'b 0010100_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // SBSETW
+			33'b 0100100_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // SBCLRW
+			33'b 0110100_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // SBINVW
+			33'b 0100100_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // SBEXTW
 
-			32'b 0110000_00000_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_bitcnt  = 1; // CLZW
-			32'b 0110000_00001_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_bitcnt  = 1; // CTZW
-			32'b 0110000_00010_zzzzz_001_zzzzz_0011011: if (XLEN == 64) insn_bitcnt  = 1; // PCNTW
+			33'b 00000_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SLLIW
+			33'b 00000_00zzzzz_zzzzz_101_zzzzz_0011011_1: insn_shifter = 1; // SRLIW
+			33'b 01000_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_bextdep = 1; // GREVIW
+			33'b 01000_00zzzzz_zzzzz_101_zzzzz_0011011_1: insn_shifter = 1; // SRAIW
+			33'b 00100_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SLOIW
+			33'b 00100_00zzzzz_zzzzz_101_zzzzz_0011011_1: insn_shifter = 1; // SROIW
+			33'b 01100_00zzzzz_zzzzz_101_zzzzz_0011011_1: insn_shifter = 1; // RORIW
 
-			32'b 0000101_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_clmul   = 1; // CLMULW
-			32'b 0000101_zzzzz_zzzzz_010_zzzzz_0111011: if (XLEN == 64) insn_clmul   = 1; // CLMULRW
-			32'b 0000101_zzzzz_zzzzz_011_zzzzz_0111011: if (XLEN == 64) insn_clmul   = 1; // CLMULHW
+			33'b 00101_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SBSETIW
+			33'b 01001_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SBCLRIW
+			33'b 01101_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SBINVIW
 
-			32'b 0000100_zzzzz_zzzzz_001_zzzzz_0111011: if (XLEN == 64) insn_bextdep = 1; // SHFLW
-			32'b 0000100_zzzzz_zzzzz_101_zzzzz_0111011: if (XLEN == 64) insn_bextdep = 1; // UNSHFLW
-			32'b 0000100_zzzzz_zzzzz_010_zzzzz_0111011: if (XLEN == 64) insn_bextdep = 1; // BDEPW
-			32'b 0000100_zzzzz_zzzzz_110_zzzzz_0111011: if (XLEN == 64) insn_bextdep = 1; // BEXTW
-			32'b 0000100_zzzzz_zzzzz_100_zzzzz_0111011: if (XLEN == 64) insn_simple  = 1; // PACKW
-			32'b 0100100_zzzzz_zzzzz_100_zzzzz_0111011: if (XLEN == 64) insn_shifter = 1; // BFPW
+			33'b zzzzz10_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // FSLW
+			33'b zzzzz10_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // FSRW
+			33'b zzzzz1_0zzzzz_zzzzz_101_zzzzz_0011011_1: insn_shifter = 1; // FSRIW
+
+			33'b 0110000_00000_zzzzz_001_zzzzz_0011011_1: insn_bitcnt  = 1; // CLZW
+			33'b 0110000_00001_zzzzz_001_zzzzz_0011011_1: insn_bitcnt  = 1; // CTZW
+			33'b 0110000_00010_zzzzz_001_zzzzz_0011011_1: insn_bitcnt  = 1; // PCNTW
+
+			33'b 0000101_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_clmul   = 1; // CLMULW
+			33'b 0000101_zzzzz_zzzzz_010_zzzzz_0111011_1: insn_clmul   = 1; // CLMULRW
+			33'b 0000101_zzzzz_zzzzz_011_zzzzz_0111011_1: insn_clmul   = 1; // CLMULHW
+
+			33'b 0000100_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_bextdep = 1; // SHFLW
+			33'b 0000100_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_bextdep = 1; // UNSHFLW
+			33'b 0000100_zzzzz_zzzzz_010_zzzzz_0111011_1: insn_bextdep = 1; // BDEPW
+			33'b 0000100_zzzzz_zzzzz_110_zzzzz_0111011_1: insn_bextdep = 1; // BEXTW
+			33'b 0000100_zzzzz_zzzzz_100_zzzzz_0111011_1: insn_simple  = 1; // PACKW
+			33'b 0100100_zzzzz_zzzzz_100_zzzzz_0111011_1: insn_shifter = 1; // BFPW
 		endcase
 	end
 endmodule

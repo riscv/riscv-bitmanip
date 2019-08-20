@@ -19,8 +19,8 @@ module testbench;
 	localparam integer NUM_TESTS = 10000;
 
 	initial begin
-		$dumpfile("testbench.vcd");
-		$dumpvars(0, testbench);
+		// $dumpfile("testbench.vcd");
+		// $dumpvars(0, testbench);
 	end
 
 `ifdef ENABLE_64BIT
@@ -75,14 +75,28 @@ module testbench_ff #(
 	wire [XLEN-1:0] next_rs3 = testdata[next_din_index][1*64 +: 64];
 
 	integer cycle = 0;
+	integer phase = 0;
 	always @(posedge clock) begin
 		cycle <= reset ? 0 : cycle + 1;
+		phase <= reset ? 0 : cycle >> 8;
 	end
 
 	always @(posedge clock) begin
 		din_index <= next_din_index;
-		din_valid <= (next_din_index < 1000) && /* |($random & 3) */ !(cycle & 15);
-		dout_ready <= /* |($random & 7) */ 1;
+		case (phase[1:0])
+			0: din_valid <= !($random & 3);
+			1: din_valid <= |($random & 3);
+			2: din_valid <= |($random & 7);
+			3: din_valid <= 1;
+		endcase
+		case (phase[3:2])
+			0: dout_ready <= !($random & 3);
+			1: dout_ready <= |($random & 3);
+			2: dout_ready <= |($random & 7);
+			3: dout_ready <= 1;
+		endcase
+		if (next_din_index == 10000)
+			din_valid <= 0;
 		din_rs1 <= next_rs1;
 		din_rs2 <= next_rs2;
 		din_rs3 <= next_rs3;
@@ -97,7 +111,7 @@ module testbench_ff #(
 	wire [XLEN-1:0] check_rd = testdata[dout_index][64:0];
 
 	always @(posedge clock) begin
-		if (!reset && dout_valid && dout_ready && dout_index < 1000) begin
+		if (!reset && dout_valid && dout_ready && dout_index < 10000) begin
 			$display("%s %m: idx=%03d insn=0x%08x rs1=0x%016x rs2=0x%016x rs3=0x%016x rd=0x%016x expected=0x%016x %-s",
 					`TESTDATA, dout_index, check_insn, check_rs1, check_rs2, check_rs3, dout_rd, check_rd,
 					dout_rd !== check_rd ? "ERROR" : "OK");
