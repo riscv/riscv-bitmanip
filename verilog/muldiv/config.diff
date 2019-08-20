@@ -1,0 +1,14 @@
+diff --git a/src/main/scala/system/Configs.scala b/src/main/scala/system/Configs.scala
+index d9311c08..8072d04e 100644
+--- a/src/main/scala/system/Configs.scala
++++ b/src/main/scala/system/Configs.scala
+@@ -30,6 +30,9 @@ class DefaultBufferlessConfig extends Config(
+ class DefaultSmallConfig extends Config(new WithNSmallCores(1) ++ new BaseConfig)
+ class DefaultRV32Config extends Config(new WithRV32 ++ new DefaultConfig)
+ 
++class MulDivConfig64 extends Config(new WithFastMulDiv ++ new DefaultConfig)
++class MulDivConfig32 extends Config(new WithRV32 ++ new WithFastMulDiv ++ new DefaultConfig)
++
+ class DualBankConfig extends Config(
+   new WithNBanks(2) ++ new BaseConfig)
+ 
