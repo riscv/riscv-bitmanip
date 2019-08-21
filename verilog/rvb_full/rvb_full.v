@@ -176,7 +176,7 @@ module rvb_full #(
 		.dout_rd    (out_bitcnt )
 	);
 
-	generate if (XLEN == 64) begin:bmatxor
+	generate if (XLEN == 64) begin
 		rvb_bmatxor #(
 			.CYCLES(0)
 		) rvb_bmatxor (
