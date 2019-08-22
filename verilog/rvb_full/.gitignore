@@ -5,3 +5,8 @@
 /synth.out
 /synth.tmp
 /synth.ys
+/firmware.hex
+/firmware.elf
+/firmware.map
+/system
+/system.vcd
