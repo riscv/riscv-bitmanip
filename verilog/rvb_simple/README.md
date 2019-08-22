@@ -3,7 +3,7 @@ implementation probably wants wo provide those through their own ALU
 instead of using an external core. Thus we only provide this core as
 reference.
 
-Module paramters:
+Module parameters:
 
     XLEN ....... 32 or 64
 
