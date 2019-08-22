@@ -102,7 +102,7 @@ module rvb_full #(
 			in_shifter <= insn_shifter;
 			in_simple  <= insn_simple;
 			in_rs1     <= din_rs1;
-			in_rs2     <= din_rs2;
+			in_rs2     <= rs2;
 			in_rs3     <= din_rs3;
 			in_insn    <= din_insn;
 		end
