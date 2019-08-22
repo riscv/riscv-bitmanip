@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import math
 from sympy import *
 
 data32 = dict()
@@ -9,35 +10,35 @@ with open("synth.out", "r") as f:
     for line in f:
         line = line.split()
         if "32" in line[0]:
-            data32[line[0].replace("_xlen32", "").split(".")[-1]] = int(line[1])
+            data32[line[0].replace("_xlen32", "").replace("32", "").split(".")[-1]] = int(line[1]) // 4
         else:
-            data64[line[0].replace("_xlen64", "").split(".")[-1]] = int(line[1])
+            data64[line[0].replace("_xlen64", "").replace("64", "").split(".")[-1]] = int(line[1]) // 4
 
 def solveit(data):
     if "rvb_bmatxor" not in data:
         data["rvb_bmatxor"] = 0
 
     width, border, span = symbols("width border span", real=True)
-    heigh_bextdep = symbols("heigh_bextdep", real=True)
-    heigh_bitcnt = symbols("heigh_bitcnt", real=True)
-    heigh_bmatxor = symbols("heigh_bmatxor", real=True)
-    heigh_clmul = symbols("heigh_clmul", real=True)
-    heigh_shifter = symbols("heigh_shifter", real=True)
-    heigh_simple = symbols("heigh_simple", real=True)
+    height_bextdep = symbols("height_bextdep", real=True)
+    height_bitcnt = symbols("height_bitcnt", real=True)
+    height_bmatxor = symbols("height_bmatxor", real=True)
+    height_clmul = symbols("height_clmul", real=True)
+    height_shifter = symbols("height_shifter", real=True)
+    height_simple = symbols("height_simple", real=True)
 
     system = list()
     system.append(Eq(width*width, data["rvb_full"]))
     system.append(Eq((width-2*border)*(width-2*border), data["rvb_bextdep"] + data["rvb_bitcnt"] +
             data["rvb_bmatxor"] + data["rvb_clmul"] + data["rvb_shifter"] + data["rvb_simple"]))
     system.append(Eq((width-2*border)*span, data["rvb_bextdep"] + data["rvb_shifter"] + data["rvb_simple"]))
-    system.append(Eq(heigh_bextdep*span, data["rvb_bextdep"]))
-    system.append(Eq(heigh_shifter*span, data["rvb_shifter"]))
-    system.append(Eq(heigh_simple*span, data["rvb_simple"]))
-    system.append(Eq(heigh_bitcnt*(width-2*border-span), data["rvb_bitcnt"]))
-    system.append(Eq(heigh_bmatxor*(width-2*border-span), data["rvb_bmatxor"]))
-    system.append(Eq(heigh_clmul*(width-2*border-span), data["rvb_clmul"]))
+    system.append(Eq(height_bextdep*span, data["rvb_bextdep"]))
+    system.append(Eq(height_shifter*span, data["rvb_shifter"]))
+    system.append(Eq(height_simple*span, data["rvb_simple"]))
+    system.append(Eq(height_bitcnt*(width-2*border-span), data["rvb_bitcnt"]))
+    system.append(Eq(height_bmatxor*(width-2*border-span), data["rvb_bmatxor"]))
+    system.append(Eq(height_clmul*(width-2*border-span), data["rvb_clmul"]))
 
-    variables = [width, border, span, heigh_bextdep, heigh_bitcnt, heigh_bmatxor, heigh_clmul, heigh_shifter, heigh_simple]
+    variables = [width, border, span, height_bextdep, height_bitcnt, height_bmatxor, height_clmul, height_shifter, height_simple]
     solutions = nonlinsolve(system, variables)
 
     solution = None
@@ -54,11 +55,65 @@ def solveit(data):
 
     geodata = dict()
     for var, val in zip(variables, solution):
-        geodata[var] = float(val)
+        geodata[str(var)] = float(val)
+    geodata["width_muldiv"] = math.sqrt(data["MulDiv"])
     return geodata
 
-print(data32)
-print(solveit(data32))
+def drawit(tdata, data):
+    print("%", data)
+    scale = 5 / data["width_muldiv"]
 
-print(data64)
-print(solveit(data64))
+    width = scale * data["width"]
+    border = scale * data["border"]
+    span = scale * data["span"]
+
+    height_bextdep = scale * data["height_bextdep"]
+    height_bitcnt = scale * data["height_bitcnt"]
+    height_bmatxor = scale * data["height_bmatxor"]
+    height_clmul = scale * data["height_clmul"]
+    height_shifter = scale * data["height_shifter"]
+    height_simple = scale * data["height_simple"]
+
+    width_muldiv = scale * data["width_muldiv"]
+
+    print("\\begin{tikzpicture}")
+
+    print("\\draw [fill=red, opacity=0.2] (%f,0) rectangle (-1,%f);" % (-width_muldiv-1, width_muldiv))
+    print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {Rocket MulDiv \\\\ %d gates};" % (-width_muldiv-1, width_muldiv, tdata["MulDiv"]))
+
+    print("\\draw [fill=red, opacity=0.2] (0,0) rectangle (%f,%f);" % (width, width))
+    print("\\draw [draw=black!20, fill=white] (%f,%f) rectangle (%f,%f);" % (border-0.05, border-0.05, width-border+0.05, width-border+0.05))
+
+    cursor = border
+
+    print("\\draw [draw=black, fill=blue, opacity=0.2] (%f,%f) rectangle (%f,%f);" % (border+0.05, cursor+0.05, border+span-0.05, cursor+height_bextdep-0.05))
+    print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {rvb\\_bextdep \\\\ %d gates};" % (border+0.05, cursor+height_bextdep-0.05, tdata["rvb_bextdep"]))
+    cursor += height_bextdep
+
+    print("\\draw [draw=black, fill=blue, opacity=0.2] (%f,%f) rectangle (%f,%f);" % (border+0.05, cursor+0.05, border+span-0.05, cursor+height_shifter-0.05))
+    print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {rvb\\_shifter \\\\ %d gates};" % (border+0.05, cursor+height_shifter-0.05, tdata["rvb_shifter"]))
+    cursor += height_shifter
+
+    print("\\draw [draw=black, fill=blue, opacity=0.2] (%f,%f) rectangle (%f,%f);" % (border+0.05, cursor+0.05, border+span-0.05, cursor+height_simple-0.05))
+    print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {rvb\\_simple \\\\ %d gates};" % (border+0.05, cursor+height_simple-0.05, tdata["rvb_simple"]))
+    cursor += height_simple
+
+    cursor = border
+
+    print("\\draw [draw=black, fill=blue, opacity=0.2] (%f,%f) rectangle (%f,%f);" % (border+span+0.05, cursor+0.05, width-border-0.05, cursor+height_bitcnt-0.05))
+    print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {rvb\\_bitcnt \\\\ %d gates};" % (border+span+0.05, cursor+height_bitcnt-0.05, tdata["rvb_bitcnt"]))
+    cursor += height_bitcnt
+
+    if tdata["rvb_bmatxor"]:
+        print("\\draw [draw=black, fill=blue, opacity=0.2] (%f,%f) rectangle (%f,%f);" % (border+span+0.05, cursor+0.05, width-border-0.05, cursor+height_bmatxor-0.05))
+        print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {rvb\\_bmatxor \\\\ %d gates};" % (border+span+0.05, cursor+height_bmatxor-0.05, tdata["rvb_bmatxor"]))
+        cursor += height_bmatxor
+
+    print("\\draw [draw=black, fill=blue, opacity=0.2] (%f,%f) rectangle (%f,%f);" % (border+span+0.05, cursor+0.05, width-border-0.05, cursor+height_clmul-0.05))
+    print("\\node (label) at (%f,%f) [below right, align=left, style={font=\\tiny\\tt}] {rvb\\_clmul \\\\ %d gates};" % (border+span+0.05, cursor+height_clmul-0.05, tdata["rvb_clmul"]))
+    cursor += height_clmul
+
+    print("\\end{tikzpicture}")
+
+drawit(data32, solveit(data32))
+drawit(data64, solveit(data64))

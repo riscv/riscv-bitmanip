@@ -19,11 +19,13 @@ with open("synth.ys", "w") as f:
             print("uniquify; hierarchy -top rvb_full_xlen%d%s" % (xlen, entity), file=f)
             print("synth -flatten; abc -g cmos; opt -fast", file=f)
             print("tee -a synth.tmp stat -tech cmos", file=f)
+            print("tee -a synth.tmp ltp -noff", file=f)
         print("design -reset", file=f)
         print("read_verilog -defer ../muldiv/muldiv%d.v" % xlen, file=f)
         print("hierarchy -top MulDiv%d" % (xlen,), file=f)
         print("synth -flatten; abc -g cmos; opt -fast", file=f)
         print("tee -a synth.tmp stat -tech cmos", file=f)
+        print("tee -a synth.tmp ltp -noff", file=f)
 
 try:
     os.remove("synth.tmp")
@@ -37,4 +39,7 @@ with open("synth.out", "w") as f:
             if "===" in line:
                 corename = line.split()[1]
             if "Estimated number of transistors:" in line:
-                print("%-32s %10d" % (corename, int(line.split()[-1])), file=f)
+                coresize = int(line.split()[-1])
+            if "Longest topological path in" in line:
+                coredelay = int(line.split("=")[-1].split(")")[0])
+                print("%-32s %10d %5d" % (corename, coresize, coredelay), file=f)
