@@ -1,7 +1,7 @@
 Implementations of the bit count instructions `clz`, `ctz`, and `pcnt`.
 Optionally also `bmatflip`.
 
-Module paramters:
+Module parameters:
 
     XLEN ....... 32 or 64
     BMAT ....... 0 or 1

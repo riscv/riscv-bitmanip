@@ -1,7 +1,7 @@
 A simple wrapper over the other `rvb_*` cores, that provides all
 RISC-V bitmanip operations.
 
-Module paramters:
+Module parameters:
 
     XLEN ....... 32 or 64
 

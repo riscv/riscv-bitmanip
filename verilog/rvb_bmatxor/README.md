@@ -1,6 +1,6 @@
 Single-cycle and multi-cycle implementations of `bmatxor` and `bmator`.
 
-Module paramters:
+Module parameters:
 
     CYCLES ....... 0 or 8
 

@@ -1,7 +1,7 @@
 A multi-cycle implementation of the RISC-V "Zbc" extension `clmul`, `clmulr` and `clmulh`
 instructions. 32-bit operations are executed in 4 cycles, and 64-bit operations in 8 cycles.
 
-Module paramters:
+Module parameters:
 
     XLEN ......... 32 or 64
 

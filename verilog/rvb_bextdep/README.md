@@ -3,7 +3,7 @@ instructions, based on the implementations from https://github.com/cliffordwolf/
 
 Optionally this core also implements the `grev`, `shfl`, and `unshfl` instruction.
 
-Module paramters:
+Module parameters:
 
     XLEN ......... 32 or 64
     GREV ......... GREV support (1=enable, 0=disable)

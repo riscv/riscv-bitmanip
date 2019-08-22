@@ -1,7 +1,7 @@
 A combinatorial implementation of a RISC-V bitmanip funnel shifter, with optional
 support for single-bit instructions and bit-field place.
 
-Module paramters:
+Module parameters:
 
     XLEN ......... 32 or 64
     SBOP ......... enable single-bit instructions (0 or 1)
