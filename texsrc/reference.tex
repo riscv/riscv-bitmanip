@@ -5,7 +5,7 @@
 
 \section{Verilog reference implementations}
 
-We have implemented Verilog coers for all instructions proposed in this
+We have implemented Verilog cores for all instructions proposed in this
 specification. These cores are permissively licensed under the ISC license and
 can be obtained from \url{https://github.com/riscv/riscv-bitmanip/tree/master/verilog}.
 
@@ -28,7 +28,7 @@ can be obtained from \url{https://github.com/riscv/riscv-bitmanip/tree/master/ve
 \node (label) at (4.104054,6.018689) [below right, align=left, style={font=\tiny\tt}] {rvb\_clmul \\ 1947 gates};
 \end{tikzpicture}
 \end{center}
-\caption{Area of 32-bit Rocket MulDiv core (left) compared with a complete implementation of all 32-bit instructions
+\caption{Area of 32-bit Rocket MulDiv core (left) compared to a complete implementation of all 32-bit instructions
 proposed in this specification except CRC instructions (right).}
 \label{refhw32}
 \end{figure}
@@ -37,7 +37,7 @@ For evaluation purposes we synthesized these cores for RV32 and RV64 to the foll
 
 \begin{center}
 \begin{tabular}{ll}
-Cell & Cate Count \\
+Cell & Gate Count \\
 \hline
 NOT   & 0.5 \\
 NAND  & 1   \\
@@ -48,7 +48,7 @@ DFF   & 4   \\
 \end{tabular}
 \hfil
 \begin{tabular}{ll}
-Cell & Cate Count \\
+Cell & Gate Count \\
 \hline
 AOI3  & 1.5 \\
 OAI3  & 1.5 \\
@@ -122,7 +122,7 @@ by the {\tt rvb\_full} wrapper module.
 \node (label) at (3.876653,6.359318) [below right, align=left, style={font=\tiny\tt}] {rvb\_clmul \\ 4202 gates};
 \end{tikzpicture}
 \end{center}
-\caption{Area of 64-bit Rocket MulDiv core (left) compared with a complete implementation of all 64-bit instructions
+\caption{Area of 64-bit Rocket MulDiv core (left) compared to a complete implementation of all 64-bit instructions
 proposed in this specification except CRC instructions (right).}
 \label{refhw64}
 \end{figure}
