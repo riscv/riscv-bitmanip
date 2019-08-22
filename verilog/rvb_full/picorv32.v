@@ -65,7 +65,7 @@ module picorv32 #(
 	parameter [ 0:0] ENABLE_REGS_16_31 = 1,
 	parameter [ 0:0] ENABLE_REGS_DUALPORT = 1,
 	parameter [ 0:0] LATCHED_MEM_RDATA = 0,
-	parameter [ 0:0] ENABLE_SHIFT = 1, // FIXME
+	parameter [ 0:0] ENABLE_SHIFT = 1,
 	parameter [ 0:0] TWO_STAGE_SHIFT = 1,
 	parameter [ 0:0] BARREL_SHIFTER = 0,
 	parameter [ 0:0] TWO_CYCLE_COMPARE = 0,
@@ -74,7 +74,7 @@ module picorv32 #(
 	parameter [ 0:0] CATCH_MISALIGN = 1,
 	parameter [ 0:0] CATCH_ILLINSN = 1,
 	parameter [ 0:0] ENABLE_PCPI = 0,
-	parameter [ 0:0] ENABLE_PCPI_RS3 = 0, // FIXME
+	parameter [ 0:0] ENABLE_PCPI_RS3 = 0,
 	parameter [ 0:0] ENABLE_MUL = 0,
 	parameter [ 0:0] ENABLE_FAST_MUL = 0,
 	parameter [ 0:0] ENABLE_DIV = 0,
@@ -176,7 +176,7 @@ module picorv32 #(
 	localparam [35:0] TRACE_IRQ    = {4'b 1000, 32'b 0};
 
 	reg [63:0] count_cycle, count_instr;
-	reg [31:0] reg_pc, reg_next_pc, reg_op1, reg_op2, reg_out;
+	reg [31:0] reg_pc, reg_next_pc, reg_op1, reg_op2, reg_op3, reg_out;
 	reg [4:0] reg_sh;
 
 	reg [31:0] next_insn_opcode;
@@ -193,6 +193,7 @@ module picorv32 #(
 
 	assign pcpi_rs1 = reg_op1;
 	assign pcpi_rs2 = reg_op2;
+	assign pcpi_rs3 = reg_op3;
 
 	wire [31:0] next_pc;
 
@@ -655,7 +656,7 @@ module picorv32 #(
 	reg instr_getq, instr_setq, instr_retirq, instr_maskirq, instr_waitirq, instr_timer;
 	wire instr_trap;
 
-	reg [regindex_bits-1:0] decoded_rd, decoded_rs1, decoded_rs2;
+	reg [regindex_bits-1:0] decoded_rd, decoded_rs1, decoded_rs2, decoded_rs3;
 	reg [31:0] decoded_imm, decoded_imm_j;
 	reg decoder_trigger;
 	reg decoder_trigger_q;
@@ -883,6 +884,7 @@ module picorv32 #(
 			decoded_rd <= mem_rdata_latched[11:7];
 			decoded_rs1 <= mem_rdata_latched[19:15];
 			decoded_rs2 <= mem_rdata_latched[24:20];
+			decoded_rs3 <= mem_rdata_latched[31:27];
 
 			if (mem_rdata_latched[6:0] == 7'b0001011 && mem_rdata_latched[31:25] == 7'b0000000 && ENABLE_IRQ && ENABLE_IRQ_QREGS)
 				decoded_rs1[regindex_bits-1] <= 1; // instr_getq
@@ -896,6 +898,7 @@ module picorv32 #(
 				decoded_rd <= 0;
 				decoded_rs1 <= 0;
 				decoded_rs2 <= 0;
+				decoded_rs3 <= 0;
 
 				{ decoded_imm_j[31:11], decoded_imm_j[4], decoded_imm_j[9:8], decoded_imm_j[10], decoded_imm_j[6],
 				  decoded_imm_j[7], decoded_imm_j[3:1], decoded_imm_j[5], decoded_imm_j[0] } <= $signed({mem_rdata_latched[12:2], 1'b0});
@@ -1062,18 +1065,18 @@ module picorv32 #(
 			instr_ori   <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b110;
 			instr_andi  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b111;
 
-			instr_slli  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b001 && mem_rdata_q[31:25] == 7'b0000000;
-			instr_srli  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0000000;
-			instr_srai  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0100000;
+			instr_slli  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b001 && mem_rdata_q[31:25] == 7'b0000000 && ENABLE_SHIFT;
+			instr_srli  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0000000 && ENABLE_SHIFT;
+			instr_srai  <= is_alu_reg_imm && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0100000 && ENABLE_SHIFT;
 
 			instr_add   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b000 && mem_rdata_q[31:25] == 7'b0000000;
 			instr_sub   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b000 && mem_rdata_q[31:25] == 7'b0100000;
-			instr_sll   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b001 && mem_rdata_q[31:25] == 7'b0000000;
+			instr_sll   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b001 && mem_rdata_q[31:25] == 7'b0000000 && ENABLE_SHIFT;
 			instr_slt   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b010 && mem_rdata_q[31:25] == 7'b0000000;
 			instr_sltu  <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b011 && mem_rdata_q[31:25] == 7'b0000000;
 			instr_xor   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b100 && mem_rdata_q[31:25] == 7'b0000000;
-			instr_srl   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0000000;
-			instr_sra   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0100000;
+			instr_srl   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0000000 && ENABLE_SHIFT;
+			instr_sra   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0100000 && ENABLE_SHIFT;
 			instr_or    <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b110 && mem_rdata_q[31:25] == 7'b0000000;
 			instr_and   <= is_alu_reg_reg && mem_rdata_q[14:12] == 3'b111 && mem_rdata_q[31:25] == 7'b0000000;
 
@@ -1092,7 +1095,7 @@ module picorv32 #(
 			instr_maskirq <= mem_rdata_q[6:0] == 7'b0001011 && mem_rdata_q[31:25] == 7'b0000011 && ENABLE_IRQ;
 			instr_timer   <= mem_rdata_q[6:0] == 7'b0001011 && mem_rdata_q[31:25] == 7'b0000101 && ENABLE_IRQ && ENABLE_IRQ_TIMER;
 
-			is_slli_srli_srai <= is_alu_reg_imm && |{
+			is_slli_srli_srai <= ENABLE_SHIFT && is_alu_reg_imm && |{
 				mem_rdata_q[14:12] == 3'b001 && mem_rdata_q[31:25] == 7'b0000000,
 				mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0000000,
 				mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0100000
@@ -1107,7 +1110,7 @@ module picorv32 #(
 				mem_rdata_q[14:12] == 3'b111
 			};
 
-			is_sll_srl_sra <= is_alu_reg_reg && |{
+			is_sll_srl_sra <= ENABLE_SHIFT && is_alu_reg_reg && |{
 				mem_rdata_q[14:12] == 3'b001 && mem_rdata_q[31:25] == 7'b0000000,
 				mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0000000,
 				mem_rdata_q[14:12] == 3'b101 && mem_rdata_q[31:25] == 7'b0100000
@@ -1275,9 +1278,9 @@ module picorv32 #(
 				alu_out = reg_op1 | reg_op2;
 			instr_andi || instr_and:
 				alu_out = reg_op1 & reg_op2;
-			BARREL_SHIFTER && (instr_sll || instr_slli):
+			ENABLE_SHIFT && BARREL_SHIFTER && (instr_sll || instr_slli):
 				alu_out = alu_shl;
-			BARREL_SHIFTER && (instr_srl || instr_srli || instr_sra || instr_srai):
+			ENABLE_SHIFT && BARREL_SHIFTER && (instr_srl || instr_srli || instr_sra || instr_srai):
 				alu_out = alu_shr;
 		endcase
 
@@ -1302,6 +1305,7 @@ module picorv32 #(
 	reg [31:0] cpuregs_wrdata;
 	reg [31:0] cpuregs_rs1;
 	reg [31:0] cpuregs_rs2;
+	reg [31:0] cpuregs_rs3;
 	reg [regindex_bits-1:0] decoded_rs;
 
 	always @* begin
@@ -1361,6 +1365,13 @@ module picorv32 #(
 			cpuregs_rs1 = decoded_rs ? $anyseq : 0;
 `endif
 			cpuregs_rs2 = cpuregs_rs1;
+		end
+		if (ENABLE_PCPI_RS3) begin
+			cpuregs_rs3 = decoded_rs3 ? cpuregs[decoded_rs3] : 0;
+			reg_op3 = cpuregs_rs3;
+		end else begin
+			cpuregs_rs3 = 'bx;
+			reg_op3 = 'bx;
 		end
 	end
 `else
@@ -1705,7 +1716,7 @@ module picorv32 #(
 						cpu_state <= cpu_state_ldmem;
 						mem_do_rinst <= 1;
 					end
-					is_slli_srli_srai && !BARREL_SHIFTER: begin
+					is_slli_srli_srai && ENABLE_SHIFT && !BARREL_SHIFTER: begin
 						`debug($display("LD_RS1: %2d 0x%08x", decoded_rs1, cpuregs_rs1);)
 						reg_op1 <= cpuregs_rs1;
 						dbg_rs1val <= cpuregs_rs1;
@@ -1713,12 +1724,12 @@ module picorv32 #(
 						reg_sh <= decoded_rs2;
 						cpu_state <= cpu_state_shift;
 					end
-					is_jalr_addi_slti_sltiu_xori_ori_andi, is_slli_srli_srai && BARREL_SHIFTER: begin
+					is_jalr_addi_slti_sltiu_xori_ori_andi, is_slli_srli_srai && ENABLE_SHIFT && BARREL_SHIFTER: begin
 						`debug($display("LD_RS1: %2d 0x%08x", decoded_rs1, cpuregs_rs1);)
 						reg_op1 <= cpuregs_rs1;
 						dbg_rs1val <= cpuregs_rs1;
 						dbg_rs1val_valid <= 1;
-						reg_op2 <= is_slli_srli_srai && BARREL_SHIFTER ? decoded_rs2 : decoded_imm;
+						reg_op2 <= is_slli_srli_srai && ENABLE_SHIFT && BARREL_SHIFTER ? decoded_rs2 : decoded_imm;
 						if (TWO_CYCLE_ALU)
 							alu_wait <= 1;
 						else
@@ -1742,7 +1753,7 @@ module picorv32 #(
 									cpu_state <= cpu_state_stmem;
 									mem_do_rinst <= 1;
 								end
-								is_sll_srl_sra && !BARREL_SHIFTER: begin
+								is_sll_srl_sra && ENABLE_SHIFT && !BARREL_SHIFTER: begin
 									cpu_state <= cpu_state_shift;
 								end
 								default: begin
@@ -1792,7 +1803,7 @@ module picorv32 #(
 						cpu_state <= cpu_state_stmem;
 						mem_do_rinst <= 1;
 					end
-					is_sll_srl_sra && !BARREL_SHIFTER: begin
+					is_sll_srl_sra && ENABLE_SHIFT && !BARREL_SHIFTER: begin
 						cpu_state <= cpu_state_shift;
 					end
 					default: begin
