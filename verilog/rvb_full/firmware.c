@@ -35,5 +35,7 @@ int main()
 	printc('\n');
 	printh(_rv32_ror(123456789, 12));
 	printc('\n');
+	printh(_rv_cmix(123456789, 12345678, 1234567));
+	printc('\n');
 	return 0;
 }

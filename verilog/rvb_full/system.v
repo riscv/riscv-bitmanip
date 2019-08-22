@@ -64,7 +64,17 @@ module system;
 				if (mem_wstrb[3]) memory[mem_addr >> 2][31:24] = mem_wdata[31:24];
 			end
 			if (mem_addr == 32'h 10000000) begin
-				$write("%c", mem_wdata[7:0]);
+				if (MEM_DEBUG) begin
+					if (^mem_wdata[7:0] === 1'bx || mem_wdata[7:0] < 32)
+						$display("> %b", mem_wdata[7:0]);
+					else
+						$display("> %b %c", mem_wdata[7:0], mem_wdata[7:0]);
+				end else begin
+					if (^mem_wdata[7:0] === 1'bx)
+						$write("X");
+					else
+						$write("%c", mem_wdata[7:0]);
+				end
 			end
 		end
 	end
