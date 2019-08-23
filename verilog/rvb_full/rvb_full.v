@@ -77,7 +77,7 @@ module rvb_full #(
 	wire in_bitcnt_ready;
 	wire in_bmatxor_ready;
 	wire in_clmul_ready;
-	wire in_crc_ready = in_crc;
+	wire in_crc_ready;
 	wire in_shifter_ready;
 	wire in_simple_ready;
 
@@ -125,7 +125,7 @@ module rvb_full #(
 	wire [XLEN-1:0] out_bitcnt;
 	wire [XLEN-1:0] out_bmatxor;
 	wire [XLEN-1:0] out_clmul;
-	wire [XLEN-1:0] out_crc = 0;
+	wire [XLEN-1:0] out_crc;
 	wire [XLEN-1:0] out_shifter;
 	wire [XLEN-1:0] out_simple;
 
@@ -133,7 +133,7 @@ module rvb_full #(
 	wire out_bitcnt_valid;
 	wire out_bmatxor_valid;
 	wire out_clmul_valid;
-	wire out_crc_valid = in_crc;
+	wire out_crc_valid;
 	wire out_shifter_valid;
 	wire out_simple_valid;
 	wire out_ready;
@@ -212,6 +212,22 @@ module rvb_full #(
 		.dout_valid (out_clmul_valid),
 		.dout_ready (out_ready  ),
 		.dout_rd    (out_clmul  )
+	);
+
+	rvb_crc #(
+		.XLEN(XLEN)
+	) rvb_crc (
+		.clock      (clock      ),
+		.reset      (reset      ),
+		.din_valid  (in_crc     ),
+		.din_ready  (in_crc_ready),
+		.din_rs1    (in_rs1     ),
+		.din_insn20 (in_insn[20]),
+		.din_insn21 (in_insn[21]),
+		.din_insn23 (in_insn[23]),
+		.dout_valid (out_crc_valid),
+		.dout_ready (out_ready  ),
+		.dout_rd    (out_crc    )
 	);
 
 	rvb_shifter #(
@@ -429,8 +445,8 @@ module rvb_full_decoder #(
 			33'b 000010_0zzzzz_zzzzz_001_zzzzz_0010011_1: insn_bextdep = 1; // SHFLI (RV64)
 			33'b 000010_0zzzzz_zzzzz_101_zzzzz_0010011_1: insn_bextdep = 1; // UNSHFLI (RV64)
 
-			33'b zzzzzz_zzzzzz_zzzzz_100_zzzzz_0011011_1: insn_simple  = 1; // ADDIWU
-			33'b 00001_00zzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SLLIU.W
+			33'b zzzzzzz_zzzzz_zzzzz_100_zzzzz_0011011_1: insn_simple  = 1; // ADDIWU
+			33'b 000010_zzzzzz_zzzzz_001_zzzzz_0011011_1: insn_shifter = 1; // SLLIU.W
 
 			33'b 0000101_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // ADDWU
 			33'b 0100101_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // SUBWU

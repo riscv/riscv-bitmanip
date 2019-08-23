@@ -19,7 +19,7 @@ firmware.hex: start.S firmware.c hex8tohex32.py
 system: system.v picorv32.v rvb_full.v rvb_pcpi.v
 	iverilog -o system system.v picorv32.v rvb_pcpi.v rvb_full.v \
 			../rvb_bextdep/rvb_bextdep.v ../rvb_bitcnt/rvb_bitcnt.v ../rvb_bmatxor/rvb_bmatxor.v \
-			../rvb_clmul/rvb_clmul.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
+			../rvb_clmul/rvb_clmul.v ../rvb_crc/rvb_crc.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
 
 testdata: testdata.cc
 	c++ -Wall -o testdata testdata.cc
@@ -32,12 +32,12 @@ testdata_1.hex: testdata_0.hex
 testbench_0: testbench.v rvb_full.v
 	iverilog -o testbench_0 -s testbench -DTESTDATA='"testdata_0.hex"' -DENABLE_64BIT testbench.v rvb_full.v \
 			../rvb_bextdep/rvb_bextdep.v ../rvb_bitcnt/rvb_bitcnt.v ../rvb_bmatxor/rvb_bmatxor.v \
-			../rvb_clmul/rvb_clmul.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
+			../rvb_clmul/rvb_clmul.v ../rvb_crc/rvb_crc.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
 
 testbench_1: testbench.v rvb_full.v
 	iverilog -o testbench_1 -s testbench -DTESTDATA='"testdata_1.hex"' testbench.v rvb_full.v \
 			../rvb_bextdep/rvb_bextdep.v ../rvb_bitcnt/rvb_bitcnt.v ../rvb_bmatxor/rvb_bmatxor.v \
-			../rvb_clmul/rvb_clmul.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
+			../rvb_clmul/rvb_clmul.v ../rvb_crc/rvb_crc.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
 
 testbench_0.ok: testbench_0 testdata_0.hex
 	vvp -N ./testbench_0

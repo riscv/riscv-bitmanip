@@ -4,7 +4,8 @@ import os
 
 with open("synth.ys", "w") as f:
     for xlen in (32, 64):
-        for entity in ("", ".rvb_bextdep", ".rvb_bitcnt", ".rvb_bmatxor", ".rvb_clmul", ".rvb_shifter", ".rvb_simple"):
+        for entity in ("", ".rvb_bextdep", ".rvb_bitcnt", ".rvb_bmatxor",
+                       ".rvb_clmul", ".rvb_crc", ".rvb_shifter", ".rvb_simple"):
             if xlen == 32 and entity == ".rvb_bmatxor": continue
             print("design -reset", file=f)
             print("read_verilog -defer rvb_full.v", file=f)
@@ -12,6 +13,7 @@ with open("synth.ys", "w") as f:
             print("read_verilog -defer ../rvb_bitcnt/rvb_bitcnt.v", file=f)
             print("read_verilog -defer ../rvb_bmatxor/rvb_bmatxor.v", file=f)
             print("read_verilog -defer ../rvb_clmul/rvb_clmul.v", file=f)
+            print("read_verilog -defer ../rvb_crc/rvb_crc.v", file=f)
             print("read_verilog -defer ../rvb_shifter/rvb_shifter.v", file=f)
             print("read_verilog -defer ../rvb_simple/rvb_simple.v", file=f)
             print("hierarchy -top rvb_full -chparam XLEN %d" % (xlen,), file=f)

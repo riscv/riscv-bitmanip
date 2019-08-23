@@ -38,7 +38,7 @@ int main()
 			uint64_t din_rs3 = xorshift64();
 			uint64_t dout_rd;
 
-			switch (xorshift32() % 70)
+			switch (xorshift32() % 78)
 			{
 			case 0: // BDEP
 				if (!enable_64bit) { i--; continue; }
@@ -278,60 +278,60 @@ int main()
 				din_insn = 0x48004033 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::bfp(din_rs1, din_rs2));
 				break;
-			case 53: // SLLUW
-				if (!enable_64bit) { i--; continue; }
-				din_insn = 0x0800101b;
-				dout_rd =  rv64b::slliuw(din_rs1, din_rs2);
-				break;
-			case 54: // MIN
+			case 53: // MIN
 				din_insn = 0x0a004033;
 				dout_rd = enable_64bit ? rv64b::min(din_rs1, din_rs2) : rv32b::min(din_rs1, din_rs2);
 				break;
-			case 55: // MAX
+			case 54: // MAX
 				din_insn = 0x0a005033;
 				dout_rd = enable_64bit ? rv64b::max(din_rs1, din_rs2) : rv32b::max(din_rs1, din_rs2);
 				break;
-			case 56: // MINU
+			case 55: // MINU
 				din_insn = 0x0a006033;
 				dout_rd = enable_64bit ? rv64b::minu(din_rs1, din_rs2) : rv32b::minu(din_rs1, din_rs2);
 				break;
-			case 57: // MAXU
+			case 56: // MAXU
 				din_insn = 0x0a007033;
 				dout_rd = enable_64bit ? rv64b::maxu(din_rs1, din_rs2) : rv32b::maxu(din_rs1, din_rs2);
 				break;
-			case 58: // ANDN
+			case 57: // ANDN
 				din_insn = 0x40007033;
 				dout_rd = rv64b::andn(din_rs1, din_rs2);
 				break;
-			case 59: // ORN
+			case 58: // ORN
 				din_insn = 0x40006033;
 				dout_rd = rv64b::orn(din_rs1, din_rs2);
 				break;
-			case 60: // XNOR
+			case 59: // XNOR
 				din_insn = 0x40004033;
 				dout_rd = rv64b::xnor(din_rs1, din_rs2);
 				break;
-			case 61: // PACK
+			case 60: // PACK
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x08004033;
 				dout_rd = rv64b::pack(din_rs1, din_rs2);
 				break;
-			case 62: // PACKW
+			case 61: // PACKW
 				din_insn = 0x08004033 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::pack(din_rs1, din_rs2));
 				break;
-			case 63: // CMIX
+			case 62: // CMIX
 				din_insn = 0x06001033;
 				dout_rd = rv64b::cmix(din_rs1, din_rs2, din_rs3);
 				break;
-			case 64: // CMOV
+			case 63: // CMOV
 				din_insn = 0x06005033;
 				dout_rd =  rv64b::cmov(din_rs1, din_rs2, din_rs3);
 				break;
-			case 65: // ADDIWU
+			case 64: // ADDIWU
 				if (!enable_64bit) { i--; continue; }
-				din_insn = 0x0000401b;
-				dout_rd =  rv64b::addwu(din_rs1, din_rs2);
+				din_insn = 0x0000401b | din_rs2 << 20;
+				dout_rd =  rv64b::addwu(din_rs1, (int64_t(din_rs2) << 52) >> 52);
+				break;
+			case 65: // SLLIUW
+				if (!enable_64bit) { i--; continue; }
+				din_insn = 0x0800101b | (din_rs2 & 63) << 20;
+				dout_rd =  rv64b::slliuw(din_rs1, din_rs2);
 				break;
 			case 66: // ADDWU
 				if (!enable_64bit) { i--; continue; }
@@ -352,6 +352,46 @@ int main()
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x4800003b;
 				dout_rd =  rv64b::subuw(din_rs1, din_rs2);
+				break;
+			case 70: // CRC32.B
+				din_insn = 0x61001013;
+				if (!enable_64bit) din_rs1 &= 0xFFFFFFFFLL;
+				dout_rd = rv64b::crc32_b(din_rs1);
+				break;
+			case 71: // CRC32.H
+				din_insn = 0x61101013;
+				if (!enable_64bit) din_rs1 &= 0xFFFFFFFFLL;
+				dout_rd = rv64b::crc32_h(din_rs1);
+				break;
+			case 72: // CRC32.W
+				din_insn = 0x61201013;
+				if (!enable_64bit) din_rs1 &= 0xFFFFFFFFLL;
+				dout_rd = rv64b::crc32_w(din_rs1);
+				break;
+			case 73: // CRC32.D
+				if (!enable_64bit) { i--; continue; }
+				din_insn = 0x61301013;
+				dout_rd = rv64b::crc32_d(din_rs1);
+				break;
+			case 74: // CRC32C.B
+				din_insn = 0x61801013;
+				if (!enable_64bit) din_rs1 &= 0xFFFFFFFFLL;
+				dout_rd = rv64b::crc32c_b(din_rs1);
+				break;
+			case 75: // CRC32C.H
+				din_insn = 0x61901013;
+				if (!enable_64bit) din_rs1 &= 0xFFFFFFFFLL;
+				dout_rd = rv64b::crc32c_h(din_rs1);
+				break;
+			case 76: // CRC32C.W
+				din_insn = 0x61a01013;
+				if (!enable_64bit) din_rs1 &= 0xFFFFFFFFLL;
+				dout_rd = rv64b::crc32c_w(din_rs1);
+				break;
+			case 77: // CRC32C.D
+				if (!enable_64bit) { i--; continue; }
+				din_insn = 0x61b01013;
+				dout_rd = rv64b::crc32c_d(din_rs1);
 				break;
 			}
 			fprintf(f, "%08llx_%016llx_%016llx_%016llx_%016llx\n", (long long)din_insn,
