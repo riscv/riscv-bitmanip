@@ -48,3 +48,4 @@ is not one of the instructions implemented by the core, is undefined.
 | rvb_bmatxor  | bmatxor bmator                                                                |
 | rvb_simple   | min max minu maxu andn orn xnor pack cmix cmov addiwu addwu subwu adduw subuw |
 | rvb_bitcnt   | clz ctz pcnt (bmatflip)                                                       |
+| rvb_crc      | crc32.[bhwd] crc32c.[bhwd]                                                    |
