@@ -10,3 +10,7 @@
 /firmware.map
 /system
 /system.vcd
+/test_*.h
+/test_*.o
+/tests.h
+/tests.mk

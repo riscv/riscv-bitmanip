@@ -1,0 +1,11 @@
+rv32i_csrrc_01
+rv32i_csrrci_01
+rv32i_csrrs_01
+rv32i_csrrsi_01
+rv32i_csrrw_01
+rv32i_csrrwi_01
+rv32i_ebreak_01
+rv32i_ecall_01
+rv32i_fence_i_01
+rv32i_misalign_jmp_01
+rv32i_misalign_ldst_01

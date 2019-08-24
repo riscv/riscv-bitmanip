@@ -25,8 +25,8 @@ module system;
 	always @(posedge clock) reset <= 0;
 
         initial begin
-		$dumpfile("system.vcd");
-		$dumpvars(0, system);
+		// $dumpfile("system.vcd");
+		// $dumpvars(0, system);
         end
 
 	wire        trap;
@@ -118,7 +118,7 @@ module system;
 		.COMPRESSED_ISA(1),
 		.ENABLE_PCPI(1),
 		.ENABLE_PCPI_RS3(1),
-		.ENABLE_MUL(1),
+		.ENABLE_FAST_MUL(1),
 		.ENABLE_DIV(1),
 		.PROGADDR_RESET(32'h 00010000),
 		.STACKADDR(32'h 00010000)

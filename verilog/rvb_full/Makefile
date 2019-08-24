@@ -9,9 +9,40 @@ synth.out: rvb_full.v synth.py
 run: system firmware.hex
 	vvp -N ./system
 
-firmware.hex: start.S firmware.c hex8tohex32.py
+define add_test
+TESTOBJS += test_$(1).o
+TESTNAMES += $(1)
+test_$(1).o: riscv_test.h
+	echo "extern void testcode_$(1)();" > test_$(1).h
+	echo "extern uint32_t begin_signature_$(1)[];" >> test_$(1).h
+	echo "extern uint32_t end_signature_$(1)[];" >> test_$(1).h
+	echo "uint32_t reference_$(1)[] = {" >> test_$(1).h
+	sed 's/^/0x/; s/$$$$/,/;' $(2)/references/$(3).reference_output >> test_$(1).h
+	echo "};" >> test_$(1).h
+	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o test_$(1).o -march=rv32imb -mabi=ilp32 \
+			-D 'RVTEST_SYM(_sym)=_sym##_$(1)' -I. -I../../../riscv-compliance/riscv-test-env $(2)/src/$(3).S
+endef
+
+tests.h:
+	echo -n '#define RUN_ALL_TESTS' > tests.h.new
+	{ for t in $(TESTNAMES); do echo -n " RUNTEST($$t)"; done; echo; } >> tests.h.new
+	for t in $(TESTNAMES); do echo "#include \"test_$$t.h\""; done >> tests.h.new
+	mv tests.h.new tests.h
+
+tests.mk:
+	set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32i/src/*.S; do \
+	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32$$(echo $$p | tr A-Z-. a-z__); \
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32i,$$p))"; done > tests.mk.new
+	set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32im/src/*.S; do \
+	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32m_$$(echo $$p | tr A-Z-. a-z__); \
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32im,$$p))"; done >> tests.mk.new
+	mv tests.mk.new tests.mk
+
+-include tests.mk
+
+firmware.hex: start.S firmware.c hex8tohex32.py $(TESTOBJS) tests.h
 	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -march=rv32imb -mabi=ilp32 -o firmware.elf -Wall -Os -ffreestanding -nostdlib \
-			-Wl,-Bstatic,-T,sections.lds,-Map,firmware.map,--strip-debug start.S firmware.c
+			-Wl,-Bstatic,-T,sections.lds,-Map,firmware.map,--strip-debug start.S firmware.c $(TESTOBJS)
 	/opt/riscv64b/bin/riscv64-unknown-elf-objcopy -O verilog firmware.elf firmware.tmp
 	python3 hex8tohex32.py firmware.tmp > firmware.hex
 	rm -f firmware.tmp
@@ -49,6 +80,6 @@ testbench_1.ok: testbench_1 testdata_1.hex
 
 clean:
 	rm -f testbench.vcd testdata testdata_?.hex testbench_? testbench_?.ok synth.out synth.tmp synth.ys
-	rm -f system firmware.hex firmware.elf firmware.map system.vcd
+	rm -f system firmware.hex firmware.elf firmware.map system.vcd test_*.h test_*.o tests.h tests.mk
 
 .PHONY: test synth clean
