@@ -29,39 +29,40 @@ void printh(unsigned int v)
 }
 
 #ifdef VERBOSE_TESTS
-int check(uint32_t *b, uint32_t *e, uint32_t *r)
+
+int check(uint32_t *s, uint32_t *r, int n)
 {
 	int errcnt = 0;
-	for (uint32_t *p = b; p != e; p++) {
-		uint32_t v = r[p - b];
+	while (n--) {
 		prints("SIG=");
-		printh(*p);
+		printh(*s);
 		prints(" REF=");
-		printh(v);
-		prints(*p == v ? " OK\n" : " ERROR\n");
-		errcnt += *p != v;
+		printh(*r);
+		prints(*s == *r ? " OK\n" : " ERROR\n");
+		errcnt += *s != *r;
+		s++, r++;
 	}
 	return errcnt;
 }
 
 #define RUNTEST(_name) prints("--- " #_name " ---\n"); testcode_##_name(); \
-  errcnt += check(begin_signature_##_name, end_signature_##_name, reference_##_name);
+  errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4);
 
 #else
 
-int check(uint32_t *b, uint32_t *e, uint32_t *r)
+int check(uint32_t *s, uint32_t *r, int n)
 {
 	int errcnt = 0;
-	for (uint32_t *p = b; p != e; p++) {
-		uint32_t v = r[p - b];
-		errcnt += *p != v;
+	while (n--) {
+		errcnt += *s != *r;
+		s++, r++;
 	}
-	prints(errcnt ? " ERROR" : " OK\n");
+	prints(errcnt ? " ERROR\n" : " OK\n");
 	return errcnt;
 }
 
 #define RUNTEST(_name) prints("" #_name ":"); testcode_##_name(); \
-  errcnt += check(begin_signature_##_name, end_signature_##_name, reference_##_name);
+  errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4);
 
 #endif
 

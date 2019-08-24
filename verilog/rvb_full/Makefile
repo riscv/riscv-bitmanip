@@ -14,8 +14,7 @@ TESTOBJS += test_$(1).o
 TESTNAMES += $(1)
 test_$(1).o: riscv_test.h
 	echo "extern void testcode_$(1)();" > test_$(1).h
-	echo "extern uint32_t begin_signature_$(1)[];" >> test_$(1).h
-	echo "extern uint32_t end_signature_$(1)[];" >> test_$(1).h
+	echo "extern uint32_t signature_$(1)[];" >> test_$(1).h
 	echo "uint32_t reference_$(1)[] = {" >> test_$(1).h
 	sed 's/^/0x/; s/$$$$/,/;' $(2)/references/$(3).reference_output >> test_$(1).h
 	echo "};" >> test_$(1).h
@@ -30,9 +29,12 @@ tests.h:
 	mv tests.h.new tests.h
 
 tests.mk:
+	set -e; for x in ../../compliance/rv32b/src/*.S; do \
+	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32$$(echo $$p | tr A-Z-. a-z__); \
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../compliance/rv32b,$$p))"; done > tests.mk.new
 	set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32i/src/*.S; do \
 	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32$$(echo $$p | tr A-Z-. a-z__); \
-	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32i,$$p))"; done > tests.mk.new
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32i,$$p))"; done >> tests.mk.new
 	set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32im/src/*.S; do \
 	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32m_$$(echo $$p | tr A-Z-. a-z__); \
 	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32im,$$p))"; done >> tests.mk.new

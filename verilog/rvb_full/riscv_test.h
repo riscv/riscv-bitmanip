@@ -36,7 +36,7 @@ RVTEST_SYM(testcode):                                                   \
         sw s8,  test_sav_s8,  t0;                                       \
         sw s9,  test_sav_s9,  t0;                                       \
         sw s10, test_sav_s10, t0;                                       \
-        sw s11, test_sav_s11, t0;
+        sw s11, test_sav_s11, t0
 
 #define RVTEST_CODE_END                                                 \
 end_testcode:                                                           \
@@ -99,18 +99,15 @@ end_testcode:                                                           \
 	test_sav_s8:  .word 0;                                          \
 	test_sav_s9:  .word 0;                                          \
 	test_sav_s10: .word 0;                                          \
-	test_sav_s11: .word 0;
+	test_sav_s11: .word 0
 
 #define RVTEST_DATA_BEGIN                                               \
-        EXTRA_DATA                                                      \
+        EXTRA_DATA;                                                     \
         .align 4;                                                       \
-	.global RVTEST_SYM(begin_signature);                            \
-	RVTEST_SYM(begin_signature):
+	.global RVTEST_SYM(signature);                                  \
+	RVTEST_SYM(signature):
 
 #define RVTEST_DATA_END                                                 \
-        .align 4;                                                       \
-	.global RVTEST_SYM(end_signature);                              \
-	RVTEST_SYM(end_signature):                                      \
-        .word 0;
+        .align 4
 
 #endif
