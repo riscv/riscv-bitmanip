@@ -83,19 +83,19 @@ int main()
 
 	tmp = _rv32_grev(_rv32_clmul(123456789, 12345678), -1);
 	printh(tmp);
-	prints(tmp == 0x696ECAD1 ? " OK \n" : (errcnt++, " ERROR\n"));
+	prints(tmp == 0x696ECAD1 ? " OK\n" : (errcnt++, " ERROR\n"));
 
 	tmp = _rv32_clmulr(_rv32_grev(123456789, -1), _rv32_grev(12345678, -1));
 	printh(tmp);
-	prints(tmp == 0x696ECAD1 ? " OK \n" : (errcnt++, " ERROR\n"));
+	prints(tmp == 0x696ECAD1 ? " OK\n" : (errcnt++, " ERROR\n"));
 
 	tmp = _rv_cmix(tmp ^ _rv32_pack(-1, 0), tmp, ~tmp);
 	printh(tmp);
-	prints(tmp == 0xFFFF0000 ? " OK \n" : (errcnt++, " ERROR\n"));
+	prints(tmp == 0xFFFF0000 ? " OK\n" : (errcnt++, " ERROR\n"));
 
 	tmp = _rv32_rol(_rv32_slo(255 << 8, 8), 12);
 	printh(tmp);
-	prints(tmp == 0xF00FF00F ? " OK \n" : (errcnt++, " ERROR\n"));
+	prints(tmp == 0xF00FF00F ? " OK\n" : (errcnt++, " ERROR\n"));
 
 	RUN_ALL_TESTS
 
