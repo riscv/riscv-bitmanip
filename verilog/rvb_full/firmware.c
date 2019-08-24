@@ -1,3 +1,4 @@
+// #define RVINTRIN_EMULATE
 #include <rvintrin.h>
 
 void printc(int c)
@@ -34,6 +35,12 @@ int main()
 	printh(_rv32_clmulh(123456789, 12345678));
 	printc('\n');
 	printh(_rv32_ror(123456789, 12));
+	printc('\n');
+	printh(_rv32_rol(123456789, 12));
+	printc('\n');
+	printh(_rv32_fsr(123456789, 12345678, 12));
+	printc('\n');
+	printh(_rv32_fsl(123456789, 12345678, 12));
 	printc('\n');
 	printh(_rv_cmix(123456789, 12345678, 1234567));
 	printc('\n');
