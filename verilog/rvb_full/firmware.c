@@ -2,12 +2,20 @@
 #include <rvintrin.h>
 
 #undef VERBOSE_TESTS
-#include "tests.h"
+#include "tests/tests.h"
 
 void printc(int c)
 {
 	volatile char *p = (void*)0x10000000;
 	*p = c;
+}
+
+void printsn(char *p, int n)
+{
+	while (*p)
+		printc(*(p++)), n--;
+	while (n-- > 0)
+		printc(' ');
 }
 
 void prints(char *p)
@@ -61,7 +69,7 @@ int check(uint32_t *s, uint32_t *r, int n)
 	return errcnt;
 }
 
-#define RUNTEST(_name) prints("" #_name ":"); testcode_##_name(); \
+#define RUNTEST(_name) printsn("" #_name, 17); testcode_##_name(); \
   errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4);
 
 #endif
@@ -69,24 +77,25 @@ int check(uint32_t *s, uint32_t *r, int n)
 int main()
 {
 	int errcnt = 0;
+	int tmp;
 
 	prints("Hello World!\n");
-	printh(_rv32_clmul(123456789, 12345678));
-	printc('\n');
-	printh(_rv32_clmulr(123456789, 12345678));
-	printc('\n');
-	printh(_rv32_clmulh(123456789, 12345678));
-	printc('\n');
-	printh(_rv32_ror(123456789, 12));
-	printc('\n');
-	printh(_rv32_rol(123456789, 12));
-	printc('\n');
-	printh(_rv32_fsr(123456789, 12345678, 12));
-	printc('\n');
-	printh(_rv32_fsl(123456789, 12345678, 12));
-	printc('\n');
-	printh(_rv_cmix(123456789, 12345678, 1234567));
-	printc('\n');
+
+	tmp = _rv32_grev(_rv32_clmul(123456789, 12345678), -1);
+	printh(tmp);
+	prints(tmp == 0x696ECAD1 ? " OK \n" : (errcnt++, " ERROR\n"));
+
+	tmp = _rv32_clmulr(_rv32_grev(123456789, -1), _rv32_grev(12345678, -1));
+	printh(tmp);
+	prints(tmp == 0x696ECAD1 ? " OK \n" : (errcnt++, " ERROR\n"));
+
+	tmp = _rv_cmix(tmp ^ _rv32_pack(-1, 0), tmp, ~tmp);
+	printh(tmp);
+	prints(tmp == 0xFFFF0000 ? " OK \n" : (errcnt++, " ERROR\n"));
+
+	tmp = _rv32_rol(_rv32_slo(255 << 8, 8), 12);
+	printh(tmp);
+	prints(tmp == 0xF00FF00F ? " OK \n" : (errcnt++, " ERROR\n"));
 
 	RUN_ALL_TESTS
 

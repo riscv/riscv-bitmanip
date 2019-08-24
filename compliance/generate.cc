@@ -169,7 +169,6 @@ int main()
 				c -= 'a' - 'A';
 			testname.push_back(c);
 		}
-		testname += "-01";
 
 #ifdef RV32
 		string filename = stringf("rv32b/references/%s.reference_output", testname.c_str());

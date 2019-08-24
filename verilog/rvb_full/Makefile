@@ -1,3 +1,7 @@
+RUN_TESTS_B = true
+RUN_TESTS_I = false
+RUN_TESTS_M = false
+
 test: testbench_0.ok testbench_1.ok
 
 synth: synth.out
@@ -10,40 +14,44 @@ run: system firmware.hex
 	vvp -N ./system
 
 define add_test
-TESTOBJS += test_$(1).o
+TESTOBJS += tests/test_$(1).o
 TESTNAMES += $(1)
-test_$(1).o: riscv_test.h
-	echo "extern void testcode_$(1)();" > test_$(1).h
-	echo "extern uint32_t signature_$(1)[];" >> test_$(1).h
-	echo "uint32_t reference_$(1)[] = {" >> test_$(1).h
-	sed 's/^/0x/; s/$$$$/,/;' $(2)/references/$(3).reference_output >> test_$(1).h
-	echo "};" >> test_$(1).h
-	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o test_$(1).o -march=rv32imb -mabi=ilp32 \
-			-D 'RVTEST_SYM(_sym)=_sym##_$(1)' -I. -I../../../riscv-compliance/riscv-test-env $(2)/src/$(3).S
+tests/test_$(1).o: riscv_test.h $(2)/references/$(3).reference_output $(2)/src/$(3).S
+	mkdir -p tests
+	echo "extern void testcode_$(1)();" > tests/test_$(1).h
+	echo "extern uint32_t signature_$(1)[];" >> tests/test_$(1).h
+	echo "uint32_t reference_$(1)[] = {" >> tests/test_$(1).h
+	sed 's/^/0x/; s/$$$$/,/;' $(2)/references/$(3).reference_output >> tests/test_$(1).h
+	echo "};" >> tests/test_$(1).h
+	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o tests/test_$(1).o -march=rv32imb -mabi=ilp32 \
+			-D 'RVTEST_SYM(_sym)=_sym##_$(1)' -I. -I../../../riscv-compliance/riscv-test-env \
+			-I ../../../riscv-compliance/riscv-target/spike $(2)/src/$(3).S
 endef
 
-tests.h:
-	echo -n '#define RUN_ALL_TESTS' > tests.h.new
-	{ for t in $(TESTNAMES); do echo -n " RUNTEST($$t)"; done; echo; } >> tests.h.new
-	for t in $(TESTNAMES); do echo "#include \"test_$$t.h\""; done >> tests.h.new
-	mv tests.h.new tests.h
+tests/tests.h: Makefile
+	mkdir -p tests
+	echo -n '#define RUN_ALL_TESTS' > tests/tests.h.new
+	{ for t in $(TESTNAMES); do echo -n " RUNTEST($$t)"; done; echo; } >> tests/tests.h.new
+	for t in $(TESTNAMES); do echo "#include \"test_$$t.h\""; done >> tests/tests.h.new
+	mv tests/tests.h.new tests/tests.h
 
-tests.mk:
-	set -e; for x in ../../compliance/rv32b/src/*.S; do \
+tests/tests.mk: Makefile blacklist.txt
+	mkdir -p tests
+	if $(RUN_TESTS_B); then set -e; for x in ../../compliance/rv32b/src/*.S; do \
 	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32$$(echo $$p | tr A-Z-. a-z__); \
-	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../compliance/rv32b,$$p))"; done > tests.mk.new
-	set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32i/src/*.S; do \
-	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32$$(echo $$p | tr A-Z-. a-z__); \
-	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32i,$$p))"; done >> tests.mk.new
-	set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32im/src/*.S; do \
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../compliance/rv32b,$$p))"; done; fi > tests/tests.mk.new
+	if $(RUN_TESTS_I); then set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32i/src/*.S; do \
+	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32$$(echo $$p | tr A-Z-. a-z__ | sed 's/_01$$//'); \
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32i,$$p))"; done; fi >> tests/tests.mk.new
+	if $(RUN_TESTS_M); then set -e; for x in ../../../riscv-compliance/riscv-test-suite/rv32im/src/*.S; do \
 	p=$$(basename $$x); p=$$(echo $$p | sed 's,\.S$$,,'); n=rv32m_$$(echo $$p | tr A-Z-. a-z__); \
-	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32im,$$p))"; done >> tests.mk.new
-	mv tests.mk.new tests.mk
+	grep -xqF $$n blacklist.txt || echo "\$$(eval \$$(call add_test,$$n,../../../riscv-compliance/riscv-test-suite/rv32im,$$p))"; done; fi >> tests/tests.mk.new
+	mv tests/tests.mk.new tests/tests.mk
 
--include tests.mk
+-include tests/tests.mk
 
-firmware.hex: start.S firmware.c hex8tohex32.py $(TESTOBJS) tests.h
-	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -march=rv32imb -mabi=ilp32 -o firmware.elf -Wall -Os -ffreestanding -nostdlib \
+firmware.hex: start.S firmware.c hex8tohex32.py $(TESTOBJS) tests/tests.h
+	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -march=rv32imb -mabi=ilp32 -o firmware.elf -Wall -O2 -ffreestanding -nostdlib \
 			-Wl,-Bstatic,-T,sections.lds,-Map,firmware.map,--strip-debug start.S firmware.c $(TESTOBJS)
 	/opt/riscv64b/bin/riscv64-unknown-elf-objcopy -O verilog firmware.elf firmware.tmp
 	python3 hex8tohex32.py firmware.tmp > firmware.hex
@@ -82,6 +90,6 @@ testbench_1.ok: testbench_1 testdata_1.hex
 
 clean:
 	rm -f testbench.vcd testdata testdata_?.hex testbench_? testbench_?.ok synth.out synth.tmp synth.ys
-	rm -f system firmware.hex firmware.elf firmware.map system.vcd test_*.h test_*.o tests.h tests.mk
+	rm -f system firmware.hex firmware.elf firmware.map system.vcd tests/test_*.h tests/test_*.o tests/tests.h tests/tests.mk
 
 .PHONY: test synth clean
