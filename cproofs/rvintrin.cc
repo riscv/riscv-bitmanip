@@ -38,6 +38,7 @@ extern "C" void check_rv32_basic(int32_t a, int32_t b)
 	ASSERT_RV32_1(ctz);
 	ASSERT_RV32_1(pcnt);
 	ASSERT_RV32_2(pack);
+	ASSERT_RV32_2(bfp);
 	ASSERT_RV32_2(min);
 	ASSERT_RV32_2(minu);
 	ASSERT_RV32_2(max);
@@ -50,6 +51,7 @@ extern "C" void check_rv64_basic(int64_t a, int64_t b)
 	ASSERT_RV64_1(ctz);
 	ASSERT_RV64_1(pcnt);
 	ASSERT_RV64_2(pack);
+	ASSERT_RV64_2(bfp);
 	ASSERT_RV64_2(min);
 	ASSERT_RV64_2(minu);
 	ASSERT_RV64_2(max);
@@ -82,6 +84,7 @@ extern "C" void check_rv32_shift(int32_t a, int32_t b)
 	ASSERT_RV32_2(rol);
 	ASSERT_RV32_2(ror);
 	ASSERT_RV32_2(grev);
+	ASSERT_RV32_2(gorc);
 	ASSERT_RV32_2(shfl);
 	ASSERT_RV32_2(unshfl);
 }
@@ -96,6 +99,7 @@ extern "C" void check_rv64_shift(int64_t a, int64_t b)
 	ASSERT_RV64_2(rol);
 	ASSERT_RV64_2(ror);
 	ASSERT_RV64_2(grev);
+	ASSERT_RV64_2(gorc);
 	ASSERT_RV64_2(shfl);
 	ASSERT_RV64_2(unshfl);
 }
