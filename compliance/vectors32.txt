@@ -1,3 +1,51 @@
-andn	0x12345678	0x87654321
-orn	0x12345678	0x87654321
-xnor	0x12345678	0x87654321
+clz,ctz,pcnt 00000000
+clz,ctz,pcnt ffffffff
+
+clz,ctz,pcnt d77b6ecd
+clz,ctz,pcnt 36a9a6d7
+clz,ctz,pcnt 219954ae
+clz,ctz,pcnt 91f3a75b
+clz,ctz,pcnt 6723f89c
+clz,ctz,pcnt 6042e65d
+
+andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 778bd1db def3c035
+andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev ffaace79 11e15d6b
+andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 04bc5eac 33397f4e
+andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 40ee4840 18331b85
+andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 5a0d8ae2 faafb8a6
+andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev cccb9502 de163e74
+
+slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 522a1063 d2d6b642
+slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 8a671b8c 5b4289cf
+slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 02eb0801 81920806
+slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 43737b61 57861f11
+slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr f20d8a82 1ceb0c11
+slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 9543c51a 9a48a02c
+
+grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 522a1063 =3
+grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 8a671b8c =5
+grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 02eb0801 =17
+grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 43737b61 =24
+grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti f20d8a82 =25
+grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 9543c51a =31
+
+shfli,unshfli 522a1063 =0
+shfli,unshfli 8a671b8c =1
+shfli,unshfli 02eb0801 =3
+shfli,unshfli 43737b61 =7
+shfli,unshfli f20d8a82 =11
+shfli,unshfli 9543c51a =13
+
+fsl,fsr,cmix,cmov 5dd79cfa c4ed4893 987a10dd
+fsl,fsr,cmix,cmov 9c6f7aa2 fcae8655 02a2826c
+fsl,fsr,cmix,cmov a8a22391 1b4286dd 988c0022
+fsl,fsr,cmix,cmov 430b3272 2b77485c 8b8e8f3e
+fsl,fsr,cmix,cmov add85909 116023b7 29d882a1
+fsl,fsr,cmix,cmov 00000000 2ba53005 b208965f
+
+fsri 5dd79cfa c4ed4893 =3
+fsri 9c6f7aa2 fcae8655 =5
+fsri a8a22391 1b4286dd =17
+fsri 430b3272 2b77485c =24
+fsri add85909 116023b7 =25
+fsri 81c0d967 2ba53005 =31

@@ -35,9 +35,9 @@ bool regargs[3];
 int nargs;
 
 vector<string> regs = {
-	"t0", "t1", "t2", "t3", "t4", "t5",
-	"a0", "a1", "a2", "a3", "a4", "a5", "a6", "a8",
-	"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s8", "s9", "s10", "s11"
+	"t0", "t1", "t2", "t3", "t4", "t5", "t6",
+	"a0",/*a1*/ "a2", "a3", "a4", "a5", "a6", "a7",
+	"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11"
 };
 
 std::string vstringf(const char *fmt, va_list ap)
@@ -84,7 +84,6 @@ string stringf(const char *fmt, ...)
 
 uint32_t xorshift32(uint32_t n)
 {
-	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
 	static uint32_t x = 12345678;
 	x ^= x << 13;
 	x ^= x >> 17;
@@ -120,24 +119,135 @@ void add_op()
 	testcode[op].push_back(cmd);
 
 #ifdef RV32
-	testcode[op].push_back(stringf("    sw %s,0(t6)", regs[0].c_str()));
-	testcode[op].push_back(stringf("    addi t6,t6,4"));
+	testcode[op].push_back(stringf("    sw %s,%d(a1)", regs[0].c_str(), 4*testdata[op].size()));
 #endif
 #ifdef RV64
-	testcode[op].push_back(stringf("    sd %s,0(t6)", regs[0].c_str()));
-	testcode[op].push_back(stringf("    addi t6,t6,8"));
+	testcode[op].push_back(stringf("    sd %s,%d(a1)", regs[0].c_str(), 8*testdata[op].size()));
 #endif
 
 	testdata[op].push_back(rd);
 }
 
-#define OP2(_insn)                                                   \
-if (op == #_insn) {                                                  \
-	if (nargs != 2) abort();                                     \
-	if (!regargs[0]) abort();                                    \
-	if (!regargs[1]) abort();                                    \
-	rd = _insn(args[0], args[1]);                                \
-	add_op();                                                    \
+#define OP1(_insn)                              \
+if (op == #_insn) {                             \
+  if (nargs != 1) abort();                      \
+  if (!regargs[0]) abort();                     \
+  rd = _insn(args[0]);                          \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP1W(_insn)                             \
+if (op == #_insn "w") {                         \
+  if (nargs != 1) abort();                      \
+  if (!regargs[0]) abort();                     \
+  rd = rv32b::_insn(args[0]);                   \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP2(_insn)                              \
+if (op == #_insn) {                             \
+  if (nargs != 2) abort();                      \
+  if (!regargs[0]) abort();                     \
+  if (!regargs[1]) abort();                     \
+  rd = _insn(args[0], args[1]);                 \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP2F(_insn, _func)                      \
+if (op == #_insn) {                             \
+  if (nargs != 2) abort();                      \
+  if (!regargs[0]) abort();                     \
+  if (!regargs[1]) abort();                     \
+  rd = _func(args[0], args[1]);                 \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP2W(_insn)                             \
+if (op == #_insn "w") {                         \
+  if (nargs != 2) abort();                      \
+  if (!regargs[0]) abort();                     \
+  if (!regargs[1]) abort();                     \
+  rd = rv32b::_insn(args[0], args[1]);          \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP2I(_insn)                             \
+if (op == #_insn "i") {                         \
+  if (nargs != 2) abort();                      \
+  if (!regargs[0]) abort();                     \
+  if (regargs[1]) abort();                      \
+  rd = _insn(args[0], args[1]);                 \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP2IF(_insn, _func)                     \
+if (op == #_insn) {                             \
+  if (nargs != 2) abort();                      \
+  if (!regargs[0]) abort();                     \
+  if (regargs[1]) abort();                      \
+  rd = _func(args[0], args[1]);                 \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP2IW(_insn)                            \
+if (op == #_insn "iw") {                        \
+  if (nargs != 2) abort();                      \
+  if (!regargs[0]) abort();                     \
+  if (regargs[1]) abort();                      \
+  rd = rv32b::_insn(args[0], args[1]);          \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP3(_insn, A, B, C)                     \
+if (op == #_insn) {                             \
+  if (nargs != 3) abort();                      \
+  if (!regargs[A]) abort();                     \
+  if (!regargs[B]) abort();                     \
+  if (!regargs[C]) abort();                     \
+  rd = _insn(args[A], args[B], args[C]);        \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP3I(_insn, A, B, C)                    \
+if (op == #_insn "i") {                         \
+  if (nargs != 3) abort();                      \
+  if (!regargs[A]) abort();                     \
+  if (regargs[B]) abort();                      \
+  if (!regargs[C]) abort();                     \
+  rd = _insn(args[A], args[B], args[C]);        \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP3W(_insn, A, B, C)                    \
+if (op == #_insn "w") {                         \
+  if (nargs != 3) abort();                      \
+  if (!regargs[A]) abort();                     \
+  if (!regargs[B]) abort();                     \
+  if (!regargs[C]) abort();                     \
+  rd = rv32b::_insn(args[A], args[B], args[C]); \
+  add_op();                                     \
+  continue;                                     \
+}
+
+#define OP3IW(_insn, A, B, C)                   \
+if (op == #_insn "iw") {                        \
+  if (nargs != 3) abort();                      \
+  if (!regargs[A]) abort();                     \
+  if (regargs[B]) abort();                      \
+  if (!regargs[C]) abort();                     \
+  rd = rv32b::_insn(args[A], args[B], args[C]); \
+  add_op();                                     \
+  continue;                                     \
 }
 
 int main()
@@ -145,19 +255,133 @@ int main()
 	char buffer[1024];
 	while (fgets(buffer, 1024, stdin))
 	{
-		op = strtok(buffer, " \t\n");
+		char *op_p = strtok(buffer, " \t\n");
 		nargs = 0;
+
+		if (op_p == NULL || *op_p == '#')
+			continue;
 
 		while (nargs < 3) {
 			char *a = strtok(NULL, " \t\n");
 			if (a == NULL) break;
-			regargs[nargs] = a[0] == '0' && a[1] == 'x';
-			args[nargs++] = strtoll(a, NULL, 0);
+			if (*a == '=') {
+				regargs[nargs] = false;
+				args[nargs++] = strtoll(a+1, NULL, 0);
+			} else {
+				regargs[nargs] = true;
+				args[nargs++] = strtoll(a, NULL, 16);
+			}
 		}
 
-		OP2(andn)
-		OP2(orn)
-		OP2(xnor)
+		op_p = strtok(op_p, ",");
+
+		while (op_p != NULL)
+		{
+			op = op_p;
+			op_p = strtok(NULL, ",");
+
+			OP1(clz)
+			OP1(ctz)
+			OP1(pcnt)
+			OP1(bmatflip)
+
+			OP1W(clz)
+			OP1W(ctz)
+			OP1W(pcnt)
+
+			OP2(andn)
+			OP2(orn)
+			OP2(xnor)
+			OP2(pack)
+			OP2(min)
+			OP2(minu)
+			OP2(max)
+			OP2(maxu)
+			OP2(sbset)
+			OP2(sbclr)
+			OP2(sbinv)
+			OP2(sbext)
+			// OP2(sll)
+			// OP2(srl)
+			// OP2(sra)
+			OP2(slo)
+			OP2(sro)
+			OP2(rol)
+			OP2(ror)
+			OP2(grev)
+			OP2(shfl)
+			OP2(unshfl)
+			OP2(bext)
+			OP2(bdep)
+			OP2(clmul)
+			OP2(clmulh)
+			OP2(clmulr)
+			OP2(bmator)
+			OP2(bmatxor)
+
+			OP2W(pack)
+			OP2W(sbset)
+			OP2W(sbclr)
+			OP2W(sbinv)
+			OP2W(sbext)
+			// OP2W(sll)
+			// OP2W(srl)
+			// OP2W(sra)
+			OP2W(slo)
+			OP2W(sro)
+			OP2W(rol)
+			OP2W(ror)
+			OP2W(grev)
+			OP2W(shfl)
+			OP2W(unshfl)
+			OP2W(bext)
+			OP2W(bdep)
+			OP2W(clmul)
+			OP2W(clmulh)
+			OP2W(clmulr)
+
+			OP2I(grev)
+			OP2I(slo)
+			OP2I(sro)
+			OP2I(ror)
+			OP2I(sbset)
+			OP2I(sbclr)
+			OP2I(sbinv)
+			OP2I(sbext)
+			OP2I(shfl)
+			OP2I(unshfl)
+
+			OP2IW(grev)
+			OP2IW(slo)
+			OP2IW(sro)
+			OP2IW(ror)
+			OP2IW(sbset)
+			OP2IW(sbclr)
+			OP2IW(sbinv)
+
+			OP3(fsl, 0, 2, 1)
+			OP3(fsr, 0, 2, 1)
+			OP3(cmix, 1, 0, 2)
+			OP3(cmov, 1, 0, 2)
+
+			OP3I(fsr, 0, 2, 1)
+
+			OP3W(fsl, 0, 2, 1)
+			OP3W(fsr, 0, 2, 1)
+
+			OP3IW(fsr, 0, 2, 1)
+
+			OP2F(addwu, rv64b::addwu)
+			OP2F(subwu, rv64b::subwu)
+			OP2F(addu.w, rv64b::adduw)
+			OP2F(subu.w, rv64b::subuw)
+
+			OP2IF(addiwu, rv64b::addwu)
+			OP2IF(slliu.w, rv64b::slliuw)
+
+			printf("> %s\n", op.c_str());
+			abort();
+		}
 	}
 
 	for (auto it : testdata)
@@ -201,7 +425,7 @@ int main()
 		fprintf(f, "RV_COMPLIANCE_RV32M\n");
 		fprintf(f, "\n");
 		fprintf(f, "RV_COMPLIANCE_CODE_BEGIN\n");
-		fprintf(f, "    la t6,test_results\n");
+		fprintf(f, "    la a1,test_results\n");
 		for (auto s : testcode[op])
 			fprintf(f, "%s\n", s.c_str());
 		fprintf(f, "    RV_COMPLIANCE_HALT\n");
