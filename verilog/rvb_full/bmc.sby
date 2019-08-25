@@ -1,7 +1,7 @@
 [options]
 mode bmc
 depth 8
-expect timeout,fail
+expect timeout,pass,fail
 timeout 600
 aigsmt none
 
