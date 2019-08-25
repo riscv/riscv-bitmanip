@@ -17,12 +17,16 @@
 
 module system;
 	localparam MEM_DEBUG = 0;
+	localparam integer TIMEOUT = 100000;
 
 	reg clock;
 	always #5 clock = (clock === 1'b0);
 
 	reg reset = 1;
 	always @(posedge clock) reset <= 0;
+
+	integer cycles = 0;
+	always @(posedge clock) cycles <= cycles + 1;
 
         initial begin
 		// $dumpfile("system.vcd");
@@ -92,16 +96,32 @@ module system;
 						mem_wstrb[1] ? mem_wdata[15: 8] : 8'bz,
 						mem_wstrb[0] ? mem_wdata[ 7: 0] : 8'bz);
 		end
+		if (cycles >= TIMEOUT) begin
+			$display("TIMEOUT after %1d cycles", cycles);
+			$finish;
+		end
 		if (!reset && trap) begin
-			$display("TRAP");
+			$display("TRAP after %1d cycles", cycles);
 			$finish;
 		end
 	end
 
+`ifdef MCY
+	reg [7:0] mutsel;
+
+	initial begin
+		if (!$value$plusargs("mut=%d", mutsel)) begin
+			mutsel = 0;
+		end
+	end
+`endif
+
 	rvb_pcpi rvb_pcpi (
 		.clk        (clock     ),
 		.resetn     (!reset    ),
-
+`ifdef MCY
+		.mutsel     (mutsel    ),
+`endif
 		.pcpi_valid (pcpi_valid),
 		.pcpi_insn  (pcpi_insn ),
 		.pcpi_rs1   (pcpi_rs1  ),

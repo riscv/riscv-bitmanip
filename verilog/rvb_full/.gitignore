@@ -11,3 +11,5 @@
 /system
 /system.vcd
 /tests/
+/database/
+/tasks/
