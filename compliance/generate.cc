@@ -137,6 +137,15 @@ if (op == #_insn) {                             \
   continue;                                     \
 }
 
+#define OP1F(_insn, _func)                      \
+if (op == #_insn) {                             \
+  if (nargs != 1) abort();                      \
+  if (!regargs[0]) abort();                     \
+  rd = _func(args[0]);                          \
+  add_op();                                     \
+  continue;                                     \
+}
+
 #define OP1W(_insn)                             \
 if (op == #_insn "w") {                         \
   if (nargs != 1) abort();                      \
@@ -269,7 +278,7 @@ int main()
 				args[nargs++] = strtoll(a+1, NULL, 0);
 			} else {
 				regargs[nargs] = true;
-				args[nargs++] = strtoll(a, NULL, 16);
+				args[nargs++] = strtoull(a, NULL, 16);
 			}
 		}
 
@@ -288,6 +297,13 @@ int main()
 			OP1W(clz)
 			OP1W(ctz)
 			OP1W(pcnt)
+
+			OP1F(crc32.b, crc32_b)
+			OP1F(crc32.h, crc32_h)
+			OP1F(crc32.w, crc32_w)
+			OP1F(crc32c.b, crc32c_b)
+			OP1F(crc32c.h, crc32c_h)
+			OP1F(crc32c.w, crc32c_w)
 
 			OP2(andn)
 			OP2(orn)

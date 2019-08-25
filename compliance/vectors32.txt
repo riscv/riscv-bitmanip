@@ -8,6 +8,13 @@ clz,ctz,pcnt 91f3a75b
 clz,ctz,pcnt 6723f89c
 clz,ctz,pcnt 6042e65d
 
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w d77b6ecd
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 36a9a6d7
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 219954ae
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 91f3a75b
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 6723f89c
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 6042e65d
+
 andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 778bd1db def3c035
 andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev ffaace79 11e15d6b
 andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 04bc5eac 33397f4e
