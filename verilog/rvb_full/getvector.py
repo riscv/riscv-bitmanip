@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from Verilog_VCD.Verilog_VCD import parse_vcd
-from sys import argv
+from sys import argv, exit
 from os import system
 import re
 
@@ -12,6 +12,9 @@ for netinfo in parse_vcd(argv[1]).values():
     for net in netinfo['nets']:
         if net["hier"] == "bmc" and net["name"] in ["pcpi_valid", "pcpi_insn", "pcpi_rs1", "pcpi_rs2", "pcpi_rs3"]:
             pcpi[net["name"].replace("pcpi_", "")] = dict(netinfo['tv'])[cycle]
+        if net["hier"] == "bmc" and net["name"] in ["ref_pcpi_wait"]:
+            if dict(netinfo['tv'])[cycle] != '1':
+                exit(0)
 
 # print(pcpi)
 assert pcpi["valid"] == '1'

@@ -28,9 +28,21 @@ module rvb_pcpi (
 	output [31:0] pcpi_rd,
 	output        pcpi_wait,
 	output        pcpi_ready
+
+`ifdef RVB_DEBUG
+,	output [31:0] debug_rs2,
+	output        debug_insn_bextdep,
+	output        debug_insn_bitcnt,
+	output        debug_insn_bmatxor,
+	output        debug_insn_clmul,
+	output        debug_insn_crc,
+	output        debug_insn_shifter,
+	output        debug_insn_simple
+`endif
 );
 	wire din_valid;
 	wire din_ready;
+	wire din_decoded;
 
 	wire dout_valid;
 	wire dout_ready;
@@ -38,7 +50,7 @@ module rvb_pcpi (
 	reg busy;
 	assign din_valid = pcpi_valid && !busy;
 	assign dout_ready = 1;
-	assign pcpi_wait = 0;
+	assign pcpi_wait = din_decoded;
 	assign pcpi_ready = dout_valid;
 	assign pcpi_wr = 1;
 
@@ -58,6 +70,7 @@ module rvb_pcpi (
 		.reset      (!resetn    ),
 		.din_valid  (din_valid  ),
 		.din_ready  (din_ready  ),
+		.din_decoded(din_decoded),
 		.din_rs1    (pcpi_rs1   ),
 		.din_rs2    (pcpi_rs2   ),
 		.din_rs3    (pcpi_rs3   ),
@@ -65,5 +78,15 @@ module rvb_pcpi (
 		.dout_valid (dout_valid ),
 		.dout_ready (dout_ready ),
 		.dout_rd    (pcpi_rd    )
+`ifdef RVB_DEBUG
+,		.debug_rs2           (debug_rs2         ),
+		.debug_insn_bextdep  (debug_insn_bextdep),
+		.debug_insn_bitcnt   (debug_insn_bitcnt ),
+		.debug_insn_bmatxor  (debug_insn_bmatxor),
+		.debug_insn_clmul    (debug_insn_clmul  ),
+		.debug_insn_crc      (debug_insn_crc    ),
+		.debug_insn_shifter  (debug_insn_shifter),
+		.debug_insn_simple   (debug_insn_simple )
+`endif
 	);
 endmodule

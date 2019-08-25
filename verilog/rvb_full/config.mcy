@@ -7,8 +7,8 @@ pick_cover_prcnt 90
 tags COVERED UNCOVERED PROBE GAP NOC
 
 [script]
-read_verilog -defer rvb_pcpi.v
-read_verilog -defer rvb_full.v
+read_verilog -defer -D RVB_DEBUG rvb_pcpi.v
+read_verilog -defer -D RVB_DEBUG rvb_full.v
 read_verilog -defer ../rvb_bextdep/rvb_bextdep.v
 read_verilog -defer ../rvb_bitcnt/rvb_bitcnt.v
 read_verilog -defer ../rvb_bmatxor/rvb_bmatxor.v
