@@ -59,6 +59,8 @@ module system;
 	assign mem_ready = 1;
 	assign mem_rdata = memory[mem_addr >> 2];
 
+	reg [5*8-1:0] console_lookback_buffer = 0;
+
 	always @(posedge clock) begin
 		if (!reset && mem_valid) begin
 			if (mem_addr < 2**20) begin
@@ -79,8 +81,16 @@ module system;
 					else
 						$write("%c", mem_wdata[7:0]);
 				end
+				console_lookback_buffer <= {console_lookback_buffer, mem_wdata[7:0]};
+				$fflush;
 			end
 		end
+`ifdef MCY
+		if (console_lookback_buffer == "ERROR") begin
+			$display("<---");
+			$finish;
+		end
+`endif
 	end
 
 	always @(posedge clock) begin

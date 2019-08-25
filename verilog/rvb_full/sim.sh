@@ -16,7 +16,7 @@ iverilog -DMCY -o sim ../../system.v ../../picorv32.v mutated.v
 ln -s ../../firmware.hex .
 
 while read idx mut; do
-	vvp -N sim +mut=${idx} > sim_${idx}.out
+	vvp -N sim +mut=${idx} | tee sim_${idx}.out
 	if grep -qFx '*** PASS ***' sim_${idx}.out; then
 		echo "$idx PASS" >> output.txt
 	else

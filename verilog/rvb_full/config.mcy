@@ -32,10 +32,11 @@ rvb_full.v
 [logic]
 if result("sim") == "FAIL":
     tag("COVERED")
-    if rng(100) < 20:
-        tag("PROBE")
-        if result("bmc") != "FAIL":
-            tag("GAP")
+    if False:
+        if rng(100) < 20:
+            tag("PROBE")
+            if result("bmc") != "FAIL":
+                tag("GAP")
     return
 
 if result("bmc") == "FAIL":

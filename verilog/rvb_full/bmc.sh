@@ -17,6 +17,9 @@ cp ../../bmc.sv ../../bmc.sby .
 while read idx mut; do
 	sby -f bmc.sby ${idx}
 	gawk "{ print $idx, \$1; }" bmc_${idx}/status >> output.txt
+	if [ -f bmc_${idx}/engine_0/trace.vcd ]; then
+		python3 ../../getvector.py bmc_${idx}/engine_0/trace.vcd >> ../../database/vectors.txt
+	fi
 done < input.txt
 
 exit 0

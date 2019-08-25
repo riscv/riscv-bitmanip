@@ -35,6 +35,17 @@ module rvb_full #(
 	output            dout_valid,     // output is valid
 	input             dout_ready,     // accept output
 	output [XLEN-1:0] dout_rd         // output value
+
+`ifdef RVB_DEBUG
+,	output [XLEN-1:0] debug_rs2,
+	output            debug_insn_bextdep,
+	output            debug_insn_bitcnt,
+	output            debug_insn_bmatxor,
+	output            debug_insn_clmul,
+	output            debug_insn_crc,
+	output            debug_insn_shifter,
+	output            debug_insn_simple
+`endif
 );
 	wire insn_bextdep;
 	wire insn_bitcnt;
@@ -46,6 +57,17 @@ module rvb_full #(
 
 	wire [XLEN-1:0] imm = $signed(din_insn[31:20]);
 	wire [XLEN-1:0] rs2 = din_insn[5] ? din_rs2 : imm;
+
+`ifdef RVB_DEBUG
+	assign debug_rs2 = rs2;
+	assign debug_insn_bextdep = insn_bextdep;
+	assign debug_insn_bitcnt  = insn_bitcnt;
+	assign debug_insn_bmatxor = insn_bmatxor;
+	assign debug_insn_clmul   = insn_clmul;
+	assign debug_insn_crc     = insn_crc;
+	assign debug_insn_shifter = insn_shifter;
+	assign debug_insn_simple  = insn_simple;
+`endif
 
 	rvb_full_decoder #(.XLEN(XLEN)) decoder (
 		.insn        (din_insn    ),

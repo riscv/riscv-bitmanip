@@ -1,11 +1,11 @@
 module bmc (
 	input         clk,
 	output        resetn,
-	output        pcpi_valid,
-	input  [31:0] pcpi_insn,
-	input  [31:0] pcpi_rs1,
-	input  [31:0] pcpi_rs2,
-	input  [31:0] pcpi_rs3,
+	output reg    pcpi_valid,
+	output [31:0] pcpi_insn,
+	output [31:0] pcpi_rs1,
+	output [31:0] pcpi_rs2,
+	output [31:0] pcpi_rs3,
 
 	output        ref_pcpi_wr,
 	output [31:0] ref_pcpi_rd,
@@ -17,6 +17,11 @@ module bmc (
 	output        mut_pcpi_wait,
 	output        mut_pcpi_ready
 );
+	assign pcpi_insn = $anyconst;
+	assign pcpi_rs1 = $anyconst;
+	assign pcpi_rs2 = $anyconst;
+	assign pcpi_rs3 = $anyconst;
+
 	rvb_pcpi reference (
 		.clk        (clk           ),
 		.resetn     (resetn        ),
@@ -51,7 +56,15 @@ module bmc (
 	always @(posedge clk) cycle <= cycle + 1;
 
 	assign resetn = cycle != 0;
-	assign pcpi_valid = cycle == 1;
+
+	initial pcpi_valid = 0;
+
+	always @(posedge clk) begin
+		if (pcpi_valid && ref_pcpi_ready)
+			pcpi_valid <= 0;
+		if (!resetn)
+			pcpi_valid <= 1;
+	end
 
 	always @* begin
 		if (resetn && ref_pcpi_ready && mut_pcpi_ready) begin
