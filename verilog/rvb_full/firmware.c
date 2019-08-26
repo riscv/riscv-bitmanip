@@ -4,6 +4,8 @@
 #undef VERBOSE_TESTS
 #include "tests/tests.h"
 
+extern int32_t shtst();
+
 void printc(int c)
 {
 	volatile char *p = (void*)0x10000000;
@@ -96,6 +98,10 @@ int main()
 	tmp = _rv32_rol(_rv32_slo(255 << 8, 8), 12);
 	printh(tmp);
 	prints(tmp == 0xF00FF00F ? " OK\n" : (errcnt++, " ERROR\n"));
+
+	tmp = shtst();
+	printh(tmp);
+	prints(tmp == 0x04444239 ? " OK\n" : (errcnt++, " ERROR\n"));
 
 	RUN_ALL_TESTS
 

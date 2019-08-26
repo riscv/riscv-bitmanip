@@ -1,7 +1,7 @@
 	.section .text
 	.global start
-	.global puts
 	.global main
+	.global shtst
 
 start:
 	addi x1,zero,0
@@ -81,3 +81,87 @@ start:
 
 	/* trap */
 	ebreak
+
+shtst:
+	li t1, 0
+	li t2, 5
+	li t3, 25
+
+	srli x0, x0, 0
+
+	li t0, 0x87654321
+	crc32c.w a0, t0
+
+	slli a1, t0, 0
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	slli a1, t0, 5
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	slli a1, t0, 25
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srli a1, t0, 0
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srli a1, t0, 5
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srli a1, t0, 25
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srai a1, t0, 0
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srai a1, t0, 5
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srai a1, t0, 25
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	sll a1, t0, t1
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	sll a1, t0, t2
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	sll a1, t0, t3
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srl a1, t0, t1
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srl a1, t0, t2
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	srl a1, t0, t3
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	sra a1, t0, t1
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	sra a1, t0, t2
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	sra a1, t0, t3
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	ret

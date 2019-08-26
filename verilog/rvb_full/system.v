@@ -53,12 +53,22 @@ module system;
 	wire        pcpi_wait;
 	wire        pcpi_ready;
 
+	wire [31:0] debug_rs2;
+	wire        debug_insn_bextdep;
+	wire        debug_insn_bitcnt;
+	wire        debug_insn_bmatxor;
+	wire        debug_insn_clmul;
+	wire        debug_insn_crc;
+	wire        debug_insn_shifter;
+	wire        debug_insn_simple;
+
 	reg [31:0] memory [0:2**20-1];
 	initial $readmemh("firmware.hex", memory);
 
 	assign mem_ready = 1;
 	assign mem_rdata = memory[mem_addr >> 2];
 
+	reg [31:0] prog_addr = 0;
 	reg [5*8-1:0] console_lookback_buffer = 0;
 
 	always @(posedge clock) begin
@@ -83,6 +93,9 @@ module system;
 				end
 				console_lookback_buffer <= {console_lookback_buffer, mem_wdata[7:0]};
 				$fflush;
+			end
+			if (mem_instr) begin
+				prog_addr <= mem_addr;
 			end
 		end
 `ifdef MCY
@@ -140,8 +153,55 @@ module system;
 		.pcpi_wr    (pcpi_wr   ),
 		.pcpi_rd    (pcpi_rd   ),
 		.pcpi_wait  (pcpi_wait ),
-		.pcpi_ready (pcpi_ready)
+		.pcpi_ready (pcpi_ready),
+
+		.debug_rs2          (debug_rs2         ),
+		.debug_insn_bextdep (debug_insn_bextdep),
+		.debug_insn_bitcnt  (debug_insn_bitcnt ),
+		.debug_insn_bmatxor (debug_insn_bmatxor),
+		.debug_insn_clmul   (debug_insn_clmul  ),
+		.debug_insn_crc     (debug_insn_crc    ),
+		.debug_insn_shifter (debug_insn_shifter),
+		.debug_insn_simple  (debug_insn_simple )
 	);
+
+	reg last_pcpi_valid;
+	reg [7:0] expected_pcpi_ready = 0;
+
+	always @(posedge clock) begin
+		if (pcpi_valid) begin
+			if (!pcpi_wait && !pcpi_ready) begin
+				$display("FAILED PCPI SANITY CHECKS");
+				$finish;
+			end
+			if (pcpi_ready != pcpi_wr) begin
+				$display("FAILED PCPI SANITY CHECKS");
+				$finish;
+			end
+		end else begin
+			if (pcpi_wait || pcpi_ready || pcpi_wr) begin
+				$display("FAILED PCPI SANITY CHECKS");
+				$finish;
+			end
+		end
+
+		last_pcpi_valid <= pcpi_valid;
+		expected_pcpi_ready <= expected_pcpi_ready >> 1;
+		if (!last_pcpi_valid && pcpi_valid) begin
+			if (debug_insn_bextdep) expected_pcpi_ready[1] <= 1;
+			if (debug_insn_bitcnt ) expected_pcpi_ready[1] <= 1;
+			if (debug_insn_bmatxor) expected_pcpi_ready[1] <= 1;
+			if (debug_insn_clmul  ) expected_pcpi_ready[6] <= 1;
+			if (debug_insn_crc    ) expected_pcpi_ready[2+(1 << pcpi_insn[21:20])] <= 1;
+			if (debug_insn_shifter) expected_pcpi_ready[1] <= 1;
+			if (debug_insn_simple ) expected_pcpi_ready[1] <= 1;
+		end
+
+		if (expected_pcpi_ready[0] != pcpi_ready) begin
+			$display("FAILED PCPI TIMING CHECKS");
+			$finish;
+		end
+	end
 
 	picorv32 #(
 		.ENABLE_SHIFT(0),

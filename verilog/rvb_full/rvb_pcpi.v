@@ -48,11 +48,11 @@ module rvb_pcpi (
 	wire dout_ready;
 
 	reg busy;
-	assign din_valid = pcpi_valid && !busy;
+	assign din_valid = pcpi_valid && !busy && resetn;
 	assign dout_ready = 1;
-	assign pcpi_wait = din_decoded && resetn;
-	assign pcpi_ready = dout_valid;
-	assign pcpi_wr = dout_valid;
+	assign pcpi_wait = pcpi_valid && din_decoded && !dout_valid && resetn;
+	assign pcpi_ready = dout_valid && resetn;
+	assign pcpi_wr = dout_valid && resetn;
 
 	always @(posedge clk) begin
 		if (din_valid && din_ready)

@@ -58,7 +58,7 @@ firmware.hex: start.S firmware.c hex8tohex32.py $(TESTOBJS) tests/tests.h
 	rm -f firmware.tmp
 
 system: system.v picorv32.v rvb_full.v rvb_pcpi.v
-	iverilog -o system system.v picorv32.v rvb_pcpi.v rvb_full.v \
+	iverilog -o system -D RVB_DEBUG system.v picorv32.v rvb_pcpi.v rvb_full.v \
 			../rvb_bextdep/rvb_bextdep.v ../rvb_bitcnt/rvb_bitcnt.v ../rvb_bmatxor/rvb_bmatxor.v \
 			../rvb_clmul/rvb_clmul.v ../rvb_crc/rvb_crc.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
 
