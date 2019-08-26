@@ -4,7 +4,7 @@ weight_pq_s 500
 weight_pq_ms 500
 weight_cover 500
 pick_cover_prcnt 90
-tags COVERED UNCOVERED PROBE GAP NOC
+tags COVERED UNCOVERED TIMEOUT NOC
 
 [script]
 read_verilog -defer -D RVB_DEBUG rvb_pcpi.v
@@ -43,15 +43,19 @@ if result("bmc") == "FAIL":
     tag("UNCOVERED")
     return
 
+if result("bmc") == "TIMEOUT":
+    tag("TIMEOUT")
+    # fall-through
+
 tag("NOC")
 
 [report]
 if tags("!NOC"):
     print("Coverage: %.2f%%" % (100.0*tags("COVERED")/tags("!NOC")))
+    print("Uncovered: %.2f%%" % (100.0*tags("UNCOVERED")/tags("!NOC")))
 if tags():
-    print("Noc percentage: %.2f%%" % (100.0*tags("NOC")/tags()))
-if tags("PROBE"):
-    print("Gap percentage: %.2f%%" % (100.0*tags("GAP")/tags("PROBE")))
+    print("NOC percentage: %.2f%%" % (100.0*tags("NOC")/tags()))
+    print("Timeout percentage: %.2f%%" % (100.0*tags("TIMEOUT")/tags()))
 
 [test sim]
 maxbatchsize 10

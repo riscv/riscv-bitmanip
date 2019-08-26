@@ -2,11 +2,12 @@
 mode bmc
 depth 8
 expect timeout,pass,fail
-timeout 600
+timeout 900
 aigsmt none
 
 [engines]
 smtbmc yices
+abc sim3
 
 [script]
 --pycode-begin--
