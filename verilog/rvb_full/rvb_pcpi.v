@@ -50,9 +50,9 @@ module rvb_pcpi (
 	reg busy;
 	assign din_valid = pcpi_valid && !busy;
 	assign dout_ready = 1;
-	assign pcpi_wait = din_decoded;
+	assign pcpi_wait = din_decoded && resetn;
 	assign pcpi_ready = dout_valid;
-	assign pcpi_wr = 1;
+	assign pcpi_wr = dout_valid;
 
 	always @(posedge clk) begin
 		if (din_valid && din_ready)

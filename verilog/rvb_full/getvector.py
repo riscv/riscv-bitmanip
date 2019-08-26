@@ -43,7 +43,9 @@ for a in args[1:]:
     if re.fullmatch(r"x[0-9][0-9]?", a):
         op.append("%08x" % rs[0])
         rs = rs[1:]
+    else:
+        op.append("=%s" % a)
 
-print("%-15s" % op[0], " ".join(op[1:]))
+print("%-10s" % op[0], " ".join(op[1:]))
 
 system("rm -f getvector.s getvector.o getvector.x")

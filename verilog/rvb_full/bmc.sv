@@ -15,12 +15,25 @@ module bmc (
 	output        mut_pcpi_wr,
 	output [31:0] mut_pcpi_rd,
 	output        mut_pcpi_wait,
-	output        mut_pcpi_ready
+	output        mut_pcpi_ready,
+
+	output [31:0] debug_rs2,
+	output        debug_insn_bextdep,
+	output        debug_insn_bitcnt,
+	output        debug_insn_bmatxor,
+	output        debug_insn_clmul,
+	output        debug_insn_crc,
+	output        debug_insn_shifter,
+	output        debug_insn_simple
 );
 	assign pcpi_insn = $anyconst;
 	assign pcpi_rs1 = $anyconst;
 	assign pcpi_rs2 = $anyconst;
 	assign pcpi_rs3 = $anyconst;
+
+	always @* begin
+		assume (pcpi_rs2 == debug_rs2);
+	end
 
 	rvb_pcpi reference (
 		.clk        (clk           ),
@@ -34,7 +47,16 @@ module bmc (
 		.pcpi_wr    (ref_pcpi_wr   ),
 		.pcpi_rd    (ref_pcpi_rd   ),
 		.pcpi_wait  (ref_pcpi_wait ),
-		.pcpi_ready (ref_pcpi_ready)
+		.pcpi_ready (ref_pcpi_ready),
+
+		.debug_rs2           (debug_rs2         ),
+		.debug_insn_bextdep  (debug_insn_bextdep),
+		.debug_insn_bitcnt   (debug_insn_bitcnt ),
+		.debug_insn_bmatxor  (debug_insn_bmatxor),
+		.debug_insn_clmul    (debug_insn_clmul  ),
+		.debug_insn_crc      (debug_insn_crc    ),
+		.debug_insn_shifter  (debug_insn_shifter),
+		.debug_insn_simple   (debug_insn_simple )
 	);
 
 	rvb_pcpi mutated (
