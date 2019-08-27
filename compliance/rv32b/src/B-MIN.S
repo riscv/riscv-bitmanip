@@ -30,11 +30,19 @@ RV_COMPLIANCE_CODE_BEGIN
     li s3, 0xde163e74
     min a6,t5,s3
     sw a6,20(a1)
+    li t6, 0x1051ac9a
+    li s11, 0x1051a9d8
+    min a5,t6,s11
+    sw a5,24(a1)
+    li a6, 0x5583d725
+    li s4, 0x5513f76d
+    min t1,a6,s4
+    sw t1,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

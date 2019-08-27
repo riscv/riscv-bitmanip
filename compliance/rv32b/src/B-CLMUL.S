@@ -30,11 +30,15 @@ RV_COMPLIANCE_CODE_BEGIN
     li a6, 0x9a48a02c
     clmul a5,a0,a6
     sw a5,20(a1)
+    li s11, 0xfa829000
+    li t0, 0xc0000040
+    clmul s5,s11,t0
+    sw s5,24(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 7,4,-1
 RV_COMPLIANCE_DATA_END

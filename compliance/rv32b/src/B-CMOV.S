@@ -36,11 +36,21 @@ RV_COMPLIANCE_CODE_BEGIN
     li a2, 0xb208965f
     cmov s5,s7,s4,a2
     sw s5,20(a1)
+    li t3, 0x00000001
+    li t5, 0x00000006
+    li a0, 0x00000000
+    cmov s2,t3,t5,a0
+    sw s2,24(a1)
+    li t4, 0xf232fb4e
+    li a5, 0x00000000
+    li s2, 0xf25d0cb2
+    cmov s6,t4,a5,s2
+    sw s6,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

@@ -30,11 +30,14 @@ RV_COMPLIANCE_CODE_BEGIN
     li s2, 0x6042e65d
     ctz s3,s2
     sw s3,28(a1)
+    li s6, 0x86400000
+    ctz t0,s6
+    sw t0,32(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 8,4,-1
+.fill 9,4,-1
 RV_COMPLIANCE_DATA_END

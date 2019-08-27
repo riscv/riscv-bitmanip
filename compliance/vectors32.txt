@@ -56,3 +56,37 @@ fsri a8a22391 1b4286dd =17
 fsri 430b3272 2b77485c =24
 fsri add85909 116023b7 =25
 fsri 81c0d967 2ba53005 =31
+
+
+################################
+## Test Vectors from MCY
+
+bdep       00c106e0 096008f1
+bdep       81008001 885d59ad
+bext       8005f1fb fff8ff00
+bext       bec13108 85082aff
+clmul      fa829000 c0000040
+clz        0000000a
+clz        00500002
+clz        0800000a
+clz        40800429
+cmov       00000001 00000006 00000000
+cmov       f232fb4e 00000000 f25d0cb2
+ctz        86400000
+max        382e991b 382e999b
+max        41040098 41000098
+max        de7ca325 de7ca724
+maxu       00100000 00000000
+maxu       a4dbf37b a4dbf39b
+maxu       bdf3d8b0 bfe2dcb0
+maxu       e9767dca fc05cdf8
+maxu       ffe2f8b0 ffe2dcb0
+min        1051ac9a 1051a9d8
+min        5583d725 5513f76d
+minu       b5a168d9 b5a17d31
+minu       bff3d8b0 bfe2dcb0
+sbclr      6e136617 68356560
+sbinv      00040011 b4946212
+sbset      f044ff7a b6c01b9a
+xnor       f7ef0b32 ebffafa5
+

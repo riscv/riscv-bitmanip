@@ -30,11 +30,19 @@ RV_COMPLIANCE_CODE_BEGIN
     li s6, 0x9a48a02c
     bdep s0,t2,s6
     sw s0,20(a1)
+    li t6, 0x00c106e0
+    li s6, 0x096008f1
+    bdep s5,t6,s6
+    sw s5,24(a1)
+    li a7, 0x81008001
+    li s5, 0x885d59ad
+    bdep a3,a7,s5
+    sw a3,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

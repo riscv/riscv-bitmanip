@@ -30,11 +30,15 @@ RV_COMPLIANCE_CODE_BEGIN
     li a0, 0xde163e74
     sbinv a4,t0,a0
     sw a4,20(a1)
+    li a7, 0x00040011
+    li a2, 0xb4946212
+    sbinv t4,a7,a2
+    sw t4,24(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 7,4,-1
 RV_COMPLIANCE_DATA_END

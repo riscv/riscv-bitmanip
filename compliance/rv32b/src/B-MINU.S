@@ -30,11 +30,19 @@ RV_COMPLIANCE_CODE_BEGIN
     li t6, 0xde163e74
     minu s5,s10,t6
     sw s5,20(a1)
+    li s11, 0xb5a168d9
+    li s10, 0xb5a17d31
+    minu a3,s11,s10
+    sw a3,24(a1)
+    li s10, 0xbff3d8b0
+    li s5, 0xbfe2dcb0
+    minu a5,s10,s5
+    sw a5,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

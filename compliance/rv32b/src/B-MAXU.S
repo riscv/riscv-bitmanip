@@ -30,11 +30,31 @@ RV_COMPLIANCE_CODE_BEGIN
     li s9, 0xde163e74
     maxu s8,a2,s9
     sw s8,20(a1)
+    li s8, 0x00100000
+    li s5, 0x00000000
+    maxu s4,s8,s5
+    sw s4,24(a1)
+    li s6, 0xa4dbf37b
+    li t3, 0xa4dbf39b
+    maxu s4,s6,t3
+    sw s4,28(a1)
+    li s4, 0xbdf3d8b0
+    li a3, 0xbfe2dcb0
+    maxu t0,s4,a3
+    sw t0,32(a1)
+    li t4, 0xe9767dca
+    li s7, 0xfc05cdf8
+    maxu a0,t4,s7
+    sw a0,36(a1)
+    li t0, 0xffe2f8b0
+    li s8, 0xffe2dcb0
+    maxu a5,t0,s8
+    sw a5,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 11,4,-1
 RV_COMPLIANCE_DATA_END

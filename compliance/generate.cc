@@ -421,8 +421,10 @@ int main()
 #ifdef RV64
 		string filename = stringf("rv64b/references/%s.reference_output", testname.c_str());
 		FILE *f = fopen(filename.c_str(), "w");
-		for (auto v : testdata[op])
-			fprintf(f, "%016lx\n", long(v));
+		for (auto v : testdata[op]) {
+			fprintf(f, "%08x\n", int(v));
+			fprintf(f, "%08x\n", int(v >> 32));
+		}
 		fclose(f);
 #endif
 

@@ -30,11 +30,15 @@ RV_COMPLIANCE_CODE_BEGIN
     li t6, 0xde163e74
     xnor t3,a6,t6
     sw t3,20(a1)
+    li a7, 0xf7ef0b32
+    li a4, 0xebffafa5
+    xnor t5,a7,a4
+    sw t5,24(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 7,4,-1
 RV_COMPLIANCE_DATA_END
