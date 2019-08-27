@@ -6,8 +6,9 @@ timeout 900
 aigsmt none
 
 [engines]
-smtbmc yices
-abc sim3
+smtbmc boolector
+# smtbmc yices
+# abc sim3
 
 [script]
 --pycode-begin--
