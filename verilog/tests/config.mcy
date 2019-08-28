@@ -1,9 +1,5 @@
 [options]
-size 800
-weight_pq_s 500
-weight_pq_ms 500
-weight_cover 500
-pick_cover_prcnt 90
+size 5000
 tags COVERED UNCOVERED TIMEOUT NOC
 
 [script]
