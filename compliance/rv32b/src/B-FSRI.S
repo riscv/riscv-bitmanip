@@ -30,11 +30,23 @@ RV_COMPLIANCE_CODE_BEGIN
     li a6, 0x2ba53005
     fsri s1,s4,a6,31
     sw s1,20(a1)
+    li s7, 0x4227bfff
+    li t6, 0xfffffb64
+    fsri t3,s7,t6,4
+    sw t3,24(a1)
+    li s5, 0xe3040043
+    li s11, 0xfffffcf9
+    fsri t2,s5,s11,25
+    sw t2,28(a1)
+    li s10, 0xffffff07
+    li s11, 0xfffffe63
+    fsri t6,s10,s11,3
+    sw t6,32(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 9,4,-1
 RV_COMPLIANCE_DATA_END

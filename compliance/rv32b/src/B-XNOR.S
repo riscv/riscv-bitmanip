@@ -30,15 +30,35 @@ RV_COMPLIANCE_CODE_BEGIN
     li t6, 0xde163e74
     xnor t3,a6,t6
     sw t3,20(a1)
-    li a7, 0xf7ef0b32
+    li s9, 0x1b17cae5
+    li a2, 0xf91bf443
+    xnor a7,s9,a2
+    sw a7,24(a1)
+    li s0, 0x9d11f46b
+    li t4, 0x88a17c6f
+    xnor s9,s0,t4
+    sw s9,28(a1)
+    li s8, 0xd83d7fff
+    li a0, 0x008800e2
+    xnor s10,s8,a0
+    sw s10,32(a1)
+    li a5, 0x22000412
+    li t3, 0x07fffbdd
+    xnor s5,a5,t3
+    sw s5,36(a1)
+    li t2, 0xf7ef0b32
     li a4, 0xebffafa5
-    xnor t5,a7,a4
-    sw t5,24(a1)
+    xnor s5,t2,a4
+    sw s5,40(a1)
+    li s9, 0xd3610008
+    li a3, 0xd3ddcdef
+    xnor s11,s9,a3
+    sw s11,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 7,4,-1
+.fill 12,4,-1
 RV_COMPLIANCE_DATA_END

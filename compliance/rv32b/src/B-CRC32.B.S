@@ -24,11 +24,104 @@ RV_COMPLIANCE_CODE_BEGIN
     li a2, 0x6042e65d
     crc32.b s3,a2
     sw s3,20(a1)
+    li t6, 0x00000000
+    crc32.b s5,t6
+    sw s5,24(a1)
+    li t0, 0x00000004
+    crc32.b a4,t0
+    sw a4,28(a1)
+    li t5, 0x0000002d
+    crc32.b s11,t5
+    sw s11,32(a1)
+    li t4, 0x00000a80
+    crc32.b a0,t4
+    sw a0,36(a1)
+    li a5, 0x00000dd7
+    crc32.b a0,a5
+    sw a0,40(a1)
+    li t2, 0x00156892
+    crc32.b s1,t2
+    sw s1,44(a1)
+    li s0, 0x0020aa01
+    crc32.b s2,s0
+    sw s2,48(a1)
+    li s7, 0x002f74a0
+    crc32.b s2,s7
+    sw s2,52(a1)
+    li s5, 0x00f03303
+    crc32.b s9,s5
+    sw s9,56(a1)
+    li t5, 0x020010d3
+    crc32.b t2,t5
+    sw t2,60(a1)
+    li a0, 0x020010db
+    crc32.b s9,a0
+    sw s9,64(a1)
+    li t5, 0x04000004
+    crc32.b a0,t5
+    sw a0,68(a1)
+    li s11, 0x06652557
+    crc32.b s5,s11
+    sw s5,72(a1)
+    li s1, 0x06807dd5
+    crc32.b s2,s1
+    sw s2,76(a1)
+    li s6, 0x08000ef5
+    crc32.b s9,s6
+    sw s9,80(a1)
+    li s8, 0x08015886
+    crc32.b t0,s8
+    sw t0,84(a1)
+    li s4, 0x0806a022
+    crc32.b s2,s4
+    sw s2,88(a1)
+    li s2, 0x0810691e
+    crc32.b a3,s2
+    sw a3,92(a1)
+    li s7, 0x10080084
+    crc32.b a7,s7
+    sw a7,96(a1)
+    li a3, 0x1c48c7c4
+    crc32.b a0,a3
+    sw a0,100(a1)
+    li a0, 0x27f33a8a
+    crc32.b s7,a0
+    sw s7,104(a1)
+    li s5, 0x28083074
+    crc32.b a0,s5
+    sw a0,108(a1)
+    li a2, 0x29a94208
+    crc32.b s1,a2
+    sw s1,112(a1)
+    li s4, 0x42050184
+    crc32.b a7,s4
+    sw a7,116(a1)
+    li t2, 0x561a6628
+    crc32.b s1,t2
+    sw s1,120(a1)
+    li t6, 0x5ffbac3e
+    crc32.b t2,t6
+    sw t2,124(a1)
+    li s4, 0x72a10106
+    crc32.b s2,s4
+    sw s2,128(a1)
+    li a4, 0x809ffe48
+    crc32.b t1,a4
+    sw t1,132(a1)
+    li s5, 0x80a27fee
+    crc32.b s10,s5
+    sw s10,136(a1)
+    li s9, 0x820417c0
+    crc32.b s10,s9
+    sw s10,140(a1)
+    li t5, 0xa9000610
+    crc32.b a3,t5
+    sw a3,144(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 37,4,-1
 RV_COMPLIANCE_DATA_END

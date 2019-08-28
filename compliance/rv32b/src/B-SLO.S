@@ -30,11 +30,23 @@ RV_COMPLIANCE_CODE_BEGIN
     li a2, 0x9a48a02c
     slo a0,s10,a2
     sw a0,20(a1)
+    li a3, 0x12ecc6b6
+    li t3, 0x1750a9be
+    slo a7,a3,t3
+    sw a7,24(a1)
+    li t1, 0x44e417d0
+    li t4, 0x4e13941f
+    slo a7,t1,t4
+    sw a7,28(a1)
+    li a0, 0x7bf2539c
+    li a7, 0xc7ef0f0e
+    slo t1,a0,a7
+    sw t1,32(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 9,4,-1
 RV_COMPLIANCE_DATA_END

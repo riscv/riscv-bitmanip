@@ -61,32 +61,190 @@ fsri 81c0d967 2ba53005 =31
 ################################
 ## Test Vectors from MCY
 
-bdep       00c106e0 096008f1
-bdep       81008001 885d59ad
-bext       8005f1fb fff8ff00
-bext       bec13108 85082aff
-clmul      fa829000 c0000040
-clz        0000000a
-clz        00500002
-clz        0800000a
-clz        40800429
-cmov       00000001 00000006 00000000
-cmov       f232fb4e 00000000 f25d0cb2
-ctz        86400000
-max        382e991b 382e999b
-max        41040098 41000098
-max        de7ca325 de7ca724
-maxu       00100000 00000000
-maxu       a4dbf37b a4dbf39b
-maxu       bdf3d8b0 bfe2dcb0
-maxu       e9767dca fc05cdf8
-maxu       ffe2f8b0 ffe2dcb0
-min        1051ac9a 1051a9d8
-min        5583d725 5513f76d
-minu       b5a168d9 b5a17d31
-minu       bff3d8b0 bfe2dcb0
-sbclr      6e136617 68356560
-sbinv      00040011 b4946212
-sbset      f044ff7a b6c01b9a
-xnor       f7ef0b32 ebffafa5
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000000
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000004
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0000002d
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000a80
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000dd7
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00156892
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0020aa01
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 002f74a0
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00f03303
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 020010d3
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 020010db
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 04000004
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 06652557
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 06807dd5
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 08000ef5
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 08015886
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0806a022
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0810691e
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 10080084
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 1c48c7c4
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 27f33a8a
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 28083074
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 29a94208
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 42050184
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 561a6628
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 5ffbac3e
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 72a10106
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 809ffe48
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 80a27fee
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 820417c0
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w a9000610
+
+andn,orn,xnor 1b17cae5 f91bf443
+andn,orn,xnor 9d11f46b 88a17c6f
+andn,orn,xnor d83d7fff 008800e2
+andn,orn,xnor 22000412 07fffbdd
+andn,orn,xnor f7ef0b32 ebffafa5
+andn,orn,xnor d3610008 d3ddcdef
+
+bdep 00c106e0 096008f1
+bdep 0118b98f 7f0d5000
+bdep 02900320 e8b8f93a
+bdep 1474e58c a7833f8c
+bdep 2e00975c beffffe9
+bdep 3198b004 3afc39d7
+bdep 4100a21c 4fff9f0d
+bdep 52418001 07ffedee
+bdep 556eebb3 c1ffffff
+bdep 5dcdf7ff 5cd2fff7
+bdep 65bd8936 6d691480
+bdep 7303a419 7303fdd8
+bdep 81008001 885d59ad
+bdep 819fdb06 ffffffff
+bdep 82826344 d8fff61d
+bdep 90044501 00efb8ff
+bdep a0bc0ecf d3cbfdfe
+bdep af59b587 39ff8156
+bdep ba730f6e fffff06a
+bdep beb30450 bbbd38f0
+bdep d93f1362 d93f15f4
+bdep dee2b284 feafffff
+bdep e37a0104 1d01ffff
+bdep ebcd54d6 0160ffff
+bdep feb971d4 b7ffffe7
+
+bext 201450ef d603fbf5
+bext 2f197810 c410ffc0
+bext 4e817b27 f50f0000
+bext 52100032 72ff06e1
+bext 62680100 8f089018
+bext 8005f1fb fff8ff00
+bext 86931fbf a10d0040
+bext 8948d029 00001800
+bext 89fd4240 ff4fffbf
+bext bec13108 85082aff
+bext c0a4c2ad bbb0cf0e
+bext c205b002 be0bffd5
+bext c6400100 1c3fc1ff
+bext eb96f4e4 e0ffffd3
+bext f93cffff d706ffff
+
+clmul,clmulh,clmulr fa829000 c0000040
+
+clz,ctz,pcnt 0000000a
+clz,ctz,pcnt 00500002
+clz,ctz,pcnt 01000000
+clz,ctz,pcnt 01960000
+clz,ctz,pcnt 02d80096
+clz,ctz,pcnt 0800000a
+clz,ctz,pcnt 317ff49a
+clz,ctz,pcnt 40800429
+clz,ctz,pcnt 86400000
+clz,ctz,pcnt c4434000
+clz,ctz,pcnt cbcd6a07
+
+cmix 0039ff79 eb29f6d6 e8b7098a
+cmix 0131d6ea 2e8e213f 00000000
+cmix 08800000 0978be09 80010001
+cmix 08c83aa0 b735c043 40020082
+cmix 3867b8a7 14b5e101 0ff1097e
+cmix 40000410 50002023 00000100
+cmix 68810625 a5a832a3 288913fb
+cmix 8017d9d9 2d280704 12ef4a58
+cmix 87b2a825 43bda82c 1ba7f686
+cmix 9288ff06 0a3b9fe9 0961b8b5
+cmix 92f4b235 00090e19 0103b20e
+cmix 96397276 f8e67357 71e40a26
+cmix b001085f 5dd656a2 a9610018
+cmix ca800015 a0ca9fe8 ac800fe8
+
+cmov 00000001 00000006 00000000
+cmov 00000010 00000000 cf621d70
+cmov 009028c2 00000000 20000000
+cmov 10000000 00000000 00020000
+cmov 6061f39d 00000080 6061fb9d
+cmov 69345248 000000c0 69345348
+cmov f232fb4e 00000000 f25d0cb2
+cmov fdf64be6 00000000 ffe44ba6
+
+fsl,fsr 00001bdd 14f1c453 000edbdd
+fsl,fsr 09ab16a5 f5c6039e 738e3634
+fsl,fsr 0f8ac084 00000623 b8000000
+fsl,fsr 17be70ba 8880012c 80002f7d
+fsl,fsr 2180cfc6 932371df 69886888
+fsl,fsr 261b1821 ffbf0206 101a3032
+fsl,fsr 4633c5ff a00f0b00 b954001f
+fsl,fsr 7d5dfeff 00700251 2001fc81
+fsl,fsr 7e5c8f54 00f27826 1ca80024
+fsl,fsr 8227801f 0211d0d9 5701ab3f
+fsl,fsr 967270fd ffffffd6 424bc000
+fsl,fsr 9c8002d4 0000009b a4860682
+fsl,fsr b5b1a381 b1a6a107 8138d3df
+fsl,fsr bab70ce0 5003b62a 0296e280
+fsl,fsr ec52b31a 48134b70 cf036277
+fsl,fsr f37e1e5f ba4e154b 0243a888
+fsl,fsr fb85ff9d 00000417 7b84fc1d
+
+fsri 4227bfff fffffb64 =0x04
+fsri e3040043 fffffcf9 =0x19
+fsri ffffff07 fffffe63 =0x03
+
+min,max,minu,maxu 00100000 00000000
+min,max,minu,maxu 001815fa 001815db
+min,max,minu,maxu 1051ac9a 1051a9d8
+min,max,minu,maxu 16070000 15020090
+min,max,minu,maxu 17d47fc4 17d47fc6
+min,max,minu,maxu 382e991b 382e999b
+min,max,minu,maxu 3f025f9f 3f025f9e
+min,max,minu,maxu 41040098 41000098
+min,max,minu,maxu 5332ff01 5332ff0c
+min,max,minu,maxu 5583d725 5513f76d
+min,max,minu,maxu 8ba9ff2d 8bf5ff1d
+min,max,minu,maxu 9e7f57ab 5ebf0000
+min,max,minu,maxu a4dbf37b a4dbf39b
+min,max,minu,maxu b5a168d9 b5a17d31
+min,max,minu,maxu bdf3d8b0 bfe2dcb0
+min,max,minu,maxu bff3d8b0 bfe2dcb0
+min,max,minu,maxu c104001f c104001d
+min,max,minu,maxu de7ca325 de7ca724
+min,max,minu,maxu def06600 def06400
+min,max,minu,maxu e9767dca fc05cdf8
+min,max,minu,maxu ffe2f8b0 ffe2dcb0
+
+slo,sro,rol,ror 12ecc6b6 1750a9be
+slo,sro,rol,ror 44e417d0 4e13941f
+slo,sro,rol,ror 7bf2539c c7ef0f0e
+
+sbclr,sbset,sbinv,sbext 00840094 080006c0
+sbclr,sbset,sbinv,sbext 6e136617 68356560
+sbclr,sbset,sbinv,sbext 00040011 b4946212
+sbclr,sbset,sbinv,sbext 10000085 83262662
+sbclr,sbset,sbinv,sbext 1340282b 0000061b
+sbclr,sbset,sbinv,sbext 980807fd 980a07d2
+sbclr,sbset,sbinv,sbext dff47340 00c505c1
+sbclr,sbset,sbinv,sbext e46d3d40 000806db
+sbclr,sbset,sbinv,sbext 00022c4a 5280c5d0
+sbclr,sbset,sbinv,sbext 5f77971c 7601006a
+sbclr,sbset,sbinv,sbext 7ffd8efc 7bb326df
+sbclr,sbset,sbinv,sbext f044ff7a b6c01b9a
+sbclr,sbset,sbinv,sbext fffff31c fffffbc6
+sbclr,sbset,sbinv,sbext fffffdfc 6d39aa61
+
+sbclri,sbseti,sbinvi,sbexti 1014c66e =0xc
+sbclri,sbseti,sbinvi,sbexti 1a3c3257 =0x8
+sbclri,sbseti,sbinvi,sbexti 88061100 =0x2
+sbclri,sbseti,sbinvi,sbexti febefbcc =0x16
 

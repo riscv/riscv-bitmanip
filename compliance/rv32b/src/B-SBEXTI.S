@@ -24,11 +24,23 @@ RV_COMPLIANCE_CODE_BEGIN
     li s9, 0x9543c51a
     sbexti t5,s9,31
     sw t5,20(a1)
+    li s0, 0x1014c66e
+    sbexti t0,s0,12
+    sw t0,24(a1)
+    li s1, 0x1a3c3257
+    sbexti t1,s1,8
+    sw t1,28(a1)
+    li t3, 0x88061100
+    sbexti a0,t3,2
+    sw a0,32(a1)
+    li s2, 0xfebefbcc
+    sbexti s7,s2,22
+    sw s7,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 10,4,-1
 RV_COMPLIANCE_DATA_END

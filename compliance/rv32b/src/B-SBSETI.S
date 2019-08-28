@@ -24,11 +24,23 @@ RV_COMPLIANCE_CODE_BEGIN
     li s9, 0x9543c51a
     sbseti a6,s9,31
     sw a6,20(a1)
+    li s4, 0x1014c66e
+    sbseti a4,s4,12
+    sw a4,24(a1)
+    li s9, 0x1a3c3257
+    sbseti s6,s9,8
+    sw s6,28(a1)
+    li a3, 0x88061100
+    sbseti a0,a3,2
+    sw a0,32(a1)
+    li s5, 0xfebefbcc
+    sbseti s6,s5,22
+    sw s6,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 10,4,-1
 RV_COMPLIANCE_DATA_END
