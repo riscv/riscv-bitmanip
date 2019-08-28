@@ -36,46 +36,46 @@ RV_COMPLIANCE_CODE_BEGIN
     li a2, 0xb208965f
     cmov s5,s7,s4,a2
     sw s5,20(a1)
-    li t3, 0x00000001
-    li a5, 0x00000006
-    li t0, 0x00000000
-    cmov s8,t3,a5,t0
-    sw s8,24(a1)
-    li s1, 0x00000010
-    li s3, 0x00000000
-    li a3, 0xcf621d70
-    cmov t1,s1,s3,a3
-    sw t1,28(a1)
-    li s5, 0x009028c2
-    li t3, 0x00000000
-    li s0, 0x20000000
-    cmov t5,s5,t3,s0
-    sw t5,32(a1)
-    li t3, 0x10000000
+    li s7, 0x00000001
+    li t4, 0x00000006
     li a4, 0x00000000
-    li s7, 0x00020000
-    cmov s3,t3,a4,s7
-    sw s3,36(a1)
-    li t6, 0x6061f39d
-    li s10, 0x00000080
-    li s5, 0x6061fb9d
-    cmov s7,t6,s10,s5
-    sw s7,40(a1)
-    li t0, 0x69345248
-    li a2, 0x000000c0
-    li s6, 0x69345348
-    cmov a3,t0,a2,s6
-    sw a3,44(a1)
-    li a7, 0xf232fb4e
-    li t5, 0x00000000
-    li t4, 0xf25d0cb2
-    cmov t1,a7,t5,t4
-    sw t1,48(a1)
-    li t1, 0xfdf64be6
-    li s11, 0x00000000
-    li s2, 0xffe44ba6
-    cmov s9,t1,s11,s2
-    sw s9,52(a1)
+    cmov a7,s7,t4,a4
+    sw a7,24(a1)
+    li a4, 0x00000010
+    li t6, 0x00000000
+    li t5, 0xcf621d70
+    cmov t2,a4,t6,t5
+    sw t2,28(a1)
+    li t2, 0x009028c2
+    li s5, 0x00000000
+    li s9, 0x20000000
+    cmov s3,t2,s5,s9
+    sw s3,32(a1)
+    li t3, 0x10000000
+    li t0, 0x00000000
+    li s2, 0x00020000
+    cmov s4,t3,t0,s2
+    sw s4,36(a1)
+    li s5, 0x6061f39d
+    li s8, 0x00000080
+    li t3, 0x6061fb9d
+    cmov t1,s5,s8,t3
+    sw t1,40(a1)
+    li t3, 0x69345248
+    li t4, 0x000000c0
+    li t5, 0x69345348
+    cmov s7,t3,t4,t5
+    sw s7,44(a1)
+    li a3, 0xf232fb4e
+    li a4, 0x00000000
+    li t1, 0xf25d0cb2
+    cmov a0,a3,a4,t1
+    sw a0,48(a1)
+    li s10, 0xfdf64be6
+    li a2, 0x00000000
+    li t6, 0xffe44ba6
+    cmov a4,s10,a2,t6
+    sw a4,52(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

@@ -30,39 +30,39 @@ RV_COMPLIANCE_CODE_BEGIN
     li s0, 0x6042e65d
     pcnt t2,s0
     sw t2,28(a1)
-    li s6, 0x0000000a
-    pcnt s0,s6
-    sw s0,32(a1)
-    li s8, 0x00500002
-    pcnt s11,s8
-    sw s11,36(a1)
-    li s10, 0x01000000
-    pcnt a7,s10
-    sw a7,40(a1)
-    li t5, 0x01960000
-    pcnt s9,t5
-    sw s9,44(a1)
-    li s1, 0x02d80096
-    pcnt s10,s1
+    li a7, 0x0000000a
+    pcnt t5,a7
+    sw t5,32(a1)
+    li t5, 0x00500002
+    pcnt a0,t5
+    sw a0,36(a1)
+    li a6, 0x01000000
+    pcnt s6,a6
+    sw s6,40(a1)
+    li s11, 0x01960000
+    pcnt s5,s11
+    sw s5,44(a1)
+    li a3, 0x02d80096
+    pcnt s10,a3
     sw s10,48(a1)
-    li t4, 0x0800000a
-    pcnt s2,t4
+    li s1, 0x0800000a
+    pcnt s2,s1
     sw s2,52(a1)
     li s0, 0x317ff49a
-    pcnt s11,s0
-    sw s11,56(a1)
-    li t6, 0x40800429
-    pcnt s9,t6
+    pcnt a3,s0
+    sw a3,56(a1)
+    li s6, 0x40800429
+    pcnt s9,s6
     sw s9,60(a1)
-    li s2, 0x86400000
-    pcnt t4,s2
-    sw t4,64(a1)
-    li s4, 0xc4434000
-    pcnt t1,s4
-    sw t1,68(a1)
-    li t0, 0xcbcd6a07
-    pcnt s5,t0
-    sw s5,72(a1)
+    li a5, 0x86400000
+    pcnt s3,a5
+    sw s3,64(a1)
+    li s8, 0xc4434000
+    pcnt t0,s8
+    sw t0,68(a1)
+    li t2, 0xcbcd6a07
+    pcnt a4,t2
+    sw a4,72(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

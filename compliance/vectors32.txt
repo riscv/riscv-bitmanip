@@ -61,38 +61,6 @@ fsri 81c0d967 2ba53005 =31
 ################################
 ## Test Vectors from MCY
 
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000000
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000004
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0000002d
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000a80
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000dd7
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00156892
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0020aa01
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 002f74a0
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00f03303
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 020010d3
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 020010db
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 04000004
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 06652557
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 06807dd5
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 08000ef5
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 08015886
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0806a022
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0810691e
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 10080084
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 1c48c7c4
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 27f33a8a
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 28083074
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 29a94208
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 42050184
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 561a6628
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 5ffbac3e
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 72a10106
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 809ffe48
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 80a27fee
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 820417c0
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w a9000610
-
 andn,orn,xnor 1b17cae5 f91bf443
 andn,orn,xnor 9d11f46b 88a17c6f
 andn,orn,xnor d83d7fff 008800e2
@@ -180,6 +148,38 @@ cmov 69345248 000000c0 69345348
 cmov f232fb4e 00000000 f25d0cb2
 cmov fdf64be6 00000000 ffe44ba6
 
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000000
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000004
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0000002d
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000a80
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000dd7
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00156892
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0020aa01
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 002f74a0
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00f03303
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 020010d3
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 020010db
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 04000004
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 06652557
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 06807dd5
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 08000ef5
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 08015886
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0806a022
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 0810691e
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 10080084
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 1c48c7c4
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 27f33a8a
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 28083074
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 29a94208
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 42050184
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 561a6628
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 5ffbac3e
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 72a10106
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 809ffe48
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 80a27fee
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 820417c0
+crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w a9000610
+
 fsl,fsr 00001bdd 14f1c453 000edbdd
 fsl,fsr 09ab16a5 f5c6039e 738e3634
 fsl,fsr 0f8ac084 00000623 b8000000
@@ -247,4 +247,3 @@ sbclri,sbseti,sbinvi,sbexti 1014c66e =0xc
 sbclri,sbseti,sbinvi,sbexti 1a3c3257 =0x8
 sbclri,sbseti,sbinvi,sbexti 88061100 =0x2
 sbclri,sbseti,sbinvi,sbexti febefbcc =0x16
-

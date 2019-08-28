@@ -30,39 +30,39 @@ RV_COMPLIANCE_CODE_BEGIN
     li s2, 0x6042e65d
     ctz s3,s2
     sw s3,28(a1)
-    li a3, 0x0000000a
-    ctz a5,a3
-    sw a5,32(a1)
-    li t0, 0x00500002
-    ctz a6,t0
-    sw a6,36(a1)
-    li s4, 0x01000000
-    ctz s6,s4
-    sw s6,40(a1)
-    li t2, 0x01960000
-    ctz s4,t2
-    sw s4,44(a1)
-    li t6, 0x02d80096
-    ctz s3,t6
-    sw s3,48(a1)
-    li s9, 0x0800000a
-    ctz t5,s9
-    sw t5,52(a1)
-    li s4, 0x317ff49a
-    ctz s8,s4
-    sw s8,56(a1)
-    li a6, 0x40800429
-    ctz s6,a6
-    sw s6,60(a1)
-    li t1, 0x86400000
-    ctz t5,t1
-    sw t5,64(a1)
-    li a3, 0xc4434000
-    ctz s9,a3
-    sw s9,68(a1)
-    li t4, 0xcbcd6a07
-    ctz a6,t4
-    sw a6,72(a1)
+    li t3, 0x0000000a
+    ctz a6,t3
+    sw a6,32(a1)
+    li a3, 0x00500002
+    ctz s6,a3
+    sw s6,36(a1)
+    li s0, 0x01000000
+    ctz a2,s0
+    sw a2,40(a1)
+    li a6, 0x01960000
+    ctz s1,a6
+    sw s1,44(a1)
+    li t1, 0x02d80096
+    ctz a3,t1
+    sw a3,48(a1)
+    li t1, 0x0800000a
+    ctz t6,t1
+    sw t6,52(a1)
+    li s9, 0x317ff49a
+    ctz s3,s9
+    sw s3,56(a1)
+    li s2, 0x40800429
+    ctz t1,s2
+    sw t1,60(a1)
+    li s2, 0x86400000
+    ctz a4,s2
+    sw a4,64(a1)
+    li t6, 0xc4434000
+    ctz a2,t6
+    sw a2,68(a1)
+    li s10, 0xcbcd6a07
+    ctz a5,s10
+    sw a5,72(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
