@@ -39,7 +39,7 @@ int main()
 			uint64_t din_rs2 = xorshift64();
 			uint64_t dout_rd;
 
-			switch (xorshift32() % 10)
+			switch (xorshift32() % 12)
 			{
 			case 0: // BDEP
 				if (!enable_64bit) { i--; continue; }
@@ -63,33 +63,44 @@ int main()
 				din_insn = 0x08005033;
 				dout_rd = rv64b::unshfl(din_rs1, din_rs2);
 				break;
-			case 4: // GREV
+			case 4: // GORC
 				if (!enable_64bit) { i--; continue; }
 				if (!enable_grev) { i--; continue; }
-				din_insn = 0x40001033;
+				din_insn = 0x28005033;
+				dout_rd = rv64b::gorc(din_rs1, din_rs2);
+				break;
+			case 5: // GREV
+				if (!enable_64bit) { i--; continue; }
+				if (!enable_grev) { i--; continue; }
+				din_insn = 0x68005033;
 				dout_rd = rv64b::grev(din_rs1, din_rs2);
 				break;
-			case 5: // BDEPW
+			case 6: // BDEPW
 				din_insn = enable_64bit ? 0x0800203b : 0x08002033;
 				dout_rd = int32_t(rv32b::bdep(din_rs1, din_rs2));
 				break;
-			case 6: // BEXTW
+			case 7: // BEXTW
 				din_insn = enable_64bit ? 0x0800603b : 0x08006033;
 				dout_rd = int32_t(rv32b::bext(din_rs1, din_rs2));
 				break;
-			case 7: // SHFLW
+			case 8: // SHFLW
 				if (!enable_shfl) { i--; continue; }
 				din_insn = enable_64bit ? 0x0800103b : 0x08001033;
 				dout_rd = int32_t(rv32b::shfl(din_rs1, din_rs2));
 				break;
-			case 8: // UNSHFLW
+			case 9: // UNSHFLW
 				if (!enable_shfl) { i--; continue; }
 				din_insn = enable_64bit ? 0x0800503b : 0x08005033;
 				dout_rd = int32_t(rv32b::unshfl(din_rs1, din_rs2));
 				break;
-			case 9: // GREVW
+			case 10: // GORCW
 				if (!enable_grev) { i--; continue; }
-				din_insn = enable_64bit ? 0x4000103b : 0x40001033;
+				din_insn = 0x28005033 | (enable_64bit ? 8 : 0);
+				dout_rd = int32_t(rv32b::gorc(din_rs1, din_rs2));
+				break;
+			case 11: // GREVW
+				if (!enable_grev) { i--; continue; }
+				din_insn = 0x68005033 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::grev(din_rs1, din_rs2));
 				break;
 			}

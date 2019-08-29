@@ -31,7 +31,6 @@ module rvb_shifter #(
 	input  [XLEN-1:0] din_rs2,        // value of 2nd argument
 	input  [XLEN-1:0] din_rs3,        // value of 3rd argument
 	input             din_insn3,      // value of instruction bit 3
-	input             din_insn12,     // value of instruction bit 12
 	input             din_insn14,     // value of instruction bit 14
 	input             din_insn26,     // value of instruction bit 26
 	input             din_insn27,     // value of instruction bit 27
@@ -43,35 +42,35 @@ module rvb_shifter #(
 	input             dout_ready,     // accept output
 	output [XLEN-1:0] dout_rd         // output value
 );
-	// 30 29 27 26 14 12  3   Function
-	// --------------------   --------
-	//  0  0  0  0  0  1  W   SLL
-	//  0  0  0  0  1  1  W   SRL
-	//  1  0  0  0  1  1  W   SRA
-	//  0  1  0  0  0  1  W   SLO
-	//  0  1  0  0  1  1  W   SRO
-	//  1  1  0  0  0  1  W   ROL
-	//  1  1  0  0  1  1  W   ROR
-	// --------------------   --------
-	//  0  0  1  0  0  1  1   SLLIU.W
-	// --------------------   --------
-	//  -  -  -  1  0  1  W   FSL
-	//  -  -  -  1  1  1  W   FSR
-	// --------------------   --------
-	//  0  1  1  0  0  1  W   SBSET
-	//  1  0  1  0  0  1  W   SBCLR
-	//  1  1  1  0  0  1  W   SBINV
-	//  1  0  1  0  1  1  W   SBEXT
-	// --------------------   --------
-	//  1  0  1  0  1  0  W   BFP
+	// 30 29 27 26 14  3   Function
+	// -----------------   --------
+	//  0  0  0  0  0  W   SLL
+	//  0  0  0  0  1  W   SRL
+	//  1  0  0  0  1  W   SRA
+	//  0  1  0  0  0  W   SLO
+	//  0  1  0  0  1  W   SRO
+	//  1  1  0  0  0  W   ROL
+	//  1  1  0  0  1  W   ROR
+	// -----------------   --------
+	//  0  0  1  0  0  1   SLLIU.W
+	// -----------------   --------
+	//  -  -  -  1  0  W   FSL
+	//  -  -  -  1  1  W   FSR
+	// -----------------   --------
+	//  0  1  1  0  0  W   SBSET
+	//  1  0  1  0  0  W   SBCLR
+	//  1  1  1  0  0  W   SBINV
+	//  1  0  1  0  1  W   SBEXT
+	// -----------------   --------
+	//  0  0  1  0  1  W   BFP
 
 	assign dout_valid = din_valid;
 	assign din_ready = dout_ready;
 
-	wire slliumode = (XLEN == 64) && !(din_insn30 || din_insn29) && (din_insn27 && !din_insn26);
+	wire slliumode = (XLEN == 64) && !din_insn30 && !din_insn29 && din_insn27 && !din_insn26 && !din_insn14;
 	wire wmode = (XLEN == 32) || (din_insn3 && !slliumode);
-	wire sbmode = SBOP && (din_insn30 || din_insn29) && (din_insn27 && !din_insn26);
-	wire bfpmode = BFP && !din_insn12;
+	wire sbmode = SBOP && (din_insn30 || din_insn29) && din_insn27 && !din_insn26;
+	wire bfpmode = BFP && !din_insn30 && !din_insn29 && din_insn27 && !din_insn26 && din_insn14;
 
 	reg [63:0] Y;
 	wire [63:0] A, B, X, Z;

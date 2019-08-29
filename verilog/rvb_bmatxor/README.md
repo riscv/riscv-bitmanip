@@ -6,4 +6,4 @@ Module parameters:
 
 Required instruction bits:
 
-    insn14 ....... decode instruction
+    insn30 ....... decode instruction

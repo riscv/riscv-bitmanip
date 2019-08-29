@@ -15,8 +15,6 @@
  *
  */
 
-// `define rvb_bextdep_gorc
-
 module rvb_bextdep #(
 	parameter integer XLEN = 64,
 	parameter integer GREV = 1,
@@ -35,29 +33,22 @@ module rvb_bextdep #(
 	input             din_insn3,      // value of instruction bit 3
 	input             din_insn13,     // value of instruction bit 13
 	input             din_insn14,     // value of instruction bit 14
+	input             din_insn29,     // value of instruction bit 29
 	input             din_insn30,     // value of instruction bit 30
-`ifdef rvb_bextdep_gorc
-	input             din_gorc,
-`endif
 
 	// data output
 	output            dout_valid,     // output is valid
 	input             dout_ready,     // accept output
 	output [XLEN-1:0] dout_rd         // output value
 );
-	// 30 14 13  3   Function
-	// -----------   --------
-	//  1  0  0  0   GREV
-	//  0  0  0  0   SHFL
-	//  0  1  0  0   UNSHFL
-	//  0  0  1  0   BDEP
-	//  0  1  1  0   BEXT
-	// -----------   --------
-	//  1  0  0  1   GREVW
-	//  0  0  0  1   SHFLW
-	//  0  1  0  1   UNSHFLW
-	//  0  0  1  1   BDEPW
-	//  0  1  1  1   BEXTW
+	// 30 29 14 13  3   Function
+	// --------------   --------
+	//  0  1  1  0  W   GORC
+	//  1  1  1  0  W   GREV
+	//  0  0  0  0  W   SHFL
+	//  0  0  1  0  W   UNSHFL
+	//  0  0  0  1  W   BDEP
+	//  0  0  1  1  W   BEXT
 
 	wire enable = !dout_valid || dout_ready;
 	assign din_ready = enable && !reset;
@@ -71,10 +62,8 @@ module rvb_bextdep #(
 	//  0  0  1   BDEP
 	//  0  0  0   BEXT
 	wire [2:0] din_mode =
-`ifdef rvb_bextdep_gorc
-			din_gorc ? 3'b011 :
-`endif
-			(GREV && din_insn30) ? 3'b010 : (SHFL && !din_insn13) ? {2'b11, !din_insn14} : {2'b00, !din_insn14};
+			(GREV && din_insn29) ? (din_insn30 ? 3'b010 : 3'b011) :
+			(SHFL && !din_insn13) ? {2'b11, !din_insn14} : {2'b00, !din_insn14};
 
 	wire [XLEN-1:0] din_rs1_w = din_rs1 & (din_insn3 ? 64'h 0000_0000_ffff_ffff : 64'h ffff_ffff_ffff_ffff);
 	wire [XLEN-1:0] din_rs2_w = din_rs2 & (din_insn3 ? (din_insn13 ? 64'h 0000_0000_ffff_ffff : 64'h 0000_0000_ffff_ffdf) : 64'h ffff_ffff_ffff_ffff);
@@ -100,11 +89,6 @@ module rvb_bextdep #(
 	rvb_bextdep_xlen_pipeline #(
 		.GREV(GREV),
 		.SHFL(SHFL),
-`ifdef rvb_bextdep_gorc
-		.GORC(1),
-`else
-		.GORC(0),
-`endif
 		.XLEN(XLEN),
 		.FFS(FFS)
 	) core (
@@ -120,13 +104,9 @@ module rvb_bextdep #(
 	);
 endmodule
 
-`define rvb_bextdep_butterfly_idx_a(k, i) (((2 << (k))*((i)/(1 << (k))) + (i)%(1 << (k))) % XLEN)
-`define rvb_bextdep_butterfly_idx_b(k, i) ((`rvb_bextdep_butterfly_idx_a(k, i) + (1<<(k))) % XLEN)
-
 module rvb_bextdep_xlen_pipeline #(
 	parameter integer GREV = 1,
 	parameter integer SHFL = 1,
-	parameter integer GORC = 1,
 	parameter integer XLEN = 32,
 	parameter integer FFS = 1
 ) (
@@ -244,12 +224,12 @@ module rvb_bextdep_xlen_pipeline #(
 	wire [XLEN/2-1:0] s4  = (SHFL && din_mode_r[2]) ? {XLEN/2{1'b0}} : (GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[2]}} : ~decoder_s4_r;
 	wire [XLEN/2-1:0] s8  = (SHFL && din_mode_r[2]) ? {XLEN/2{1'b0}} : (GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[3]}} : ~decoder_s8_r;
 	wire [XLEN/2-1:0] s16 = (SHFL && din_mode_r[2]) ? {XLEN/2{1'b0}} : (GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[4]}} : ~decoder_s16_r;
-	wire [XLEN/2-1:0] s32 =                                            (GREV && din_mode_r[1]) ? {XLEN/2{din_mask_r[5]}} : ~decoder_s32_r;
+	wire [XLEN/2-1:0] s32 =                                  ((SHFL || GREV) && din_mode_r[1]) ? {XLEN/2{din_mask_r[5]}} : ~decoder_s32_r;
 
 	rvb_bextdep_butterfly_fwd #(
 		.XLEN(XLEN),
 		.SHFL(SHFL),
-		.GORC(GORC)
+		.GORC(GREV)
 	) butterfly_fwd (
 		.gorc    (din_mode_r == 3'b011),
 		.shfl_en (SHFL && din_mode_r[2]),
@@ -286,7 +266,7 @@ module rvb_bextdep_xlen_pipeline #(
 		always @(posedge clock) begin
 			if (enable) begin
 				dout_valid <= valid_r;
-				dout_result <= din_mode_r[0] ? ((SHFL && din_mode_r[1]) ? result_fwd : (result_fwd & din_mask_r)) : result_bwd;
+				dout_result <= din_mode_r[0] ? (((SHFL || GREV) && din_mode_r[1]) ? result_fwd : (result_fwd & din_mask_r)) : result_bwd;
 			end
 			if (reset) begin
 				dout_valid <= 0;
@@ -295,7 +275,7 @@ module rvb_bextdep_xlen_pipeline #(
 	end else begin
 		always @* begin
 			dout_valid = din_valid;
-			dout_result = din_mode_r[0] ? ((SHFL && din_mode_r[1]) ? result_fwd : (result_fwd & din_mask_r)) : result_bwd;
+			dout_result = din_mode_r[0] ? (((SHFL || GREV) && din_mode_r[1]) ? result_fwd : (result_fwd & din_mask_r)) : result_bwd;
 		end
 	end endgenerate
 endmodule

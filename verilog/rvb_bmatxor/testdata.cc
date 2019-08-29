@@ -38,7 +38,7 @@ int main()
 			switch (xorshift32() % 2)
 			{
 			case 0: // BMATXOR
-				din_insn = 0x08007033;
+				din_insn = 0x48003033;
 				dout_rd = rv64b::bmatxor(din_rs1, din_rs2);
 				break;
 			case 1: // BMATOR

@@ -59,7 +59,7 @@ module testbench_ff #(
 	reg [XLEN-1:0] din_rs1;
 	reg [XLEN-1:0] din_rs2;
 
-	reg din_insn14;
+	reg din_insn30;
 
 	wire [XLEN-1:0] dout_rd;
 
@@ -76,7 +76,7 @@ module testbench_ff #(
 		dout_ready <= |($random & 7);
 		din_rs1 <= next_rs1;
 		din_rs2 <= next_rs2;
-		din_insn14 <= next_insn[14];
+		din_insn30 <= next_insn[30];
 	end
 
 	integer dout_index = 0;
@@ -104,7 +104,7 @@ module testbench_ff #(
 		.din_ready  (din_ready ),
 		.din_rs1    (din_rs1   ),
 		.din_rs2    (din_rs2   ),
-		.din_insn14 (din_insn14),
+		.din_insn30 (din_insn30),
 		.dout_valid (dout_valid),
 		.dout_ready (dout_ready),
 		.dout_rd    (dout_rd   )

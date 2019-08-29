@@ -27,14 +27,14 @@ module rvb_bmatxor #(
 	output        din_ready,      // core accepts input
 	input  [63:0] din_rs1,        // value of 1st argument
 	input  [63:0] din_rs2,        // value of 2nd argument
-	input         din_insn14,     // value of instruction bit 14
+	input         din_insn30,     // value of instruction bit 30
 	
 	// data output
 	output        dout_valid,     // output is valid
 	input         dout_ready,     // accept output
 	output [63:0] dout_rd         // output value
 );
-	// 14   Function
+	// 30   Function
 	// --   --------
 	//  0   BMATOR
 	//  1   BMATXOR
@@ -48,7 +48,7 @@ module rvb_bmatxor #(
 				.din_ready  (din_ready ),
 				.din_rs1    (din_rs1   ),
 				.din_rs2    (din_rs2   ),
-				.din_xor    (din_insn14),
+				.din_xor    (din_insn30),
 				.dout_valid (dout_valid),
 				.dout_ready (dout_ready),
 				.dout_rd    (dout_rd   )
@@ -62,7 +62,7 @@ module rvb_bmatxor #(
 				.din_ready  (din_ready ),
 				.din_rs1    (din_rs1   ),
 				.din_rs2    (din_rs2   ),
-				.din_xor    (din_insn14),
+				.din_xor    (din_insn30),
 				.dout_valid (dout_valid),
 				.dout_ready (dout_ready),
 				.dout_rd    (dout_rd   )

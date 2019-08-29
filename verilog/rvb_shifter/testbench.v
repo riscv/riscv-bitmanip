@@ -60,7 +60,6 @@ module testbench;
 	reg [XLEN-1:0] din_rs3;
 
 	reg din_insn3;
-	reg din_insn12;
 	reg din_insn14;
 	reg din_insn26;
 	reg din_insn27;
@@ -90,7 +89,6 @@ module testbench;
 		check_rd <= next_rd;
 		if (XLEN > 32)
 			din_insn3 <= next_insn[3];
-		din_insn12 <= next_insn[12];
 		din_insn14 <= next_insn[14];
 		din_insn26 <= next_insn[26];
 		din_insn27 <= next_insn[27];
@@ -124,7 +122,6 @@ module testbench;
 		.din_rs2    (din_rs2   ),
 		.din_rs3    (din_rs3   ),
 		.din_insn3  (din_insn3 ),
-		.din_insn12 (din_insn12),
 		.din_insn14 (din_insn14),
 		.din_insn26 (din_insn26),
 		.din_insn27 (din_insn27),

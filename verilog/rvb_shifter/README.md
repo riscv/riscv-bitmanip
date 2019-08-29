@@ -10,7 +10,6 @@ Module parameters:
 Required instruction bits:
 
     insn3 ........ *W instructions (only used when XLEN=64)
-    insn12 ....... select BFP instruction
     insn14 ....... select shift direction
     insn26 ....... select funnel shift
     insn27 ....... select single-bit instruction
