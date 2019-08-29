@@ -4,7 +4,7 @@ tags COVERED UNCOVERED TIMEOUT NOC
 
 [script]
 read_verilog -defer -D RVB_DEBUG rvb_pcpi.v
-read_verilog -defer -D RVB_DEBUG rvb_full.v
+read_verilog -defer -D RVB_DEBUG ../rvb_full/rvb_full.v
 read_verilog -defer ../rvb_bextdep/rvb_bextdep.v
 read_verilog -defer ../rvb_bitcnt/rvb_bitcnt.v
 read_verilog -defer ../rvb_bmatxor/rvb_bmatxor.v
@@ -16,7 +16,7 @@ synth -flatten -top rvb_pcpi
 
 [files]
 rvb_pcpi.v
-rvb_full.v
+../rvb_full/rvb_full.v
 ../rvb_bextdep/rvb_bextdep.v
 ../rvb_bitcnt/rvb_bitcnt.v
 ../rvb_bmatxor/rvb_bmatxor.v

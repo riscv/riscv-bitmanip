@@ -49,10 +49,12 @@ firmware.hex: start.S firmware.c hex8tohex32.py $(TESTOBJS) tests/tests.h
 	python3 hex8tohex32.py firmware.tmp > firmware.hex
 	rm -f firmware.tmp
 
-system: system.v picorv32.v rvb_full.v rvb_pcpi.v
-	iverilog -o system -D RVB_DEBUG system.v picorv32.v rvb_pcpi.v rvb_full.v \
-			../rvb_bextdep/rvb_bextdep.v ../rvb_bitcnt/rvb_bitcnt.v ../rvb_bmatxor/rvb_bmatxor.v \
-			../rvb_clmul/rvb_clmul.v ../rvb_crc/rvb_crc.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
+RVB_SRCS = rvb_pcpi.v ../rvb_full/rvb_full.v
+RVB_SRCS += ../rvb_bextdep/rvb_bextdep.v ../rvb_bitcnt/rvb_bitcnt.v ../rvb_bmatxor/rvb_bmatxor.v
+RVB_SRCS += ../rvb_clmul/rvb_clmul.v ../rvb_crc/rvb_crc.v ../rvb_shifter/rvb_shifter.v ../rvb_simple/rvb_simple.v
+
+system: system.v picorv32.v $(RVB_SRCS)
+	iverilog -o system -D RVB_DEBUG system.v picorv32.v $(RVB_SRCS)
 
 clean:
 	rm -f system firmware.hex firmware.elf firmware.map system.vcd tests/test_*.h tests/test_*.o tests/tests.h tests/tests.mk
