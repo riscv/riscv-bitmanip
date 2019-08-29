@@ -11,6 +11,7 @@
 #include "test_zbr.c"
 #include "test_zbm.c"
 #include "test_zbt.c"
+#include "test_zbf.c"
 #include "test_stdc.c"
 
 uint64_t args[128];
@@ -66,6 +67,7 @@ int main()
 	printf("#include \"test_zbr.c\"\n");
 	printf("#include \"test_zbm.c\"\n");
 	printf("#include \"test_zbt.c\"\n");
+	printf("#include \"test_zbf.c\"\n");
 	printf("#include \"test_stdc.c\"\n");
 	printf("uint64_t args[128] = {\n");
 	for (int i = 0; i < 128; i++) {
@@ -91,6 +93,7 @@ int main()
 	RUN_TEST(zbr)
 	RUN_TEST(zbm)
 	RUN_TEST(zbt)
+	RUN_TEST(zbf)
 	RUN_TEST(stdc)
 
 	printf("  printf(\"ALL TESTS PASSED.\\n\");\n");
