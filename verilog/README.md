@@ -40,7 +40,7 @@ the instruction word.
 The behavior of these cores when the instruction at the `din_insn*` inputs
 is not one of the instructions implemented by the core, is undefined.
 
-|     Core     | Instructions (optional instructions in parentheses)                                 |
+|     Core     | Instructions (optional instructions in parentheses)                           |
 |:-------------|:------------------------------------------------------------------------------|
 | rvb_bextdep  | bext bdep (grev gorc shfl unshfl)                                             |
 | rvb_clmul    | clmul clmulr clmulh                                                           |
@@ -49,3 +49,4 @@ is not one of the instructions implemented by the core, is undefined.
 | rvb_simple   | min max minu maxu andn orn xnor pack cmix cmov addiwu addwu subwu adduw subuw |
 | rvb_bitcnt   | clz ctz pcnt (bmatflip)                                                       |
 | rvb_crc      | crc32.[bhwd] crc32c.[bhwd]                                                    |
+| rvb_full     | All of the above                                                              |
