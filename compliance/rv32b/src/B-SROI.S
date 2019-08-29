@@ -6,24 +6,24 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s5, 0x522a1063
-    sroi s1,s5,3
-    sw s1,0(a1)
-    li a3, 0x8a671b8c
-    sroi s9,a3,5
-    sw s9,4(a1)
-    li s1, 0x02eb0801
-    sroi t2,s1,17
+    li s3, 0x522a1063
+    sroi t2,s3,3
+    sw t2,0(a1)
+    li a2, 0x8a671b8c
+    sroi s2,a2,5
+    sw s2,4(a1)
+    li t5, 0x02eb0801
+    sroi t2,t5,17
     sw t2,8(a1)
-    li s3, 0x43737b61
-    sroi t6,s3,24
-    sw t6,12(a1)
-    li a6, 0xf20d8a82
-    sroi s6,a6,25
-    sw s6,16(a1)
-    li t1, 0x9543c51a
-    sroi a5,t1,31
-    sw a5,20(a1)
+    li t1, 0x43737b61
+    sroi a5,t1,24
+    sw a5,12(a1)
+    li s4, 0xf20d8a82
+    sroi t5,s4,25
+    sw t5,16(a1)
+    li s9, 0x9543c51a
+    sroi t1,s9,31
+    sw t1,20(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

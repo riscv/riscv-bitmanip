@@ -6,114 +6,114 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li t4, 0x778bd1db
-    li s10, 0xdef3c035
-    min s6,t4,s10
-    sw s6,0(a1)
-    li a3, 0xffaace79
-    li a5, 0x11e15d6b
-    min a2,a3,a5
-    sw a2,4(a1)
+    li a3, 0x778bd1db
+    li t6, 0xdef3c035
+    min a6,a3,t6
+    sw a6,0(a1)
+    li t1, 0xffaace79
+    li t0, 0x11e15d6b
+    min a0,t1,t0
+    sw a0,4(a1)
     li s6, 0x04bc5eac
-    li a5, 0x33397f4e
-    min a6,s6,a5
-    sw a6,8(a1)
-    li a6, 0x40ee4840
-    li t2, 0x18331b85
-    min t0,a6,t2
-    sw t0,12(a1)
-    li a2, 0x5a0d8ae2
-    li a6, 0xfaafb8a6
-    min t0,a2,a6
-    sw t0,16(a1)
-    li t5, 0xcccb9502
-    li s3, 0xde163e74
-    min a6,t5,s3
-    sw a6,20(a1)
-    li s1, 0x00100000
-    li t1, 0x00000000
-    min s6,s1,t1
-    sw s6,24(a1)
-    li t1, 0x001815fa
-    li s4, 0x001815db
-    min a2,t1,s4
-    sw a2,28(a1)
-    li s6, 0x1051ac9a
-    li a4, 0x1051a9d8
-    min s8,s6,a4
-    sw s8,32(a1)
-    li t1, 0x16070000
-    li s2, 0x15020090
-    min a4,t1,s2
-    sw a4,36(a1)
-    li t5, 0x17d47fc4
-    li a6, 0x17d47fc6
-    min t4,t5,a6
-    sw t4,40(a1)
-    li t1, 0x382e991b
-    li a2, 0x382e999b
-    min a7,t1,a2
-    sw a7,44(a1)
-    li s1, 0x3f025f9f
-    li s8, 0x3f025f9e
-    min s0,s1,s8
-    sw s0,48(a1)
-    li t0, 0x41040098
-    li s7, 0x41000098
-    min s10,t0,s7
-    sw s10,52(a1)
-    li t3, 0x5332ff01
+    li t0, 0x33397f4e
+    min t6,s6,t0
+    sw t6,8(a1)
+    li a5, 0x40ee4840
+    li a7, 0x18331b85
+    min t5,a5,a7
+    sw t5,12(a1)
+    li t5, 0x5a0d8ae2
+    li s10, 0xfaafb8a6
+    min a0,t5,s10
+    sw a0,16(a1)
+    li a0, 0xcccb9502
+    li t2, 0xde163e74
+    min s5,a0,t2
+    sw s5,20(a1)
+    li a0, 0x00100000
+    li t0, 0x00000000
+    min t5,a0,t0
+    sw t5,24(a1)
+    li s9, 0x001815fa
+    li t1, 0x001815db
+    min s11,s9,t1
+    sw s11,28(a1)
+    li a2, 0x1051ac9a
+    li t2, 0x1051a9d8
+    min s7,a2,t2
+    sw s7,32(a1)
+    li t0, 0x16070000
+    li s7, 0x15020090
+    min t1,t0,s7
+    sw t1,36(a1)
+    li a3, 0x17d47fc4
+    li a5, 0x17d47fc6
+    min s8,a3,a5
+    sw s8,40(a1)
+    li a4, 0x382e991b
+    li t1, 0x382e999b
+    min t5,a4,t1
+    sw t5,44(a1)
+    li t1, 0x3f025f9f
+    li s11, 0x3f025f9e
+    min t6,t1,s11
+    sw t6,48(a1)
+    li s5, 0x41040098
+    li t1, 0x41000098
+    min a2,s5,t1
+    sw a2,52(a1)
+    li s4, 0x5332ff01
     li s0, 0x5332ff0c
-    min s1,t3,s0
-    sw s1,56(a1)
-    li a7, 0x5583d725
-    li s5, 0x5513f76d
-    min t0,a7,s5
-    sw t0,60(a1)
-    li a2, 0x8ba9ff2d
-    li s11, 0x8bf5ff1d
-    min s8,a2,s11
-    sw s8,64(a1)
-    li a6, 0x9e7f57ab
-    li s1, 0x5ebf0000
-    min t5,a6,s1
-    sw t5,68(a1)
-    li a0, 0xa4dbf37b
-    li s10, 0xa4dbf39b
-    min t5,a0,s10
-    sw t5,72(a1)
-    li a5, 0xb5a168d9
-    li a4, 0xb5a17d31
-    min s2,a5,a4
-    sw s2,76(a1)
-    li t2, 0xbdf3d8b0
-    li s2, 0xbfe2dcb0
-    min a6,t2,s2
-    sw a6,80(a1)
-    li s7, 0xbff3d8b0
-    li a0, 0xbfe2dcb0
-    min s8,s7,a0
-    sw s8,84(a1)
-    li s3, 0xc104001f
-    li a0, 0xc104001d
-    min s6,s3,a0
-    sw s6,88(a1)
-    li s9, 0xde7ca325
-    li s7, 0xde7ca724
-    min a6,s9,s7
-    sw a6,92(a1)
-    li s2, 0xdef06600
-    li s8, 0xdef06400
-    min t1,s2,s8
-    sw t1,96(a1)
-    li a7, 0xe9767dca
-    li s2, 0xfc05cdf8
-    min s3,a7,s2
-    sw s3,100(a1)
-    li s11, 0xffe2f8b0
-    li a3, 0xffe2dcb0
-    min a4,s11,a3
-    sw a4,104(a1)
+    min s7,s4,s0
+    sw s7,56(a1)
+    li a2, 0x5583d725
+    li s10, 0x5513f76d
+    min s7,a2,s10
+    sw s7,60(a1)
+    li t1, 0x8ba9ff2d
+    li s1, 0x8bf5ff1d
+    min s10,t1,s1
+    sw s10,64(a1)
+    li t1, 0x9e7f57ab
+    li s6, 0x5ebf0000
+    min t3,t1,s6
+    sw t3,68(a1)
+    li t3, 0xa4dbf37b
+    li a5, 0xa4dbf39b
+    min s1,t3,a5
+    sw s1,72(a1)
+    li s4, 0xb5a168d9
+    li s5, 0xb5a17d31
+    min t0,s4,s5
+    sw t0,76(a1)
+    li s11, 0xbdf3d8b0
+    li t1, 0xbfe2dcb0
+    min s4,s11,t1
+    sw s4,80(a1)
+    li s5, 0xbff3d8b0
+    li a3, 0xbfe2dcb0
+    min a5,s5,a3
+    sw a5,84(a1)
+    li t3, 0xc104001f
+    li a2, 0xc104001d
+    min s0,t3,a2
+    sw s0,88(a1)
+    li s10, 0xde7ca325
+    li t0, 0xde7ca724
+    min a0,s10,t0
+    sw a0,92(a1)
+    li a2, 0xdef06600
+    li s7, 0xdef06400
+    min a5,a2,s7
+    sw a5,96(a1)
+    li t3, 0xe9767dca
+    li a7, 0xfc05cdf8
+    min s11,t3,a7
+    sw s11,100(a1)
+    li t0, 0xffe2f8b0
+    li t2, 0xffe2dcb0
+    min a7,t0,t2
+    sw a7,104(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

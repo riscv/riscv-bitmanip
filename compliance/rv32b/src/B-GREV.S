@@ -6,30 +6,30 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li t6, 0x778bd1db
-    li a5, 0xdef3c035
-    grev s8,t6,a5
-    sw s8,0(a1)
-    li s8, 0xffaace79
-    li s1, 0x11e15d6b
-    grev t4,s8,s1
-    sw t4,4(a1)
-    li a0, 0x04bc5eac
-    li s7, 0x33397f4e
-    grev t2,a0,s7
-    sw t2,8(a1)
-    li a7, 0x40ee4840
-    li a5, 0x18331b85
-    grev t2,a7,a5
-    sw t2,12(a1)
-    li s8, 0x5a0d8ae2
-    li a2, 0xfaafb8a6
-    grev t2,s8,a2
-    sw t2,16(a1)
-    li s2, 0xcccb9502
-    li t6, 0xde163e74
-    grev s9,s2,t6
-    sw s9,20(a1)
+    li s3, 0x778bd1db
+    li a4, 0xdef3c035
+    grev t4,s3,a4
+    sw t4,0(a1)
+    li s10, 0xffaace79
+    li a2, 0x11e15d6b
+    grev s4,s10,a2
+    sw s4,4(a1)
+    li t1, 0x04bc5eac
+    li s6, 0x33397f4e
+    grev s7,t1,s6
+    sw s7,8(a1)
+    li a5, 0x40ee4840
+    li s6, 0x18331b85
+    grev a3,a5,s6
+    sw a3,12(a1)
+    li s11, 0x5a0d8ae2
+    li t0, 0xfaafb8a6
+    grev a7,s11,t0
+    sw a7,16(a1)
+    li t0, 0xcccb9502
+    li s3, 0xde163e74
+    grev s0,t0,s3
+    sw s0,20(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

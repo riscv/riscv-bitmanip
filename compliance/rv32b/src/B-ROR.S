@@ -6,42 +6,42 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s6, 0x522a1063
-    li t5, 0xd2d6b642
-    ror a4,s6,t5
-    sw a4,0(a1)
-    li a7, 0x8a671b8c
+    li a0, 0x522a1063
+    li s11, 0xd2d6b642
+    ror s0,a0,s11
+    sw s0,0(a1)
+    li a0, 0x8a671b8c
     li s2, 0x5b4289cf
-    ror s4,a7,s2
-    sw s4,4(a1)
-    li t1, 0x02eb0801
-    li a7, 0x81920806
-    ror s10,t1,a7
-    sw s10,8(a1)
-    li t2, 0x43737b61
-    li t1, 0x57861f11
-    ror s2,t2,t1
-    sw s2,12(a1)
-    li s8, 0xf20d8a82
-    li a3, 0x1ceb0c11
-    ror s11,s8,a3
-    sw s11,16(a1)
-    li s0, 0x9543c51a
-    li t4, 0x9a48a02c
-    ror s10,s0,t4
-    sw s10,20(a1)
-    li a3, 0x12ecc6b6
-    li s3, 0x1750a9be
-    ror s4,a3,s3
-    sw s4,24(a1)
-    li a6, 0x44e417d0
-    li s3, 0x4e13941f
-    ror a4,a6,s3
-    sw a4,28(a1)
-    li a7, 0x7bf2539c
-    li t6, 0xc7ef0f0e
-    ror a0,a7,t6
-    sw a0,32(a1)
+    ror a2,a0,s2
+    sw a2,4(a1)
+    li t0, 0x02eb0801
+    li a0, 0x81920806
+    ror t1,t0,a0
+    sw t1,8(a1)
+    li s4, 0x43737b61
+    li s0, 0x57861f11
+    ror t1,s4,s0
+    sw t1,12(a1)
+    li t1, 0xf20d8a82
+    li a2, 0x1ceb0c11
+    ror s5,t1,a2
+    sw s5,16(a1)
+    li s9, 0x9543c51a
+    li s5, 0x9a48a02c
+    ror s7,s9,s5
+    sw s7,20(a1)
+    li s0, 0x12ecc6b6
+    li t2, 0x1750a9be
+    ror s7,s0,t2
+    sw s7,24(a1)
+    li s7, 0x44e417d0
+    li t0, 0x4e13941f
+    ror s9,s7,t0
+    sw s9,28(a1)
+    li s0, 0x7bf2539c
+    li s7, 0xc7ef0f0e
+    ror a2,s0,s7
+    sw a2,32(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

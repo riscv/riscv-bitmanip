@@ -15,12 +15,12 @@ crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 91f3a75b
 crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 6723f89c
 crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 6042e65d
 
-andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 778bd1db def3c035
-andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev ffaace79 11e15d6b
-andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 04bc5eac 33397f4e
-andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 40ee4840 18331b85
-andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev 5a0d8ae2 faafb8a6
-andn,orn,xnor,pack,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,grev cccb9502 de163e74
+andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 778bd1db def3c035
+andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev ffaace79 11e15d6b
+andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 04bc5eac 33397f4e
+andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 40ee4840 18331b85
+andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 5a0d8ae2 faafb8a6
+andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev cccb9502 de163e74
 
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 522a1063 d2d6b642
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 8a671b8c 5b4289cf
@@ -29,12 +29,12 @@ slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 43737b61 57861f11
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr f20d8a82 1ceb0c11
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 9543c51a 9a48a02c
 
-grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 522a1063 =3
-grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 8a671b8c =5
-grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 02eb0801 =17
-grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 43737b61 =24
-grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti f20d8a82 =25
-grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 9543c51a =31
+gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 522a1063 =3
+gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 8a671b8c =5
+gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 02eb0801 =17
+gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 43737b61 =24
+gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti f20d8a82 =25
+gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 9543c51a =31
 
 shfli,unshfli 522a1063 =0
 shfli,unshfli 8a671b8c =1

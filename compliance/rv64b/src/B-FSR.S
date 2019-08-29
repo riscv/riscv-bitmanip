@@ -6,36 +6,36 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li t4, 0xf38e07165dd79cfa
-    li s2, 0xf2f25a0bc4ed4893
-    li a6, 0x72c8a75d987a10dd
-    fsr s10,t4,s2,a6
+    li t3, 0xf38e07165dd79cfa
+    li t0, 0xf2f25a0bc4ed4893
+    li t4, 0x72c8a75d987a10dd
+    fsr s10,t3,t0,t4
     sd s10,0(a1)
-    li s3, 0x25f269ba9c6f7aa2
-    li s4, 0x11fe7c5ffcae8655
-    li a5, 0x3ee8d76702a2826c
-    fsr s6,s3,s4,a5
-    sd s6,8(a1)
-    li s9, 0xe6b16607a8a22391
-    li s11, 0xb4ea93d41b4286dd
-    li t2, 0x682ae2c6988c0022
-    fsr a7,s9,s11,t2
-    sd a7,16(a1)
-    li a4, 0xb6213a3c430b3272
-    li t1, 0xd1ced3e82b77485c
-    li a2, 0xfde0bbd38b8e8f3e
-    fsr s3,a4,t1,a2
-    sd s3,24(a1)
-    li a4, 0xf0190cecadd85909
-    li s4, 0x38b5a7ff116023b7
-    li t1, 0x0557f01f29d882a1
-    fsr s9,a4,s4,t1
-    sd s9,32(a1)
-    li a3, 0x0000000000000000
-    li s7, 0x6198b4fc2ba53005
-    li a5, 0x33f7912ab208965f
-    fsr t4,a3,s7,a5
-    sd t4,40(a1)
+    li a5, 0x25f269ba9c6f7aa2
+    li t3, 0x11fe7c5ffcae8655
+    li s11, 0x3ee8d76702a2826c
+    fsr s5,a5,t3,s11
+    sd s5,8(a1)
+    li t2, 0xe6b16607a8a22391
+    li a5, 0xb4ea93d41b4286dd
+    li s11, 0x682ae2c6988c0022
+    fsr s4,t2,a5,s11
+    sd s4,16(a1)
+    li t4, 0xb6213a3c430b3272
+    li t5, 0xd1ced3e82b77485c
+    li a3, 0xfde0bbd38b8e8f3e
+    fsr s9,t4,t5,a3
+    sd s9,24(a1)
+    li t6, 0xf0190cecadd85909
+    li t2, 0x38b5a7ff116023b7
+    li s1, 0x0557f01f29d882a1
+    fsr a6,t6,t2,s1
+    sd a6,32(a1)
+    li s5, 0x0000000000000000
+    li s0, 0x6198b4fc2ba53005
+    li t1, 0x33f7912ab208965f
+    fsr a6,s5,s0,t1
+    sd a6,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
