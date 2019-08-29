@@ -2,6 +2,7 @@
 #include <rvintrin.h>
 
 #undef VERBOSE_TESTS
+#define SINGLE_TEST ""
 #include "tests/tests.h"
 
 extern int32_t shtst();
@@ -38,6 +39,14 @@ void printh(unsigned int v)
 	}
 }
 
+int streq(const char *p, const char *q)
+{
+	while (*p || *q)
+		if (*(p++) != *(q++))
+			return 0;
+	return 1;
+}
+
 #ifdef VERBOSE_TESTS
 
 int check(uint32_t *s, uint32_t *r, int n)
@@ -55,24 +64,23 @@ int check(uint32_t *s, uint32_t *r, int n)
 	return errcnt;
 }
 
-#define RUNTEST(_name) prints("--- " #_name " ---\n"); testcode_##_name(); \
-  errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4);
+#define RUNTEST(_name) if (!SINGLE_TEST[0] || streq(SINGLE_TEST, #_name)) { \
+  prints("--- " #_name " ---\n"); testcode_##_name(); \
+  errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4); }
 
 #else
 
 int check(uint32_t *s, uint32_t *r, int n)
 {
 	int errcnt = 0;
-	while (n--) {
-		errcnt += *s != *r;
-		s++, r++;
-	}
+	while (n--) errcnt += (*(s++) != *(r++));
 	prints(errcnt ? " ERROR\n" : " OK\n");
 	return errcnt;
 }
 
-#define RUNTEST(_name) printsn("" #_name, 17); testcode_##_name(); \
-  errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4);
+#define RUNTEST(_name) if (!SINGLE_TEST[0] || streq(SINGLE_TEST, #_name)) { \
+  printsn("" #_name, 17); testcode_##_name(); \
+  errcnt += check(signature_##_name, reference_##_name, sizeof(reference_##_name)/4); }
 
 #endif
 

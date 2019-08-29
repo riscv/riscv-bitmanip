@@ -13,6 +13,7 @@ set -ex
 
 yosys -ql mutate.log mutate.ys
 iverilog -DMCY -o sim ../../system.v ../../picorv32.v mutated.v
+test -f ../../firmware.hex
 ln -s ../../firmware.hex .
 
 while read idx mut; do

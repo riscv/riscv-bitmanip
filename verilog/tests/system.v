@@ -178,6 +178,10 @@ module system;
 				$display("FAILED PCPI SANITY CHECKS");
 				$finish;
 			end
+			if (pcpi_ready && ^pcpi_rd === 1'bx) begin
+				$display("FAILED PCPI SANITY CHECKS");
+				$finish;
+			end
 		end else begin
 			if (pcpi_wait || pcpi_ready || pcpi_wr) begin
 				$display("FAILED PCPI SANITY CHECKS");
