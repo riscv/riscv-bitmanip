@@ -34,6 +34,5 @@ testbench_1.ok: testbench_1 testdata_1.hex
 
 clean:
 	rm -f testbench.vcd testdata testdata_?.hex testbench_? testbench_?.ok synth.out synth.tmp synth.ys
-	rm -f system firmware.hex firmware.elf firmware.map system.vcd tests/test_*.h tests/test_*.o tests/tests.h tests/tests.mk
 
 .PHONY: test synth clean
