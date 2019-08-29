@@ -428,7 +428,8 @@ module rvb_full_decoder #(
 			33'b zzzzz11_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_simple  = 1; // CMOV
 			33'b zzzzz10_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // FSL
 			33'b zzzzz10_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // FSR
-			33'b zzzzz1_zzzzzz_zzzzz_101_zzzzz_0010011_z: insn_shifter = 1; // FSRI
+			33'b zzzzz1_0zzzzz_zzzzz_101_zzzzz_0010011_0: insn_shifter = 1; // FSRI (RV32)
+			33'b zzzzz1_zzzzzz_zzzzz_101_zzzzz_0010011_1: insn_shifter = 1; // FSRI (RV64)
 
 			33'b 0110000_00000_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // CLZ
 			33'b 0110000_00001_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // CTZ

@@ -39,6 +39,11 @@ with open("getvector.x", "r") as f:
         # print(op, args)
         assert re.fullmatch(r"x[0-9][0-9]?", args[0])
 
+if op[0] in ("cmux", "cmov"):
+    rs = [rs[1], rs[0], rs[2]]
+elif op[0] in ("fsl", "fsr", "fsri"):
+    rs = [rs[0], rs[2], rs[1]]
+
 for a in args[1:]:
     if re.fullmatch(r"x[0-9][0-9]?", a):
         op.append("%08x" % rs[0])
