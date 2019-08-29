@@ -509,10 +509,6 @@ network with $log_2(\textrm{XLEN})$ stages. Figure~\ref{permnet-ror}
 shows the permutation network for {\tt ror} for reference.
 Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
 
-\texttt{grev} is encoded as standard R-type opcode and \texttt{grevi} is
-encoded as standard I-type opcode. \texttt{grev} and \texttt{grevi} can
-use the instruction encoding for ``arithmetic shift left''.
-
 Pseudo-instructions are provided for the most common GREVI use-cases. Their names
 consist of a prefix and and optional suffix. Each prefix and suffix corresponds
 to a bit mask. The GREVI control word is obtained by AND-ing the two masks together.
@@ -1374,8 +1370,7 @@ as {\tt and}, {\tt or}, and {\tt xor}, but with {\tt op[30]} set, mirroring the
 encoding scheme used for {\tt add} and {\tt sub}.
 
 All shift instructions use {\tt funct3=001} for left shifts and {\tt funct3=101}
-for right shifts. GREV occupies the spot that would decode as SLA (arithmetic
-left shift).
+for right shifts.
 
 {\tt op[26]=1} selects funnel shifts. For funnel shifts {\tt op[30:29]} is part
 if the 3rd operand and therefore unused for encoding the operation. For all other
@@ -1393,11 +1388,11 @@ Therefore there is no FSRI instruction on RV128. (But there is FSRIW/FSRID.)
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-         | SLL  SRL  SRA | GREV | SLO SRO | ROL ROR | FSL FSR
-  op[30] |   0    0    1 |    1 |   0   0 |   1   1 |   -   -
-  op[29] |   0    0    0 |    0 |   1   1 |   1   1 |   -   -
-  op[26] |   0    0    0 |    0 |   0   0 |   0   0 |   1   1
-  funct3 | 001  101  101 |  001 | 001 101 | 001 101 | 001 101
+         | SLL  SRL  SRA | SLO SRO | ROL ROR | FSL FSR
+  op[30] |   0    0    1 |   0   0 |   1   1 |   -   -
+  op[29] |   0    0    0 |   1   1 |   1   1 |   -   -
+  op[26] |   0    0    0 |   0   0 |   0   0 |   1   1
+  funct3 | 001  101  101 | 001 101 | 001 101 | 001 101
 \end{verbatim}
 \end{minipage}
 
@@ -1420,11 +1415,11 @@ The single-bit instructions are also encoded within the shift opcodes, with
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-         | SBSET  SBCLR  SBINV | SBEXT
-  op[30] |     0      1      1 |     1
-  op[29] |     1      0      1 |     0
-  op[27] |     1      1      1 |     1
-  funct3 |   001    001    001 |   101
+         | SBCLR  SBSET  SBINV | SBEXT   GORC   GREV
+  op[30] |     1      0      1 |     1      0      1
+  op[29] |     0      1      1 |     0      1      1
+  op[27] |     1      1      1 |     1      1      1
+  funct3 |   001    001    001 |   101    101    101
 \end{verbatim}
 \end{minipage}
 
@@ -1433,6 +1428,9 @@ There is no {\tt sbextiw} instruction as it can be emulated trivially using
 as changing bit 31 would change the sign extend. There are non-immediate *W
 instructions of all single-bit instructions, including {\tt sbextw}, because
 the number of used bits in rs2 is different in {\tt sbext} and {\tt sbextw}.
+
+GORC and GREV are encoded in the two remaining slots in the single-bit
+instruction encoding space.
 
 The remaining instructions are encoded within {\tt funct7=0000100} and
 {\tt funct7=0000101}.
@@ -1509,30 +1507,32 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLL*
 |  0000000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRL*
-|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  GREV
 |  0100000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRA*
 |  0010000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SLO
 |  0010000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SRO
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  ROL
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  ROR
 |---------------------------------------------------------------|
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBSET
 |  0100100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBCLR
+|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBSET
 |  0110100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBINV
 |  0100100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SBEXT
+|  0010100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  GORC
+|  0110100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  GREV
 |---------------------------------------------------------------|
 |  00000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLLI*
 |  00000  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SRLI*
-|  01000  |     imm     |   rs1   | 001 |    rd   |   0010011   |  GREVI
 |  01000  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SRAI*
 |  00100  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SLOI
 |  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
 |  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
 |---------------------------------------------------------------|
-|  00101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBSETI
 |  01001  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBCLRI
+|  00101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBSETI
 |  01101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBINVI
 |  01001  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SBEXTI
+|  00101  |     imm     |   rs1   | 101 |    rd   |   0010011   |  GORCI
+|  01101  |     imm     |   rs1   | 101 |    rd   |   0010011   |  GREVI
 |---------------------------------------------------------------|
 |   rs3   | 11|   rs2   |   rs1   | 001 |    rd   |   0110011   |  CMIX
 |   rs3   | 11|   rs2   |   rs1   | 101 |    rd   |   0110011   |  CMOV
@@ -1580,7 +1580,8 @@ and are marked with a {\tt *}.
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACK
 |  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BMATXOR
+|  0100100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATXOR
+|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BFP
 |---------------------------------------------------------------|
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
@@ -1608,31 +1609,27 @@ and are marked with a {\tt *}.
 |   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
 |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
-|  0000000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SLLW*
-|  0000000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SRLW*
-|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  GREVW
-|  0100000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SRAW*
 |  0010000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SLOW
 |  0010000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SROW
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
 |---------------------------------------------------------------|
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSETW
 |  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBCLRW
+|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSETW
 |  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBINVW
 |  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SBEXTW
+|  0010100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GORCW
+|  0110100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GREVW
 |---------------------------------------------------------------|
-|  0000000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLLIW*
-|  0000000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SRLIW*
-|  0100000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  GREVIW
-|  0100000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SRAIW*
 |  0010000    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SLOIW
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
 |---------------------------------------------------------------|
-|  0010100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBSETIW
 |  0100100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBCLRIW
+|  0010100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBSETIW
 |  0110100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBINVIW
+|  0010100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GORCIW
+|  0110100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GREVIW
 |---------------------------------------------------------------|
 |   rs3   | 10|   rs2   |   rs1   | 001 |    rd   |   0111011   |  FSLW
 |   rs3   | 10|   rs2   |   rs1   | 101 |    rd   |   0111011   |  FSRW
@@ -1651,25 +1648,7 @@ and are marked with a {\tt *}.
 |  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKW
-|---------------------------------------------------------------|
-\end{verbatim}
-\end{minipage}
-
-Pending changes for v0.91 of the RISC-V Bitmanip Spec ({\tt +} for addition,
-{\tt -} for removal):
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-|  3                   2                   1                    |
-|1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
-|===============================================================|
-|  0100000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  - GREV
-|  0110100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  + GREV
-|  0010100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  + GORC
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  - BMATXOR
-|  0100100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  + BMATXOR
-|---------------------------------------------------------------|
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  + BFP
+|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -2104,6 +2083,8 @@ Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} 
 {\tt gorc     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt shfl     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt unshfl   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+\hline
+{\tt bfp      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
 {\tt bext     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt bdep     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
