@@ -164,4 +164,23 @@ shtst:
 	xor a0, a0, a1
 	crc32c.w a0, a0
 
+	// ------------------------
+
+	li t0, 0xc8680132
+	srai a1, t0, 0x1d
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	li t0, 0x4a48fd54
+	li t1, 0x2000023e
+	sra a1, t0, t1
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
+	li t0, 0x43f5e818
+	li t1, 0x6486f805
+	sra a1, t0, t1
+	xor a0, a0, a1
+	crc32c.w a0, a0
+
 	ret

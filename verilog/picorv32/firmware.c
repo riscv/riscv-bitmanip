@@ -109,7 +109,7 @@ int main()
 
 	tmp = shtst();
 	printh(tmp);
-	prints(tmp == 0x04444239 ? " OK\n" : (errcnt++, " ERROR\n"));
+	prints(tmp == 0x14549256 ? " OK\n" : (errcnt++, " ERROR\n"));
 
 	RUN_ALL_TESTS
 
