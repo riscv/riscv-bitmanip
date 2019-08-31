@@ -174,7 +174,11 @@ module system;
 				$display("FAILED PCPI SANITY CHECKS");
 				$finish;
 			end
-			if (pcpi_ready != pcpi_wr) begin
+			if (pcpi_ready !== pcpi_wr) begin
+				$display("FAILED PCPI SANITY CHECKS");
+				$finish;
+			end
+			if (pcpi_ready === 1'bx || pcpi_wait === 1'bx) begin
 				$display("FAILED PCPI SANITY CHECKS");
 				$finish;
 			end
