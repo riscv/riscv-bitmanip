@@ -24,18 +24,18 @@ RV_COMPLIANCE_CODE_BEGIN
     li t1, 0x9543c51a
     sbclri a4,t1,31
     sw a4,20(a1)
-    li a3, 0x1014c66e
-    sbclri s6,a3,12
-    sw s6,24(a1)
-    li a2, 0x1a3c3257
-    sbclri s6,a2,8
-    sw s6,28(a1)
-    li s6, 0x88061100
-    sbclri s7,s6,2
-    sw s7,32(a1)
-    li t0, 0xfebefbcc
-    sbclri a5,t0,22
-    sw a5,36(a1)
+    li t3, 0x1014c66e
+    sbclri s2,t3,12
+    sw s2,24(a1)
+    li s2, 0x1a3c3257
+    sbclri t2,s2,8
+    sw t2,28(a1)
+    li a3, 0x88061100
+    sbclri t0,a3,2
+    sw t0,32(a1)
+    li a2, 0xfebefbcc
+    sbclri t2,a2,22
+    sw t2,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

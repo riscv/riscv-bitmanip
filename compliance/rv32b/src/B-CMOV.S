@@ -36,51 +36,76 @@ RV_COMPLIANCE_CODE_BEGIN
     li s8, 0xb208965f
     cmov t0,s6,t2,s8
     sw t0,20(a1)
-    li s5, 0x00000006
-    li t1, 0x00000001
-    li a6, 0x00000000
-    cmov a0,s5,t1,a6
-    sw a0,24(a1)
-    li a0, 0x00000000
-    li t1, 0x00000010
-    li s4, 0xcf621d70
-    cmov t0,a0,t1,s4
-    sw t0,28(a1)
-    li a0, 0x00000000
-    li t0, 0x009028c2
-    li t4, 0x20000000
-    cmov t3,a0,t0,t4
-    sw t3,32(a1)
-    li s4, 0x00000000
-    li s10, 0x10000000
-    li s6, 0x00020000
-    cmov s2,s4,s10,s6
-    sw s2,36(a1)
-    li s5, 0x00000080
+    li a4, 0x00000000
+    li s4, 0x00000010
+    li t1, 0xcf621d70
+    cmov s9,a4,s4,t1
+    sw s9,24(a1)
+    li s9, 0x00000000
+    li a3, 0x009028c2
+    li s5, 0x20000000
+    cmov s10,s9,a3,s5
+    sw s10,28(a1)
+    li t3, 0x00000000
+    li a2, 0x10000000
+    li s1, 0x00020000
+    cmov a3,t3,a2,s1
+    sw a3,32(a1)
+    li s5, 0x00000000
+    li s2, 0xf232fb4e
+    li t1, 0xf25d0cb2
+    cmov a7,s5,s2,t1
+    sw a7,36(a1)
+    li a3, 0x00000000
+    li s7, 0xfdf64be6
+    li a5, 0xffe44ba6
+    cmov t4,a3,s7,a5
+    sw t4,40(a1)
+    li a3, 0x00000006
+    li t4, 0x00000001
+    li t1, 0x00000000
+    cmov s7,a3,t4,t1
+    sw s7,44(a1)
+    li a5, 0x00000080
     li s6, 0x6061f39d
-    li t2, 0x6061fb9d
-    cmov a7,s5,s6,t2
-    sw a7,40(a1)
-    li s0, 0x000000c0
-    li s4, 0x69345248
-    li s6, 0x69345348
-    cmov t6,s0,s4,s6
-    sw t6,44(a1)
-    li a2, 0x00000000
-    li s10, 0xf232fb4e
-    li s2, 0xf25d0cb2
-    cmov s1,a2,s10,s2
-    sw s1,48(a1)
-    li s10, 0x00000000
-    li t0, 0xfdf64be6
-    li a0, 0xffe44ba6
-    cmov s4,s10,t0,a0
-    sw s4,52(a1)
+    li t5, 0x6061fb9d
+    cmov s4,a5,s6,t5
+    sw s4,48(a1)
+    li t5, 0x000000c0
+    li s11, 0x69345248
+    li t0, 0x69345348
+    cmov a3,t5,s11,t0
+    sw a3,52(a1)
+    li s7, 0x00000100
+    li s11, 0x00000002
+    li t0, 0x00280000
+    cmov a4,s7,s11,t0
+    sw a4,56(a1)
+    li a3, 0x00020000
+    li s0, 0x00000080
+    li t2, 0x00800080
+    cmov t3,a3,s0,t2
+    sw t3,60(a1)
+    li s2, 0x031c0eea
+    li a0, 0xfbf365be
+    li t5, 0x34f67ff6
+    cmov s0,s2,a0,t5
+    sw s0,64(a1)
+    li s1, 0x30000000
+    li s2, 0x88012009
+    li a2, 0x08012009
+    cmov s8,s1,s2,a2
+    sw s8,68(a1)
+    li s6, 0xb2fb7fb8
+    li s8, 0xf174028f
+    li a3, 0x6308beaf
+    cmov a2,s6,s8,a3
+    sw a2,72(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 14,4,-1
+.fill 19,4,-1
 RV_COMPLIANCE_DATA_END

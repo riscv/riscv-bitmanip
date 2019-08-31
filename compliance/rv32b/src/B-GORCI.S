@@ -24,11 +24,17 @@ RV_COMPLIANCE_CODE_BEGIN
     li s8, 0x9543c51a
     gorci a6,s8,31
     sw a6,20(a1)
+    li a2, 0x00000281
+    gorci a5,a2,19
+    sw a5,24(a1)
+    li a0, 0xc0002800
+    gorci t1,a0,28
+    sw t1,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

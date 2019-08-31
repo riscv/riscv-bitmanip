@@ -24,18 +24,18 @@ RV_COMPLIANCE_CODE_BEGIN
     li a6, 0x9543c51a
     sbexti a0,a6,31
     sw a0,20(a1)
-    li a5, 0x1014c66e
-    sbexti a4,a5,12
+    li t2, 0x1014c66e
+    sbexti a4,t2,12
     sw a4,24(a1)
-    li t2, 0x1a3c3257
-    sbexti a6,t2,8
-    sw a6,28(a1)
-    li t2, 0x88061100
-    sbexti a4,t2,2
-    sw a4,32(a1)
-    li a7, 0xfebefbcc
-    sbexti t5,a7,22
-    sw t5,36(a1)
+    li s5, 0x1a3c3257
+    sbexti s3,s5,8
+    sw s3,28(a1)
+    li s0, 0x88061100
+    sbexti t1,s0,2
+    sw t1,32(a1)
+    li a5, 0xfebefbcc
+    sbexti s11,a5,22
+    sw s11,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

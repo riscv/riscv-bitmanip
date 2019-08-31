@@ -30,23 +30,31 @@ RV_COMPLIANCE_CODE_BEGIN
     li s6, 0x9a48a02c
     sro s1,s5,s6
     sw s1,20(a1)
-    li a6, 0x12ecc6b6
-    li s7, 0x1750a9be
-    sro s5,a6,s7
-    sw s5,24(a1)
-    li s2, 0x44e417d0
-    li t2, 0x4e13941f
-    sro s3,s2,t2
-    sw s3,28(a1)
-    li a5, 0x7bf2539c
-    li s4, 0xc7ef0f0e
-    sro s8,a5,s4
-    sw s8,32(a1)
+    li s1, 0x12ecc6b6
+    li s0, 0x1750a9be
+    sro t2,s1,s0
+    sw t2,24(a1)
+    li s10, 0x43f5e818
+    li s5, 0x6486f805
+    sro s9,s10,s5
+    sw s9,28(a1)
+    li s6, 0x44e417d0
+    li t0, 0x4e13941f
+    sro a0,s6,t0
+    sw a0,32(a1)
+    li t0, 0x4a48fd54
+    li a5, 0x2000023e
+    sro t5,t0,a5
+    sw t5,36(a1)
+    li a3, 0x7bf2539c
+    li s6, 0xc7ef0f0e
+    sro t6,a3,s6
+    sw t6,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 9,4,-1
+.fill 11,4,-1
 RV_COMPLIANCE_DATA_END

@@ -24,18 +24,18 @@ RV_COMPLIANCE_CODE_BEGIN
     li t0, 0x9543c51a
     sbseti a4,t0,31
     sw a4,20(a1)
-    li a7, 0x1014c66e
-    sbseti s6,a7,12
-    sw s6,24(a1)
-    li t3, 0x1a3c3257
-    sbseti s3,t3,8
-    sw s3,28(a1)
-    li t4, 0x88061100
-    sbseti t3,t4,2
-    sw t3,32(a1)
-    li t6, 0xfebefbcc
-    sbseti a6,t6,22
-    sw a6,36(a1)
+    li s2, 0x1014c66e
+    sbseti t3,s2,12
+    sw t3,24(a1)
+    li t1, 0x1a3c3257
+    sbseti s7,t1,8
+    sw s7,28(a1)
+    li s2, 0x88061100
+    sbseti s0,s2,2
+    sw s0,32(a1)
+    li t2, 0xfebefbcc
+    sbseti t1,t2,22
+    sw t1,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

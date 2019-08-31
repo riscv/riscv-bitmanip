@@ -24,11 +24,17 @@ RV_COMPLIANCE_CODE_BEGIN
     li t5, 0x9543c51a
     grevi s4,t5,31
     sw s4,20(a1)
+    li a6, 0x00000281
+    grevi a4,a6,19
+    sw a4,24(a1)
+    li t0, 0xc0002800
+    grevi a2,t0,28
+    sw a2,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

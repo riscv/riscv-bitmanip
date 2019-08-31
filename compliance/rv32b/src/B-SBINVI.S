@@ -24,18 +24,18 @@ RV_COMPLIANCE_CODE_BEGIN
     li s0, 0x9543c51a
     sbinvi a3,s0,31
     sw a3,20(a1)
-    li s2, 0x1014c66e
-    sbinvi t0,s2,12
-    sw t0,24(a1)
-    li a4, 0x1a3c3257
-    sbinvi t0,a4,8
-    sw t0,28(a1)
-    li a3, 0x88061100
-    sbinvi s1,a3,2
-    sw s1,32(a1)
-    li t4, 0xfebefbcc
-    sbinvi a3,t4,22
-    sw a3,36(a1)
+    li t0, 0x1014c66e
+    sbinvi s3,t0,12
+    sw s3,24(a1)
+    li s8, 0x1a3c3257
+    sbinvi t6,s8,8
+    sw t6,28(a1)
+    li s0, 0x88061100
+    sbinvi a6,s0,2
+    sw a6,32(a1)
+    li a7, 0xfebefbcc
+    sbinvi s4,a7,22
+    sw s4,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

@@ -68,9 +68,11 @@ andn,orn,xnor 22000412 07fffbdd
 andn,orn,xnor f7ef0b32 ebffafa5
 andn,orn,xnor d3610008 d3ddcdef
 
+bdep 00446020 800cbfff
 bdep 00c106e0 096008f1
 bdep 0118b98f 7f0d5000
 bdep 02900320 e8b8f93a
+bdep 0396d751 aefc6000
 bdep 1474e58c a7833f8c
 bdep 2e00975c beffffe9
 bdep 3198b004 3afc39d7
@@ -96,6 +98,7 @@ bdep feb971d4 b7ffffe7
 
 bext 201450ef d603fbf5
 bext 2f197810 c410ffc0
+bext 3c010000 c0e71b2f
 bext 4e817b27 f50f0000
 bext 52100032 72ff06e1
 bext 62680100 8f089018
@@ -110,19 +113,58 @@ bext c6400100 1c3fc1ff
 bext eb96f4e4 e0ffffd3
 bext f93cffff d706ffff
 
+bfp 00800020 cce533a0
+bfp 09280a31 bf04fb41
+bfp 09a4cf49 e07b9586
+bfp 0a0b00ea 708e0000
+bfp 0b9902f0 e0f38101
+bfp 1000000a 9421d2a1
+bfp 1098a082 0d15ff77
+bfp 21f14000 35790ba0
+bfp 2e3c4800 007d3302
+bfp 32446088 0f30013d
+bfp 3808c26c 00141913
+bfp 3e32c233 649f3a6b
+bfp 439347fc 10ff6361
+bfp 46805d70 461e171c
+bfp 55763aff cb3a5063
+bfp 65000004 721c1db0
+bfp 65720785 874e9a8a
+bfp 65e554ce 73e100c4
+bfp 6ef00014 3ee6ccda
+bfp 70008040 0f1ffd0f
+bfp 7f88d058 3788c080
+bfp 803dc580 60f6f187
+bfp 8699861f 8341a420
+bfp 96522017 90e946ad
+bfp 9a5072ac 5b343f99
+bfp a07646d2 c70b0bbf
+bfp a1e6026d f5b8607a
+bfp a2000004 e0dd3861
+bfp bc83790a 0b007ee4
+bfp bf727c82 63c2cffb
+bfp c008a4b5 01839495
+bfp c1000002 753702f0
+bfp c191c15a 8707f0cb
+bfp f4e48c21 f70cd616
+bfp f991964e f08b494d
+
 clmul,clmulh,clmulr fa829000 c0000040
 
 clz,ctz,pcnt 0000000a
+clz,ctz,pcnt 00000011
 clz,ctz,pcnt 00500002
 clz,ctz,pcnt 01000000
 clz,ctz,pcnt 01960000
 clz,ctz,pcnt 02d80096
+clz,ctz,pcnt 05180400
 clz,ctz,pcnt 0800000a
 clz,ctz,pcnt 317ff49a
 clz,ctz,pcnt 40800429
 clz,ctz,pcnt 86400000
 clz,ctz,pcnt c4434000
 clz,ctz,pcnt cbcd6a07
+clz,ctz,pcnt ffffebff
 
 cmix eb29f6d6 0039ff79 e8b7098a
 cmix 2e8e213f 0131d6ea 00000000
@@ -139,14 +181,19 @@ cmix f8e67357 96397276 71e40a26
 cmix 5dd656a2 b001085f a9610018
 cmix a0ca9fe8 ca800015 ac800fe8
 
-cmov 00000006 00000001 00000000
 cmov 00000000 00000010 cf621d70
 cmov 00000000 009028c2 20000000
 cmov 00000000 10000000 00020000
-cmov 00000080 6061f39d 6061fb9d
-cmov 000000c0 69345248 69345348
 cmov 00000000 f232fb4e f25d0cb2
 cmov 00000000 fdf64be6 ffe44ba6
+cmov 00000006 00000001 00000000
+cmov 00000080 6061f39d 6061fb9d
+cmov 000000c0 69345248 69345348
+cmov 00000100 00000002 00280000
+cmov 00020000 00000080 00800080
+cmov 031c0eea fbf365be 34f67ff6
+cmov 30000000 88012009 08012009
+cmov b2fb7fb8 f174028f 6308beaf
 
 crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000000
 crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 00000004
@@ -202,44 +249,78 @@ fsri 4227bfff 5003b62a =0x19
 fsri e3040043 48134b70 =0x00
 fsri ffffff07 ba4e154b =0x1f
 
+gorc,grev 00002000 40f01f17
+gorc,grev 00120210 c6fe507a
+gorc,grev 00200900 f9fceffe
+gorc,grev 002c80c0 e2d30092
+gorc,grev 04000018 2d4792d3
+gorc,grev 08c03000 3fef8b13
+gorc,grev 0e030000 0000000b
+gorc,grev 80031100 efea7d18
+gorc,grev 82200401 821d8858
+gorc,grev c480e100 4480874c
+
+gorci,grevi 00000281 =0x13
+gorci,grevi c0002800 =0x1c
+
+min,max,minu,maxu 00000040 00020000
 min,max,minu,maxu 00100000 00000000
 min,max,minu,maxu 001815fa 001815db
+min,max,minu,maxu 0263faf0 006af6f4
 min,max,minu,maxu 1051ac9a 1051a9d8
 min,max,minu,maxu 16070000 15020090
 min,max,minu,maxu 17d47fc4 17d47fc6
 min,max,minu,maxu 382e991b 382e999b
 min,max,minu,maxu 3f025f9f 3f025f9e
+min,max,minu,maxu 40000000 40000200
 min,max,minu,maxu 41040098 41000098
 min,max,minu,maxu 5332ff01 5332ff0c
 min,max,minu,maxu 5583d725 5513f76d
 min,max,minu,maxu 8ba9ff2d 8bf5ff1d
 min,max,minu,maxu 9e7f57ab 5ebf0000
 min,max,minu,maxu a4dbf37b a4dbf39b
+min,max,minu,maxu b58ff25f b59df27d
 min,max,minu,maxu b5a168d9 b5a17d31
 min,max,minu,maxu bdf3d8b0 bfe2dcb0
+min,max,minu,maxu bfecbc33 bfe6bd33
 min,max,minu,maxu bff3d8b0 bfe2dcb0
 min,max,minu,maxu c104001f c104001d
 min,max,minu,maxu de7ca325 de7ca724
 min,max,minu,maxu def06600 def06400
 min,max,minu,maxu e9767dca fc05cdf8
+min,max,minu,maxu effc84b1 effd84b1
 min,max,minu,maxu ffe2f8b0 ffe2dcb0
 
 slo,sro,rol,ror 12ecc6b6 1750a9be
+slo,sro,rol,ror 43f5e818 6486f805
 slo,sro,rol,ror 44e417d0 4e13941f
+slo,sro,rol,ror 4a48fd54 2000023e
 slo,sro,rol,ror 7bf2539c c7ef0f0e
 
-sbclr,sbset,sbinv,sbext 00840094 080006c0
-sbclr,sbset,sbinv,sbext 6e136617 68356560
+sloi,sroi,rori c8680132 =0x1d
+
+sbclr,sbset,sbinv,sbext 00022c4a 5280c5d0
 sbclr,sbset,sbinv,sbext 00040011 b4946212
+sbclr,sbset,sbinv,sbext 00840094 080006c0
+sbclr,sbset,sbinv,sbext 008a00b0 9c1d04b9
 sbclr,sbset,sbinv,sbext 10000085 83262662
 sbclr,sbset,sbinv,sbext 1340282b 0000061b
+sbclr,sbset,sbinv,sbext 2afd97a8 3002c6d8
+sbclr,sbset,sbinv,sbext 49484c00 4975d377
+sbclr,sbset,sbinv,sbext 5f77971c 7601006a
+sbclr,sbset,sbinv,sbext 6e136617 68356560
+sbclr,sbset,sbinv,sbext 74108058 0adcd03a
+sbclr,sbset,sbinv,sbext 7ffd8efc 7bb326df
+sbclr,sbset,sbinv,sbext 822004fa 16d7df1c
+sbclr,sbset,sbinv,sbext 85280b88 90c24215
 sbclr,sbset,sbinv,sbext 980807fd 980a07d2
+sbclr,sbset,sbinv,sbext 9d233768 0c00020d
+sbclr,sbset,sbinv,sbext b4110962 64552f5c
+sbclr,sbset,sbinv,sbext bf8b47cf e98014eb
 sbclr,sbset,sbinv,sbext dff47340 00c505c1
 sbclr,sbset,sbinv,sbext e46d3d40 000806db
-sbclr,sbset,sbinv,sbext 00022c4a 5280c5d0
-sbclr,sbset,sbinv,sbext 5f77971c 7601006a
-sbclr,sbset,sbinv,sbext 7ffd8efc 7bb326df
 sbclr,sbset,sbinv,sbext f044ff7a b6c01b9a
+sbclr,sbset,sbinv,sbext fe4e45fd cb4ef3f7
 sbclr,sbset,sbinv,sbext fffff31c fffffbc6
 sbclr,sbset,sbinv,sbext fffffdfc 6d39aa61
 
@@ -247,3 +328,7 @@ sbclri,sbseti,sbinvi,sbexti 1014c66e =0xc
 sbclri,sbseti,sbinvi,sbexti 1a3c3257 =0x8
 sbclri,sbseti,sbinvi,sbexti 88061100 =0x2
 sbclri,sbseti,sbinvi,sbexti febefbcc =0x16
+
+shfl,unshfl 00d321db 4ae7185c
+shfl,unshfl 0f3ff336 4b10a48e
+shfl,unshfl f807f882 a200000e

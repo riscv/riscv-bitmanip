@@ -30,18 +30,18 @@ RV_COMPLIANCE_CODE_BEGIN
     li a3, 0x2ba53005
     fsri t0,s4,a3,31
     sw t0,20(a1)
-    li s6, 0x4227bfff
-    li t5, 0x5003b62a
-    fsri a4,s6,t5,25
-    sw a4,24(a1)
-    li t5, 0xe3040043
-    li a6, 0x48134b70
-    fsri t4,t5,a6,0
-    sw t4,28(a1)
-    li s5, 0xffffff07
+    li s0, 0x4227bfff
+    li s2, 0x5003b62a
+    fsri s1,s0,s2,25
+    sw s1,24(a1)
+    li s9, 0xe3040043
+    li s7, 0x48134b70
+    fsri a6,s9,s7,0
+    sw a6,28(a1)
+    li s9, 0xffffff07
     li s4, 0xba4e154b
-    fsri t6,s5,s4,31
-    sw t6,32(a1)
+    fsri a3,s9,s4,31
+    sw a3,32(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

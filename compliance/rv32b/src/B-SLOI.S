@@ -24,11 +24,14 @@ RV_COMPLIANCE_CODE_BEGIN
     li t2, 0x9543c51a
     sloi t5,t2,31
     sw t5,20(a1)
+    li t2, 0xc8680132
+    sloi s8,t2,29
+    sw s8,24(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 7,4,-1
 RV_COMPLIANCE_DATA_END
