@@ -431,7 +431,7 @@ set, swaps each adjacent pair of $2^i$ bits.
 The above pattern should be intuitive to understand in order to extend
 this definition in an obvious manner for RV128.
 
-\begin{table}[h]
+\begin{table}[t]
 \begin{small}
 \begin{center}
 \begin{tabular}{r l p{0.5in} r l p{0.3in} r l}
@@ -511,20 +511,26 @@ Figure~\ref{permnet-grev} shows the permutation network for {\tt grev}.
 
 Pseudo-instructions are provided for the most common GREVI use-cases. Their names
 consist of a prefix and and optional suffix. Each prefix and suffix corresponds
-to a bit mask. The GREVI control word is obtained by AND-ing the two masks together.
+to a bit mask (see Table~\ref{grevi-names}). The GREVI control word is obtained
+by AND-ing the two masks together.
 
+\begin{table}[!h]
 \begin{center}
-\begin{tabular}{lcp{1cm}rc}
+\begin{tabular}{lcp{1cm}rcl}
 Prefix & Mask & & Suffix & Mask \\
 \hline
 {\tt rev}   & 111111 & &      --- & 111111 \\
-{\tt rev2}  & 111110 & & {\tt .w} & 011111 \\
-{\tt rev4}  & 111100 & & {\tt .h} & 001111 \\
-{\tt rev8}  & 111000 & & {\tt .b} & 000111 \\
-{\tt rev16} & 110000 & & {\tt .n} & 000011 \\
-{\tt rev32} & 100000 & & {\tt .p} & 000001 \\
+{\tt rev2}  & 111110 & & {\tt .w} & 011111 & ({\tt w} = word)\\
+{\tt rev4}  & 111100 & & {\tt .h} & 001111 & ({\tt h} = half word)\\
+{\tt rev8}  & 111000 & & {\tt .b} & 000111 & ({\tt b} = byte)\\
+{\tt rev16} & 110000 & & {\tt .n} & 000011 & ({\tt n} = nibble)\\
+{\tt rev32} & 100000 & & {\tt .p} & 000001 & ({\tt p} = pair)\\
 \end{tabular}
 \end{center}
+\caption{Naming scheme for {\tt grevi} pseudo-instructions. The prefix and
+suffix masks are ANDed to compute the immediate argument.}
+\label{grevi-names}
+\end{table}
 
 In other words, the prefix controls the number of zero bits at the LSB end of the
 control word, and the suffix controls the number of zeros at the MSB end of the control
@@ -606,7 +612,9 @@ The most common type of shuffle/unshuffle operation is one on an immediate
 control value that only contains one contiguous region of set bits. We call
 those operations zip/unzip and provide pseudo-instructions for them. The naming
 scheme for those pseudo-instructions is similar to the naming scheme for the
-{\tt grevi} pseudo-instructions.
+{\tt grevi} pseudo-instructions (see Tables~\ref{grevi-modes} and
+\ref{grevi-names}), except that the LSB bit of the masks in Table~\ref{grevi-names}
+is not used for zip/unzip.
 
 Shuffle/unshuffle operations that only have individual bits set (not a contiguous
 region of two or more bits) are their own inverse.
@@ -941,7 +949,8 @@ GORC can be usefull for copying naturally aligned fields in a word, and testing 
 fields for being equal zero.
 
 {\tt gorci} pseudo-instructions follow the same naming scheme as {\tt grevi}
-pseudo-instructions, except the prefix {\tt orc} is used instead of {\tt rev}. See
+pseudo-instructions (see Tables~\ref{grevi-modes} and \ref{grevi-names}),
+except the prefix {\tt orc} is used instead of {\tt rev}. See
 Table~\ref{gorci-modes} for a full list of {\tt gorci} pseudo-instructions.
 
 An important use-case is {\tt strlen()} and {\tt strcpy()}, which can utilize
