@@ -847,6 +847,79 @@ as {\tt zip8} and {\tt zip16}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{table}[h]
+\begin{small}
+\begin{center}
+\begin{tabular}{r l p{0.5in} r l p{0.3in} r l}
+
+\multicolumn{2}{c}{RV32} & &
+\multicolumn{5}{c}{RV64} \\
+
+\cline{1-2}
+\cline{4-8}
+
+\multicolumn{1}{c}{shamt} & Instruction & &
+\multicolumn{1}{c}{shamt} & Instruction & &
+\multicolumn{1}{c}{shamt} & Instruction \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+ 0: 00000 & ---           &   &  0: 000000 & ---           &   & 32: 100000 & {\tt orc32} \\
+ 1: 00001 & {\tt orc.p}   &   &  1: 000001 & {\tt orc.p}   &   & 33: 100001 & ---         \\
+ 2: 00010 & {\tt orc2.n}  &   &  2: 000010 & {\tt orc2.n}  &   & 34: 100010 & ---         \\
+ 3: 00011 & {\tt orc.n}   &   &  3: 000011 & {\tt orc.n}   &   & 35: 100011 & ---         \\
+ 4: 00100 & {\tt orc4.b}  &   &  4: 000100 & {\tt orc4.b}  &   & 36: 100100 & ---         \\
+ 5: 00101 & ---           &   &  5: 000101 & ---           &   & 37: 100101 & ---         \\
+ 6: 00110 & {\tt orc2.b}  &   &  6: 000110 & {\tt orc2.b}  &   & 38: 100110 & ---         \\
+ 7: 00111 & {\tt orc.b}   &   &  7: 000111 & {\tt orc.b}   &   & 39: 100111 & ---         \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+ 8: 01000 & {\tt orc8.h}  &   &  8: 001000 & {\tt orc8.h}  &   & 40: 101000 & ---         \\
+ 9: 01001 & ---           &   &  9: 001001 & ---           &   & 41: 101001 & ---         \\
+10: 01010 & ---           &   & 10: 001010 & ---           &   & 42: 101010 & ---         \\
+11: 01011 & ---           &   & 11: 001011 & ---           &   & 43: 101011 & ---         \\
+12: 01100 & {\tt orc4.h}  &   & 12: 001100 & {\tt orc4.h}  &   & 44: 101100 & ---         \\
+13: 01101 & ---           &   & 13: 001101 & ---           &   & 45: 101101 & ---         \\
+14: 01110 & {\tt orc2.h}  &   & 14: 001110 & {\tt orc2.h}  &   & 46: 101110 & ---         \\
+15: 01111 & {\tt orc.h}   &   & 15: 001111 & {\tt orc.h}   &   & 47: 101111 & ---         \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+16: 10000 & {\tt orc16}   &   & 16: 010000 & {\tt orc16.w} &   & 48: 110000 & {\tt orc16} \\
+17: 10001 & ---           &   & 17: 010001 & ---           &   & 49: 110001 & ---         \\
+18: 10010 & ---           &   & 18: 010010 & ---           &   & 50: 110010 & ---         \\
+19: 10011 & ---           &   & 19: 010011 & ---           &   & 51: 110011 & ---         \\
+20: 10100 & ---           &   & 20: 010100 & ---           &   & 52: 110100 & ---         \\
+21: 10101 & ---           &   & 21: 010101 & ---           &   & 53: 110101 & ---         \\
+22: 10110 & ---           &   & 22: 010110 & ---           &   & 54: 110110 & ---         \\
+23: 10111 & ---           &   & 23: 010111 & ---           &   & 55: 110111 & ---         \\
+
+\cline{1-2}
+\cline{4-5}
+\cline{7-8}
+
+24: 11000 & {\tt orc8}    &   & 24: 011000 & {\tt orc8.w}  &   & 56: 111000 & {\tt orc8}  \\
+25: 11001 & ---           &   & 25: 011001 & ---           &   & 57: 111001 & ---         \\
+26: 11010 & ---           &   & 26: 011010 & ---           &   & 58: 111010 & ---         \\
+27: 11011 & ---           &   & 27: 011011 & ---           &   & 59: 111011 & ---         \\
+28: 11100 & {\tt orc4}    &   & 28: 011100 & {\tt orc4.w}  &   & 60: 111100 & {\tt orc4}  \\
+29: 11101 & ---           &   & 29: 011101 & ---           &   & 61: 111101 & ---         \\
+30: 11110 & {\tt orc2}    &   & 30: 011110 & {\tt orc2.w}  &   & 62: 111110 & {\tt orc2}  \\
+31: 11111 & {\tt orc}     &   & 31: 011111 & {\tt orc.w}   &   & 63: 111111 & {\tt orc}   \\
+\end{tabular}
+\end{center}
+\end{small}
+\caption{Pseudo-instructions for {\tt gorci} instruction}
+\label{gorci-modes}
+\end{table}
+
 \section{Generalized OR-Combine (\texttt{gorc, gorci})}
 
 \begin{rvb}
@@ -868,7 +941,12 @@ GORC can be usefull for copying naturally aligned fields in a word, and testing 
 fields for being equal zero.
 
 {\tt gorci} pseudo-instructions follow the same naming scheme as {\tt grevi}
-pseudo-instructions, except the prefix {\tt orc} is used instead of {\tt rev}.
+pseudo-instructions, except the prefix {\tt orc} is used instead of {\tt rev}. See
+Table~\ref{gorci-modes} for a full list of {\tt gorci} pseudo-instructions.
+
+An important use-case is {\tt strlen()} and {\tt strcpy()}, which can utilize
+{\tt orc.b} for testing for zero bytes, and counting trailing non-zero bytes
+in a word.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
