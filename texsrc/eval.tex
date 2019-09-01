@@ -107,80 +107,50 @@ instruction, or something like the following sequence.
 
 \subsection{Counting trailing non-zero bytes}
 
-Counting the trailing (LSB-end) non-zero bytes in a 64-bit word
-is a helpful operation in optimized implementations of strlen
-and strcpy:
+Counting the trailing (LSB-end) non-zero bytes in a word
+is a helpful operation in optimized implementations of {\tt strlen()}
+and {\tt strcpy()}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   int count_trailing_nonzero_bytes(long x)
   {
-    uint64_t m = 0x0101010101010101L;
-    return ctz(~bmatflip(bmator(x, m)));
+    return _rv_ctz(~_rv_orc_b(x)) >> 3;
   }
 \end{verbatim}
 \end{minipage}
 
-Because {\tt 0x0101010101010101LL} is {\tt bmatflip(255)}, and $(AB)^T = (B^T)(A^T)$, we can also write
-this as following:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Finding bytes of certain values}
+
+Finding zero bytes is a useful operations for {\tt strchr()}
+and {\tt memchr()}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  int count_trailing_nonzero_bytes(long x)
+  bool check_zero_bytes(long x)
   {
-    return ctz(~bmator(255, bmatflip(x)));
+    return ~_rv_orc_b(x) != 0;
   }
 \end{verbatim}
 \end{minipage}
 
-Or, less elegant, but with better utilization of compressed instructions:
+To find other bytes we simply XOR the value with a mask of the byte value we
+are looking for:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  int count_trailing_nonzero_bytes(long x)
+  bool check_byte(long x, unsigned char c)
   {
-    return ctz(~bmator(x, -1L)) >> 3;
+    return ~_rv_orc_b(x ^ _rv_orc8(c)) != 0;
   }
 \end{verbatim}
 \end{minipage}
 
-And the following code can be used to simply check if all 8 bytes in a 64-bit word
-are nonzero:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  bool all_bytes_nonzero(long x)
-  {
-    return bmator(x, -1L) == -1L;
-  }
-\end{verbatim}
-\end{minipage}
-
-And without bit-matrix multiply:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int count_trailing_nonzero_bytes(long x)
-  {
-    x |= grev(x, 1);
-    x |= grev(x, 2);
-    x |= grev(x, 4);
-    return ctz(~x) >> 3;
-  }
-\end{verbatim}
-\end{minipage}
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int all_bytes_nonzero(long x)
-  {
-    x |= grev(x, 1);
-    x |= grev(x, 2);
-    x |= grev(x, 4);
-    return x == -1L;
-  }
-\end{verbatim}
-\end{minipage}
+These schemes can easily be extended with {\tt ctz} and {\tt pcnt} to perform
+operations such as counting the number of bytes of a certain value within a
+word, or finding the position of the first such byte.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
