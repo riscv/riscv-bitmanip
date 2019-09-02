@@ -144,3 +144,58 @@ extern "C" void zip_fanout()
 	assert(rv64b::shfl(x, 24) == 0x0012003400560078);
 	assert(rv64b::shfl(x, 16) == 0x0000123400005678);
 }
+
+// ---------------------------------------------------------
+
+int or_bytes_ref(uint64_t x)
+{
+	int value = 0;
+	for (int i = 0; i < 8; i++)
+		value |= (x >> (8*i)) & 255;
+	return value;
+}
+
+int or_bytes_orc(uint64_t x)
+{
+	return rv64b::gorc(x, -8) & 255;
+}
+
+int and_bytes_ref(uint64_t x)
+{
+	int value = 255;
+	for (int i = 0; i < 8; i++)
+		value &= (x >> (8*i)) & 255;
+	return value;
+}
+
+int and_bytes_orc(uint64_t x)
+{
+	return ~rv64b::gorc(~x, -8) & 255;
+}
+
+int xor_bytes_ref(uint64_t x)
+{
+	int value = 0;
+	for (int i = 0; i < 8; i++)
+		value ^= (x >> (8*i)) & 255;
+	return value;
+}
+
+int xor_bytes_clmul(uint64_t x)
+{
+	uint64_t f = rv64b::gorc(0x80, -8);
+	return rv64b::clmulr(x, f) & 255;
+}
+
+int xor_bytes_bmat(uint64_t x)
+{
+	return rv64b::bmatxor(255, x);
+}
+
+extern "C" void check_bytes(uint64_t x)
+{
+	assert(or_bytes_ref(x) == or_bytes_orc(x));
+	assert(and_bytes_ref(x) == and_bytes_orc(x));
+	assert(xor_bytes_ref(x) == xor_bytes_clmul(x));
+	assert(xor_bytes_ref(x) == xor_bytes_bmat(x));
+}

@@ -105,6 +105,53 @@ instruction, or something like the following sequence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{OR/AND/XOR-reduce in byte vectors}
+
+OR-ing the bytes in a register and returning the resulting byte is
+easy with GORC:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  gorci a0, a0, -8
+  andi a0, 255
+\end{verbatim}
+\end{minipage}
+
+AND-ing can accomplished by applying De Morgan's laws:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  not a0, a0
+  gorci a0, a0, -8
+  not a0, a0
+  andi a0, 255
+\end{verbatim}
+\end{minipage}
+
+XOR-ing can be accomplished with CLMUL (see also section~\ref{invxorshift}).
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  andi a1, zero, 0x80
+  gorci a1, a1, -8
+  clmulr a0, a0, a1
+  andi a0, 255
+\end{verbatim}
+\end{minipage}
+
+Where the first two instructions (andi+gorci) just create the constant 0x8080..8080.
+
+Finally, on RV64, XOR-ing the bytes in a register can also be accomplished with BMATXOR:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  andi a1, zero, 0xff
+  bmatxor a0, a1, a0
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Counting trailing non-zero bytes}
 
 Counting the trailing (LSB-end) non-zero bytes in a word
@@ -743,6 +790,7 @@ rotate_z:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Inverting Xorshift RNGs}
+\label{invxorshift}
 
 Xorshift RNGs are a class of fast RNGs for different bit widths. There are 648
 Xorshift RNGs for 32 bits, but this is the one that the author of the original

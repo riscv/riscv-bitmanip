@@ -1112,7 +1112,7 @@ of the 2$\cdot$XLEN carry-less product.
 \texttt{clmulr} produces bits 2$\cdot$XLEN$-2$:XLEN-1 of the 2$\cdot$XLEN carry-less product.
 That means \texttt{clmulh} is equivalent to \texttt{clmulr} followed by a 1-bit right shift.
 (The MSB of a \texttt{clmulh} result is always zero.) Another equivalent definition of
-\texttt{clmulr} is that is \texttt{clmulr(a,b) := rev(clmul(rev(a), rev(b)))}. (The ``r''
+\texttt{clmulr} is \texttt{clmulr(a,b) := rev(clmul(rev(a), rev(b)))}. (The ``r''
 in \texttt{clmulr} means reversed.)
 
 Unlike {\tt mulh[[s]u]}, we add a *W variant of {\tt clmulh}. This is because we expect
