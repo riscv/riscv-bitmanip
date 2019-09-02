@@ -51,7 +51,7 @@ look like exactly, but it will probably look something like this:
 
  \begin{scope}[on background layer]
    \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
-   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- coordinate (A) ($ (clmul.south west) + (3.15cm,-0.2cm) $) coordinate (B)
+   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- coordinate (A) ($ (bmatflip.south west) + (3.15cm,-0.2cm) $) coordinate (B)
      |- ($ (bext.south west) + (6.0cm,-0.2cm) $) |- ($ (clz.north west) + (0,+0.2cm) $);
 
    \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
