@@ -109,6 +109,13 @@ implements {\tt rev8} and {\tt rev}, which are pseudo-instructions for {\tt grev
 and {\tt grevi rd, rs1, -1} respectively, the same binary encoding is used for those
 instructions as are used on a core with full support for the {\tt grev[i]} instruction.
 
+Like in the base ISA, we add {\tt *W} instruction variants on RV64 with the
+semantic of the matching RV32 instruction. Those instructions ignore the upper
+32 bit of their input and sign-extend their 32 bit output values. The {\tt *W}
+instruction is omitted when the 64-bit instruction produces the same result as
+the {\tt *W} instruction would when the 64-bit instruction is fed sign-extended
+32 bit values.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Basic bit manipulation instructions}
@@ -140,6 +147,14 @@ output is 0.
 
 The expression {\tt XLEN-1-clz(x)} evaluates to the index of the most significant
 set bit, also known as integer base-2 logarithm, or -1 if {\tt x} is zero.
+
+These instructions are commonly used for scanning bitmaps for set bits, for
+example in {\tt malloc()}, in binary GCD, or in priority queues such as the
+{\tt sched\_find\_first\_bit()} function used in the Linux kernel real-time
+scheduler.
+
+Another common applications include normalization in fixed-point code and soft
+float libraries, null suppression in data compression.
 
 % \subsection{References}
 %
@@ -204,7 +219,9 @@ rd, with rs1 in the lower half and rs2 in the upper half.
 \input{bextcref-pack}
 
 Applications include XLEN/2-bit funnel shifts, zero-extend XLEN/2 bit values, duplicate the lower
-XLEN/2 bits (e.g. for mask creation), and loading unsigned 32 constants on RV64.
+XLEN/2 bits (e.g. for mask creation), loading unsigned 32 constants on RV64, and packing
+C structs that fit in a register and are therefore passed in a register according to the RISC-V
+calling convention.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -284,9 +301,10 @@ Code that performs saturated arithmetic on a word size $<$ \texttt{XLEN} needs t
 min/max operations frequently. A simple way of performing those operations without branching
 can benefit those programs.
 
-SAT solvers spend a lot of time calculating the absolute value of a signed
-integer due to the way CNF literals are commonly encoded~\cite{BiereComm}. With
-\texttt{max} (or \texttt{minu}) this is a two-instruction operation:
+Some applications spend a lot of time on calculating the absolute values of
+signed integers. One example of that would be SAT solvers, due to the way CNF
+literals are commonly encoded~\cite{BiereComm}. With \texttt{max} (or
+\texttt{minu}) this is a two-instruction operation:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1109,6 +1127,8 @@ Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \
 produces the lower half of the carry-less product and \texttt{clmulh} produces the upper half
 of the 2$\cdot$XLEN carry-less product.
 
+Carry-less multiplication is equivalent to multiplication in the polynomial ring over GF(2).
+
 \texttt{clmulr} produces bits 2$\cdot$XLEN$-2$:XLEN-1 of the 2$\cdot$XLEN carry-less product.
 That means \texttt{clmulh} is equivalent to \texttt{clmulr} followed by a 1-bit right shift.
 (The MSB of a \texttt{clmulh} result is always zero.) Another equivalent definition of
@@ -1121,8 +1141,8 @@ where data is processed in 32-bit chunks.
 
 \input{bextcref-clmul}
 
-The classic applications for \texttt{clmul} are CRC~\cite{FastCRC,Wolf18A} and GCM, but more
-applications exist, including the following examples.
+The classic applications for \texttt{clmul} are Cyclic Redundancy Check (CRC)~\cite{FastCRC,Wolf18A}
+and Galois/Counter Mode (GCM), but more applications exist, including the following examples.
 
 There are obvious applications in hashing and pseudo random number generations. For
 example, it has been reported that hashes based on carry-less multiplications can
@@ -1161,9 +1181,9 @@ TI C6000 introduced a similar instruction (XORMPY) in C64x+.~\cite{c64xp}
     crc32c.d rd, rs
 \end{rvb}
 
-Unary CRC instructions that interpret the bits of rs1 as a CRC32/CRC32C state
-and perform a polynomial reduction of that state shifted left by 8, 16, 32, or
-64 bits.
+Unary Cyclic Redundancy Check (CRC) instructions that interpret the bits of rs1
+as a CRC32/CRC32C state and perform a polynomial reduction of that state
+shifted left by 8, 16, 32, or 64 bits.
 
 The instructions return the new CRC32/CRC32C state.
 
@@ -1423,6 +1443,9 @@ except that bits XLEN-1:32 of the result are cleared after the addition. I.e.
 these instructions zero-extend instead of sign-extend the 32-bit result.
 
 \input{bextcref-addwu}
+
+The 12-bit immediate to {\tt addiwu} is sign-extended, exactly like the immediate
+to {\tt addiw}.
 
 \subsection{Add/sub/shift with prefix zero-extend ({\tt addu.w}, {\tt subu.w}, {\tt slliu.w})}
 
@@ -1996,8 +2019,8 @@ Similarly, placing a bit field with length {\tt len} at the position {\tt pos}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  slli rd, rs, (XLEN-len-pos)
-  srli rd, rd, (XLEN-len)
+  slli rd, rs, (XLEN-len)
+  srli rd, rd, (XLEN-len-pos)
 \end{verbatim}
 \end{minipage}
 

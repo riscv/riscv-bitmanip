@@ -50,8 +50,7 @@ It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   select:
-    li a2, 1
-    sll a1, a2, a1
+    sbset a1, zero, a1
     bdep a0, a1, a0
     ctz a0, a0
     ret
@@ -728,7 +727,7 @@ as $\texttt{i$'$[5:0]} = \texttt{i[5:0]} + N \,\,\, (\textrm{mod 64})$.
 
 The GREV operation with shamt $N$ is $\texttt{i$'$[5:0]} = \texttt{i[5:0]} \textrm{ XOR } N$.
 
-And a GZIP operation corresponds to a rotate left shift by one position of any
+And a SHFL operation corresponds to a rotate left shift by one position of any
 contiguous region of $\texttt{i[5:0]}$. For example, {\tt zip} is a left rotate shift
 of the entire bit index:
 
@@ -920,9 +919,9 @@ time (RV64):
   uint32_t crc32q_fast(const uint64_t *p, int len)
   {
     uint64_t P  = 0x1814141ABLL;   // CRC polynomial
-    uint64_t k1 =  0xA1FA6BECLL;   // rest of x^128 divided by CRC polynomial
-    uint64_t k2 =  0x9BE9878FLL;   // rest of x^96 divided by CRC polynomial
-    uint64_t k3 =  0xB1EFC5F6LL;   // rest of x^64 divided by CRC polynomial
+    uint64_t k1 =  0xA1FA6BECLL;   // remainder of x^128 divided by CRC polynomial
+    uint64_t k2 =  0x9BE9878FLL;   // remainder of x^96 divided by CRC polynomial
+    uint64_t k3 =  0xB1EFC5F6LL;   // remainder of x^64 divided by CRC polynomial
     uint64_t mu = 0x1FEFF7F62LL;   // x^64 divided by CRC polynomial
 
     uint64_t a0, a1, a2, t1, t2;
