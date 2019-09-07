@@ -382,6 +382,73 @@ zero-shifts and logical ones-shifts.
 
 \section{Bit permutation instructions}
 
+The following sections describe 3 types of bit permutation instructions: Rotate
+shift, generalized reverse, and generalized shuffle.
+
+A bit permutation essentially is applying an invertible function to the bit addresses. (Bit
+addresses are 5 bit values on RV32 and 6 bit values on RV64.)
+
+Rotate shift right by $k$ is simply addition modulo XLEN.
+$$ i'_\mathrm{rot} := i + k \mod \mathrm{XLEN} $$
+
+Generalized reverse with control argument $k$ is simply XOR-ing the bit addresses with $k$:
+$$ i'_\mathrm{grev} := i \oplus k $$
+
+And generalized shuffle is performing a bit permutation on the bits of the bit addresses:
+$$ i'_\mathrm{shfl} := \mathrm{perm}_k(i) $$
+
+With the caveat that a single {\tt shfl}/{\tt unshfl} instruction can only
+perferm a certain sub-set of bit address permutations, but a sequence of 5 {\tt
+shfl}/{\tt unshfl} instructions can perform any of the 120 such permutations on
+RV32, and a sequence of 6 {\tt shfl}/{\tt unshfl} instructions can perform any
+of the 720 such permutations on RV64.
+
+Combining those three types of operations makes a vast number of bit
+permutations accessible within only a few instructions~\cite{Wolf19A} (see
+Table~\ref{numperms}).
+
+\begin{table}[!h]
+\begin{center}
+\begin{tabular}{r|rrr|r|r}
+N & ROT-only & GREV-only & SHFL-only & ROT+GREV & ROT+GREV+SHFL \\
+\hline
+  0 &   1 &   1 &   1 &           1 &                           1 \\
+  1 &  32 &  32 &  24 &          62 &                          85 \\
+  2 & --- & --- &  86 &         864 &                      3\,030 \\
+  3 & --- & --- & 119 &      4\,640 &                     78\,659 \\
+  4 & --- & --- & 120 &     23\,312 &                 2\,002\,167 \\
+  5 & --- & --- & --- &     92\,192 &                50\,106\,844 \\
+  6 & --- & --- & --- &    294\,992 &            1\,234\,579\,963 \\
+  7 & --- & --- & --- &    703\,744 & est.      30\,000\,000\,000 \\
+  8 & --- & --- & --- & 1\,012\,856 & est.     700\,000\,000\,000 \\
+  9 & --- & --- & --- & 1\,046\,224 & est. 15\,000\,000\,000\,000 \\
+ 10 & --- & --- & --- & 1\,048\,576 &  $\cdots\;\cdots\;\cdots\;\cdots\;\cdots$ \\
+ 11 & --- & --- & --- &         --- &  $\cdots\;\cdots\;\cdots\;\cdots\;\cdots$ \\
+\end{tabular}
+\end{center}
+\caption{Number of permutations reachable with N permutation instructions on RV32. \hbox{``---''}~indicates
+that additional instructions don't increase the space of reachable permutations.}
+\label{numperms}
+\end{table}
+
+Sequences of {\tt rot}, {\tt grev}, and {\tt [un]shfl} instructions can
+generate any arbitrary bit permutation. Often in surprising ways. For example,
+the following sequence swaps the two LSB bits of {\tt a0}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  rori a0, a0, 2
+  unshfli a0, a0, -1
+  roli a0, a0, 1
+  shfli a0, a0, -1
+\end{verbatim}
+\end{minipage}
+
+The mechanics of this sequence is closely related to the fact, that {\tt
+rol(ror(x-2)+1)} is a function that maps 1 to 0 and 0 to 1 and every other
+number to itself. (With {\tt rol} and {\tt ror} denoting 1-bit rotate left and
+right shifts respectively.)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Rotate (Left/Right) (\texttt{rol,\ ror,\ rori})}
