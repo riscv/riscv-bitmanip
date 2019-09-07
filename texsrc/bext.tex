@@ -398,9 +398,9 @@ And generalized shuffle is performing a bit permutation on the bits of the bit a
 $$ i'_\mathrm{shfl} := \mathrm{perm}_k(i) $$
 
 With the caveat that a single {\tt shfl}/{\tt unshfl} instruction can only
-perferm a certain sub-set of bit address permutations, but a sequence of 5 {\tt
+perferm a certain sub-set of bit address permutations, but a sequence of 4 {\tt
 shfl}/{\tt unshfl} instructions can perform any of the 120 such permutations on
-RV32, and a sequence of 6 {\tt shfl}/{\tt unshfl} instructions can perform any
+RV32, and a sequence of 5 {\tt shfl}/{\tt unshfl} instructions can perform any
 of the 720 such permutations on RV64.
 
 Combining those three types of operations makes a vast number of bit
@@ -444,7 +444,7 @@ the following sequence swaps the two LSB bits of {\tt a0}:
 \end{verbatim}
 \end{minipage}
 
-The mechanics of this sequence is closely related to the fact, that {\tt
+The mechanics of this sequence is closely related to the fact that {\tt
 rol(ror(x-2)+1)} is a function that maps 1 to 0 and 0 to 1 and every other
 number to itself. (With {\tt rol} and {\tt ror} denoting 1-bit rotate left and
 right shifts respectively.)
