@@ -40,6 +40,28 @@ The parity of a word (xor of all bits) is the LSB of the population count.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Rotate shift of bytes and half-words}
+
+Rotate right shift of the byte in {\tt a0} by the shift amount in {\tt a1},
+assuming {\tt a0} is stored in zero-extended form:
+
+\begin{verbatim}
+  orc8 a0, a0
+  ror a0, a1
+  andi a0, a0, 255
+\end{verbatim}
+
+And rotate right shift of the 16-bit half-word in {\tt a0} by the shift amount in {\tt a1},
+assuming {\tt a0} is stored in zero-extended form:
+
+\begin{verbatim}
+  orc16 a0, a0
+  ror a0, a1
+  pack[w] a0, a0, zero
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Rank and select}
 
 Rank and select are fundamental operations in succinct data structures~\cite{SelectX86}.
@@ -354,6 +376,76 @@ largest power-of-two representable in an {\tt uint64\_t}.
 
 Note that this code handles $0\rightarrow{}0$ and $1\rightarrow{}1$ correctly,
 i.e. equivialent to {\tt rfill(x-1)+1}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Widening and narrowing of packed vectors}
+
+The {\tt [un]zip} instructions can help with widening and narrowing packed
+vectors. For example, narrowing the bytes in two words into a single
+word with the values in nibbles with values from {\tt a0} in LSB half and
+values from {\tt a1} in MSB half:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  unzip4 a0, a0
+  unzip4 a1, a1
+  pack a0, a0, a1
+\end{verbatim}
+\end{minipage}
+
+And widening the nibbles from {\tt a0} into bytes in {\tt a1} (MSB half)
+and {\tt a0} (LSB half), with zero extension:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  srli a1, a0, XLEN/2
+  pack a0, a0, zero
+  zip4 a1, a1
+  zip4 a0, a0
+\end{verbatim}
+\end{minipage}
+
+And finally the same widening operation with sign extension:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  addi t0, zero, 8
+  orc4 t0, t0
+  and t0, t0, a0
+  orc.n t0, t0
+  srli t1, t0, XLEN/2
+  srli a1, a0, XLEN/2
+  pack a1, a1, t1
+  pack a0, a0, t0
+  zip4 a1, a1
+  zip4 a0, a0
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Bit-rotations in packed vectors}
+
+Using the widening/narrowing tricks from the previous section we can
+easily implement bit rotations in packed vectors. For example, rotating
+the bytes in {\tt a0} by the shift amount in {\tt a1}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  andi t0, a1, 7
+  srli a1, a0, XLEN/2
+  pack a1, a1, a1
+  pack a0, a0, a0
+  zip8 a1, a1
+  zip8 a0, a0
+  ror a1, a1, t0
+  ror a0, a0, t0
+  unzip8 a1, a1
+  unzip8 a0, a0
+  pack a0, a0, a1
+\end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
