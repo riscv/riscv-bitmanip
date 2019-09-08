@@ -574,6 +574,43 @@ extern "C" void check_uswap(uint32_t x)
 
 // ---------------------------------------------------------
 
+uint32_t reference_vectrot(uint32_t a, uint32_t b)
+{
+	int shamt = b & 7;
+	uint32_t y = 0;
+
+	for (int i = 0; i < 4; i++) {
+		uint32_t v = (a >> (8*i)) & 255;
+		v |= v << 8;
+		v >>= shamt;
+		v &= 255;
+		y |= v << (8*i);
+	}
+
+	return y;
+}
+
+uint32_t bitmanip_vectrot(uint32_t a, uint32_t b)
+{
+	int shamt = b & 7;
+	uint32_t y = a;
+	y = rv32b::zip(y);
+	y = rv32b::zip(y);
+	y = rv32b::ror(y, shamt << 2);
+	y = rv32b::unzip(y);
+	y = rv32b::unzip(y);
+	return y;
+}
+
+extern "C" void check_vectrot(uint32_t a, uint32_t b)
+{
+	uint32_t reference_y = reference_vectrot(a, b);
+	uint32_t bitmanip_y = bitmanip_vectrot(a, b);
+	assert(reference_y == bitmanip_y);
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	printf("\n0:");

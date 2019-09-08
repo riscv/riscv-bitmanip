@@ -45,5 +45,6 @@ cbmc --trace --function check_bfly_mask_1      zip_unzip.cc
 cbmc --trace --function check_bfly_mask_2      zip_unzip.cc
 
 cbmc --trace --function check_uswap            zip_unzip.cc
+cbmc --trace --function check_vectrot          zip_unzip.cc
 
 echo OK
