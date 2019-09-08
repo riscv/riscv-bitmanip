@@ -246,4 +246,10 @@ extern "C" void conv8x8_check(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3
 
 	for (int i = 0; i < 8; i++)
 		assert(reference_y[i] == bitmanip_y[i]);
+
+	uint64_t bitmanip_x[8];
+	bitmanip_conv8x8(bitmanip_y, bitmanip_x);
+
+	for (int i = 0; i < 8; i++)
+		assert(x[i] == bitmanip_x[i]);
 }
