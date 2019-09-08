@@ -926,6 +926,105 @@ rotate_z:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Manipulating 64x64 Bit Matrices}
+
+The {\tt bmat[x]or} and {\tt bmatflip} instructions operate on 8x8 bit
+matrices stored in single 64-bit registers, where each byte of such
+a 64-bit value represents one row (column) of a 8x8 bit matrix.
+
+Let's assume we have a 64x64 bit matrix in memory, stored as one row
+(column) per 64-bit value. In order to use {\tt bmat[x]or} and
+{\tt bmatflip} on such a matrix, we must first convert it into
+a 8x8 block matrix of 64 individual 8x8 matrices, each stored in
+a 64-bit value. The following function performs this transformation
+for a single row (column) of the block matrix in 40 instructions.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+void conv8x8(const uint64_t x[8], uint64_t y[8])
+{
+  uint64_t x0_x1_31_00 = _rv64_pack (x[0], x[1]);
+  uint64_t x2_x3_31_00 = _rv64_pack (x[2], x[3]);
+  uint64_t x4_x5_31_00 = _rv64_pack (x[4], x[5]);
+  uint64_t x6_x7_31_00 = _rv64_pack (x[6], x[7]);
+  uint64_t x0_x1_63_32 = _rv64_packu(x[0], x[1]);
+  uint64_t x2_x3_63_32 = _rv64_packu(x[2], x[3]);
+  uint64_t x4_x5_63_32 = _rv64_packu(x[4], x[5]);
+  uint64_t x6_x7_63_32 = _rv64_packu(x[6], x[7]);
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t x0_x1_31_00_z = _rv64_unzip16(x0_x1_31_00);
+  uint64_t x2_x3_31_00_z = _rv64_unzip16(x2_x3_31_00);
+  uint64_t x4_x5_31_00_z = _rv64_unzip16(x4_x5_31_00);
+  uint64_t x6_x7_31_00_z = _rv64_unzip16(x6_x7_31_00);
+  uint64_t x0_x1_63_32_z = _rv64_unzip16(x0_x1_63_32);
+  uint64_t x2_x3_63_32_z = _rv64_unzip16(x2_x3_63_32);
+  uint64_t x4_x5_63_32_z = _rv64_unzip16(x4_x5_63_32);
+  uint64_t x6_x7_63_32_z = _rv64_unzip16(x6_x7_63_32);
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t x0_x1_x2_x3_15_00 = _rv64_pack (x0_x1_31_00_z, x2_x3_31_00_z);
+  uint64_t x4_x5_x6_x7_15_00 = _rv64_pack (x4_x5_31_00_z, x6_x7_31_00_z);
+  uint64_t x0_x1_x2_x3_31_16 = _rv64_packu(x0_x1_31_00_z, x2_x3_31_00_z);
+  uint64_t x4_x5_x6_x7_31_16 = _rv64_packu(x4_x5_31_00_z, x6_x7_31_00_z);
+  uint64_t x0_x1_x2_x3_47_32 = _rv64_pack (x0_x1_63_32_z, x2_x3_63_32_z);
+  uint64_t x4_x5_x6_x7_47_32 = _rv64_pack (x4_x5_63_32_z, x6_x7_63_32_z);
+  uint64_t x0_x1_x2_x3_63_48 = _rv64_packu(x0_x1_63_32_z, x2_x3_63_32_z);
+  uint64_t x4_x5_x6_x7_63_48 = _rv64_packu(x4_x5_63_32_z, x6_x7_63_32_z);
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t x0_x1_x2_x3_15_00_z = _rv64_unzip8(x0_x1_x2_x3_15_00);
+  uint64_t x4_x5_x6_x7_15_00_z = _rv64_unzip8(x4_x5_x6_x7_15_00);
+  uint64_t x0_x1_x2_x3_31_16_z = _rv64_unzip8(x0_x1_x2_x3_31_16);
+  uint64_t x4_x5_x6_x7_31_16_z = _rv64_unzip8(x4_x5_x6_x7_31_16);
+  uint64_t x0_x1_x2_x3_47_32_z = _rv64_unzip8(x0_x1_x2_x3_47_32);
+  uint64_t x4_x5_x6_x7_47_32_z = _rv64_unzip8(x4_x5_x6_x7_47_32);
+  uint64_t x0_x1_x2_x3_63_48_z = _rv64_unzip8(x0_x1_x2_x3_63_48);
+  uint64_t x4_x5_x6_x7_63_48_z = _rv64_unzip8(x4_x5_x6_x7_63_48);
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  y[0] = _rv64_pack (x0_x1_x2_x3_15_00_z, x4_x5_x6_x7_15_00_z);
+  y[1] = _rv64_packu(x0_x1_x2_x3_15_00_z, x4_x5_x6_x7_15_00_z);
+  y[2] = _rv64_pack (x0_x1_x2_x3_31_16_z, x4_x5_x6_x7_31_16_z);
+  y[3] = _rv64_packu(x0_x1_x2_x3_31_16_z, x4_x5_x6_x7_31_16_z);
+  y[4] = _rv64_pack (x0_x1_x2_x3_47_32_z, x4_x5_x6_x7_47_32_z);
+  y[5] = _rv64_packu(x0_x1_x2_x3_47_32_z, x4_x5_x6_x7_47_32_z);
+  y[6] = _rv64_pack (x0_x1_x2_x3_63_48_z, x4_x5_x6_x7_63_48_z);
+  y[7] = _rv64_packu(x0_x1_x2_x3_63_48_z, x4_x5_x6_x7_63_48_z);
+}
+\end{verbatim}
+\end{minipage}
+
+Each of the 5 blocks in this function only consumes the eight outputs of the
+previous block. Therefore 16 registers are sufficient to run this function in
+registers only without the need to spill any data on the stack.
+
+Note that this function is its own inverse. Therefore the same function
+can be used for the convertion from block matrix form back to row (column)
+major form.
+
+A bit 64x64 bit matrix in block matrix form can easily be transposed
+by running {\tt bmatflip} (or {\tt zip; zip; zip} on the blocks of
+the matrix and then renaming the individual 64-bit variables.
+
+To multiply 64x64 bit matrices in block matrix form, the matrix-matrix-product
+is decomposed in the obvious way in $8 \times 8 \times 8 = 512$ {\tt bmat[x]or}
+instructions and $7 \times 8 \times 8 = 448$ {\tt [x]or} instructions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Inverting Xorshift RNGs}
 \label{invxorshift}
 
