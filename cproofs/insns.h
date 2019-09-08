@@ -166,7 +166,25 @@ uint_xlen_t pack(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t lower = (rs1 << XLEN/2) >> XLEN/2;
 	uint_xlen_t upper = rs2 << XLEN/2;
-	return upper | lower;
+	return lower | upper;
+}
+// --REF-END--
+
+// --REF-BEGIN-- packh
+uint_xlen_t packh(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t lower = rs1 & 255;
+	uint_xlen_t upper = (rs2 & 255) << 8;
+	return lower | upper;
+}
+// --REF-END--
+
+// --REF-BEGIN-- packu
+uint_xlen_t packu(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t lower = rs1 >> XLEN/2;
+	uint_xlen_t upper = (rs2 >> XLEN/2) << XLEN/2;
+	return lower | upper;
 }
 // --REF-END--
 

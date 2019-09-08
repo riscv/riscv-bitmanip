@@ -171,3 +171,79 @@ extern "C" void strlen_check(uint64_t x)
 }
 
 // ---------------------------------------------------------
+
+void reference_conv8x8(const uint64_t x[8], uint64_t y[8])
+{
+	for (int i = 0; i < 8; i++) {
+		uint64_t temp = 0;
+		for (int j = 0; j < 8; j++)
+			temp |= ((x[j] >> (8*i)) & 255) << (8*j);
+		y[i] = temp;
+	}
+}
+
+void bitmanip_conv8x8(const uint64_t x[8], uint64_t y[8])
+{
+	uint64_t x0_x1_31_00 = rv64b::pack(x[0], x[1]);
+	uint64_t x2_x3_31_00 = rv64b::pack(x[2], x[3]);
+	uint64_t x4_x5_31_00 = rv64b::pack(x[4], x[5]);
+	uint64_t x6_x7_31_00 = rv64b::pack(x[6], x[7]);
+
+	uint64_t x0_x1_63_32 = rv64b::packu(x[0], x[1]);
+	uint64_t x2_x3_63_32 = rv64b::packu(x[2], x[3]);
+	uint64_t x4_x5_63_32 = rv64b::packu(x[4], x[5]);
+	uint64_t x6_x7_63_32 = rv64b::packu(x[6], x[7]);
+
+	uint64_t x0_x1_31_00_z = rv64b::unzip16(x0_x1_31_00);
+	uint64_t x2_x3_31_00_z = rv64b::unzip16(x2_x3_31_00);
+	uint64_t x4_x5_31_00_z = rv64b::unzip16(x4_x5_31_00);
+	uint64_t x6_x7_31_00_z = rv64b::unzip16(x6_x7_31_00);
+
+	uint64_t x0_x1_63_32_z = rv64b::unzip16(x0_x1_63_32);
+	uint64_t x2_x3_63_32_z = rv64b::unzip16(x2_x3_63_32);
+	uint64_t x4_x5_63_32_z = rv64b::unzip16(x4_x5_63_32);
+	uint64_t x6_x7_63_32_z = rv64b::unzip16(x6_x7_63_32);
+
+	uint64_t x0_x1_x2_x3_15_00 = rv64b::pack (x0_x1_31_00_z, x2_x3_31_00_z);
+	uint64_t x4_x5_x6_x7_15_00 = rv64b::pack (x4_x5_31_00_z, x6_x7_31_00_z);
+	uint64_t x0_x1_x2_x3_31_16 = rv64b::packu(x0_x1_31_00_z, x2_x3_31_00_z);
+	uint64_t x4_x5_x6_x7_31_16 = rv64b::packu(x4_x5_31_00_z, x6_x7_31_00_z);
+
+	uint64_t x0_x1_x2_x3_47_32 = rv64b::pack (x0_x1_63_32_z, x2_x3_63_32_z);
+	uint64_t x4_x5_x6_x7_47_32 = rv64b::pack (x4_x5_63_32_z, x6_x7_63_32_z);
+	uint64_t x0_x1_x2_x3_63_48 = rv64b::packu(x0_x1_63_32_z, x2_x3_63_32_z);
+	uint64_t x4_x5_x6_x7_63_48 = rv64b::packu(x4_x5_63_32_z, x6_x7_63_32_z);
+
+	uint64_t x0_x1_x2_x3_15_00_z = rv64b::unzip8(x0_x1_x2_x3_15_00);
+	uint64_t x4_x5_x6_x7_15_00_z = rv64b::unzip8(x4_x5_x6_x7_15_00);
+	uint64_t x0_x1_x2_x3_31_16_z = rv64b::unzip8(x0_x1_x2_x3_31_16);
+	uint64_t x4_x5_x6_x7_31_16_z = rv64b::unzip8(x4_x5_x6_x7_31_16);
+
+	uint64_t x0_x1_x2_x3_47_32_z = rv64b::unzip8(x0_x1_x2_x3_47_32);
+	uint64_t x4_x5_x6_x7_47_32_z = rv64b::unzip8(x4_x5_x6_x7_47_32);
+	uint64_t x0_x1_x2_x3_63_48_z = rv64b::unzip8(x0_x1_x2_x3_63_48);
+	uint64_t x4_x5_x6_x7_63_48_z = rv64b::unzip8(x4_x5_x6_x7_63_48);
+
+	y[0] = rv64b::pack (x0_x1_x2_x3_15_00_z, x4_x5_x6_x7_15_00_z);
+	y[1] = rv64b::packu(x0_x1_x2_x3_15_00_z, x4_x5_x6_x7_15_00_z);
+	y[2] = rv64b::pack (x0_x1_x2_x3_31_16_z, x4_x5_x6_x7_31_16_z);
+	y[3] = rv64b::packu(x0_x1_x2_x3_31_16_z, x4_x5_x6_x7_31_16_z);
+
+	y[4] = rv64b::pack (x0_x1_x2_x3_47_32_z, x4_x5_x6_x7_47_32_z);
+	y[5] = rv64b::packu(x0_x1_x2_x3_47_32_z, x4_x5_x6_x7_47_32_z);
+	y[6] = rv64b::pack (x0_x1_x2_x3_63_48_z, x4_x5_x6_x7_63_48_z);
+	y[7] = rv64b::packu(x0_x1_x2_x3_63_48_z, x4_x5_x6_x7_63_48_z);
+}
+
+extern "C" void conv8x8_check(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3,
+		uint64_t x4, uint64_t x5, uint64_t x6, uint64_t x7)
+{
+	const uint64_t x[8] = {x0, x1, x2, x3, x4, x5, x6, x7};
+
+	uint64_t reference_y[8], bitmanip_y[8];
+	reference_conv8x8(x, reference_y);
+	bitmanip_conv8x8(x, bitmanip_y);
+
+	for (int i = 0; i < 8; i++)
+		assert(reference_y[i] == bitmanip_y[i]);
+}
