@@ -2179,19 +2179,17 @@ Likewise for logic OR:
 \end{verbatim}
 \end{minipage}
 
-And for logic AND, if {\tt rd == rs1}:
+And for logic AND, if {\tt rd != rs2}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   int logic_and  = (c && d);
 
-  beq rd, zero, skip_sltu
-  sltu rd, zero, rs2
-skip_sltu:
+  gorci rd, rs1, -1
+  and rd, rd, rs2
+  sltu rd, zero, rd
 \end{verbatim}
 \end{minipage}
-
-Note that the first instruction can be compressed in all four cases if {\tt rd == rs1}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

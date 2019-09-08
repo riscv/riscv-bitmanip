@@ -104,6 +104,52 @@ instruction, or something like the following sequence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Permuting bytes in a word}
+
+There are 24 ways of arranging the four bytes in a 32-bit word. {\tt ror}, {\tt
+grev}, and {\tt [un]shfl} can perform any of those permutations in at most 3
+instructions. Table~\ref{permbytes} lists those sequences.~\cite{Wolf19A}
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c|l}
+Bytes & Instructions \\
+\hline
+A B C D & {\it initial byte order} \\
+A B D C & {\tt ROR(24),SHFL(8),ROR(8)} \\
+A C B D & {\tt SHFL(8)} \\
+A C D B & {\tt ROR(8),GREV(8),SHFL(8)} \\
+A D B C & {\tt ROR(16),SHFL(8),ROR(24)} \\
+A D C B & {\tt ROR(8),GREV(8)} \\
+\hline
+B A C D & {\tt ROR(8),SHFL(8),ROR(24)} \\
+B A D C & {\tt GREV(8)} \\
+B C A D & {\tt ROR(16),SHFL(8),ROR(8)} \\
+B C D A & {\tt ROR(24)} \\
+B D A C & {\tt GREV(8),SHFL(8)} \\
+B D C A & {\tt ROR(24),SHFL(8)} \\
+\hline
+C A B D & {\tt ROR(8),GREV(24),SHFL(8)} \\
+C A D B & {\tt ROR(16),SHFL(8)} \\
+C B A D & {\tt ROR(8),GREV(24)} \\
+C B D A & {\tt SHFL(8),ROR(24)} \\
+C D A B & {\tt ROR(16)} \\
+C D B A & {\tt ROR(8),SHFL(8),ROR(8)} \\
+\hline
+D A B C & {\tt ROR(8)} \\
+D A C B & {\tt SHFL(8),ROR(8)} \\
+D B A C & {\tt ROR(8),SHFL(8)} \\
+D B C A & {\tt GREV(24),SHFL(8)} \\
+D C A B & {\tt ROR(24),SHFL(8),ROR(24)} \\
+D C B A & {\tt GREV(24)} \\
+\end{tabular}
+\end{center}
+\caption{Instruction sequences for arbitrary permutations of bytes in a 32-bit word.}
+\label{permbytes}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{OR/AND/XOR-reduce in byte vectors}
 
 OR-ing the bytes in a register and returning the resulting byte is
