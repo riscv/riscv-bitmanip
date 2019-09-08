@@ -427,25 +427,27 @@ And finally the same widening operation with sign extension:
 
 \subsection{Bit-rotations in packed vectors}
 
-Using the widening/narrowing tricks from the previous section we can
-easily implement bit rotations in packed vectors. For example, rotating
-the bytes in {\tt a0} by the shift amount in {\tt a1}:
+Using {\tt zip} we can re-arrange the bits in a packed vector of
+$N$ elements so that a rotate by $k$ of each byte becomes a rotate of $Nk$
+of the entire new vector. So we rotate and then {\tt unzip} to shuffle everything
+back in the original order. The number of {\tt zip} and {\tt unzip} is
+$\textrm{log}2(N)$. For example, for rotating bytes on RV32:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  andi t0, a1, 7
-  srli a1, a0, XLEN/2
-  pack a1, a1, a1
-  pack a0, a0, a0
-  zip8 a1, a1
-  zip8 a0, a0
-  ror a1, a1, t0
-  ror a0, a0, t0
-  unzip8 a1, a1
-  unzip8 a0, a0
-  pack a0, a0, a1
+  andi a1, a1, 7
+  slli a1, a1, 2
+  zip a0, a0
+  zip a0, a0
+  ror a0, a0, a1
+  unzip a0, a0
+  unzip a0, a0
 \end{verbatim}
 \end{minipage}
+
+Because {\tt zip; zip; zip} is equal to {\tt unzip; unzip} on RV32,
+and equal to {\tt unzip; unzip; unzip} on RV64, we need never more
+than 2 {\tt [un]zip} on RV32, or 3 {\tt [un]zip} on RV64.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
