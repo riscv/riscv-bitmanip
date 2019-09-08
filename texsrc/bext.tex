@@ -388,8 +388,8 @@ shift, generalized reverse, and generalized shuffle.
 A bit permutation essentially is applying an invertible function to the bit addresses. (Bit
 addresses are 5 bit values on RV32 and 6 bit values on RV64.)
 
-Rotate shift right by $k$ is simply addition modulo XLEN.
-$$ i'_\mathrm{rot} := i + k \mod \mathrm{XLEN} $$
+Rotate shift by $k$ is simply addition ({\tt rol}) or subtraction ({\tt ror}) modulo XLEN.
+$$ i'_\mathrm{rot} := i \pm k \mod \mathrm{XLEN} $$
 
 Generalized reverse with control argument $k$ is simply XOR-ing the bit addresses with $k$:
 $$ i'_\mathrm{grev} := i \oplus k $$
@@ -431,9 +431,26 @@ that additional instructions don't increase the space of reachable permutations.
 \label{numperms}
 \end{table}
 
-Sequences of {\tt rot}, {\tt grev}, and {\tt [un]shfl} instructions can
+Sequences of {\tt ror}, {\tt grev}, and {\tt [un]shfl} instructions can
 generate any arbitrary bit permutation. Often in surprising ways. For example,
 the following sequence swaps the two LSB bits of {\tt a0}:
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{l|c|c}
+Instruction & State (XLEN=8) & Bit-Index Op \\
+\hline
+{\it initial value}      & 7 6 5 4 3 2 1 0 & --- \\
+{\tt rori a0, a0, 2}     & 1 0 7 6 5 4 3 2 & $i' := i-2$ \\
+{\tt unshfli a0, a0, -1} & 1 7 5 3 0 6 4 2 & $i' := \mathrm{ror}(i)$ \\
+{\tt roli a0, a0, 1}     & 7 5 3 0 6 4 2 1 & $i' := i+1$ \\
+{\tt shfli a0, a0, -1}   & 7 6 5 4 3 2 0 1 & $i' := \mathrm{rol}(i)$ \\
+\end{tabular}
+\end{center}
+\caption{Breakdown of the {\tt ror}+{\tt [un]shfl} sequence for swapping the
+LSB bits of a word, using XLEN=8 for simplicity.}
+\label{permdemo}
+\end{table}
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -447,7 +464,15 @@ the following sequence swaps the two LSB bits of {\tt a0}:
 The mechanics of this sequence is closely related to the fact that {\tt
 rol(ror(x-2)+1)} is a function that maps 1 to 0 and 0 to 1 and every other
 number to itself. (With {\tt rol} and {\tt ror} denoting 1-bit rotate left and
-right shifts respectively.)
+right shifts respectively.) See Table~\ref{permdemo} for details.
+
+There are 24 ways of arranging the four bytes in a 32-bit word. {\tt ror}, {\tt
+grev}, and {\tt [un]shfl} can perform any of those permutations in at most 3
+instructions.
+
+There are 40320 ways of arranging the eight bytes in a 64-bit word or the eight
+nibbles in a 32-bit word. {\tt ror}, {\tt grev}, and {\tt [un]shfl} can perform
+any of those permutations in at most 9 instructions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -906,10 +931,7 @@ MSB nibbles in the output set to zero:
   andi a0, a0, 0xff
   zip a0, a0
   zip a0, a0
-  slli a1, a0, 1
-  or a0, a0, a1
-  slli a1, a0, 2
-  or a0, a0, a1
+  gorci a0, a0, 3
   li a1, 0x87654321
   and a1, a0, a1
   bext a0, a1, a0

@@ -85,11 +85,7 @@ uint32_t index_byte_nibbles_impl(uint32_t src)
 	a0 = rv32b::shfl(a0, 15);
 	a0 = rv32b::shfl(a0, 15);
 
-	a1 = rv32b::sll(a0, 1);
-	a0 |= a1;
-
-	a1 = rv32b::sll(a0, 2);
-	a0 |= a1;
+	a0 = rv32b::gorc(a0, 3);
 
 	a1 = a0 & 0x87654321;
 	a0 = rv32b::bext(a1, a0);
