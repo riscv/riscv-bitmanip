@@ -927,6 +927,7 @@ rotate_z:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Manipulating 64x64 Bit Matrices}
+\label{bmat64}
 
 The {\tt bmat[x]or} and {\tt bmatflip} instructions operate on 8x8 bit
 matrices stored in single 64-bit registers, where each byte of such
@@ -1016,7 +1017,7 @@ can be used for the convertion from block matrix form back to row (column)
 major form.
 
 A bit 64x64 bit matrix in block matrix form can easily be transposed
-by running {\tt bmatflip} (or {\tt zip; zip; zip} on the blocks of
+by running {\tt bmatflip} (or {\tt zip; zip; zip}) on the blocks of
 the matrix and then renaming the individual 64-bit variables.
 
 To multiply 64x64 bit matrices in block matrix form, the matrix-matrix-product
@@ -1166,7 +1167,11 @@ time (RV64):
     assert(len >= 2);
     a0 = rev8(p[0]);
     a1 = rev8(p[1]);
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
     // Main loop: Reduce to 2x 64 bits
 
     for (const uint64_t *t0 = p+2; t0 != p+len; t0++)
@@ -1177,7 +1182,11 @@ time (RV64):
       a0 = a1 ^ t1;
       a1 = a2 ^ t2;
     }
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
     // Reduce to 64 bit, add 32 bit zero padding
 
     t1 = clmulh(a0, k2);
@@ -1188,7 +1197,11 @@ time (RV64):
 
     t2 = clmul(a0, k3);
     a1 = a1 ^ t2;
+\end{verbatim}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbatim}
     // Barrett Reduction
 
     t1 = clmul(a1 >> 32, mu);
