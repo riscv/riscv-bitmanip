@@ -96,31 +96,28 @@ including position \texttt{a1}.
 
 \subsection{Packing bytes in word}
 
-The following code packs the lower 8 bits from a0, a1, a2, a3 into
+The following RV32 code packs the lower 8 bits from a0, a1, a2, a3 into
 a 32-bit word returned in a0, ignoring other bits in the input values.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  pack a0, a0, a1
-  pack a1, a2, a3
-  shfl a0, a0, 8
-  shfl a1, a1, 8
-  pack a0, a0, a1
+  packh a0, a0, a1
+  packh a1, a2, a3
+  pack  a0, a0, a1
 \end{verbatim}
 \end{minipage}
 
-This replaces either 4 store-byte instructions followed by one load-word
-instruction, or something like the following sequence.
+And the following RV64 code packs 8 bytes into a register.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  andi a0, a0, 255
-  andi a1, a1, 255
-  andi a2, a2, 255
-  pack a0, a0, a2
-  pack a1, a1, a3
-  slli a1, a1, 8
-  or a0, a0, a1
+  packh a0, a0, a1
+  packh a1, a2, a3
+  packh a2, a4, a5
+  packh a3, a6, a7
+  packw a0, a0, a1
+  packw a1, a2, a3
+  pack  a0, a0, a1
 \end{verbatim}
 \end{minipage}
 

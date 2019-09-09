@@ -26,7 +26,7 @@ look like exactly, but it will probably look something like this:
  \node (sbext) [right=4.1cm of addwu.west,anchor=west] { \texttt{sbext[i]} };
 
  \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
- \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack} };
+ \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack[hu]} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
  \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b} };
@@ -203,25 +203,46 @@ manipulation'' code patterns in two instructions each. For example, {\tt (x -
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Pack two XLEN/2 words in one register (\texttt{pack})}
+\subsection{Pack two words in one register (\texttt{pack, packu, packh})}
 
 \begin{rvb}
   RV32, RV64:
-    pack rd, rs1, rs2
+    pack  rd, rs1, rs2
+    packu rd, rs1, rs2
+    packh rd, rs1, rs2
 
   RV64 only:
-    packw rd, rs1, rs2
+    packw  rd, rs1, rs2
+    packuw rd, rs1, rs2
 \end{rvb}
 
-This instruction packs the XLEN/2-bit lower halves of rs1 and rs2 into
+The {\tt pack} instruction packs the XLEN/2-bit lower halves of rs1 and rs2 into
 rd, with rs1 in the lower half and rs2 in the upper half.
 
 \input{bextcref-pack}
+
+The {\tt packu} instruction packs the upper halves of rs1 and rs2 into rd.
+
+\input{bextcref-packu}
+
+And the {\tt packh} instruction packs the LSB bytes of rs1 and rs2 into the 16 LSB bits
+of rd, zero extending the rest of rd.
+
+\input{bextcref-packh}
 
 Applications include XLEN/2-bit funnel shifts, zero-extend XLEN/2 bit values, duplicate the lower
 XLEN/2 bits (e.g. for mask creation), loading unsigned 32 constants on RV64, and packing
 C structs that fit in a register and are therefore passed in a register according to the RISC-V
 calling convention.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  ; Constructing a 32-bit int from four bytes (RV32)
+  packh a0, a0, a1
+  packh a1, a2, a3
+  pack a0, a0, a1
+\end{verbatim}
+\end{minipage}
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -931,7 +952,7 @@ MSB nibbles in the output set to zero:
   andi a0, a0, 0xff
   zip a0, a0
   zip a0, a0
-  gorci a0, a0, 3
+  orc.n a0, a0
   li a1, 0x87654321
   and a1, a0, a1
   bext a0, a1, a0
@@ -1850,6 +1871,21 @@ and are marked with a {\tt *}.
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKW
 |  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
+|---------------------------------------------------------------|
+\end{verbatim}
+\end{minipage}
+
+Pending changes for v0.92 of the RISC-V Bitmanip Spec ({\tt +} for addition,
+{\tt -} for removal):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+|  3                   2                   1                    |
+|1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
+|===============================================================|
+|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  + PACKH
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + PACKU
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + PACKUW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
