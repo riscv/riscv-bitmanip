@@ -129,6 +129,41 @@ extern "C" void min_max_test(uint32_t u1, uint32_t u2)
 
 // ---------------------------------------------------------
 
+extern "C" uint64_t reference_vectadd(uint64_t a0, uint64_t a1)
+{
+	uint64_t ret = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		int a = a0 >> (8*i);
+		int b = a1 >> (8*i);
+		uint64_t c = (a+b) & 255;
+		ret |= c << (8*i);
+	}
+	return ret;
+}
+
+extern "C" uint64_t bitmanip_vectadd(uint64_t a0, uint64_t a1)
+{
+	uint64_t a2, a3;
+	a2 = rv64b::orc8(0x80);
+	a3 = a0 ^ a1;
+	a3 = a3 & a2;
+	a0 = a0 & ~a2;
+	a1 = a1 & ~a2;
+	a0 = a0 + a1;
+	a0 = a0 ^ a3;
+	return a0;
+}
+
+extern "C" void check_vectadd(uint32_t a0, uint32_t a1)
+{
+	uint64_t reference_y = reference_vectadd(a0, a1);
+	uint64_t bitmanip_y = bitmanip_vectadd(a0, a1);
+	assert(reference_y == bitmanip_y);
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	for (int i = 0; i < 1000; i++) {

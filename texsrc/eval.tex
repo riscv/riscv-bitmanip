@@ -422,13 +422,13 @@ And finally the same widening operation with sign extension:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Bit-rotations in packed vectors}
+\subsection{Shifts in packed vectors}
 
-Using {\tt zip} we can re-arrange the bits in a packed vector of
-$N$ elements so that a rotate by $k$ of each byte becomes a rotate of $Nk$
-of the entire new vector. So we rotate and then {\tt unzip} to shuffle everything
-back in the original order. The number of {\tt zip} and {\tt unzip} is
-$\textrm{log}2(N)$. For example, for rotating bytes on RV32:
+Using {\tt zip} we can re-arrange the bits in a packed vector of $N$ elements
+so that a shift by $k$ of each byte becomes a shift of $Nk$ of the entire new
+vector. So we shift and then {\tt unzip} to shuffle everything back. The number
+of {\tt zip} and {\tt unzip} is $\textrm{log}2(N)$. This works for all kinds of
+shift operations. For example, for rotating bytes on RV32:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -445,6 +445,28 @@ $\textrm{log}2(N)$. For example, for rotating bytes on RV32:
 Because {\tt zip; zip; zip} is equal to {\tt unzip; unzip} on RV32,
 and equal to {\tt unzip; unzip; unzip} on RV64, we need never more
 than 2 {\tt [un]zip} on RV32, or 3 {\tt [un]zip} on RV64.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Adding packed vectors}
+
+The following six instructions will add the elements of the two vectors passed
+in {\tt a0} and {\tt a1}, and return the vector of sums in {\tt a0}.
+
+This expects a mask in {\tt a2} that marks the MSB bit of each vector
+element. For a vector of bytes this mask would be {\tt 0x8080...80} (which
+can be obtained in two instructions via {\tt orc8(0x80)}).
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  xor  a3, a0, a1
+  and  a3, a3, a2
+  andn a0, a0, a2
+  andn a1, a1, a2
+  add  a0, a0, a1
+  xor  a0, a0, a3
+\end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
