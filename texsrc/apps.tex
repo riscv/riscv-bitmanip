@@ -1,8 +1,8 @@
-\chapter{Evaluation}
+\chapter{Example Applications}
 
 This chapter contains a collection of short code snippets and algorithms using
-the Bitmanip extension for evaluation purposes. For the sake of simplicity we
-assume RV32 for most examples in this chapter.
+the Bitmanip extension. It also contains some examples of bit manipulation
+code that doesn't require any extension beyond the base ISA.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -93,79 +93,6 @@ including position \texttt{a1}.
 \end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Packing bytes in word}
-
-The following RV32 code packs the lower 8 bits from a0, a1, a2, a3 into
-a 32-bit word returned in a0, ignoring other bits in the input values.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  packh a0, a0, a1
-  packh a1, a2, a3
-  pack  a0, a0, a1
-\end{verbatim}
-\end{minipage}
-
-And the following RV64 code packs 8 bytes into a register.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  packh a0, a0, a1
-  packh a1, a2, a3
-  packh a2, a4, a5
-  packh a3, a6, a7
-  packw a0, a0, a1
-  packw a1, a2, a3
-  pack  a0, a0, a1
-\end{verbatim}
-\end{minipage}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Permuting bytes in a word}
-
-There are 24 ways of arranging the four bytes in a 32-bit word. {\tt ror}, {\tt
-grev}, and {\tt [un]shfl} can perform any of those permutations in at most 3
-instructions. Table~\ref{permbytes} lists those sequences.~\cite{Wolf19A}
-
-\begin{table}[h!]
-\begin{center}
-\begin{tabular}{c|l}
-Bytes & Instructions \\
-\hline
-A B C D & {\it initial byte order} \\
-A B D C & {\tt ROR(24),SHFL(8),ROR(8)} \\
-A C B D & {\tt SHFL(8)} \\
-A C D B & {\tt ROR(8),GREV(8),SHFL(8)} \\
-A D B C & {\tt ROR(16),SHFL(8),ROR(24)} \\
-A D C B & {\tt ROR(8),GREV(8)} \\
-\hline
-B A C D & {\tt ROR(8),SHFL(8),ROR(24)} \\
-B A D C & {\tt GREV(8)} \\
-B C A D & {\tt ROR(16),SHFL(8),ROR(8)} \\
-B C D A & {\tt ROR(24)} \\
-B D A C & {\tt GREV(8),SHFL(8)} \\
-B D C A & {\tt ROR(24),SHFL(8)} \\
-\hline
-C A B D & {\tt ROR(8),GREV(24),SHFL(8)} \\
-C A D B & {\tt ROR(16),SHFL(8)} \\
-C B A D & {\tt ROR(8),GREV(24)} \\
-C B D A & {\tt SHFL(8),ROR(24)} \\
-C D A B & {\tt ROR(16)} \\
-C D B A & {\tt ROR(8),SHFL(8),ROR(8)} \\
-\hline
-D A B C & {\tt ROR(8)} \\
-D A C B & {\tt SHFL(8),ROR(8)} \\
-D B A C & {\tt ROR(8),SHFL(8)} \\
-D B C A & {\tt GREV(24),SHFL(8)} \\
-D C A B & {\tt ROR(24),SHFL(8),ROR(24)} \\
-D C B A & {\tt GREV(24)} \\
-\end{tabular}
-\end{center}
-\caption{Instruction sequences for arbitrary permutations of bytes in a 32-bit word.}
-\label{permbytes}
-\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -376,7 +303,86 @@ i.e. equivialent to {\tt rfill(x-1)+1}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Widening and narrowing of packed vectors}
+\section{Packed vectors}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Packing bytes}
+
+The following RV32 code packs the lower 8 bits from a0, a1, a2, a3 into
+a 32-bit word returned in a0, ignoring other bits in the input values.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  packh a0, a0, a1
+  packh a1, a2, a3
+  pack  a0, a0, a1
+\end{verbatim}
+\end{minipage}
+
+And the following RV64 code packs 8 bytes into a register.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  packh a0, a0, a1
+  packh a1, a2, a3
+  packh a2, a4, a5
+  packh a3, a6, a7
+  packw a0, a0, a1
+  packw a1, a2, a3
+  pack  a0, a0, a1
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Permuting bytes}
+
+There are 24 ways of arranging the four bytes in a 32-bit word. {\tt ror}, {\tt
+grev}, and {\tt [un]shfl} can perform any of those permutations in at most 3
+instructions. Table~\ref{permbytes} lists those sequences.~\cite{Wolf19A}
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c|l}
+Bytes & Instructions \\
+\hline
+A B C D & {\it initial byte order} \\
+A B D C & {\tt ROR(24),SHFL(8),ROR(8)} \\
+A C B D & {\tt SHFL(8)} \\
+A C D B & {\tt ROR(8),GREV(8),SHFL(8)} \\
+A D B C & {\tt ROR(16),SHFL(8),ROR(24)} \\
+A D C B & {\tt ROR(8),GREV(8)} \\
+\hline
+B A C D & {\tt ROR(8),SHFL(8),ROR(24)} \\
+B A D C & {\tt GREV(8)} \\
+B C A D & {\tt ROR(16),SHFL(8),ROR(8)} \\
+B C D A & {\tt ROR(24)} \\
+B D A C & {\tt GREV(8),SHFL(8)} \\
+B D C A & {\tt ROR(24),SHFL(8)} \\
+\hline
+C A B D & {\tt ROR(8),GREV(24),SHFL(8)} \\
+C A D B & {\tt ROR(16),SHFL(8)} \\
+C B A D & {\tt ROR(8),GREV(24)} \\
+C B D A & {\tt SHFL(8),ROR(24)} \\
+C D A B & {\tt ROR(16)} \\
+C D B A & {\tt ROR(8),SHFL(8),ROR(8)} \\
+\hline
+D A B C & {\tt ROR(8)} \\
+D A C B & {\tt SHFL(8),ROR(8)} \\
+D B A C & {\tt ROR(8),SHFL(8)} \\
+D B C A & {\tt GREV(24),SHFL(8)} \\
+D C A B & {\tt ROR(24),SHFL(8),ROR(24)} \\
+D C B A & {\tt GREV(24)} \\
+\end{tabular}
+\end{center}
+\caption{Instruction sequences for arbitrary permutations of bytes in a 32-bit word.}
+\label{permbytes}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Widening and narrowing}
 
 The {\tt [un]zip} instructions can help with widening and narrowing packed
 vectors. For example, narrowing the bytes in two words into a single
@@ -422,20 +428,20 @@ And finally the same widening operation with sign extension:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Shifts in packed vectors}
+\subsection{Shifting packed vector elements}
 
 Using {\tt zip} we can re-arrange the bits in a packed vector of $N$ elements
 so that a shift by $k$ of each byte becomes a shift of $Nk$ of the entire new
-vector. So we shift and then {\tt unzip} to shuffle everything back. The number
+vector. So we zip, shift, and then {\tt unzip} to shuffle everything back. The number
 of {\tt zip} and {\tt unzip} is $\textrm{log}2(N)$. This works for all kinds of
-shift operations. For example, for rotating bytes on RV32:
+shift operations. For example, rotating a vector of bytes on RV32 in 6
+instructions:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  andi a1, a1, 7
+  zip a0, a0
+  zip a0, a0
   slli a1, a1, 2
-  zip a0, a0
-  zip a0, a0
   ror a0, a0, a1
   unzip a0, a0
   unzip a0, a0
