@@ -2135,7 +2135,18 @@ A future compressed NOT instruction would help keeping those fused sequences sho
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Fused {\tt pack-}permute sequences}
+
+A {\tt pack[hu]} instruction is often followed by a destructive permutation or
+shift instruction with immediate ({\tt [un]shfli, rori, slli,} etc).
+
+This makes it attractive to place the few MUXes for {\tt pack[hu]} instructions infront
+of the shift unit, so that such sequences can be fused.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Fused {\tt *-srli} and {\tt *-srai} sequences}
+\label{postfix-shift-fusion}
 
 Pairs of left and right shifts are common operations for extracting a bit field.
 
@@ -2233,7 +2244,7 @@ And for logic AND, if {\tt rd != rs2}:
 \begin{verbatim}
   int logic_and  = (c && d);
 
-  gorci rd, rs1, -1
+  orc rd, rs1
   and rd, rd, rs2
   sltu rd, zero, rd
 \end{verbatim}
@@ -2253,7 +2264,7 @@ Architectures with support for ternary operations may want to support fusing two
 \end{minipage}
 
 This would be a postfix-fusion pattern, extending the postfix shift-right
-fusion described in the previous section.
+fusion described in Section~\ref{postfix-shift-fusion}.
 
 Candidates for this kind of postfix fusion would be simple ALU operations, specifically
 AND/OR/XOR/ADD/SUB and ANDI/ORI/XORI/ADDI/SUBI.
