@@ -226,6 +226,31 @@ extern "C" void check_cj_imm2(insn_t insn)
 	assert(ref == x);
 }
 
+extern "C" void check_cj_imm3(insn_t insn)
+{
+	uint32_t ref = insn.rvc_j_imm();
+	uint32_t x = insn.b;
+
+	x = shfl(x, 15);
+	x = ror(x, 28);
+	x = shfl(x, 2);
+	x = shfl(x, 14);
+	x = ror(x, 26);
+	x = shfl(x, 8);
+	x = ror(x, 10);
+	x = unshfl(x, 12);
+	x = ror(x, 18);
+	x = unshfl(x, 14);
+	x = ror(x, 28);
+	x = shfl(x, 6);
+	x = ror(x, 28);
+	x = unshfl(x, 15);
+	x = sll(x, 21);
+	x = sra(x, 20);
+
+	assert(ref == x);
+}
+
 #if 0
 int main()
 {

@@ -1443,4 +1443,29 @@ sleeve''-examples for real-world bit permutations.
     ret
 \end{verbatim}
 \end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  // variant 3 (with RISC-V Zbp only)
+  decode_cj:
+    shfli   a0, a0, 15
+    rori    a0, a0, 28
+    shfli   a0, a0, 2
+    shfli   a0, a0, 14
+    rori    a0, a0, 26
+    shfli   a0, a0, 8
+    rori    a0, a0, 10
+    unshfli a0, a0, 12
+    rori    a0, a0, 18
+    unshfli a0, a0, 14
+    rori    a0, a0, 28
+    shfli   a0, a0, 6
+    rori    a0, a0, 28
+    unshfli a0, a0, 15
+    slli    a0, a0, 21
+    srai    a0, a0, 20
+    ret
+\end{verbatim}
+\end{minipage}
+
 \end{multicols}
