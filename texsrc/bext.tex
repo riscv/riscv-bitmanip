@@ -919,6 +919,49 @@ permutation network without ``flip'' stages.
 \label{permnet-gzip-flip}
 \end{figure}
 
+The following {\tt unperm()} function calculates the new position
+of bit {\tt i} after {\tt unshfl} by {\tt k}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int unperm(int k, int i)
+  {
+    return ((k + (i & k & ~(k<<1))) & ~k) |
+           (i & ~(k | (k<<1))) | ((i>>1) & k);
+  }
+\end{verbatim}
+\end{minipage}
+
+This allows us to write {\tt shfl} and {\tt unshfl} in the following way.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint_xlen_t shfl(uint_xlen_t a, uint_xlen_t b)
+  {
+    uint_xlen_t ret = 0;
+    for (int i = 0; i < XLEN; i++) {
+      int j = unperm(b & (XLEN/2-1), i);
+      ret |= ((a >> j) & 1) << i;
+    }
+    return ret;
+  }
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint_xlen_t unshfl(uint_xlen_t a, uint_xlen_t b)
+  {
+    uint_xlen_t ret = 0;
+    for (int i = 0; i < XLEN; i++) {
+      int j = unperm(b & (XLEN/2-1), i);
+      ret |= ((a >> i) & 1) << j;
+    }
+    return ret;
+  }
+\end{verbatim}
+\end{minipage}
+
 The \texttt{zip} instruction with the upper half of its input cleared performs
 the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
 0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits

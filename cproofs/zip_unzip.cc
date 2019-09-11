@@ -611,6 +611,43 @@ extern "C" void check_vectrot(uint32_t a, uint32_t b)
 
 // ---------------------------------------------------------
 
+int unperm(int k, int i)
+{
+	return ((k + (i & k & ~(k<<1))) & ~k) | (i & ~(k | (k<<1))) | ((i>>1) & k);
+}
+
+uint32_t myshfl(uint32_t a, uint32_t b)
+{
+	uint32_t ret = 0;
+	for (int i = 0; i < 32; i++) {
+		int j = unperm(b & 15, i);
+		ret |= ((a >> j) & 1) << i;
+	}
+	return ret;
+}
+
+uint32_t myunshfl(uint32_t a, uint32_t b)
+{
+	uint32_t ret = 0;
+	for (int i = 0; i < 32; i++) {
+		int j = unperm(b & 15, i);
+		ret |= ((a >> i) & 1) << j;
+	}
+	return ret;
+}
+
+extern "C" void check_unperm(uint32_t a, uint32_t b)
+{
+	uint32_t ref_shfl = rv32b::shfl(a, b);
+	uint32_t ref_unshfl = rv32b::unshfl(a, b);
+	uint32_t cmp_shfl = myshfl(a, b);
+	uint32_t cmp_unshfl = myunshfl(a, b);
+	assert(ref_shfl == cmp_shfl);
+	assert(ref_unshfl == cmp_unshfl);
+}
+
+// ---------------------------------------------------------
+
 int main()
 {
 	printf("\n0:");
