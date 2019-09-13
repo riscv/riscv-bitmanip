@@ -166,3 +166,85 @@ implementation is a good compromise between code complexity and runtime:
 
 For the other Bitmanip instructions the C reference functions given in Chapter~\ref{bext}
 are already reasonably efficient.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit permutation instructions as bit-index operations}
+
+For programs that synthesize sequences of bit permutation instructions it can
+be useful to describe bit permutation instructions in terms of bit-index
+operations.
+
+Expressed as bit-index operation, {\tt ror} is just subtraction and {\tt grev}
+is just XOR:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint_xlen_t ror(uint_xlen_t a, uint_xlen_t b)
+  {
+    uint_xlen_t ret = 0;
+    for (int i = 0; i < XLEN; i++) {
+      int j = (i - b) & (XLEN-1);
+      ret |= ((a >> i) & 1) << j;
+    }
+    return ret;
+  }
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint_xlen_t grev(uint_xlen_t a, uint_xlen_t b)
+  {
+    uint_xlen_t ret = 0;
+    for (int i = 0; i < XLEN; i++) {
+      int j = (i ^ b) & (XLEN-1);
+      ret |= ((a >> i) & 1) << j;
+    }
+    return ret;
+  }
+\end{verbatim}
+\end{minipage}
+
+The following {\tt unperm()} function calculates the new position
+of bit {\tt i} after {\tt unshfl} by {\tt k}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int unperm(int k, int i)
+  {
+    return ((k + (i & k & ~(k<<1))) & ~k) |
+           (i & ~(k | (k<<1))) | ((i>>1) & k);
+  }
+\end{verbatim}
+\end{minipage}
+
+This allows us to write {\tt shfl} and {\tt unshfl} in the following way.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint_xlen_t shfl(uint_xlen_t a, uint_xlen_t b)
+  {
+    uint_xlen_t ret = 0;
+    for (int i = 0; i < XLEN; i++) {
+      int j = unperm(b & (XLEN/2-1), i);
+      ret |= ((a >> j) & 1) << i;
+    }
+    return ret;
+  }
+\end{verbatim}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint_xlen_t unshfl(uint_xlen_t a, uint_xlen_t b)
+  {
+    uint_xlen_t ret = 0;
+    for (int i = 0; i < XLEN; i++) {
+      int j = unperm(b & (XLEN/2-1), i);
+      ret |= ((a >> i) & 1) << j;
+    }
+    return ret;
+  }
+\end{verbatim}
+\end{minipage}
