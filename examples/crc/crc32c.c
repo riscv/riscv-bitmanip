@@ -47,7 +47,7 @@ uint32_t crc32c_table[256] = {
 	0x79b737ba, 0x8bdcb4b9, 0x988c474d, 0x6ae7c44e, 0xbe2da0a5, 0x4c4623a6, 0x5f16d052, 0xad7d5351
 };
 
-uint8_t testdata[1024] = {
+uint8_t testdata[1024] __attribute__ ((aligned)) = {
 	// for i in {0..1023}; do echo $(( RANDOM % 255)), ; done | fmt
 	246, 220, 231, 190, 227, 151, 204, 166, 41, 242, 111, 97, 44, 87, 184,
 	121, 85, 240, 77, 11, 73, 85, 184, 192, 134, 33, 126, 194, 244, 152, 37,
