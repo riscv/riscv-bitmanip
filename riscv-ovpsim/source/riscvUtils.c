@@ -24,6 +24,7 @@
 #include "vmi/vmiRt.h"
 
 // model header files
+#include "riscvBlockState.h"
 #include "riscvDecode.h"
 #include "riscvFunctions.h"
 #include "riscvMessage.h"
@@ -46,8 +47,10 @@ inline static riscvP getChild(riscvP riscv) {
 //
 void riscvSetCurrentArch(riscvP riscv) {
 
-    // derive new architecture value based on misa value
+    // derive new architecture value based on misa value, preserving rounding
+    // mode invalid setting
     riscvArchitecture arch = (
+        (riscv->currentArch & ISA_RM_INVALID) |
         RD_CSR_FIELD(riscv, misa, Extensions) |
         (RD_CSR_FIELD(riscv, misa, MXL)<<XLEN_SHIFT)
     );
@@ -108,6 +111,39 @@ Uns32 riscvGetFlenArch(riscvP riscv) {
     }
 
     return result;
+}
+
+//
+// Register extension callback block with the base model
+//
+void riscvRegisterExtCB(riscvP riscv, riscvExtCBP extCB) {
+
+    riscvExtCBPP tail = &riscv->extCBs;
+    riscvExtCBP  this;
+
+    while((this=*tail)) {
+        tail = &this->next;
+    }
+
+    *tail = extCB;
+    extCB->next = 0;
+}
+
+//
+// Return extension configuration with the given id
+//
+riscvExtConfigCP riscvGetExtConfig(riscvP riscv, Uns32 id) {
+
+    riscvExtConfigCPP extCfgs = riscv->configInfo.extensionConfigs;
+    riscvExtConfigCP  extCfg  = 0;
+
+    if(extCfgs) {
+        while((extCfg=*extCfgs) && (extCfg->id!=id)) {
+            extCfgs++;
+        }
+    }
+
+    return extCfg;
 }
 
 //
@@ -498,6 +534,37 @@ const char *riscvGetFeatureName(riscvArchitecture feature) {
     return featureDescs[getFeatureIndex(feature)];
 }
 
+//
+// Parse the extensions string
+//
+riscvArchitecture riscvParseExtensions(const char *extensions) {
+
+    riscvArchitecture result = 0;
+
+    if(extensions) {
+
+        const char *tail = extensions;
+        Bool        ok   = True;
+        char        extension;
+
+        while(ok && (extension=*tail++)) {
+
+            ok = (extension>='A') && (extension<='Z');
+
+            if(!ok) {
+                vmiMessage("E", CPU_PREFIX"_ILLEXT",
+                    "Illegal extension string \"%s\" - letters A-Z required",
+                    extensions
+                );
+            } else {
+                result |= (1<<(extension-'A'));
+            }
+        }
+    }
+
+    return result;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // PROCESSOR RUN STATE TRANSITION HANDLING
@@ -558,7 +625,50 @@ void riscvUpdateExclusiveAccessCallback(riscvP riscv, Bool install) {
 // about to start or about to stop simulation)
 //
 VMI_IASSWITCH_FN(riscvContextSwitchCB) {
-    riscvUpdateExclusiveAccessCallback((riscvP)processor, state==RS_SUSPEND);
+
+    riscvP      riscv = (riscvP)processor;
+    riscvExtCBP extCB;
+
+    riscvUpdateExclusiveAccessCallback(riscv, state==RS_SUSPEND);
+
+    // call derived model context switch function if required
+    for(extCB=riscv->extCBs; extCB; extCB=extCB->next) {
+        if(extCB->switchCB) {
+            extCB->switchCB(riscv, state, extCB->clientData);
+        }
+    }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// TRANSACTION MODE
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Enable or disable transaction mode
+//
+RISCV_SET_TMODE_FN(riscvSetTMode) {
+
+    // flush dictionaries the first time transaction mode is enabled
+    if(enable && !riscv->useTMode) {
+
+        riscv->useTMode = True;
+
+        vmirtFlushAllDicts((vmiProcessorP)riscv);
+    }
+
+    // enable mode using polymorphic key
+    if(enable) {
+        riscv->pmKey |= PMK_TRANSACTION;
+    } else {
+        riscv->pmKey &= ~PMK_TRANSACTION;
+    }
+}
+
+//
+// Return true if in transaction mode
+//
+RISCV_GET_TMODE_FN(riscvGetTMode) {
+    return (riscv->pmKey & PMK_TRANSACTION) != 0;
+}
 

@@ -45,15 +45,27 @@
 
 
 //
-// Initialize enhanced model support callbacks
+// Initialize enhanced model support callbacks that apply at all levels
 //
-static void initModelCBs(riscvP riscv) {
+static void initAllModelCBs(riscvP riscv) {
+
+    // from riscvUtils.h
+    riscv->cb.registerExtCB = riscvRegisterExtCB;
+    riscv->cb.getExtConfig  = riscvGetExtConfig;
+}
+
+//
+// Initialize enhanced model support callbacks that apply at leaf levels
+//
+static void initLeafModelCBs(riscvP riscv) {
 
     // from riscvUtils.h
     riscv->cb.getXlenMode        = riscvGetXlenMode;
     riscv->cb.getXlenArch        = riscvGetXlenArch;
     riscv->cb.getXRegName        = riscvGetXRegName;
     riscv->cb.getFRegName        = riscvGetFRegName;
+    riscv->cb.getTMode           = riscvGetTMode;
+    riscv->cb.setTMode           = riscvSetTMode;
 
     // from riscvExceptions.h
     riscv->cb.illegalInstruction = riscvIllegalInstruction;
@@ -182,37 +194,6 @@ static Uns64 powerOfTwo(Uns64 oldValue, const char *name) {
 }
 
 //
-// Parse the extensions string
-//
-riscvArchitecture parseExtensions(const char *extensions) {
-
-    riscvArchitecture result = 0;
-
-    if(extensions) {
-
-        const char *tail = extensions;
-        Bool        ok   = True;
-        char        extension;
-
-        while(ok && (extension=*tail++)) {
-
-            ok = (extension>='A') && (extension<='Z');
-
-            if(!ok) {
-                vmiMessage("E", CPU_PREFIX"_ILLEXT",
-                    "Illegal extension string \"%s\" - letters A-Z required",
-                    extensions
-                );
-            } else {
-                result |= (1<<(extension-'A'));
-            }
-        }
-    }
-
-    return result;
-}
-
-//
 // Apply parameters applicable to SMP member
 //
 static void applyParamsSMP(riscvP riscv, riscvParamValuesP params) {
@@ -248,6 +229,9 @@ static void applyParamsSMP(riscvP riscv, riscvParamValuesP params) {
     // get uninterpreted architectural configuration parameters
     cfg->user_version      = params->user_version;
     cfg->priv_version      = params->priv_version;
+    cfg->vect_version      = params->vector_version;
+    cfg->fp16_version      = params->fp16_version;
+    cfg->mstatus_fs_mode   = params->mstatus_fs_mode;
     cfg->reset_address     = params->reset_address;
     cfg->nmi_address       = params->nmi_address;
     cfg->ASID_bits         = params->ASID_bits;
@@ -270,7 +254,6 @@ static void applyParamsSMP(riscvP riscv, riscvParamValuesP params) {
     cfg->instret_undefined = params->instret_undefined;
     cfg->enable_CSR_bus    = params->enable_CSR_bus;
     cfg->d_requires_f      = params->d_requires_f;
-    cfg->fs_always_dirty   = params->fs_always_dirty;
     cfg->xret_preserves_lr = params->xret_preserves_lr;
     cfg->ELEN              = powerOfTwo(params->ELEN, "ELEN");
     cfg->SLEN              = powerOfTwo(params->SLEN, "SLEN");
@@ -336,8 +319,8 @@ static void applyParamsSMP(riscvP riscv, riscvParamValuesP params) {
     }
 
     // include extensions specified by letter
-    misa_Extensions      |= parseExtensions(params->add_Extensions);
-    misa_Extensions_mask |= parseExtensions(params->add_Extensions_mask);
+    misa_Extensions      |= riscvParseExtensions(params->add_Extensions);
+    misa_Extensions_mask |= riscvParseExtensions(params->add_Extensions_mask);
 
     // exactly one of I and E base ISA features must be present and initially
     // enabled; if the E bit is initially enabled, the I bit must be read-only
@@ -388,6 +371,9 @@ VMI_CONSTRUCTOR_FN(riscvConstructor) {
     riscvP riscv  = (riscvP)processor;
     riscvP parent = getParent(riscv);
 
+    // initialize enhanced model support callbacks that apply at all levels
+    initAllModelCBs(riscv);
+
     // set hierarchical properties
     riscv->parent  = parent;
     riscv->smpRoot = parent ? parent->smpRoot : riscv;
@@ -416,8 +402,8 @@ VMI_CONSTRUCTOR_FN(riscvConstructor) {
 
     } else {
 
-        // initialize enhanced model support callbacks
-        initModelCBs(riscv);
+        // initialize enhanced model support callbacks that apply at leaf levels
+        initLeafModelCBs(riscv);
 
         // set initial mode
         riscvSetMode(riscv, RISCV_MODE_MACHINE);
@@ -493,8 +479,11 @@ VMI_DESTRUCTOR_FN(riscvDestructor) {
     // free bus port specifications
     riscvFreeBusPorts(riscv);
 
-    // initialize CSR state
+    // free CSR state
     riscvCSRFree(riscv);
+
+    // free exception state
+    riscvExceptFree(riscv);
 }
 
 

@@ -69,13 +69,12 @@ typedef enum riscvTZE {
 } riscvTZ;
 
 //
-// This subdivides the polymorphic key into parts used by the vector extension,
-// floating point and transaction mode
+// This subdivides the polymorphic key into parts used by the vector extension
+// and transaction mode
 //
 typedef enum riscvPMKE {
     PMK_VECTOR      = 0x00ff,
-    PMK_TRANSACTION = 0x4000,
-    PMK_RM_VALID    = 0x8000,
+    PMK_TRANSACTION = 0x8000,
 } riscvPMK;
 
 //
@@ -84,8 +83,8 @@ typedef enum riscvPMKE {
 typedef struct riscvBlockStateS {
 
     riscvBlockStateP prevState;     // previous block state
-    Uns32            fpNaNBoxMask;  // mask of known single-precision FP registers
-    Bool             fpInstDone;    // floating-point instruction already seen?
+    Uns32            fpNaNBoxMask[2];// mask of known NaN-boxed registers
+    Bool             FSDirty;       // is status.FS known to be dirty?
     riscvSEWMt       SEWMt;         // known active vector SEW
     riscvVLMULMt     VLMULMt;       // known active vector VLMUL
     riscvVLClassMt   VLClassMt;     // known active vector VL zero/non-zero/max
