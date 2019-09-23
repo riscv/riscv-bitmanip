@@ -27,6 +27,7 @@
 
 // model header files
 #include "riscvDerivedMorph.h"
+#include "riscvExceptionTypes.h"
 #include "riscvMode.h"
 #include "riscvRegisterTypes.h"
 #include "riscvTypeRefs.h"
@@ -36,6 +37,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 // IMPLEMENTED BY BASE MODEL
 ////////////////////////////////////////////////////////////////////////////////
+
+//
+// Register extension callback block with the base model
+//
+#define RISCV_REGISTER_EXT_CB_FN(_NAME) void _NAME( \
+    riscvP      riscv,  \
+    riscvExtCBP extCB   \
+)
+typedef RISCV_REGISTER_EXT_CB_FN((*riscvRegisterExtCBFn));
+
+//
+// Return the indexed extension configuration
+//
+#define RISCV_GET_EXT_CONFIG_FN(_NAME) riscvExtConfigCP _NAME( \
+    riscvP riscv,   \
+    Uns32  id       \
+)
+typedef RISCV_GET_EXT_CONFIG_FN((*riscvGetExtConfigFn));
 
 //
 // Return the current XLEN
@@ -48,6 +67,20 @@ typedef RISCV_GET_XLEN_FN((*riscvGetXlenFn));
 //
 #define RISCV_GET_REG_NAME_FN(_NAME) const char *_NAME(Uns32 index)
 typedef RISCV_GET_REG_NAME_FN((*riscvGetRegNameFn));
+
+//
+// Return true if in transaction mode
+// Use at morph time only - assumes instruction checking this could
+// abort a transaction so emits end block if in TM
+//
+#define RISCV_GET_TMODE_FN(_NAME) Bool _NAME(riscvP riscv)
+typedef RISCV_GET_TMODE_FN((*riscvGetTModeFn));
+
+//
+// Enable or disable transaction mode
+//
+#define RISCV_SET_TMODE_FN(_NAME) void _NAME(riscvP riscv, Bool enable)
+typedef RISCV_SET_TMODE_FN((*riscvSetTModeFn));
 
 //
 // Take Illegal Instruction exception
@@ -127,35 +160,81 @@ typedef RISCV_NEW_CSR_FN((*riscvNewCSRFn));
 //
 // Notifier called on trap entry or exception return
 //
-#define RISCV_TRAP_NOTIFIER_FN(_NAME) void _NAME(riscvP riscv, riscvMode mode)
+#define RISCV_TRAP_NOTIFIER_FN(_NAME) void _NAME( \
+    riscvP    riscv,            \
+    riscvMode mode,             \
+    void     *clientData        \
+)
 typedef RISCV_TRAP_NOTIFIER_FN((*riscvTrapNotifierFn));
 
 //
 // Notifier called at reset
 //
-#define RISCV_RESET_NOTIFIER_FN(_NAME) void _NAME(riscvP riscv)
+#define RISCV_RESET_NOTIFIER_FN(_NAME) void _NAME( \
+    riscvP riscv,               \
+    void  *clientData           \
+)
 typedef RISCV_RESET_NOTIFIER_FN((*riscvResetNotifierFn));
 
 //
 // Return first exception in the derived model
 //
-#define RISCV_FIRST_EXCEPTION_FN(_NAME) vmiExceptionInfoCP _NAME(riscvP riscv)
+#define RISCV_FIRST_EXCEPTION_FN(_NAME) vmiExceptionInfoCP _NAME( \
+    riscvP riscv,               \
+    void  *clientData           \
+)
 typedef RISCV_FIRST_EXCEPTION_FN((*riscvFirstExceptionFn));
 
 //
-// Container structure for all model callbacks
+// Notifier called on a model context switch. 'state' describes the new state.
+//
+#define RISCV_IASSWITCH_FN(_NAME) void _NAME( \
+    riscvP         riscv,       \
+    vmiIASRunState state,       \
+    void          *clientData   \
+)
+typedef RISCV_IASSWITCH_FN((*riscvIASSwitchFn));
+
+//
+// Implement a load that is part of a transaction of the given size in bytes
+// from the given virtual address, writing the loaded value to the buffer
+//
+#define RISCV_TLOAD_FN(_NAME) void _NAME( \
+    riscvP riscv,               \
+    void  *buffer,              \
+    Addr   VA,                  \
+    Uns32  bytes,               \
+    void  *clientData           \
+)
+typedef RISCV_TLOAD_FN((*riscvTLoadFn));
+
+//
+// Implement a store that is part of a transaction of the given size in bytes
+// to the given virtual address, taking the value from the buffer
+//
+#define RISCV_TSTORE_FN(_NAME) void _NAME( \
+    riscvP      riscv,          \
+    const void *buffer,         \
+    Addr        VA,             \
+    Uns32       bytes,          \
+    void       *clientData      \
+)
+typedef RISCV_TSTORE_FN((*riscvTStoreFn));
+
+//
+// Container structure for all callbacks implemented by the base model
 //
 typedef struct riscvModelCBS {
 
-    ////////////////////////////////////////////////////////////////////////////
-    // IMPLEMENTED BY BASE MODEL
-    ////////////////////////////////////////////////////////////////////////////
-
     // from riscvUtils.h
+    riscvRegisterExtCBFn      registerExtCB;
+    riscvGetExtConfigFn       getExtConfig;
     riscvGetXlenFn            getXlenMode;
     riscvGetXlenFn            getXlenArch;
     riscvGetRegNameFn         getXRegName;
     riscvGetRegNameFn         getFRegName;
+    riscvSetTModeFn           setTMode;
+    riscvGetTModeFn           getTMode;
 
     // from riscvExceptions.h
     riscvIllegalInstructionFn illegalInstruction;
@@ -171,9 +250,15 @@ typedef struct riscvModelCBS {
     // from riscvCSR.h
     riscvNewCSRFn             newCSR;
 
-    ////////////////////////////////////////////////////////////////////////////
-    // IMPLEMENTED BY DERIVED MODEL
-    ////////////////////////////////////////////////////////////////////////////
+} riscvModelCB;
+
+//
+// Container structure for all callbacks implemented by an extension
+//
+typedef struct riscvExtCBS {
+
+    // link pointer (maintained by base model)
+    riscvExtCBP               next;
 
     // handle back to client data
     void                     *clientData;
@@ -188,5 +273,10 @@ typedef struct riscvModelCBS {
     riscvDerivedMorphFn       preMorph;
     riscvDerivedMorphFn       postMorph;
 
-} riscvModelCB;
+    // transaction support actions
+    riscvIASSwitchFn          switchCB;
+    riscvTLoadFn              tLoad;
+    riscvTStoreFn             tStore;
+
+} riscvExtCB;
 

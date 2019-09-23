@@ -24,6 +24,7 @@
 
 // model header files
 #include "riscvMode.h"
+#include "riscvModelCallbacks.h"
 #include "riscvTypes.h"
 #include "riscvTypeRefs.h"
 #include "riscvVariant.h"
@@ -50,6 +51,16 @@ Uns32 riscvGetFlenArch(riscvP riscv);
 // Return the current XLEN
 //
 Uns32 riscvGetXlenMode(riscvP riscv);
+
+//
+// Register extension callback block with the base model
+//
+void riscvRegisterExtCB(riscvP riscv, riscvExtCBP extCB);
+
+//
+// Return extension configuration with the given id
+//
+riscvExtConfigCP riscvGetExtConfig(riscvP riscv, Uns32 id);
 
 //
 // Get mode name for the indexed mode
@@ -104,6 +115,11 @@ char riscvGetFeatureChar(riscvArchitecture feature);
 const char *riscvGetFeatureName(riscvArchitecture feature);
 
 //
+// Parse the extensions string
+//
+riscvArchitecture riscvParseExtensions(const char *extensions);
+
+//
 // Abort any active exclusive access
 //
 void riscvAbortExclusiveAccess(riscvP riscv);
@@ -112,3 +128,14 @@ void riscvAbortExclusiveAccess(riscvP riscv);
 // Install or remove the exclusive access monitor callback if required
 //
 void riscvUpdateExclusiveAccessCallback(riscvP riscv, Bool install);
+
+//
+// Enable or disable transaction mode
+//
+RISCV_SET_TMODE_FN(riscvSetTMode);
+
+//
+// Return true if in transaction mode
+//
+RISCV_GET_TMODE_FN(riscvGetTMode);
+

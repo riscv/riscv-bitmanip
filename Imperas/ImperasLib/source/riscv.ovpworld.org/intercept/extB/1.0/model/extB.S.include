@@ -60,14 +60,24 @@
     .int 0x60005013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
 .endm
 
-# DECODE_ENTRY(0, GREV,    "|0100000|.....|.....|001|.....|0110011|"); // OP
+# DECODE_ENTRY(0, GREV,    "|0110100|.....|.....|101|.....|0110011|");  // R-type
 .macro GREV rd rs1 rs2
-    .int 0x40001033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x68005033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm    
 
-# DECODE_ENTRY(0, GREVI,   "|01000|.......|.....|001|.....|0010011|"); // OP-IMM
+# DECODE32_ENTRY(0, GORC,  "|0010100|.....|.....|101|.....|0110011|"),
+.macro GORC rd rs1 rs2
+    .int 0x28005033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm    
+
+# DECODE_ENTRY(0, GREVI,   "|01101|.......|.....|101|.....|0010011|");  // I-type
 .macro GREVI rd rs1 imm
-    .int 0x40001013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+    .int 0x68005013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
+.endm
+
+# DECODE32_ENTRY(0, GORCI, "|00101|0......|.....|101|.....|0010011|")
+.macro GORCI rd rs1 imm
+    .int 0x28005013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x3F)<<20)
 .endm
 
 # DECODE_ENTRY(0, SHFL,    "|0000100|.....|.....|001|.....|0110011|"); // OP
@@ -100,14 +110,14 @@
     .int 0x08002033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
-# DECODE_ENTRY(0, CMIX,     "|.....|11|.....|.....|010|.....|0110011|"); // R4-type
+# DECODE_ENTRY(0, CMIX,     "|.....|11|.....|.....|001|.....|0110011|"); // R4-type
 .macro CMIX rd rs1 rs2 rs3
-    .int 0x06002033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20) | ((\rs3&0x1F)<<27)
+    .int 0x06001033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20) | ((\rs3&0x1F)<<27)
 .endm
 
-# DECODE_ENTRY(0, CMOV,     "|.....|11|.....|.....|011|.....|0110011|"); // R4-type
+# DECODE_ENTRY(0, CMOV,     "|.....|11|.....|.....|101|.....|0110011|"); // R4-type
 .macro CMOV rd rs1 rs2 rs3
-    .int 0x06003033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20) | ((\rs3&0x1F)<<27)
+    .int 0x06005033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20) | ((\rs3&0x1F)<<27)
 .endm
 
 # DECODE_ENTRY(0, CLMUL,    "|0000101|.....|.....|001|.....|0110011|"); // OP
@@ -200,9 +210,9 @@
     .int 0x61B01013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
 .endm
 
-# DECODE_ENTRY(0, BMATXOR,  "|0000100|.....|.....|111|.....|0110011|");  // R-type
+# DECODE_ENTRY(0, BMATXOR,  "|0100100|.....|.....|011|.....|0110011|");  // R-type
 .macro BMATXOR rd rs1 rs2
-    .int 0x08007033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x48003033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
 # DECODE_ENTRY(0, BMATOR,     "|0000100|.....|.....|011|.....|0110011|"); // OP
@@ -307,9 +317,24 @@
     .int 0x08004033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
-# DECODE_ENTRY(0, GREVW,    "|0100000|.....|.....|001|.....|0111011|");  // R-type
+# DECODE_ENTRY(0, BFP,     "|0000100|.....|.....|111|.....|0110011|");  // R-type
+.macro BFP rd rs1 rs2
+    .int 0x08007033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, BFPW,     "|0000100|.....|.....|111|.....|0111011|");  // R-type
+.macro BFPW rd rs1 rs2
+    .int 0x0800703B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, GREVW,    "|0110100|.....|.....|101|.....|0111011|");  // R-type
 .macro GREVW rd rs1 rs2
-    .int 0x4000103B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x6800503B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE32_ENTRY(0, GORCW,  "|0010100|.....|.....|101|.....|0111011|");  // R-type
+.macro GORCW rd rs1 rs2
+    .int 0x2800503B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
 # DECODE_ENTRY(0, SLOW,     "|0010000|.....|.....|001|.....|0111011|");  // R-type
@@ -352,9 +377,14 @@
     .int 0x4800503B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
-# DECODE_ENTRY(0, GREVIW,   "|0100000|.....|.....|001|.....|0011011|");  // R-type
+# DECODE_ENTRY(0, GREVIW,   "|0110100|.....|.....|101|.....|0011011|");  // R-type
 .macro GREVIW rd rs1 imm
-    .int 0x4000101B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x1F)<<20)
+    .int 0x6800501B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x1F)<<20)
+.endm
+
+# DECODE32_ENTRY(0, GORCIW, "|0010100|.....|.....|101|.....|0011011|");  // R-type
+.macro GORCIW rd rs1 imm
+    .int 0x2800501B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\imm&0x1F)<<20)
 .endm
 
 # DECODE_ENTRY(0, SLOIW,    "|0010000|.....|.....|001|.....|0011011|");  // R-type
@@ -456,4 +486,4 @@
 .macro PACKW rd rs1 rs2
     .int 0x0800403B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
-
+   

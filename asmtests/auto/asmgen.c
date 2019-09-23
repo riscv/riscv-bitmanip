@@ -186,6 +186,16 @@ uint32_t packw(uint32_t rs1, uint32_t rs2) {
     return upper | lower;
 }
 
+uint32_t bfpw(uint32_t rs1, uint32_t rs2)
+{
+    int len = (rs2 >> 24) & 15;
+    int off = (rs2 >> 16) & (XLEN_W-1);
+    len = len ? len : 16;
+    uint32_t mask = rolw(slow(0, len), off);
+    uint32_t data = rolw(rs2, off);
+    return (data & mask) | (rs1 & ~mask);
+}
+
 int getnum(int lo, int hi) {
     int id = lo + (random() % (1+hi-lo));
     return id;
@@ -375,9 +385,6 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
 
 uint_xlen_t neg(uint_xlen_t rs1) {
     return -(rs1);
-}
-uint_xlen_t fnot(uint_xlen_t rs1) {
-    return ~(rs1);
 }
 
 void do_clz(int test) {
@@ -592,9 +599,9 @@ void do_packw(int test) {
     PROLOG_RRR(packw, test);
     EPILOG(packw, test);
 }
-void do_not(int test) {
-    PROLOG_CR2(fnot, not, test);
-    EPILOG(not, test);
+void do_bfpw(int test) {
+    PROLOG_RRR(bfpw, test);
+    EPILOG(bfpw, test);
 }
 void do_crc32_b(int test) {
     PROLOG_RR(crc32_b, test);
@@ -719,6 +726,10 @@ void do_subuw(int test) {
     PROLOG_RRR(subuw, test);
     EPILOG(subuw, test);
 }
+void do_bfp(int test) {
+    PROLOG_RRR(bfp, test);
+    EPILOG(bfp, test);
+}
 
 #if (XLEN==64)
 void do_crc32_d(int test) {
@@ -791,34 +802,43 @@ int main(int argc, char **argv) {
         do_andn(++test);
         do_orn(++test);
         do_xnor(++test);
-        do_grev(++test);
+
         do_slo(++test);
         do_sro(++test);
         do_rol(++test);
         do_ror(++test);
-        do_sbset(++test);
+
         do_sbclr(++test);
+        do_sbset(++test);
         do_sbinv(++test);
         do_sbext(++test);
-        do_grevi(++test);
+        // gorc
+        do_grev(++test);
+
         do_sloi(++test);
         do_sroi(++test);
         do_rori(++test);
-        do_sbseti(++test);
+
         do_sbclri(++test);
+        do_sbseti(++test);
         do_sbinvi(++test);
         do_sbexti(++test);
+        // gorci
+        do_grevi(++test);
+
         do_cmix(++test);
         do_cmov(++test);
         do_fsl(++test);
         do_fsr(++test);
         do_fsri(++test);
+
         do_clz(++test);
         do_ctz(++test);
         do_pcnt(++test);
 #if (XLEN==64)
         do_bmatflip(++test);
 #endif
+
         do_crc32_b(++test);
         do_crc32_h(++test);
         do_crc32_w(++test);
@@ -831,6 +851,7 @@ int main(int argc, char **argv) {
 #if (XLEN==64)
         do_crc32c_d(++test);
 #endif
+
         do_clmul(++test);
         do_clmulr(++test);
         do_clmulh(++test);
@@ -838,6 +859,7 @@ int main(int argc, char **argv) {
         do_max(++test);
         do_minu(++test);
         do_maxu(++test);
+
         do_shfl(++test);
         do_unshfl(++test);
         do_bdep(++test);
@@ -847,54 +869,62 @@ int main(int argc, char **argv) {
         do_bmator(++test);
         do_bmatxor(++test);
 #endif
+        do_bfp(++test);
+
         do_shfli(++test);
         do_unshfli(++test);
 
 #if (XLEN==64)
         do_addiwu(++test);
+        // slliuw
+
         do_addwu(++test);
         do_subwu(++test);
         do_adduw(++test);
         do_subuw(++test);
-        do_grevw(++test);
+
         do_slow(++test);
         do_srow(++test);
         do_rolw(++test);
         do_rorw(++test);
-        do_sbsetw(++test);
+
+
         do_sbclrw(++test);
+        do_sbsetw(++test);
         do_sbinvw(++test);
         do_sbextw(++test);
+        // gorcw
+        do_grevw(++test);
+
         do_sloiw(++test);
         do_sroiw(++test);
         do_roriw(++test);
-        do_sbsetiw(++test);
+
         do_sbclriw(++test);
+        do_sbsetiw(++test);
         do_sbinviw(++test);
+        // gorciw
+        // greviw
+
         do_fslw(++test);
         do_fsrw(++test);
         do_fsriw(++test);
+
         do_clzw(++test);
         do_ctzw(++test);
         do_pcntw(++test);
+
         do_clmulw(++test);
         do_clmulrw(++test);
         do_clmulhw(++test);
+
         do_shflw(++test);
         do_unshflw(++test);
         do_bdepw(++test);
         do_bextw(++test);
         do_packw(++test);
+        do_bfpw(++test);
 #endif
-
-#if (XLEN==64)
-        do_crc32_d(++test);
-        do_crc32c_d(++test);
-        do_bmatxor(++test);
-        do_bmator(++test);
-        do_bmatflip(++test);
-#endif
-        do_not(++test);
     }
 
     printf("test_complete:\n");
