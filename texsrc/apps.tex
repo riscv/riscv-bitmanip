@@ -29,6 +29,54 @@ Or using {\tt srai} for a signed bit-field.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Packing bit-fields}
+
+There are different ways of packing bit-fields with the help of RISC-V BitManip
+instructions.
+
+For example, packing a 16-bit RGB value in 5:6:5 format, from the bytes
+in a0, a1, and a2, using {\tt pack[h]} and {\tt bext}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  li t0, 0x00f8fcf8
+
+  packh a0, a0, a1
+  pack  a0, a0, a2
+  bext  a0, a0, t0
+\end{verbatim}
+\end{minipage}
+
+Or using funnel shifts (assuming {\tt a2} is already in zero-extended form
+and/or the upper bits of the return value do not matter):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  srli a2, a2, 3
+  slli a1, a1, XLEN-8
+  fsli a1, a2, a1, 6
+  slli a0, a0, XLEN-8
+  fsli a0, a1, a0, 5
+\end{verbatim}
+\end{minipage}
+
+Using only base-ISA instructions, at least 7 instructions are needed to pack a
+5:6:5 RGB value (assuming {\tt a0} is alredy in zero-extended form):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  andi a2, a2, 0xf8
+  slli a2, a2, 9
+  andi a1, a1, 0xfc
+  slli a1, a1, 3
+  srli a0, a0, 3
+  or a1, a1, a2
+  or a0, a0, a1
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Parity check}
 
 The parity of a word (xor of all bits) is the LSB of the population count.
@@ -91,8 +139,6 @@ including position \texttt{a1}.
     ret
 \end{verbatim}
 \end{minipage}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
