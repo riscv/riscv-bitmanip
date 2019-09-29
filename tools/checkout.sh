@@ -7,6 +7,7 @@ if [ ! -d riscv-gcc ]; then
 	git clone git@github.com:riscv/riscv-gcc.git riscv-gcc-new
 	cd riscv-gcc-new
 	git checkout riscv-bitmanip
+	# rebase occasionally to upstream/trunk
 	git remote add upstream git://gcc.gnu.org/git/gcc.git
 	git fetch upstream
 	cd ..
@@ -18,6 +19,7 @@ if [ ! -d riscv-binutils ]; then
 	git clone git@github.com:riscv/riscv-binutils-gdb.git riscv-binutils-new
 	cd riscv-binutils-new
 	git checkout riscv-bitmanip
+	# rebase occasionally to upstream/master
 	git remote add upstream git://sourceware.org/git/binutils-gdb.git
 	git fetch upstream
 	cd ..
