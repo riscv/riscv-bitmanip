@@ -172,16 +172,61 @@ uint32_t reference_unsigned_avgint(uint32_t a0, uint32_t a1)
 
 uint32_t bitmanip_unsigned_avgint(uint32_t a0, uint32_t a1)
 {
+	return (a0&a1) + rv32b::srl(a0 ^ a1, 1);
+}
+
+uint32_t bitmanip_unsigned_avgint_fsr(uint32_t a0, uint32_t a1)
+{
 	uint32_t s = a0 + a1;
 	uint32_t c = s < a0;
 	return rv32b::fsr(s, 1, c);
 }
 
+uint32_t reference_signed_avgint(uint32_t a0, uint32_t a1)
+{
+	int64_t a = (int32_t)a0, b = (int32_t)a1;
+	return (a + b) >> 1;
+}
+
+uint32_t bitmanip_signed_avgint(uint32_t a0, uint32_t a1)
+{
+	return (a0&a1) + rv32b::sra(a0 ^ a1, 1);
+}
+
 extern "C" void check_avgint(uint32_t a0, uint32_t a1)
 {
 	uint32_t reference_unsigned_y = reference_unsigned_avgint(a0, a1);
-	uint32_t bitmanip_unsigned_y = bitmanip_unsigned_avgint(a0, a1);
-	assert(reference_unsigned_y == bitmanip_unsigned_y);
+	uint32_t bitmanip_unsigned_y_nofsr = bitmanip_unsigned_avgint(a0, a1);
+	uint32_t bitmanip_unsigned_y_fsr = bitmanip_unsigned_avgint_fsr(a0, a1);
+	assert(reference_unsigned_y == bitmanip_unsigned_y_nofsr);
+	assert(reference_unsigned_y == bitmanip_unsigned_y_fsr);
+
+	uint32_t reference_signed_y = reference_signed_avgint(a0, a1);
+	uint32_t bitmanip_signed_y = bitmanip_signed_avgint(a0, a1);
+	assert(reference_signed_y == bitmanip_signed_y);
+}
+
+// ---------------------------------------------------------
+
+int reference_overflow(uint32_t a0, uint32_t a1)
+{
+	int32_t a = a0, b = a1, c = a0+a1;
+	if (a<0 && b<0) return c>=0;
+	if (a>0 && b>0) return c<=0;
+	return 0;
+}
+
+int bitmanip_overflow(uint32_t a0, uint32_t a1)
+{
+	uint32_t a = a0, b = a1, c = a0+a1;
+	return ((a^~b) & (a^c)) >> 31;
+}
+
+extern "C" void check_overflow(uint32_t a0, uint32_t a1)
+{
+	int reference_y = reference_overflow(a0, a1);
+	int bitmanip_y = bitmanip_overflow(a0, a1);
+	assert(reference_y == bitmanip_y);
 }
 
 // ---------------------------------------------------------
