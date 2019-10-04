@@ -90,17 +90,15 @@ look like exactly, but it will probably look something like this:
 \end{tikzpicture}
 \end{center}
 
-The main open questions of course relate to what should and shouldn't be
-included in ``B'', and what should or shouldn't be included in ``Zbb''.
-These decisions will be informed in big part by evaluations of the cost and
-added value for the individual instructions.
-
 The main open questions are:
 \begin{itemize}
-\item Should {\tt clmul[hr]} be included in ``B'', or {\tt crc32.[bhwd]/crc32c.[bhwd]}, or neither, or both?
-\item Should ``Zbe'' be included in ``B''? Should ``Zbm be included in ``B''?
-\item Which ``Zbp'' pseudo-ops should be included in ``B''? Which in ``Zbb''? Should ``Zbp'' be included in ``B'' as a whole?
+\item Which of the ``Zb*'' extensions should be included in ``B''?
+\item There is some redundancy/overlap with {\tt add[i]wu}, {\tt subwu}, {\tt addu.w}, {\tt subu.w}, and {\tt slliu.w}. Which instructions should stay?
+\item Which ``Zbp'' pseudo-ops should be included in ``Zbb''?
 \end{itemize}
+
+These decisions will be informed in big part by evaluations of the cost and
+added value for the individual instructions.
 
 For the purpose of tool-chain development ``B'' is currently everything.
 
