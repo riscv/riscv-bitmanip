@@ -129,7 +129,7 @@ extern "C" void min_max_test(uint32_t u1, uint32_t u2)
 
 // ---------------------------------------------------------
 
-extern "C" uint64_t reference_vectadd(uint64_t a0, uint64_t a1)
+uint64_t reference_vectadd(uint64_t a0, uint64_t a1)
 {
 	uint64_t ret = 0;
 	for (int i = 0; i < 8; i++)
@@ -142,7 +142,7 @@ extern "C" uint64_t reference_vectadd(uint64_t a0, uint64_t a1)
 	return ret;
 }
 
-extern "C" uint64_t bitmanip_vectadd(uint64_t a0, uint64_t a1)
+uint64_t bitmanip_vectadd(uint64_t a0, uint64_t a1)
 {
 	uint64_t a2, a3;
 	a2 = rv64b::orc8(0x80);
@@ -160,6 +160,28 @@ extern "C" void check_vectadd(uint32_t a0, uint32_t a1)
 	uint64_t reference_y = reference_vectadd(a0, a1);
 	uint64_t bitmanip_y = bitmanip_vectadd(a0, a1);
 	assert(reference_y == bitmanip_y);
+}
+
+// ---------------------------------------------------------
+
+uint32_t reference_unsigned_avgint(uint32_t a0, uint32_t a1)
+{
+	uint64_t a = a0, b = a1;
+	return (a + b) >> 1;
+}
+
+uint32_t bitmanip_unsigned_avgint(uint32_t a0, uint32_t a1)
+{
+	uint32_t s = a0 + a1;
+	uint32_t c = s < a0;
+	return rv32b::fsr(s, 1, c);
+}
+
+extern "C" void check_avgint(uint32_t a0, uint32_t a1)
+{
+	uint32_t reference_unsigned_y = reference_unsigned_avgint(a0, a1);
+	uint32_t bitmanip_unsigned_y = bitmanip_unsigned_avgint(a0, a1);
+	assert(reference_unsigned_y == bitmanip_unsigned_y);
 }
 
 // ---------------------------------------------------------

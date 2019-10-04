@@ -75,6 +75,51 @@ Using only base-ISA instructions, at least 7 instructions are needed to pack a
 \end{verbatim}
 \end{minipage}
 
+Another example for packing bit fields is generating IEEE floats using
+only integer instructions (aka ``soft float''). For example, generating
+a 32-bit float in the range $[-1.0 \dots +1.0)$ from a signed 16-bit
+integer:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  short2float:
+    neg a1, a0
+    max a1, a1, a0
+    clz a2, a1
+    srli a0, a0, 31
+    sll a3, a1, a2
+    srli a3, a3, 15
+    neg a2, a2
+    addi a2, a2, 143
+    packh a0, a2, a0
+    pack a0, a3, a0
+    slli a4, a4, 7
+    orc a1, a1
+    and a0, a0, a1
+    ret
+\end{verbatim}
+\end{minipage}
+
+Or using funnel shifts:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  short2float:
+    neg a1, a0
+    max a1, a1, a0
+    clz a2, a1
+    sll a3, a1, a2
+    slli a3, a3, 1
+    neg a2, a2
+    addi a2, a2, 143
+    fsri a3, a3, a2, 8
+    srli a0, a0, 31
+    fsri a0, a3, a0, 1
+    cmov a0, a1, a0, zero
+    ret
+\end{verbatim}
+\end{minipage}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Parity check}
@@ -84,6 +129,19 @@ The parity of a word (xor of all bits) is the LSB of the population count.
 \begin{verbatim}
   pcnt a0, a0
   andi a0, a0, 1
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Average of two unsigned integers}
+
+The following three instructions calculate the average of the unsigned
+integers in {\tt a0} and {\tt a1}, with compensation for overflow:
+
+\begin{verbatim}
+  add a0, a0, a1
+  slt a1, a0, a1
+  fsri a0, a1, 1
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
