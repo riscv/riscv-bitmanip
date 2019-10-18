@@ -117,8 +117,6 @@ module rvb_shifter #(
 		end
 	end
 
-	wire [63:0] XZ = {Z[63:32], wmode ? X[63:32] : Z[31:0]};
-
 	always @* begin
 		Y = X;
 		if (sbmode) begin
@@ -130,11 +128,13 @@ module rvb_shifter #(
 			endcase
 		end
 		if (bfpmode) begin
-			Y = ((X | XZ) & A) | (X & XZ);
+			Y = ((X | Z) & A) | (X & Z);
 		end
 	end
 
-	rvb_shifter_datapath datapath (
+	rvb_shifter_datapath #(
+		.XLEN(XLEN)
+	) datapath (
 		.A     (aa   ),
 		.B     (bb   ),
 		.X     (X    ),
@@ -144,44 +144,51 @@ module rvb_shifter #(
 	);
 endmodule
 
-module rvb_shifter_datapath (
+module rvb_shifter_datapath #(
+	parameter integer XLEN = 64
+) (
 	input  [63:0] A, B,
 	output [63:0] X, Z,
 	input  [ 6:0] shamt,
 	input         wmode
 );
-	reg [127:0] tmp, tmp2;
-
-	wire shamt_5_0 = wmode ? 0 : shamt[5];
-	wire shamt_5_1 = wmode ? 1 : shamt[5];
-	wire shamt_5_2 = wmode ? 0 : shamt[5];
-	wire shamt_5_3 = wmode ? 1 : shamt[5];
-
-	wire shamt_6_0 = wmode ?  shamt[5] : shamt[6];
-	wire shamt_6_1 = wmode ? !shamt[5] : shamt[6];
-	wire shamt_6_2 = wmode ? !shamt[5] : shamt[6];
-	wire shamt_6_3 = wmode ?  shamt[5] : shamt[6];
+	reg [127:0] tmp;
 
 	always @* begin
 		tmp = {B, A};
 
-		tmp2 = tmp;
-		if (shamt_5_0) tmp2[ 31: 0] = tmp[127:96];
-		if (shamt_5_1) tmp2[ 63:32] = tmp[ 31: 0];
-		if (shamt_5_2) tmp2[ 95:64] = tmp[ 63:32];
-		if (shamt_5_3) tmp2[127:96] = tmp[ 95:64];
+		tmp = {
+			(wmode ? 0 : shamt[5]) ? tmp[127:96] : tmp[ 31: 0],
+			(wmode ? 1 : shamt[5]) ? tmp[ 31: 0] : tmp[ 63:32],
+			(wmode ? 0 : shamt[5]) ? tmp[ 63:32] : tmp[ 95:64],
+			(wmode ? 1 : shamt[5]) ? tmp[ 95:64] : tmp[127:96]
+		};
 
-		tmp = tmp2;
-		if (shamt_6_0) tmp[ 31: 0] = tmp2[ 95:64];
-		if (shamt_6_1) tmp[ 63:32] = tmp2[127:96];
-		if (shamt_6_2) tmp[ 95:64] = tmp2[ 31: 0];
-		if (shamt_6_3) tmp[127:96] = tmp2[ 63:32];
+		tmp = {
+			(wmode ?  shamt[5] : shamt[6]) ? tmp[ 95:64] : tmp[ 31: 0],
+			(wmode ? !shamt[5] : shamt[6]) ? tmp[127:96] : tmp[ 63:32],
+			(wmode ? !shamt[5] : shamt[6]) ? tmp[ 31: 0] : tmp[ 95:64],
+			(wmode ?  shamt[5] : shamt[6]) ? tmp[ 63:32] : tmp[127:96]
+		};
 
-		if (shamt[4]) tmp = {tmp[111:0], tmp[127:112]};
-		if (shamt[3]) tmp = {tmp[119:0], tmp[127:120]};
-		if (shamt[2]) tmp = {tmp[123:0], tmp[127:124]};
-		if (shamt[1]) tmp = {tmp[125:0], tmp[127:126]};
-		if (shamt[0]) tmp = {tmp[126:0], tmp[127:127]};
+		tmp = shamt[4] ? {tmp[111:0], tmp[127:112]} : tmp;
+		tmp = shamt[3] ? {tmp[119:0], tmp[127:120]} : tmp;
+		tmp = shamt[2] ? {tmp[123:0], tmp[127:124]} : tmp;
+		tmp = shamt[1] ? {tmp[125:0], tmp[127:126]} : tmp;
+		tmp = shamt[0] ? {tmp[126:0], tmp[127:127]} : tmp;
+
+		if (XLEN == 32) begin
+			tmp = {64'bx, B[31:0], A[31:0]};
+			tmp[63:0] = shamt[5] ? {tmp[31:0], tmp[63:32]} : tmp[63:0];
+			tmp[63:0] = shamt[4] ? {tmp[47:0], tmp[63:48]} : tmp[63:0];
+			tmp[63:0] = shamt[3] ? {tmp[55:0], tmp[63:56]} : tmp[63:0];
+			tmp[63:0] = shamt[2] ? {tmp[59:0], tmp[63:60]} : tmp[63:0];
+			tmp[63:0] = shamt[1] ? {tmp[61:0], tmp[63:62]} : tmp[63:0];
+			tmp[63:0] = shamt[0] ? {tmp[62:0], tmp[63:63]} : tmp[63:0];
+		end
+
+		if (XLEN == 32 || wmode)
+			tmp[95:64] = tmp[63:32];
 	end
 
 	assign {Z, X} = tmp;
