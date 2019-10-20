@@ -7,7 +7,7 @@ These instructions and their specification may change before being accepted as a
 
 ## Specification 
 See [bitmanip-0.91.pdf](bitmanip-0.91.pdf) for a pre-built version of the PDF spec document.
-The source of the PDF specification is in the [texsrc](texsrc) directory with script (`bitmanip.sh`) to build the PDF.
+The source of the PDF specification is in the [texsrc](texsrc) directory with a script (`bitmanip.sh`) to build the PDF.
 
 ## Toolchain
 See the [tools](tools) directory for build scripts for a compiler toolchain with RISC-V Bitmanip support.
@@ -37,10 +37,10 @@ And in the log you will see it enabled, for example:
 
 This simulation is instruction accurate, is provided as a pre-compiled binary, and the source of the new instructions in the model can be found in [extB.c](Imperas/ImperasLib/source/riscv.ovpworld.org/intercept/extB/1.0/model/extB.c). If you want to make changes to the instructions, please contact the working group chair or [Imperas](mailto:info@imperas.com).
 
-NOTE the instruction behavior and decodes will change before they become part of the RISC-V open standard ISA.
+NOTE the instruction behavior and decodes will change before they become part of the RISC-V open-standard ISA.
 
 ## Building the Specification PDF
-In order to produce the Specification pdf run he following command
+In order to produce the Specification pdf run the following command
 
     $ make document
 
@@ -55,7 +55,7 @@ To start, you need to set up the search path to include the path to a RISCV Comp
 
     $ export PATH=${PATH}:/home/tools/riscv-none-embed/bin
     
-Also you need a variable to define the canonical compiler prefix, eg:
+Also, you need a variable to define the canonical compiler prefix, eg:
 
     $ export RISCV_PREFIX=riscv-none-embed-
     
@@ -63,7 +63,7 @@ And then you run the tests:
 
     $ make runtest
     
-This process is self checking, and will report a set of passing/failing tests at the end.
+This process is self-checking, and will report a set of passing/failing tests at the end.
 
 ## Clean Sandbox
 To remove all generated files:
