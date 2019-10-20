@@ -16,6 +16,7 @@
  */
 
 #include "common.h"
+#include <stdlib.h>
 
 extern "C" void test_fsl(uint64_t A, int B)
 {
@@ -217,9 +218,169 @@ void test_parse_27bit(const uint32_t refdata[10])
 
 // ------------------------------------------------------------------
 
+void parse_6bit_ref(const uint64_t idata[3], uint64_t odata[4], bool sign_extend)
+{
+	uint64_t t0 = idata[0];
+	uint64_t t1 = idata[1];
+	uint64_t t2 = idata[2];
+
+	for (int i = 0; i < 32; i++) {
+		int v = t2 >> (64-6);
+		t2 = (t2 << 6) | (t1 >> (64-6));
+		t1 = (t1 << 6) | (t0 >> (64-6));
+		t0 = (t0 << 6);
+		if (sign_extend && v > 0x1f)
+			v |= 0xc0;
+		odata[3] = (odata[3] << 8) | (odata[2] >> (64-8));
+		odata[2] = (odata[2] << 8) | (odata[1] >> (64-8));
+		odata[1] = (odata[1] << 8) | (odata[0] >> (64-8));
+		odata[0] = (odata[0] << 8) | v;
+	}
+}
+
+void parse_6bit_fsl(const uint64_t idata[3], uint64_t odata[4])
+{
+	uint64_t mask = 0x3f3f3f3f3f3f3f3fLL;
+
+	uint64_t t0 = idata[0];
+	uint64_t t1 = idata[1];
+	uint64_t t2 = idata[2];
+	uint64_t t3;
+
+	t3 = t2 >> 16;
+	t3 = rv64b::bdep(t3, mask);
+
+	t2 = rv64b::fsl(t2, 32, t1);
+	t2 = rv64b::bdep(t2, mask);
+
+	t1 = rv64b::fsl(t1, 16, t0);
+	t1 = rv64b::bdep(t1, mask);
+
+	t0 = rv64b::bdep(t0, mask);
+
+	odata[0] = t0;
+	odata[1] = t1;
+	odata[2] = t2;
+	odata[3] = t3;
+}
+
+void parse_6bit_nofsl(const uint64_t idata[3], uint64_t odata[4])
+{
+	uint64_t mask = 0x3f3f3f3f3f3f3f3f;
+
+	uint64_t t0 = idata[0];
+	uint64_t t1 = idata[1];
+	uint64_t t2 = idata[2];
+	uint64_t t3, a0;
+
+	t3 = t2 >> 16;
+	t3 = rv64b::bdep(t3, mask);
+
+	t2 = t2 << 32;
+	a0 = t1 >> 32;
+	t2 = t2 | a0;
+	t2 = rv64b::bdep(t2, mask);
+
+	t1 = t1 << 16;
+	a0 = t0 >> 48;
+	t1 = t1 | a0;
+	t1 = rv64b::bdep(t1, mask);
+
+	t0 = rv64b::bdep(t0, mask);
+
+	odata[0] = t0;
+	odata[1] = t1;
+	odata[2] = t2;
+	odata[3] = t3;
+}
+
+void parse_6bit_sext_bmat(uint64_t iodata[4])
+{
+	uint64_t matrix = 0x80c0e01008040201;
+	iodata[0] = rv64b::bmator(iodata[0], matrix);
+	iodata[1] = rv64b::bmator(iodata[1], matrix);
+	iodata[2] = rv64b::bmator(iodata[2], matrix);
+	iodata[3] = rv64b::bmator(iodata[3], matrix);
+}
+
+void parse_6bit_sext_nobmat(uint64_t iodata[4])
+{
+	uint64_t mask = 0x6060606060606060;
+	iodata[0] = (iodata[0] + mask) ^ mask;
+	iodata[1] = (iodata[1] + mask) ^ mask;
+	iodata[2] = (iodata[2] + mask) ^ mask;
+	iodata[3] = (iodata[3] + mask) ^ mask;
+}
+
+void test_parse_6bit()
+{
+	uint64_t idata[3];
+	uint64_t odata_ref[4];
+	uint64_t odata_uut[4];
+
+	for (int i = 0; i < 1000; i++)
+	{
+		idata[0] = xorshift64();
+		idata[1] = xorshift64();
+		idata[2] = xorshift64();
+
+		switch (i % 4)
+		{
+		case 0:
+			// printf("== parse_6bit_fsl ==\n");
+			parse_6bit_ref(idata, odata_ref, false);
+			parse_6bit_fsl(idata, odata_uut);
+			break;
+		case 1:
+			// printf("== parse_6bit_nofsl ==\n");
+			parse_6bit_ref(idata, odata_ref, false);
+			parse_6bit_nofsl(idata, odata_uut);
+			break;
+		case 2:
+			// printf("== parse_6bit_sext_bmat ==\n");
+			parse_6bit_ref(idata, odata_ref, true);
+			parse_6bit_ref(idata, odata_uut, false);
+			parse_6bit_sext_bmat(odata_uut);
+			break;
+		case 3:
+			// printf("== parse_6bit_sext_nobmat ==\n");
+			parse_6bit_ref(idata, odata_ref, true);
+			parse_6bit_ref(idata, odata_uut, false);
+			parse_6bit_sext_nobmat(odata_uut);
+			break;
+		default:
+			abort();
+		}
+
+	#if 0
+		printf("I0: 0x%016llx\n", (long long)idata[0]);
+		printf("I1: 0x%016llx\n", (long long)idata[1]);
+		printf("I2: 0x%016llx\n\n", (long long)idata[2]);
+
+		printf("O0: 0x%016llx\n", (long long)odata_ref[0]);
+		printf("O1: 0x%016llx\n", (long long)odata_ref[1]);
+		printf("O2: 0x%016llx\n", (long long)odata_ref[2]);
+		printf("O3: 0x%016llx\n\n", (long long)odata_ref[3]);
+
+		printf("O0: 0x%016llx\n", (long long)odata_uut[0]);
+		printf("O1: 0x%016llx\n", (long long)odata_uut[1]);
+		printf("O2: 0x%016llx\n", (long long)odata_uut[2]);
+		printf("O3: 0x%016llx\n\n", (long long)odata_uut[3]);
+	#endif
+
+		assert(odata_ref[0] == odata_uut[0]);
+		assert(odata_ref[1] == odata_uut[1]);
+		assert(odata_ref[2] == odata_uut[2]);
+		assert(odata_ref[3] == odata_uut[3]);
+	}
+}
+
+// ------------------------------------------------------------------
+
 int main()
 {
 	const uint32_t refdata[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	test_parse_27bit(refdata);
+	test_parse_6bit();
 	printf("Okay.\n");
 }
