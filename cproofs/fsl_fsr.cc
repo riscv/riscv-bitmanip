@@ -16,7 +16,6 @@
  */
 
 #include "common.h"
-#include <stdlib.h>
 
 extern "C" void test_fsl(uint64_t A, int B)
 {
@@ -349,7 +348,7 @@ void test_parse_6bit()
 			parse_6bit_sext_nobmat(odata_uut);
 			break;
 		default:
-			abort();
+			assert(0);
 		}
 
 	#if 0
