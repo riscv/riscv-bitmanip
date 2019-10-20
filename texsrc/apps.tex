@@ -667,7 +667,7 @@ These version only works for shift-amounts $<$XLEN. But functions supporting
 other kinds of shift operations, or shifts $\ge$XLEN can easily be built
 with {\tt fsl} and {\tt fsr}.
 
-\subsection{Parsing bit-streams}
+\subsection{Parsing bit-streams of 27-bit words}
 
 The following function parses {\tt n} 27-bit words from a packed array of XLEN words:
 
@@ -735,6 +735,81 @@ with fetch is 17 instructions long.
 Without ternary operators that would be 13 instructions and 22 instructions,
 i.e. assuming one cycle per instruction, that function would be about 30\%
 slower without ternary instructions.
+
+\subsection{Parsing bit-streams of 6-bit words}
+
+The following code accepts three 64-bit words in {\tt t0}, {\tt t1}, and {\tt t2}
+containing a bit-stream of 32 6-bit words, and outputs these 32 values in the bytes
+of {\tt t0}, {\tt t1}, {\tt t2}, and {\tt t3}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    addi a0, zer0, 0x3f
+    orc8 a0, a0          // a0 = 0x3f3f3f3f3f3f3f3f
+
+    srli t3, t2, 16
+    bdep t3, t3, a0
+    fsli t2, t2, t1, 32
+    bdep t2, t2, a0
+    fsli t1, t1, t0, 16
+    bdep t1, t1, a0
+    bdep t0, t0, a0
+\end{verbatim}
+\end{minipage}
+
+That's 7 instructions without the two instructions for constructing the mask in {\tt a0}.
+
+Without funnel shift this operation requires 11 instructions:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    addi a0, zer0, 0x3f
+    orc8 a0, a0          // a0 = 0x3f3f3f3f3f3f3f3f
+
+    srli t3, t2, 16
+    bdep t3, t3, a0
+    slli t2, t2, 32
+    srli a1, t1, 32
+    or t2, t2, a1
+    bdep t2, t2, a0
+    slli t1, t1, 16
+    srli a1, t0, 48
+    or t1, t1, a1
+    bdep t1, t1, a0
+    bdep t0, t0, a0
+\end{verbatim}
+\end{minipage}
+
+Sign-extending the 6-bit values in the bytes of {\tt t0}, {\tt t1}, {\tt t2}, and {\tt t3} with bit-matrix multiply:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    li a0, 0x80c0e01008040201
+
+    bmator t0, t0, a0
+    bmator t1, t1, a0
+    bmator t2, t2, a0
+    bmator t3, t3, a0
+\end{verbatim}
+\end{minipage}
+
+Or without bit-matrix multiply:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    addi a0, zer0, 0x60
+    orc8 a0, a0          // a0 = 0x6060606060606060
+
+    add t0, t0, a0
+    add t1, t1, a0
+    add t2, t2, a0
+    add t3, t3, a0
+    xor t0, t0, a0
+    xor t1, t1, a0
+    xor t2, t2, a0
+    xor t3, t3, a0
+\end{verbatim}
+\end{minipage}
 
 \subsection{Fixed-point multiply}
 
