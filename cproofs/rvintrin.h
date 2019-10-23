@@ -372,12 +372,13 @@ static inline int32_t _rv32_ror    (int32_t rs1, int32_t rs2) { return _rv32_srl
 
 static inline int32_t _rv32_bfp(int32_t rs1, int32_t rs2)
 {
-        int len = (rs2 >> 24) & 15;
-        int off = (rs2 >> 16) & 31;
-        len = len ? len : 16;
-        uint32_t mask = _rv32_rol(_rv32_slo(0, len), off);
-        uint32_t data = _rv32_rol(rs2, off);
-        return (data & mask) | (rs1 & ~mask);
+	uint32_t cfg = rs2 >> 16;
+	int len = (cfg >> 8) & 15;
+	int off = cfg & 31;
+	len = len ? len : 16;
+	uint32_t mask = _rv32_slo(0, len) << off;
+	uint32_t data = rs2 << off;
+	return (data & mask) | (rs1 & ~mask);
 }
 
 static inline int32_t _rv32_grev(int32_t rs1, int32_t rs2)
@@ -447,12 +448,15 @@ static inline int64_t _rv64_ror    (int64_t rs1, int64_t rs2) { return _rv64_srl
 
 static inline int64_t _rv64_bfp(int64_t rs1, int64_t rs2)
 {
-        int len = (rs2 >> 24) & 15;
-        int off = (rs2 >> 16) & 63;
-        len = len ? len : 16;
-        uint64_t mask = _rv64_rol(_rv64_slo(0, len), off);
-        uint64_t data = _rv64_rol(rs2, off);
-        return (data & mask) | (rs1 & ~mask);
+	uint64_t cfg = (uint64_t)rs2 >> 32;
+	if ((cfg >> 30) == 2)
+		cfg = cfg >> 16;
+	int len = (cfg >> 8) & 31;
+	int off = cfg & 63;
+	len = len ? len : 32;
+	uint64_t mask = _rv64_slo(0, len) << off;
+	uint64_t data = rs2 << off;
+	return (data & mask) | (rs1 & ~mask);
 }
 
 static inline int64_t _rv64_grev(int64_t rs1, int64_t rs2)

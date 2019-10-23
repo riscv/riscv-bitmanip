@@ -866,11 +866,14 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 // --REF-BEGIN-- bfp
 uint_xlen_t bfp(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	int len = (rs2 >> 24) & 15;
-	int off = (rs2 >> 16) & (XLEN-1);
-	len = len ? len : 16;
-	uint_xlen_t mask = rol(slo(0, len), off);
-	uint_xlen_t data = rol(rs2, off);
+	uint_xlen_t cfg = rs2 >> (XLEN/2);
+	if ((cfg >> 30) == 2)
+		cfg = cfg >> 16;
+	int len = (cfg >> 8) & (XLEN/2-1);
+	int off = cfg & (XLEN-1);
+	len = len ? len : XLEN/2;
+	uint_xlen_t mask = slo(0, len) << off;
+	uint_xlen_t data = rs2 << off;
 	return (data & mask) | (rs1 & ~mask);
 }
 // --REF-END--
