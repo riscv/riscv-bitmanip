@@ -60,7 +60,7 @@ Likewise, constructing $R\times0 S\times1 T\times0$:
 
 \begin{verbatim}
   sloi a0, zero, S
-  rori a0, a0, R+S
+  slli a0, a0, T
 \end{verbatim}
 
 Any constant that is just a repeating 16-bit pattern can be constructed
@@ -73,7 +73,7 @@ constructing {\tt 0xABCD\_ABCD\_ABCD\_ABCD}:
 \end{verbatim}
 
 Finally, any arbitrary 64-bit constant can be created using the following
-5-instruction pattern an one spill register:
+5-instruction pattern and one spill register:
 
 \begin{verbatim}
   lui a0, ((v - (v << 52 >> 52)) >> 12) & 0xfffff
