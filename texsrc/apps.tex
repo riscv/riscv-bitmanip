@@ -10,6 +10,81 @@ code that doesn't require any extension beyond the base ISA.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Loading constants}
+
+On RV32 any arbitrary constant can be loaded using LUI+ADDI.
+
+\begin{verbatim}
+  lui a0, ((v - (v << 20 >> 20)) >> 12) & 0xfffff
+  addi a0, a0, (v << 20 >> 20)
+\end{verbatim}
+
+(Assuming signed 32-bit arithmetic for the expression {\tt (v << 20 >> 20)}.)
+
+Using the following sequence on RV64 will yield the 32-bit constant in sign-extended
+form.
+
+\begin{verbatim}
+  lui a0, ((v - (v << 52 >> 52)) >> 12) & 0xfffff
+  addiw a0, a0, (v << 52 >> 52)
+\end{verbatim}
+
+({\tt addiw} is needed instead of {\tt addi} to handle the cases correctly that have
+bits 11-30 of the constant set to one.)
+
+Using {\tt addiwu} instead of {\tt addiw} produces a zero-extended version of
+the same constant, iff any of the bits 11-31 of the constant is zero.
+
+\begin{verbatim}
+  lui a0, ((v - (v << 52 >> 52)) >> 12) & 0xfffff
+  addiwu a0, a0, (v << 52 >> 52)
+\end{verbatim}
+
+In the remaining cases with bits 11-31 all set, {\tt addi}+{\tt pack}
+can be used to produce the constant:
+
+\begin{verbatim}
+  addi a0, zero, v
+  pack a0, a0, zero
+\end{verbatim}
+
+64-bit constants of the form $R\times1 S\times0 T\times1$ (with $R+S+T=64$)
+can be constructed using {\tt sloi} and {\tt rori}:
+
+\begin{verbatim}
+  sloi a0, zero, R+T
+  rori a0, a0, R
+\end{verbatim}
+
+Likewise, constructing $R\times0 S\times1 T\times0$:
+
+\begin{verbatim}
+  sloi a0, zero, S
+  rori a0, a0, R+S
+\end{verbatim}
+
+Any constant that is just a repeating 16-bit pattern can be constructed
+in two instructions with {\tt lui} and {\tt orc16}. For example,
+constructing {\tt 0xABCD\_ABCD\_ABCD\_ABCD}:
+
+\begin{verbatim}
+  lui a0, 0x0BCDA
+  orc16 a0, a0
+\end{verbatim}
+
+Finally, any arbitrary 64-bit constant can be created using the following
+5-instruction pattern an one spill register:
+
+\begin{verbatim}
+  lui a0, ((v - (v << 52 >> 52)) >> 12) & 0xfffff
+  addiw a0, a0, (v << 52 >> 52)
+  lui a1, ((v - (v << 20 >> 20)) >> 44) & 0xfffff
+  addiw a1, a1, (v << 20 >> 52)
+  pack a0, a0, a1
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Bitfield extract}
 
 Extracting a bit field of length {\tt len} at position {\tt pos} can be done using
