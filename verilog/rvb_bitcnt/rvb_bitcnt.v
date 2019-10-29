@@ -30,18 +30,21 @@ module rvb_bitcnt #(
 	input             din_insn3,      // value of instruction bit 3
 	input             din_insn20,     // value of instruction bit 20
 	input             din_insn21,     // value of instruction bit 21
+	input             din_insn22,     // value of instruction bit 22
 
 	// data output
 	output            dout_valid,     // output is valid
 	input             dout_ready,     // accept output
 	output [XLEN-1:0] dout_rd         // output value
 );
-	// 21 20  3   Function
-	// --------   --------
-	//  0  0  W   CLZ
-	//  0  1  W   CTZ
-	//  1  0  W   PCNT
-	//  1  1  0   BMATFLIP
+	// 22 21 20  3   Function
+	// -----------   --------
+	//  0  0  0  W   CLZ
+	//  0  0  1  W   CTZ
+	//  0  1  0  W   PCNT
+	//  0  1  1  0   BMATFLIP
+	//  1  0  0  0   SEXT.B
+	//  1  0  1  0   SEXT.H
 
 	assign din_ready = dout_ready && !reset;
 	assign dout_valid = din_valid && !reset;
@@ -50,6 +53,9 @@ module rvb_bitcnt #(
 	wire revmode = !din_insn20;
 	wire czmode = !din_insn21;
 	wire bmatmode = (XLEN == 64) && BMAT && din_insn20 && din_insn21;
+
+	wire sextbit = din_insn20 ? din_rs1[15] : din_rs1[7];
+	wire [XLEN-1:0] sextval = {{XLEN-16{sextbit}}, din_insn20 ? din_rs1[15:8] : {8{din_rs1[7]}}, din_rs1[7:0]};
 
 	integer i;
 	reg [XLEN-1:0] data;
@@ -74,5 +80,5 @@ module rvb_bitcnt #(
 			transp[i] = din_rs1[{i[2:0], i[5:3]} % XLEN];
 	end 
 
-	assign dout_rd = bmatmode ? transp : cnt;
+	assign dout_rd = din_insn22 ? sextval : bmatmode ? transp : cnt;
 endmodule

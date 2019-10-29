@@ -37,7 +37,7 @@ int main()
 			uint64_t din_rs1 = xorshift64();
 			uint64_t dout_rd;
 
-			switch (xorshift32() % 7)
+			switch (xorshift32() % 9)
 			{
 			case 0: // CLZ
 				if (!enable_64bit) { i--; continue; }
@@ -71,6 +71,14 @@ int main()
 				if (!enable_bmat) { i--; continue; }
 				din_insn = 0x60301013;
 				dout_rd = rv64b::bmatflip(din_rs1);
+				break;
+			case 7: // SEXT.B
+				din_insn = 0x60401013;
+				dout_rd = rv64b::sextb(din_rs1);
+				break;
+			case 8: // SEXT.H
+				din_insn = 0x60501013;
+				dout_rd = rv64b::sexth(din_rs1);
 				break;
 			}
 			fprintf(f, "%08llx_%016llx_%016llx\n", (long long)din_insn,

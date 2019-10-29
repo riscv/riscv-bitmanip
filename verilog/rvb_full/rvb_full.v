@@ -194,6 +194,7 @@ module rvb_full #(
 		.din_insn3  (in_insn[3] ),
 		.din_insn20 (in_insn[20]),
 		.din_insn21 (in_insn[21]),
+		.din_insn22 (in_insn[22]),
 		.dout_valid (out_bitcnt_valid),
 		.dout_ready (out_ready  ),
 		.dout_rd    (out_bitcnt )
@@ -439,6 +440,8 @@ module rvb_full_decoder #(
 			33'b 0110000_00001_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // CTZ
 			33'b 0110000_00010_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // PCNT
 			33'b 0110000_00011_zzzzz_001_zzzzz_0010011_1: insn_bitcnt  = 1; // BMATFLIP
+			33'b 0110000_00100_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // SEXT.B
+			33'b 0110000_00101_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // SEXT.H
 
 			33'b 0110000_10000_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.B
 			33'b 0110000_10001_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.H
