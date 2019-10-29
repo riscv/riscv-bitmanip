@@ -38,7 +38,7 @@ int main()
 			uint64_t din_rs3 = xorshift64();
 			uint64_t dout_rd;
 
-			switch (xorshift32() % 16)
+			switch (xorshift32() % 19)
 			{
 			case 0: // MIN
 				din_insn = 0x0a004033;
@@ -77,35 +77,48 @@ int main()
 				din_insn = 0x08004033 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::pack(din_rs1, din_rs2));
 				break;
-			case 9: // CMIX
+			case 9: // PACKH
+				din_insn = 0x08007033;
+				dout_rd = rv64b::packh(din_rs1, din_rs2);
+				break;
+			case 10: // PACKU
+				if (!enable_64bit) { i--; continue; }
+				din_insn = 0x48004033;
+				dout_rd = rv64b::packu(din_rs1, din_rs2);
+				break;
+			case 11: // PACKUW
+				din_insn = 0x48004033 | (enable_64bit ? 8 : 0);
+				dout_rd = int32_t(rv32b::packu(din_rs1, din_rs2));
+				break;
+			case 12: // CMIX
 				din_insn = 0x06001033;
 				dout_rd = rv64b::cmix(din_rs1, din_rs2, din_rs3);
 				break;
-			case 10: // CMOV
+			case 13: // CMOV
 				din_insn = 0x06005033;
 				dout_rd =  rv64b::cmov(din_rs1, din_rs2, din_rs3);
 				break;
-			case 11: // ADDIWU
+			case 14: // ADDIWU
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x0000401b;
 				dout_rd =  rv64b::addwu(din_rs1, din_rs2);
 				break;
-			case 12: // ADDWU
+			case 15: // ADDWU
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x0a00003b;
 				dout_rd =  rv64b::addwu(din_rs1, din_rs2);
 				break;
-			case 13: // SUBWU
+			case 16: // SUBWU
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x4a00003b;
 				dout_rd =  rv64b::subwu(din_rs1, din_rs2);
 				break;
-			case 14: // ADDUW
+			case 17: // ADDUW
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x0800003b;
 				dout_rd =  rv64b::adduw(din_rs1, din_rs2);
 				break;
-			case 15: // SUBUW
+			case 18: // SUBUW
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x4800003b;
 				dout_rd =  rv64b::subuw(din_rs1, din_rs2);
