@@ -170,12 +170,12 @@ int main()
 			case 26: // BFP
 				if (!enable_bfp) { i--; continue; }
 				if (!enable_64bit) { i--; continue; }
-				din_insn = 0x08007033;
+				din_insn = 0x48007033;
 				dout_rd = rv64b::bfp(din_rs1, din_rs2);
 				break;
 			case 27: // BFPW
 				if (!enable_bfp) { i--; continue; }
-				din_insn = 0x08007033 | (enable_64bit ? 8 : 0);
+				din_insn = 0x48007033 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::bfp(din_rs1, din_rs2));
 				break;
 			case 28: // SLLUW
