@@ -47,7 +47,7 @@ module rvb_bextdep #(
 	//  1  1  1  0  W   GREV
 	//  0  0  0  0  W   SHFL
 	//  0  0  1  0  W   UNSHFL
-	//  0  0  0  1  W   BDEP
+	//  1  0  1  1  W   BDEP
 	//  0  0  1  1  W   BEXT
 
 	wire enable = !dout_valid || dout_ready;
@@ -63,7 +63,7 @@ module rvb_bextdep #(
 	//  0  0  0   BEXT
 	wire [2:0] din_mode =
 			(GREV && din_insn29) ? (din_insn30 ? 3'b010 : 3'b011) :
-			(SHFL && !din_insn13) ? {2'b11, !din_insn14} : {2'b00, !din_insn14};
+			(SHFL && !din_insn13) ? {2'b11, !din_insn14} : {2'b00, din_insn30};
 
 	wire [XLEN-1:0] din_rs1_w = din_rs1 & (din_insn3 ? 64'h 0000_0000_ffff_ffff : 64'h ffff_ffff_ffff_ffff);
 	wire [XLEN-1:0] din_rs2_w = din_rs2 & (din_insn3 ? (din_insn13 ? 64'h 0000_0000_ffff_ffff : 64'h 0000_0000_ffff_ffdf) : 64'h ffff_ffff_ffff_ffff);
