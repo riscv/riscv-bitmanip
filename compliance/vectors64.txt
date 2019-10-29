@@ -4,12 +4,12 @@ clz,ctz,pcnt ffffffffffffffff
 clzw,ctzw,pcntw 0000000000000000
 clzw,ctzw,pcntw ffffffffffffffff
 
-clz,ctz,pcnt,bmatflip eadf76b9d77b6ecd
-clz,ctz,pcnt,bmatflip 991e56a136a9a6d7
-clz,ctz,pcnt,bmatflip 75be118b219954ae
-clz,ctz,pcnt,bmatflip 201eccb891f3a75b
-clz,ctz,pcnt,bmatflip 5259a8e16723f89c
-clz,ctz,pcnt,bmatflip 80b445926042e65d
+clz,ctz,pcnt,sext.b,sext.h,bmatflip eadf76b9d77b6ecd
+clz,ctz,pcnt,sext.b,sext.h,bmatflip 991e56a136a9a6d7
+clz,ctz,pcnt,sext.b,sext.h,bmatflip 75be118b219954ae
+clz,ctz,pcnt,sext.b,sext.h,bmatflip 201eccb891f3a75b
+clz,ctz,pcnt,sext.b,sext.h,bmatflip 5259a8e16723f89c
+clz,ctz,pcnt,sext.b,sext.h,bmatflip 80b445926042e65d
 
 clzw,ctzw,pcntw eadf76b9d77b6ecd
 clzw,ctzw,pcntw 991e56a136a9a6d7
@@ -25,19 +25,19 @@ crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 201eccb891f3a75b
 crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 5259a8e16723f89c
 crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 80b445926042e65d
 
-andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev a7b2ca1a778bd1db 935b4969def3c035
-andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 55f04ca8ffaace79 1a785a2011e15d6b
-andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev b23279cf04bc5eac 2c4cb61533397f4e
-andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 6b5ed10440ee4840 4aecd4a818331b85
-andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 1607b7125a0d8ae2 05100ad8faafb8a6
-andn,orn,xnor,pack,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev d7ab5710cccb9502 7926d5b8de163e74
+andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev a7b2ca1a778bd1db 935b4969def3c035
+andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 55f04ca8ffaace79 1a785a2011e15d6b
+andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev b23279cf04bc5eac 2c4cb61533397f4e
+andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 6b5ed10440ee4840 4aecd4a818331b85
+andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 1607b7125a0d8ae2 05100ad8faafb8a6
+andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev d7ab5710cccb9502 7926d5b8de163e74
 
-packw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw a7b2ca1a778bd1db 935b4969def3c035
-packw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw 55f04ca8ffaace79 1a785a2011e15d6b
-packw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw b23279cf04bc5eac 2c4cb61533397f4e
-packw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw 6b5ed10440ee4840 4aecd4a818331b85
-packw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw 1607b7125a0d8ae2 05100ad8faafb8a6
-packw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw d7ab5710cccb9502 7926d5b8de163e74
+packw,packuw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw a7b2ca1a778bd1db 935b4969def3c035
+packw,packuw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw 55f04ca8ffaace79 1a785a2011e15d6b
+packw,packuw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw b23279cf04bc5eac 2c4cb61533397f4e
+packw,packuw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw 6b5ed10440ee4840 4aecd4a818331b85
+packw,packuw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw 1607b7125a0d8ae2 05100ad8faafb8a6
+packw,packuw,bfpw,sbsetw,sbclrw,sbinvw,sbextw,gorcw,grevw d7ab5710cccb9502 7926d5b8de163e74
 
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr,bmator,bmatxor f0774453522a1063 b370bd7dd2d6b642
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr,bmator,bmatxor edd116c18a671b8c 6f94f8db5b4289cf

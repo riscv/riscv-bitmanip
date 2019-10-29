@@ -878,6 +878,16 @@ uint_xlen_t bfp(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+uint_xlen_t sextb(uint_xlen_t x)
+{
+	return int_xlen_t(x << (XLEN-8)) >> (XLEN-8);
+}
+
+uint_xlen_t sexth(uint_xlen_t x)
+{
+	return int_xlen_t(x << (XLEN-16)) >> (XLEN-16);
+}
+
 #if XLEN == 64
 uint64_t zextw(uint64_t x)
 {

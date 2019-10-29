@@ -6,30 +6,30 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li t5, 0xf0774453522a1063
-    li s5, 0xb370bd7dd2d6b642
-    clmulh t2,t5,s5
-    sd t2,0(a1)
-    li s3, 0xedd116c18a671b8c
-    li s10, 0x6f94f8db5b4289cf
-    clmulh s7,s3,s10
-    sd s7,8(a1)
-    li t2, 0x8130cd0d02eb0801
-    li s5, 0x36ecfc1781920806
-    clmulh t5,t2,s5
-    sd t5,16(a1)
-    li a4, 0x1f9f61e943737b61
-    li s2, 0xb320deb657861f11
-    clmulh a3,a4,s2
-    sd a3,24(a1)
-    li a2, 0x915695b3f20d8a82
-    li a0, 0xbda8a08e1ceb0c11
-    clmulh s1,a2,a0
-    sd s1,32(a1)
-    li s1, 0x925c6cb79543c51a
-    li s3, 0xe79ad1779a48a02c
-    clmulh t3,s1,s3
-    sd t3,40(a1)
+    li t1, 0xf0774453522a1063
+    li s11, 0xb370bd7dd2d6b642
+    clmulh a4,t1,s11
+    sd a4,0(a1)
+    li s6, 0xedd116c18a671b8c
+    li t1, 0x6f94f8db5b4289cf
+    clmulh s9,s6,t1
+    sd s9,8(a1)
+    li s4, 0x8130cd0d02eb0801
+    li a6, 0x36ecfc1781920806
+    clmulh s1,s4,a6
+    sd s1,16(a1)
+    li t5, 0x1f9f61e943737b61
+    li a5, 0xb320deb657861f11
+    clmulh s11,t5,a5
+    sd s11,24(a1)
+    li a7, 0x915695b3f20d8a82
+    li a2, 0xbda8a08e1ceb0c11
+    clmulh t4,a7,a2
+    sd t4,32(a1)
+    li s6, 0x925c6cb79543c51a
+    li a6, 0xe79ad1779a48a02c
+    clmulh a5,s6,a6
+    sd a5,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

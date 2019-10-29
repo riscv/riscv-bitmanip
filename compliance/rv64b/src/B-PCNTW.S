@@ -13,23 +13,23 @@ RV_COMPLIANCE_CODE_BEGIN
     pcntw s8,s7
     sd s8,8(a1)
     li a6, 0xeadf76b9d77b6ecd
-    pcntw t5,a6
-    sd t5,16(a1)
-    li s8, 0x991e56a136a9a6d7
-    pcntw s4,s8
-    sd s4,24(a1)
-    li s4, 0x75be118b219954ae
-    pcntw s3,s4
-    sd s3,32(a1)
-    li a7, 0x201eccb891f3a75b
-    pcntw t2,a7
-    sd t2,40(a1)
-    li a6, 0x5259a8e16723f89c
     pcntw t4,a6
-    sd t4,48(a1)
-    li t0, 0x80b445926042e65d
+    sd t4,16(a1)
+    li t0, 0x991e56a136a9a6d7
     pcntw s0,t0
-    sd s0,56(a1)
+    sd s0,24(a1)
+    li s3, 0x75be118b219954ae
+    pcntw s10,s3
+    sd s10,32(a1)
+    li s4, 0x201eccb891f3a75b
+    pcntw a5,s4
+    sd a5,40(a1)
+    li s2, 0x5259a8e16723f89c
+    pcntw t4,s2
+    sd t4,48(a1)
+    li a3, 0x80b445926042e65d
+    pcntw a6,a3
+    sd a6,56(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

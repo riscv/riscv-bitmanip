@@ -6,24 +6,24 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li a2, 0xf0774453522a1063
-    gorciw s1,a2,3
-    sd s1,0(a1)
-    li t3, 0xedd116c18a671b8c
-    gorciw a0,t3,5
-    sd a0,8(a1)
-    li s6, 0x8130cd0d02eb0801
-    gorciw a3,s6,17
-    sd a3,16(a1)
-    li s4, 0x1f9f61e943737b61
-    gorciw s2,s4,24
-    sd s2,24(a1)
-    li t0, 0x915695b3f20d8a82
-    gorciw s5,t0,25
-    sd s5,32(a1)
-    li t3, 0x925c6cb79543c51a
-    gorciw a4,t3,31
-    sd a4,40(a1)
+    li a4, 0xf0774453522a1063
+    gorciw t1,a4,3
+    sd t1,0(a1)
+    li t2, 0xedd116c18a671b8c
+    gorciw s10,t2,5
+    sd s10,8(a1)
+    li a3, 0x8130cd0d02eb0801
+    gorciw s7,a3,17
+    sd s7,16(a1)
+    li t0, 0x1f9f61e943737b61
+    gorciw t1,t0,24
+    sd t1,24(a1)
+    li s8, 0x915695b3f20d8a82
+    gorciw s10,s8,25
+    sd s10,32(a1)
+    li s1, 0x925c6cb79543c51a
+    gorciw t2,s1,31
+    sd t2,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

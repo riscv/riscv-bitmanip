@@ -16,20 +16,20 @@ RV_COMPLIANCE_CODE_BEGIN
     clz t3,s3
     sd t3,16(a1)
     li s4, 0x991e56a136a9a6d7
-    clz s8,s4
-    sd s8,24(a1)
-    li a4, 0x75be118b219954ae
-    clz s5,a4
-    sd s5,32(a1)
-    li t0, 0x201eccb891f3a75b
+    clz s10,s4
+    sd s10,24(a1)
+    li t0, 0x75be118b219954ae
     clz t3,t0
-    sd t3,40(a1)
-    li a3, 0x5259a8e16723f89c
-    clz a7,a3
-    sd a7,48(a1)
-    li t5, 0x80b445926042e65d
-    clz t6,t5
-    sd t6,56(a1)
+    sd t3,32(a1)
+    li s6, 0x201eccb891f3a75b
+    clz t1,s6
+    sd t1,40(a1)
+    li s10, 0x5259a8e16723f89c
+    clz a4,s10
+    sd a4,48(a1)
+    li a0, 0x80b445926042e65d
+    clz t3,a0
+    sd t3,56(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
