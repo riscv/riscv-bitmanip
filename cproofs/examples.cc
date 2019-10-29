@@ -195,34 +195,3 @@ extern "C" void check_bytes(uint64_t x)
 	assert(xor_bytes_ref(x) == xor_bytes_clmul(x));
 	assert(xor_bytes_ref(x) == xor_bytes_bmat(x));
 }
-
-// ---------------------------------------------------------
-
-// injecting a 17-bit value from a1 into bits [21:5] of a0
-uint32_t inject17_ref(uint32_t a0, uint32_t a1)
-{
-	uint32_t t0, t1;
-	t0 = rv32b::ror(a0, 5);
-	t0 = rv32b::srl(t0, 17);
-	t1 = rv32b::sll(a1, 15);
-	t0 = t0 | t1;
-	return rv32b::ror(t0, 10);
-}
-
-uint32_t inject17_bfp(uint32_t a0, uint32_t a1)
-{
-	uint32_t a2;
-	a1 = rv32b::sll(a1, 5);
-	a2 = rv32b::ror(a0, 22);
-	a0 = (15<<8) | 22;
-	a0 = rv32b::pack(a2, a0);
-	a0 = rv32b::bfp(a1, a0);
-	return a0;
-}
-
-extern "C" void check_inject17(uint32_t a0, uint32_t a1)
-{
-	uint32_t result_ref = inject17_ref(a0, a1);
-	uint32_t result_bfp = inject17_bfp(a0, a1);
-	assert(result_ref == result_bfp);
-}

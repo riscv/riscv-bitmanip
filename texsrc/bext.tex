@@ -1109,25 +1109,40 @@ in a word.
     bfpw rd, rs1, rs2
 \end{rvb}
 
-The bit field place ({\tt bfp}) instruction places up to 16 LSB bit from {\tt rs2} into
+The bit field place ({\tt bfp}) instruction places up to $\mathrm{XLEN}/2$ LSB bits from {\tt rs2} into
 the value in {\tt rs1}. The upper bits of {\tt rs2} control the length of the bit field
-and target position.
+and target position. The layout of {\tt rs2} is chosen in a way that makes it possible to construct
+{\tt rs2} easily using {\tt pack[h]} instructions and/or {\tt andi}/{\tt lui}.
 
 \input{bextcref-bfp}
 
-The layout of the control word in rs2 is as follows. {\tt LEN=0} encodes for {\tt LEN=16}.
+The layout of the control word in rs2 is as follows for RV32. {\tt LEN=0} encodes for {\tt LEN=16}.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
     |  3                   2                   1                    |
     |1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
-    |-------------------------------|-------------------------------|
-    |       |  LEN  |      OFF      |             DATA              |
-    |---------------------------------------------------------------|
+    |---------------|---------------|---------------|---------------|
+    |       |  LEN  |     |   OFF   |             DATA              |
+    |---------------|---------------|---------------|---------------|
 \end{verbatim}
 \end{minipage}
 
-Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0}:
+And on RV64 (with {\tt LEN=0} encoding for {\tt LEN=32}):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    |      6                   5                   4                   3             |
+    |3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 .... 2 1 0|
+    |---------------|---------------|---------------|---------------|------ -- ------|
+    |SEL| |   LEN   |   |    OFF    |     |   LEN'  |   |    OFF'   |      DATA      |
+    |---------------|---------------|---------------|---------------|------ -- ------|
+\end{verbatim}
+\end{minipage}
+
+When {\tt SEL=10} then {\tt LEN} and {\tt OFF} are used, otherwise {\tt LEN'} and {\tt OFF'} are used.
+
+Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0} on RV32:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1137,7 +1152,25 @@ Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0}:
 \end{verbatim}
 \end{minipage}
 
-(On RV64 {\tt packw} would be used as second instruction in that sequence.)
+And on RV64:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui t0, zero, {3'b 100, length[4:0], offset[7:0], 4'b 0000}
+  pack t0, a0, t0
+  bfp t0, a1, t0
+\end{verbatim}
+\end{minipage}
+
+Or with {\tt a2=length} and {\tt a3=offset}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  packh t0, a3, a2
+  pack t0, a0, t0
+  bfp t0, a1, t0
+\end{verbatim}
+\end{minipage}
 
 Placing up to 16 constant bits in any contiguous region:
 
@@ -1145,11 +1178,11 @@ Placing up to 16 constant bits in any contiguous region:
 \begin{verbatim}
   lui t0, ...
   addi t0, t0, ...
-  bfp t0, a1, t0
+  bfp[w] t0, a1, t0
 \end{verbatim}
 \end{minipage}
 
-Note that either above sequence only modifies one register, which makes them
+Note that above sequences only modify one register ({\tt t0}), which makes them
 fuse-able sequences.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
