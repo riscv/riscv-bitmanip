@@ -70,6 +70,11 @@ std::string vstringf(const char *fmt, va_list ap)
 	return string;
 }
 
+int sext_imm(int imm)
+{
+	return imm << (8*sizeof(int)-12) >> (8*sizeof(int)-12);
+}
+
 string stringf(const char *fmt, ...)
 {
 	std::string string;
@@ -115,7 +120,7 @@ void add_op()
 
 	string cmd = stringf("    %s %s", op.c_str(), regs[0].c_str());
 	for (int i = 0; i < nargs; i++)
-		cmd += regargs[i] ? stringf(",%s", regs[i+1].c_str()) : stringf(",%d", int(args[i]));
+		cmd += regargs[i] ? stringf(",%s", regs[i+1].c_str()) : stringf(",%d", int(sext_imm(args[i])));
 	testcode[op].push_back(cmd);
 
 #ifdef RV32
@@ -150,7 +155,7 @@ if (op == #_insn) {                             \
 if (op == #_insn "w") {                         \
   if (nargs != 1) abort();                      \
   if (!regargs[0]) abort();                     \
-  rd = rv32b::_insn(args[0]);                   \
+  rd = int32_t(rv32b::_insn(args[0]));          \
   add_op();                                     \
   continue;                                     \
 }
@@ -180,7 +185,7 @@ if (op == #_insn "w") {                         \
   if (nargs != 2) abort();                      \
   if (!regargs[0]) abort();                     \
   if (!regargs[1]) abort();                     \
-  rd = rv32b::_insn(args[0], args[1]);          \
+  rd = int32_t(rv32b::_insn(args[0], args[1])); \
   add_op();                                     \
   continue;                                     \
 }
@@ -190,7 +195,7 @@ if (op == #_insn "i") {                         \
   if (nargs != 2) abort();                      \
   if (!regargs[0]) abort();                     \
   if (regargs[1]) abort();                      \
-  rd = _insn(args[0], args[1]);                 \
+  rd = _insn(args[0], sext_imm(args[1])); \
   add_op();                                     \
   continue;                                     \
 }
@@ -200,7 +205,7 @@ if (op == #_insn) {                             \
   if (nargs != 2) abort();                      \
   if (!regargs[0]) abort();                     \
   if (regargs[1]) abort();                      \
-  rd = _func(args[0], args[1]);                 \
+  rd = _func(args[0], sext_imm(args[1])); \
   add_op();                                     \
   continue;                                     \
 }
@@ -210,7 +215,7 @@ if (op == #_insn "iw") {                        \
   if (nargs != 2) abort();                      \
   if (!regargs[0]) abort();                     \
   if (regargs[1]) abort();                      \
-  rd = rv32b::_insn(args[0], args[1]);          \
+  rd = int32_t(rv32b::_insn(args[0], sext_imm(args[1]))); \
   add_op();                                     \
   continue;                                     \
 }
@@ -232,7 +237,7 @@ if (op == #_insn "i") {                         \
   if (!regargs[A]) abort();                     \
   if (regargs[B]) abort();                      \
   if (!regargs[C]) abort();                     \
-  rd = _insn(args[A], args[B], args[C]);        \
+  rd = _insn(args[A], sext_imm(args[B]), args[C]); \
   add_op();                                     \
   continue;                                     \
 }
@@ -243,7 +248,7 @@ if (op == #_insn "w") {                         \
   if (!regargs[A]) abort();                     \
   if (!regargs[B]) abort();                     \
   if (!regargs[C]) abort();                     \
-  rd = rv32b::_insn(args[A], args[B], args[C]); \
+  rd = int32_t(rv32b::_insn(args[A], args[B], args[C])); \
   add_op();                                     \
   continue;                                     \
 }
@@ -254,7 +259,7 @@ if (op == #_insn "iw") {                        \
   if (!regargs[A]) abort();                     \
   if (regargs[B]) abort();                      \
   if (!regargs[C]) abort();                     \
-  rd = rv32b::_insn(args[A], args[B], args[C]); \
+  rd = int32_t(rv32b::_insn(args[A], sext_imm(args[B]), args[C])); \
   add_op();                                     \
   continue;                                     \
 }

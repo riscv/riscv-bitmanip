@@ -465,10 +465,9 @@
 -reg_t data = zext32(RS2);
 -mask = (mask << off) | (mask >> roff);
 -data = (data << off) | (data >> roff);
--WRITE_RD(sext32((data & mask) | (RS1 & ~mask)));
 +reg_t mask = ~(~reg_t(0) << len) << off;
 +reg_t data = RS2 << off;
-+WRITE_RD(sext_xlen((data & mask) | (RS1 & ~mask)));
+ WRITE_RD(sext32((data & mask) | (RS1 & ~mask)));
 --- riscv-isa-sim/riscv/insns/packh.h
 +++ riscv-isa-sim/riscv/insns/packh.h
 @@ -0,0 +1,4 @@
