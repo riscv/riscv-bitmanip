@@ -1879,12 +1879,14 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BDEP
+|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BDEP
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACK
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACKU
 |  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
 |  0100100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATXOR
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BFP
+|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  PACKH
+|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BFP
 |---------------------------------------------------------------|
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
@@ -1948,15 +1950,16 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
+|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BDEPW
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKW
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKUW
+|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
 
-Pending changes for v0.92 of the RISC-V Bitmanip Spec ({\tt +} for addition,
+Changes in v0.92 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 {\tt -} for removal):
 
 \begin{minipage}{\linewidth}
