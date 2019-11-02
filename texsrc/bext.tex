@@ -334,6 +334,42 @@ literals are commonly encoded~\cite{BiereComm}. With \texttt{max} (or
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Sign-extend instructions (\texttt{sext.b, sext.h})}
+
+\begin{rvb}
+  RV32, RV64:
+    sext.b rd, rs
+    sext.h rd, rs
+\end{rvb}
+
+For sign-extending a byte or half-word we define two unary instructions:
+
+\input{bextcref-sext}
+
+Additionally, we define pseudo-instructions for zero extending bytes or
+half-words and for zero- and sign-extending words:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  RV32:
+    zext.b rd, rs   ->   andi rd, rs, 255
+    zext.h rd, rs   ->   pack rd, rs, zero
+
+  RV64:
+    zext.b rd, rs   ->   andi rd, rs, 255
+    zext.h rd, rs   ->   packw rd, rs, zero
+    zext.w rd, rs   ->   pack rd, rs, zero
+    sext.w rd, rs   ->   addiw rd, rs, 0
+\end{verbatim}
+\end{minipage}
+
+Sign extending 8-bit and 16-bit values is needed when calling a function that
+accepts an 8-bit or 16-bit signed argument, because the RISC-V calling
+conventions dictates that such an argument must be passed in sign-extended
+form.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Single-bit instructions (\texttt{sbset, sbclr, sbinv, sbext})}
 
 \begin{rvb}
@@ -2050,7 +2086,7 @@ approximately $1\%$ of bitmanipulation code size.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Micro-op fusion patterns}
+\section{Macro-op fusion patterns}
 
 Some bitmanip operations have been left out of this spec because of lack of a (sensible) way
 to encode them in the 32-bit RISC-V encoding space. Instead we present fuse-able sequences
