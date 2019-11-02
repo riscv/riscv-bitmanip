@@ -2050,103 +2050,27 @@ approximately $1\%$ of bitmanipulation code size.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Micro architectural considerations and macro-op fusion for bit-manipulation}
+\section{Micro-op fusion patterns}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Some bitmanip operations have been left out of this spec because of lack of a (sensible) way
+to encode them in the 32-bit RISC-V encoding space. Instead we present fuse-able sequences
+of up to three instructions for those operations, so that high-end processors can implement
+them in a single fused macro-op, should they decide to do so.
 
-\subsection{Fast {\tt MUL}, {\tt MULH}, {\tt MULHSU}, {\tt MULHU}}
-
-A lot of bit manipulation code depends on ``multiply with magic number''-tricks. Often those
-tricks need the upper half of the $2 \cdot \textrm{XLEN}$ product. Therefore decent performance
-for the \texttt{MUL} and especially \texttt{MULH[[S]U]} instructions is important for fast
-bit manipulation code.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused load-immediate sequences}
-
-Bit manipulation code, even more than other code, requires a lot of ``magic numbers'',
-bitmasks, and other (usually large) constants. On some microarchitectures those
-can easily be loaded from a nearby data section using load instructions. On other
-microarchitectures however this comes at a high cost, and it is more efficient
-to load immediates using a sequence of instructions.
-
-Loading a 32-bit constant:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addi rd, rd, imm
-\end{verbatim}
-\end{minipage}
-
-On RV64 a 64 bit constant can be loaded by loading two 32-bit constants and combining them
-with a {\tt PACK} instruction:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui tmp, imm
-  addi tmp, tmp, imm
-  lui rd, imm
-  addi rd, rd, imm
-  pack rd, rd, tmp
-\end{verbatim}
-\end{minipage}
-
-(Without the temporary register and without the {\tt PACK} instruction more complex/diverse
-sequences are used to load 64-bit immediates. But the {\tt PACK} instruction streamlines
-the pattern and thus simplifies macro-op fusion.)
-
-A 32-bit core should be capable of fusing the {\tt lui}+{\tt addi} pattern.
-
-In addition to that, a 64 bit core may consider fusing the following sequences as well:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addi rd, rd, imm
-  pack rd, rd, rs2
-
-  lui rd, imm
-  pack rd, rd, rs2
-
-  addi rd, zero, imm
-  pack rd, rd, rs2
-\end{verbatim}
-\end{minipage}
-
-Furthermore, a core may consider fusing 32-bit immediate loads with any ALU
-instruction, not just {\tt pack}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addi rd, rd, imm
-  alu_op rd, rd, rs2
-
-  lui rd, imm
-  alu_op rd, rd, rs2
-
-  addi rd, zero, imm
-  alu_op rd, rd, rs2
-\end{verbatim}
-\end{minipage}
-
-And finally, a 64-bit core should fuse sequences with {\tt addiwu} as well as
-{\tt addi}, for loading unsigned 32-bit numbers that have their MSB set. This is
-often the case with masks in bit manipulation code.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For this document we only consider sequences fuse-able if they read at most two
+registers, only write one register, and contain no branch instructions.
 
 \subsection{Fused {\tt *-bfp} sequences}
 
-The {\tt bfp} instruction is most commonly used in one of the following sequences:
+The {\tt bfp} instruction is most commonly used in sequences of one the the following forms.
+
+For 32-bit (RV32 or *W instructions on RV64):
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   addi rd, zero, ...
-  pack rd, rs2, rd
-  bfp rd, rs1, rd
+  pack[w] rd, rs2, rd
+  bfp[w] rd, rs1, rd
 \end{verbatim}
 \end{minipage}
 
@@ -2154,46 +2078,60 @@ The {\tt bfp} instruction is most commonly used in one of the following sequence
 \begin{verbatim}
   lui rd, ...
   addi rd, rd, ...
+  bfp[w] rd, rs1, rd
+\end{verbatim}
+\end{minipage}
+
+And for 64-bit:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, ...
+  pack rd, rs2, rd
   bfp rd, rs1, rd
 \end{verbatim}
 \end{minipage}
 
-Either sequence only reads at most two registers and only writes one register, making
-them ideal candidates for macro-op fusion.
+\subsection{Load-immediate}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused {\tt *-not} sequences}
-
-Preliminary experiments have shown that NOT instructions make up approximately
-$1\%$ of bitmanipulation code size, more when looking at dynamic instruction count.~\cite{Wolf17A}
-
-Therefore it makes sense to fuse NOT instructions with other ALU instructions, if possible.
-
-The most important form of NOT fusion is postfix fusion:
+For 32-bit code (RV32 or *W instructions on RV64) we recommend to fuse the {\tt
+lui+addi} pattern for loading a 32-bit constants:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  alu_op rd, rs1, rs2
-  not rd, rd
+  lui rd, imm
+  addi[w] rd, rd, imm
 \end{verbatim}
 \end{minipage}
 
-A future compressed NOT instruction would help keeping those fused sequences short.
+For RV64 we also recommend to fuse the followings patterns for loading a 32-bit constant zero-extended
+into a 64-bit register:
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addiwu rd, rd, imm
+\end{verbatim}
+\end{minipage}
 
-\subsection{Fused {\tt pack-}permute sequences}
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  addiw rd, zero, v
+  pack rd, rd, zero
+\end{verbatim}
+\end{minipage}
 
-A {\tt pack[hu]} instruction is often followed by a destructive permutation or
-shift instruction with immediate ({\tt [un]shfli, rori, slli,} etc).
+Further, for loading 64-bit consants in two macro-ops:
 
-This makes it attractive to place the few MUXes for {\tt pack[hu]} instructions infront
-of the shift unit, so that such sequences can be fused.
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addiw rd, rd, imm
+  pack rd, rd, rs
+\end{verbatim}
+\end{minipage}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused {\tt *-srli} and {\tt *-srai} sequences}
+\subsection{Fused shift sequences}
 \label{postfix-shift-fusion}
 
 Pairs of left and right shifts are common operations for extracting a bit field.
@@ -2220,117 +2158,13 @@ Similarly, placing a bit field with length {\tt len} at the position {\tt pos}:
 \end{verbatim}
 \end{minipage}
 
-If possible, an implementation should fuse the following macro ops:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  alu_op rd, rs1, rs2
-  srli rd, rd, imm
-
-  alu_op rd, rs1, rs2
-  srai rd, rd, imm
-\end{verbatim}
-\end{minipage}
-
 Note that the postfix right shift instruction can use a compressed encoding,
-yielding a 48-bit fused instruction if {\tt alu\_op} is a 32-bit instruction.
+yielding a 48-bit fused instruction if the left shift is a 32-bit instruction.
 
-For generating masks, i.e. constants with one continous run of 1 bits, a sequence
-like the following can be used that would utilize postfix fusion of right shifts:
+More generally, a processor might fuse all destructive shift operations following
+any other ALU operation.
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  sroi rd, zero, len
-  c.srli rd, (XLEN-len-pos)
-\end{verbatim}
-\end{minipage}
-
-This can be a useful sequence on RV64, where loading an arbitrary 64-bit constant would usually
-require at least 96 bits (using \texttt{c.ld}).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused sequences for logic operations}
-
-RISC-V has dedicated instructions for branching on equal/not-equal. But C code
-such as the following would require set-equal and set-not-equal instructions, similar
-to {\tt slt}.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int is_equal = (a == b);
-  int is_noteq = (c != d);
-\end{verbatim}
-\end{minipage}
-
-Those can be implemented using the following fuse-able sequences:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  sub rd, rs1, rs2
-  sltui rd, rd, 1
-
-  sub rd, rs1, rs2
-  sltu rd, zero, rd
-\end{verbatim}
-\end{minipage}
-
-Likewise for logic OR:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int logic_or  = (c || d);
-
-  or rd, rs1, rs2
-  sltu rd, zero, rd
-\end{verbatim}
-\end{minipage}
-
-And for logic AND, if {\tt rd != rs2}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int logic_and  = (c && d);
-
-  orc rd, rs1
-  and rd, rd, rs2
-  sltu rd, zero, rd
-\end{verbatim}
-\end{minipage}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused ternary ALU sequences}
-
-Architectures with support for ternary operations may want to support fusing two ALU operations.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  alu_op rd, ...
-  alu_op rd, rd, ...
-\end{verbatim}
-\end{minipage}
-
-This would be a postfix-fusion pattern, extending the postfix shift-right
-fusion described in Section~\ref{postfix-shift-fusion}.
-
-Candidates for this kind of postfix fusion would be simple ALU operations, specifically
-AND/OR/XOR/ADD/SUB and ANDI/ORI/XORI/ADDI/SUBI.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Pseudo-ops for fused sequences}
-
-Assembler pseudo-ops for {\tt not} postfix fusion:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  nand rd, rs1, rs2        ->   and rd, rs1, rs2; not rd, rd
-  nor  rd, rs1, rs2        ->   or  rd, rs1, rs2; not rd, rd
-\end{verbatim}
-\end{minipage}
-
-Assembler bitfield pseudo-ops for {\tt sr[la]i} postfix fusion:
+We define the following assembler pseudo-ops for {\tt sr[la]i} postfix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -2340,17 +2174,9 @@ Assembler bitfield pseudo-ops for {\tt sr[la]i} postfix fusion:
 \end{verbatim}
 \end{minipage}
 
-The names {\tt bfext}, {\tt bfextu}, and {\tt bfmak} are borrowed from m88k, that had
-dedicated instructions of those names (without {\tt bf}-prefix) with equivalent semantics.~\cite[p.~3-28]{m88k}
-
-Sign-extending bytes and half-words are special cases of {\tt bfext}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  sext.b rd, rs   ->   slli rd, rs, (XLEN-8);  srai rd, rd, (XLEN-8)
-  sext.h rd, rs   ->   slli rd, rs, (XLEN-16); srai rd, rd, (XLEN-16)
-\end{verbatim}
-\end{minipage}
+(The names {\tt bfext}, {\tt bfextu}, and {\tt bfmak} are borrowed from m88k,
+that had dedicated instructions of those names (without {\tt bf}-prefix) with
+equivalent semantics.~\cite[p.~3-28]{m88k})
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

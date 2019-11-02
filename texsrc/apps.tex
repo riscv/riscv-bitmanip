@@ -261,6 +261,56 @@ Overflow in signed addition can be detected in five instructions:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Fuse-able sequences for logic operations}
+
+RISC-V has dedicated instructions for branching on equal/not-equal. But C code
+such as the following would require set-equal and set-not-equal instructions, similar
+to {\tt slt}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int is_equal = (a == b);
+  int is_noteq = (c != d);
+\end{verbatim}
+\end{minipage}
+
+Those can be implemented using the following fuse-able sequences:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  sub rd, rs1, rs2
+  sltui rd, rd, 1
+
+  sub rd, rs1, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+Likewise for logic OR:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int logic_or  = (c || d);
+
+  or rd, rs1, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+And for logic AND, if {\tt rd != rs2}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int logic_and  = (c && d);
+
+  orc rd, rs1
+  and rd, rd, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Rotate shift of bytes and half-words}
 
 Rotate right shift of the byte in {\tt a0} by the shift amount in {\tt a1},
