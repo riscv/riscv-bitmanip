@@ -214,27 +214,27 @@ The following four instructions calculate the average of the unsigned
 integers in {\tt a0} and {\tt a1}, with compensation for overflow:
 
 \begin{verbatim}
-  and a2, a0, a1
-  xor a0, a0, a1
+  and  a2, a0, a1
+  xor  a0, a0, a1
   srli a0, a0, 1
-  add a0, a0, a2
+  add  a0, a0, a2
 \end{verbatim}
 
 And likewise the average of two signed integers:
 
 \begin{verbatim}
-  and a2, a0, a1
-  xor a0, a0, a1
+  and  a2, a0, a1
+  xor  a0, a0, a1
   srai a0, a0, 1
-  add a0, a0, a2
+  add  a0, a0, a2
 \end{verbatim}
 
 With {\tt fsri} the unsigned case can be accomplished in just three
 instructions:
 
 \begin{verbatim}
-  add a0, a0, a1
-  slt a1, a0, a1
+  add  a0, a0, a1
+  sltu a1, a0, a1
   fsri a0, a1, 1
 \end{verbatim}
 
@@ -245,18 +245,18 @@ instructions:
 Overflow in unsigned addition can be detected in two instructions:
 
 \begin{verbatim}
-  add a0, a0, a1
-  slt a0, a0, a1
+  add  a0, a0, a1
+  sltu a0, a0, a1
 \end{verbatim}
 
 Overflow in signed addition can be detected in five instructions:
 
 \begin{verbatim}
-  add a2, a0, a1
+  add  a2, a0, a1
   xnor a0, a0, a1
-  xor a1, a1, a2
-  and a0, a0, a1
-  slt a0, a0, zero
+  xor  a1, a1, a2
+  and  a0, a0, a1
+  slt  a0, a0, zero
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
