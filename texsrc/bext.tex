@@ -334,6 +334,42 @@ literals are commonly encoded~\cite{BiereComm}. With \texttt{max} (or
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Sign-extend instructions (\texttt{sext.b, sext.h})}
+
+\begin{rvb}
+  RV32, RV64:
+    sext.b rd, rs
+    sext.h rd, rs
+\end{rvb}
+
+For sign-extending a byte or half-word we define two unary instructions:
+
+\input{bextcref-sext}
+
+Additionally, we define pseudo-instructions for zero extending bytes or
+half-words and for zero- and sign-extending words:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  RV32:
+    zext.b rd, rs   ->   andi rd, rs, 255
+    zext.h rd, rs   ->   pack rd, rs, zero
+
+  RV64:
+    zext.b rd, rs   ->   andi rd, rs, 255
+    zext.h rd, rs   ->   packw rd, rs, zero
+    zext.w rd, rs   ->   pack rd, rs, zero
+    sext.w rd, rs   ->   addiw rd, rs, 0
+\end{verbatim}
+\end{minipage}
+
+Sign extending 8-bit and 16-bit values is needed when calling a function that
+accepts an 8-bit or 16-bit signed argument, because the RISC-V calling
+conventions dictates that such an argument must be passed in sign-extended
+form.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Single-bit instructions (\texttt{sbset, sbclr, sbinv, sbext})}
 
 \begin{rvb}
@@ -1109,25 +1145,40 @@ in a word.
     bfpw rd, rs1, rs2
 \end{rvb}
 
-The bit field place ({\tt bfp}) instruction places up to 16 LSB bit from {\tt rs2} into
+The bit field place ({\tt bfp}) instruction places up to $\mathrm{XLEN}/2$ LSB bits from {\tt rs2} into
 the value in {\tt rs1}. The upper bits of {\tt rs2} control the length of the bit field
-and target position.
+and target position. The layout of {\tt rs2} is chosen in a way that makes it possible to construct
+{\tt rs2} easily using {\tt pack[h]} instructions and/or {\tt andi}/{\tt lui}.
 
 \input{bextcref-bfp}
 
-The layout of the control word in rs2 is as follows. {\tt LEN=0} encodes for {\tt LEN=16}.
+The layout of the control word in rs2 is as follows for RV32. {\tt LEN=0} encodes for {\tt LEN=16}.
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
     |  3                   2                   1                    |
     |1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
-    |-------------------------------|-------------------------------|
-    |       |  LEN  |      OFF      |             DATA              |
-    |---------------------------------------------------------------|
+    |---------------|---------------|---------------|---------------|
+    |       |  LEN  |     |   OFF   |             DATA              |
+    |---------------|---------------|---------------|---------------|
 \end{verbatim}
 \end{minipage}
 
-Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0}:
+And on RV64 (with {\tt LEN=0} encoding for {\tt LEN=32}):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+    |      6                   5                   4                   3             |
+    |3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 .... 2 1 0|
+    |---------------|---------------|---------------|---------------|------ -- ------|
+    |SEL| |   LEN   |   |    OFF    |     |   LEN'  |   |    OFF'   |      DATA      |
+    |---------------|---------------|---------------|---------------|------ -- ------|
+\end{verbatim}
+\end{minipage}
+
+When {\tt SEL=10} then {\tt LEN} and {\tt OFF} are used, otherwise {\tt LEN'} and {\tt OFF'} are used.
+
+Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0} on RV32:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -1137,7 +1188,25 @@ Placing bits from {\tt a0} in {\tt a1}, with results in {\tt t0}:
 \end{verbatim}
 \end{minipage}
 
-(On RV64 {\tt packw} would be used as second instruction in that sequence.)
+And on RV64:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui t0, zero, {3'b 100, length[4:0], offset[7:0], 4'b 0000}
+  pack t0, a0, t0
+  bfp t0, a1, t0
+\end{verbatim}
+\end{minipage}
+
+Or with {\tt a2=length} and {\tt a3=offset}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  packh t0, a3, a2
+  pack t0, a0, t0
+  bfp t0, a1, t0
+\end{verbatim}
+\end{minipage}
 
 Placing up to 16 constant bits in any contiguous region:
 
@@ -1145,11 +1214,11 @@ Placing up to 16 constant bits in any contiguous region:
 \begin{verbatim}
   lui t0, ...
   addi t0, t0, ...
-  bfp t0, a1, t0
+  bfp[w] t0, a1, t0
 \end{verbatim}
 \end{minipage}
 
-Note that either above sequence only modifies one register, which makes them
+Note that above sequences only modify one register ({\tt t0}), which makes them
 fuse-able sequences.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1781,15 +1850,13 @@ and are marked with a {\tt *}.
 \begin{verbatim}
 |  3                   2                   1                    |
 |1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
-|---------------------------------------------------------------|
-|    funct7   |   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R-type
-|   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
-|          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0010011   |  PCNT
 |  0110000    |  00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
+|  0110000    |  00100  |   rs1   | 001 |    rd   |   0010011   |  SEXT.B
+|  0110000    |  00101  |   rs1   | 001 |    rd   |   0010011   |  SEXT.H
 |---------------------------------------------------------------|
 |  0110000    |  10000  |   rs1   | 001 |    rd   |   0010011   |  CRC32.B
 |  0110000    |  10001  |   rs1   | 001 |    rd   |   0010011   |  CRC32.H
@@ -1810,12 +1877,14 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  BDEP
+|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BDEP
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BEXT
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACK
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACKU
 |  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
 |  0100100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATXOR
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BFP
+|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  PACKH
+|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  BFP
 |---------------------------------------------------------------|
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
@@ -1838,10 +1907,6 @@ and are marked with a {\tt *}.
 \begin{verbatim}
 |  3                   2                   1                    |
 |1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
-|---------------------------------------------------------------|
-|    funct7   |   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R-type
-|   rs3   | f2|   rs2   |   rs1   |  f3 |    rd   |    opcode   |  R4-type
-|          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 |===============================================================|
 |  0010000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SLOW
 |  0010000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SROW
@@ -1879,38 +1944,11 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  BDEPW
+|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BDEPW
 |  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKW
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
-|---------------------------------------------------------------|
-\end{verbatim}
-\end{minipage}
-
-Pending changes for v0.92 of the RISC-V Bitmanip Spec ({\tt +} for addition,
-{\tt -} for removal):
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-|  3                   2                   1                    |
-|1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
-|===============================================================|
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  - BFP
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  - BFPW
-|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  + BFP
-|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  + BFPW
-|---------------------------------------------------------------|
-|  0000100    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  + PACKH
-|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + PACKU
-|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + PACKUW
-|---------------------------------------------------------------|
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  - BDEP
-|  0000100    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  - BDEPW
-|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + BDEP
-|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + BDEPW
-|---------------------------------------------------------------|
-|  0110000    |  00100  |   rs1   | 001 |    rd   |   0010011   |  + SEXT.B
-|  0110000    |  00101  |   rs1   | 001 |    rd   |   0010011   |  + SEXT.H
+|  0100100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKUW
+|  0100100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -1991,7 +2029,16 @@ reserved space in \texttt{c.addi16sp/c.lui}.
 \multicolumn{2}{c|}{01} &
 \multicolumn{3}{c|}{rs1$'$/rd$'$} &
 \multicolumn{5}{c|}{0} &
-\multicolumn{2}{c|}{01} & C.ZEXT.W {\em \tiny (RV64/128)} \\
+\multicolumn{2}{c|}{01} & C.NEG \\
+\cline{2-17}
+
+&
+\multicolumn{3}{|c|}{011} &
+\multicolumn{1}{c|}{0} &
+\multicolumn{2}{c|}{10} &
+\multicolumn{3}{c|}{rs1$'$/rd$'$} &
+\multicolumn{5}{c|}{0} &
+\multicolumn{2}{c|}{01} & C.ZEXT.W {\em \tiny (RV64/128; RV32 RES)} \\
 \cline{2-17}
 
 &
@@ -2000,7 +2047,7 @@ reserved space in \texttt{c.addi16sp/c.lui}.
 \multicolumn{2}{c|}{11} &
 \multicolumn{3}{c|}{rs1$'$/rd$'$} &
 \multicolumn{5}{c|}{0} &
-\multicolumn{2}{c|}{01} & C.ZEXT.D {\em \tiny (RV128)} \\
+\multicolumn{2}{c|}{01} & C.ZEXT.D {\em \tiny (RV128; RV32/64 RES)} \\
 \cline{2-17}
 
 \end{tabular}
@@ -2017,103 +2064,27 @@ approximately $1\%$ of bitmanipulation code size.~\cite{Wolf17A}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Micro architectural considerations and macro-op fusion for bit-manipulation}
+\section{Macro-op fusion patterns}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Some bitmanip operations have been left out of this spec because of lack of a (sensible) way
+to encode them in the 32-bit RISC-V encoding space. Instead we present fuse-able sequences
+of up to three instructions for those operations, so that high-end processors can implement
+them in a single fused macro-op, should they decide to do so.
 
-\subsection{Fast {\tt MUL}, {\tt MULH}, {\tt MULHSU}, {\tt MULHU}}
-
-A lot of bit manipulation code depends on ``multiply with magic number''-tricks. Often those
-tricks need the upper half of the $2 \cdot \textrm{XLEN}$ product. Therefore decent performance
-for the \texttt{MUL} and especially \texttt{MULH[[S]U]} instructions is important for fast
-bit manipulation code.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused load-immediate sequences}
-
-Bit manipulation code, even more than other code, requires a lot of ``magic numbers'',
-bitmasks, and other (usually large) constants. On some microarchitectures those
-can easily be loaded from a nearby data section using load instructions. On other
-microarchitectures however this comes at a high cost, and it is more efficient
-to load immediates using a sequence of instructions.
-
-Loading a 32-bit constant:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addi rd, rd, imm
-\end{verbatim}
-\end{minipage}
-
-On RV64 a 64 bit constant can be loaded by loading two 32-bit constants and combining them
-with a {\tt PACK} instruction:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui tmp, imm
-  addi tmp, tmp, imm
-  lui rd, imm
-  addi rd, rd, imm
-  pack rd, rd, tmp
-\end{verbatim}
-\end{minipage}
-
-(Without the temporary register and without the {\tt PACK} instruction more complex/diverse
-sequences are used to load 64-bit immediates. But the {\tt PACK} instruction streamlines
-the pattern and thus simplifies macro-op fusion.)
-
-A 32-bit core should be capable of fusing the {\tt lui}+{\tt addi} pattern.
-
-In addition to that, a 64 bit core may consider fusing the following sequences as well:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addi rd, rd, imm
-  pack rd, rd, rs2
-
-  lui rd, imm
-  pack rd, rd, rs2
-
-  addi rd, zero, imm
-  pack rd, rd, rs2
-\end{verbatim}
-\end{minipage}
-
-Furthermore, a core may consider fusing 32-bit immediate loads with any ALU
-instruction, not just {\tt pack}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addi rd, rd, imm
-  alu_op rd, rd, rs2
-
-  lui rd, imm
-  alu_op rd, rd, rs2
-
-  addi rd, zero, imm
-  alu_op rd, rd, rs2
-\end{verbatim}
-\end{minipage}
-
-And finally, a 64-bit core should fuse sequences with {\tt addiwu} as well as
-{\tt addi}, for loading unsigned 32-bit numbers that have their MSB set. This is
-often the case with masks in bit manipulation code.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For this document we only consider sequences fuse-able if they read at most two
+registers, only write one register, and contain no branch instructions.
 
 \subsection{Fused {\tt *-bfp} sequences}
 
-The {\tt bfp} instruction is most commonly used in one of the following sequences:
+The {\tt bfp} instruction is most commonly used in sequences of one the the following forms.
+
+For 32-bit (RV32 or *W instructions on RV64):
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   addi rd, zero, ...
-  pack rd, rs2, rd
-  bfp rd, rs1, rd
+  pack[w] rd, rs2, rd
+  bfp[w] rd, rs1, rd
 \end{verbatim}
 \end{minipage}
 
@@ -2121,46 +2092,60 @@ The {\tt bfp} instruction is most commonly used in one of the following sequence
 \begin{verbatim}
   lui rd, ...
   addi rd, rd, ...
+  bfp[w] rd, rs1, rd
+\end{verbatim}
+\end{minipage}
+
+And for 64-bit:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, ...
+  pack rd, rs2, rd
   bfp rd, rs1, rd
 \end{verbatim}
 \end{minipage}
 
-Either sequence only reads at most two registers and only writes one register, making
-them ideal candidates for macro-op fusion.
+\subsection{Load-immediate}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused {\tt *-not} sequences}
-
-Preliminary experiments have shown that NOT instructions make up approximately
-$1\%$ of bitmanipulation code size, more when looking at dynamic instruction count.~\cite{Wolf17A}
-
-Therefore it makes sense to fuse NOT instructions with other ALU instructions, if possible.
-
-The most important form of NOT fusion is postfix fusion:
+For 32-bit code (RV32 or *W instructions on RV64) we recommend to fuse the {\tt
+lui+addi} pattern for loading a 32-bit constants:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  alu_op rd, rs1, rs2
-  not rd, rd
+  lui rd, imm
+  addi[w] rd, rd, imm
 \end{verbatim}
 \end{minipage}
 
-A future compressed NOT instruction would help keeping those fused sequences short.
+For RV64 we also recommend to fuse the followings patterns for loading a 32-bit constant zero-extended
+into a 64-bit register:
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addiwu rd, rd, imm
+\end{verbatim}
+\end{minipage}
 
-\subsection{Fused {\tt pack-}permute sequences}
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  addiw rd, zero, v
+  pack rd, rd, zero
+\end{verbatim}
+\end{minipage}
 
-A {\tt pack[hu]} instruction is often followed by a destructive permutation or
-shift instruction with immediate ({\tt [un]shfli, rori, slli,} etc).
+Further, for loading 64-bit consants in two macro-ops:
 
-This makes it attractive to place the few MUXes for {\tt pack[hu]} instructions infront
-of the shift unit, so that such sequences can be fused.
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  lui rd, imm
+  addiw rd, rd, imm
+  pack rd, rd, rs
+\end{verbatim}
+\end{minipage}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused {\tt *-srli} and {\tt *-srai} sequences}
+\subsection{Fused shift sequences}
 \label{postfix-shift-fusion}
 
 Pairs of left and right shifts are common operations for extracting a bit field.
@@ -2187,117 +2172,13 @@ Similarly, placing a bit field with length {\tt len} at the position {\tt pos}:
 \end{verbatim}
 \end{minipage}
 
-If possible, an implementation should fuse the following macro ops:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  alu_op rd, rs1, rs2
-  srli rd, rd, imm
-
-  alu_op rd, rs1, rs2
-  srai rd, rd, imm
-\end{verbatim}
-\end{minipage}
-
 Note that the postfix right shift instruction can use a compressed encoding,
-yielding a 48-bit fused instruction if {\tt alu\_op} is a 32-bit instruction.
+yielding a 48-bit fused instruction if the left shift is a 32-bit instruction.
 
-For generating masks, i.e. constants with one continous run of 1 bits, a sequence
-like the following can be used that would utilize postfix fusion of right shifts:
+More generally, a processor might fuse all destructive shift operations following
+any other ALU operation.
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  sroi rd, zero, len
-  c.srli rd, (XLEN-len-pos)
-\end{verbatim}
-\end{minipage}
-
-This can be a useful sequence on RV64, where loading an arbitrary 64-bit constant would usually
-require at least 96 bits (using \texttt{c.ld}).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused sequences for logic operations}
-
-RISC-V has dedicated instructions for branching on equal/not-equal. But C code
-such as the following would require set-equal and set-not-equal instructions, similar
-to {\tt slt}.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int is_equal = (a == b);
-  int is_noteq = (c != d);
-\end{verbatim}
-\end{minipage}
-
-Those can be implemented using the following fuse-able sequences:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  sub rd, rs1, rs2
-  sltui rd, rd, 1
-
-  sub rd, rs1, rs2
-  sltu rd, zero, rd
-\end{verbatim}
-\end{minipage}
-
-Likewise for logic OR:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int logic_or  = (c || d);
-
-  or rd, rs1, rs2
-  sltu rd, zero, rd
-\end{verbatim}
-\end{minipage}
-
-And for logic AND, if {\tt rd != rs2}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  int logic_and  = (c && d);
-
-  orc rd, rs1
-  and rd, rd, rs2
-  sltu rd, zero, rd
-\end{verbatim}
-\end{minipage}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Fused ternary ALU sequences}
-
-Architectures with support for ternary operations may want to support fusing two ALU operations.
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  alu_op rd, ...
-  alu_op rd, rd, ...
-\end{verbatim}
-\end{minipage}
-
-This would be a postfix-fusion pattern, extending the postfix shift-right
-fusion described in Section~\ref{postfix-shift-fusion}.
-
-Candidates for this kind of postfix fusion would be simple ALU operations, specifically
-AND/OR/XOR/ADD/SUB and ANDI/ORI/XORI/ADDI/SUBI.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Pseudo-ops for fused sequences}
-
-Assembler pseudo-ops for {\tt not} postfix fusion:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  nand rd, rs1, rs2        ->   and rd, rs1, rs2; not rd, rd
-  nor  rd, rs1, rs2        ->   or  rd, rs1, rs2; not rd, rd
-\end{verbatim}
-\end{minipage}
-
-Assembler bitfield pseudo-ops for {\tt sr[la]i} postfix fusion:
+We define the following assembler pseudo-ops for {\tt sr[la]i} postfix fusion:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -2307,17 +2188,9 @@ Assembler bitfield pseudo-ops for {\tt sr[la]i} postfix fusion:
 \end{verbatim}
 \end{minipage}
 
-The names {\tt bfext}, {\tt bfextu}, and {\tt bfmak} are borrowed from m88k, that had
-dedicated instructions of those names (without {\tt bf}-prefix) with equivalent semantics.~\cite[p.~3-28]{m88k}
-
-Sign-extending bytes and half-words are special cases of {\tt bfext}:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  sext.b rd, rs   ->   slli rd, rs, (XLEN-8);  srai rd, rd, (XLEN-8)
-  sext.h rd, rs   ->   slli rd, rs, (XLEN-16); srai rd, rd, (XLEN-16)
-\end{verbatim}
-\end{minipage}
+(The names {\tt bfext}, {\tt bfextu}, and {\tt bfmak} are borrowed from m88k,
+that had dedicated instructions of those names (without {\tt bf}-prefix) with
+equivalent semantics.~\cite[p.~3-28]{m88k})
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

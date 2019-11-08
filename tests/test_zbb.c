@@ -5,6 +5,9 @@ long test_zbb(uint64_t *argp, int argc)
 
 	for (int i = 0; i < argc; i++)
 	{
+		CK(_rv32_sext_b(argp[i]));
+		CK(_rv32_sext_h(argp[i]));
+
 		CK(_rv32_clz(argp[i]));
 		CK(_rv32_ctz(argp[i]));
 		CK(_rv32_pcnt(argp[i]));
@@ -21,6 +24,9 @@ long test_zbb(uint64_t *argp, int argc)
 		CK(_rv32_ror(argp[i], 3));
 		CK(_rv32_rol(argp[i], 5));
 		CK(_rv32_ror(argp[i], 7));
+
+		CK(_rv64_sext_b(argp[i]));
+		CK(_rv64_sext_h(argp[i]));
 
 		CK(_rv64_clz(argp[i]));
 		CK(_rv64_ctz(argp[i]));
@@ -45,6 +51,12 @@ long test_zbb(uint64_t *argp, int argc)
 	{
 		CK(_rv32_pack(argp[i], argp[j]));
 		CK(_rv64_pack(argp[i], argp[j]));
+
+		CK(_rv32_packu(argp[i], argp[j]));
+		CK(_rv64_packu(argp[i], argp[j]));
+
+		CK(_rv32_packh(argp[i], argp[j]));
+		CK(_rv64_packh(argp[i], argp[j]));
 
 		CK(_rv32_slo(argp[i], argp[j]));
 		CK(_rv32_sro(argp[i], argp[j]));

@@ -43,7 +43,7 @@ int main()
 			{
 			case 0: // BDEP
 				if (!enable_64bit) { i--; continue; }
-				din_insn = 0x08002033;
+				din_insn = 0x48006033;
 				dout_rd = rv64b::bdep(din_rs1, din_rs2);
 				break;
 			case 1: // BEXT
@@ -76,7 +76,7 @@ int main()
 				dout_rd = rv64b::grev(din_rs1, din_rs2);
 				break;
 			case 6: // BDEPW
-				din_insn = enable_64bit ? 0x0800203b : 0x08002033;
+				din_insn = enable_64bit ? 0x4800603b : 0x48006033;
 				dout_rd = int32_t(rv32b::bdep(din_rs1, din_rs2));
 				break;
 			case 7: // BEXTW

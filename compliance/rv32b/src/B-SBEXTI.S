@@ -6,36 +6,36 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s7, 0x522a1063
-    sbexti s11,s7,3
-    sw s11,0(a1)
-    li a6, 0x8a671b8c
-    sbexti s10,a6,5
-    sw s10,4(a1)
-    li t3, 0x02eb0801
-    sbexti a3,t3,17
-    sw a3,8(a1)
-    li s9, 0x43737b61
-    sbexti t5,s9,24
-    sw t5,12(a1)
-    li t1, 0xf20d8a82
-    sbexti t2,t1,25
-    sw t2,16(a1)
-    li a6, 0x9543c51a
-    sbexti a0,a6,31
-    sw a0,20(a1)
-    li t2, 0x1014c66e
-    sbexti a4,t2,12
-    sw a4,24(a1)
-    li s5, 0x1a3c3257
-    sbexti s3,s5,8
-    sw s3,28(a1)
-    li s0, 0x88061100
-    sbexti t1,s0,2
-    sw t1,32(a1)
-    li a5, 0xfebefbcc
-    sbexti s11,a5,22
-    sw s11,36(a1)
+    li s9, 0x522a1063
+    sbexti a6,s9,3
+    sw a6,0(a1)
+    li t5, 0x8a671b8c
+    sbexti a2,t5,5
+    sw a2,4(a1)
+    li t0, 0x02eb0801
+    sbexti a4,t0,17
+    sw a4,8(a1)
+    li s6, 0x43737b61
+    sbexti a2,s6,24
+    sw a2,12(a1)
+    li s5, 0xf20d8a82
+    sbexti a5,s5,25
+    sw a5,16(a1)
+    li s4, 0x9543c51a
+    sbexti s1,s4,31
+    sw s1,20(a1)
+    li a2, 0x1014c66e
+    sbexti s11,a2,12
+    sw s11,24(a1)
+    li t6, 0x1a3c3257
+    sbexti s2,t6,8
+    sw s2,28(a1)
+    li s10, 0x88061100
+    sbexti s2,s10,2
+    sw s2,32(a1)
+    li t6, 0xfebefbcc
+    sbexti s0,t6,22
+    sw s0,36(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

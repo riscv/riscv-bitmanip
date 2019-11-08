@@ -56,6 +56,9 @@ module rvb_simple #(
 	// --------------------------   --------
 	//  0  1  0  0  1  0  0  1  0   PACK
 	//  0  1  0  0  1  0  0  1  1   PACKW
+	//  0  1  0  0  1  1  1  1  0   PACKH
+	//  1  1  0  0  1  0  0  1  0   PACKU
+	//  1  1  0  0  1  0  0  1  1   PACKUW
 	// --------------------------   --------
 	//  -  -  0  1  0  0  1  1  0   CMIX
 	//  -  -  0  1  1  0  1  1  0   CMOV
@@ -105,14 +108,18 @@ module rvb_simple #(
 			din_insn13 ? din_rs1 | ~din_rs2 : din_rs1 ^ ~din_rs2;
 
 
-	// ---- PACK PACKW ----
+	// ---- PACK PACKW PACKH PACKU PACKUW ----
 
-	wire pack_active = !wuw_active && {din_insn30, din_insn27, din_insn26, din_insn25, din_insn14} == 5'b 01001;
+	wire pack_active = !wuw_active && {din_insn27, din_insn26, din_insn25, din_insn14} == 4'b 1001;
 
-	wire [31:0] pack_dout32 = {din_rs2[15:0], din_rs1[15:0]};
-	wire [63:0] pack_dout64 = {din_rs2[31:0], din_rs1[31:0]};
+	wire [31:0] pack_rs1 = din_insn30 ? ((din_insn3 || XLEN == 32) ? {16'bx, din_rs1[31:16]} : din_rs1 >> 32) : din_rs1;
+	wire [31:0] pack_rs2 = din_insn30 ? ((din_insn3 || XLEN == 32) ? {16'bx, din_rs2[31:16]} : din_rs2 >> 32) : din_rs2;
 
-	wire [XLEN-1:0] pack_dout = !pack_active ? 0 : (din_insn3 || XLEN == 32) ? {{32{pack_dout32[31]}}, pack_dout32} : pack_dout64;
+	wire [31:0] pack_dout32 = {pack_rs2[15:0], pack_rs1[15:0]};
+	wire [63:0] pack_dout64 = {pack_rs2[31:0], pack_rs1[31:0]};
+
+	wire [XLEN-1:0] pack_dout = !pack_active ? 0 : din_insn13 ? {din_rs2[7:0], din_rs1[7:0]} :
+			(din_insn3 || XLEN == 32) ? {{32{pack_dout32[31]}}, pack_dout32} : pack_dout64;
 
 
 	// ---- CMIX CMOV ----

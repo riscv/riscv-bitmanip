@@ -6,30 +6,30 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li t0, 0xa7b2ca1a778bd1db
-    li s6, 0x935b4969def3c035
-    subu.w a3,t0,s6
-    sd a3,0(a1)
-    li a3, 0x55f04ca8ffaace79
-    li t2, 0x1a785a2011e15d6b
-    subu.w a6,a3,t2
-    sd a6,8(a1)
-    li t0, 0xb23279cf04bc5eac
-    li s8, 0x2c4cb61533397f4e
-    subu.w a6,t0,s8
-    sd a6,16(a1)
-    li s10, 0x6b5ed10440ee4840
-    li s3, 0x4aecd4a818331b85
-    subu.w a7,s10,s3
-    sd a7,24(a1)
-    li s10, 0x1607b7125a0d8ae2
-    li s5, 0x05100ad8faafb8a6
-    subu.w s0,s10,s5
+    li s2, 0xa7b2ca1a778bd1db
+    li s4, 0x935b4969def3c035
+    subu.w t4,s2,s4
+    sd t4,0(a1)
+    li a6, 0x55f04ca8ffaace79
+    li t6, 0x1a785a2011e15d6b
+    subu.w a0,a6,t6
+    sd a0,8(a1)
+    li s4, 0xb23279cf04bc5eac
+    li t4, 0x2c4cb61533397f4e
+    subu.w a4,s4,t4
+    sd a4,16(a1)
+    li s3, 0x6b5ed10440ee4840
+    li s11, 0x4aecd4a818331b85
+    subu.w s7,s3,s11
+    sd s7,24(a1)
+    li s7, 0x1607b7125a0d8ae2
+    li s3, 0x05100ad8faafb8a6
+    subu.w s0,s7,s3
     sd s0,32(a1)
-    li s9, 0xd7ab5710cccb9502
-    li a2, 0x7926d5b8de163e74
-    subu.w t5,s9,a2
-    sd t5,40(a1)
+    li a0, 0xd7ab5710cccb9502
+    li s10, 0x7926d5b8de163e74
+    subu.w s9,a0,s10
+    sd s9,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

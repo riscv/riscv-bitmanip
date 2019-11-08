@@ -6,24 +6,24 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s4, 0xeadf76b9d77b6ecd
-    crc32.h a2,s4
-    sd a2,0(a1)
-    li s5, 0x991e56a136a9a6d7
-    crc32.h s7,s5
-    sd s7,8(a1)
-    li t5, 0x75be118b219954ae
+    li t5, 0xeadf76b9d77b6ecd
     crc32.h t1,t5
-    sd t1,16(a1)
-    li a7, 0x201eccb891f3a75b
+    sd t1,0(a1)
+    li a7, 0x991e56a136a9a6d7
     crc32.h t6,a7
-    sd t6,24(a1)
-    li s6, 0x5259a8e16723f89c
+    sd t6,8(a1)
+    li s6, 0x75be118b219954ae
     crc32.h s5,s6
-    sd s5,32(a1)
-    li s8, 0x80b445926042e65d
+    sd s5,16(a1)
+    li s8, 0x201eccb891f3a75b
     crc32.h t4,s8
-    sd t4,40(a1)
+    sd t4,24(a1)
+    li a5, 0x5259a8e16723f89c
+    crc32.h t3,a5
+    sd t3,32(a1)
+    li s5, 0x80b445926042e65d
+    crc32.h s1,s5
+    sd s1,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

@@ -13,6 +13,7 @@ cbmc   --trace --function min_max_test   misc.cc
 cbmc   --trace --function check_vectadd  misc.cc
 cbmc   --trace --function check_avgint   misc.cc
 cbmc   --trace --function check_overflow misc.cc
+cbmc   --trace --function check_bigadd   misc.cc
 
 gcc -Wall -o misc misc.cc
 ./misc

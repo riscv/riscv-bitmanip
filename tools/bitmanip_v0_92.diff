@@ -1,0 +1,575 @@
+--- riscv-gcc/gcc/config/riscv/rvintrin.h
++++ riscv-gcc/gcc/config/riscv/rvintrin.h
+@@ -55,32 +55,44 @@
+ #endif
+ 
+ #ifdef RVINTRIN_RV32
+-static inline int32_t _rv32_clz (int32_t rs1) { int32_t rd; __asm__ ("clz   %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-static inline int32_t _rv32_ctz (int32_t rs1) { int32_t rd; __asm__ ("ctz   %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-static inline int32_t _rv32_pcnt(int32_t rs1) { int32_t rd; __asm__ ("pcnt  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_clz   (int32_t rs1) { int32_t rd; __asm__ ("clz     %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_ctz   (int32_t rs1) { int32_t rd; __asm__ ("ctz     %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_pcnt  (int32_t rs1) { int32_t rd; __asm__ ("pcnt    %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_sext_b(int32_t rs1) { int32_t rd; __asm__ ("sext.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_sext_h(int32_t rs1) { int32_t rd; __asm__ ("sext.h  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+ #endif
+ 
+ #ifdef RVINTRIN_RV64
+-static inline int32_t _rv32_clz (int32_t rs1) { int32_t rd; __asm__ ("clzw  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-static inline int32_t _rv32_ctz (int32_t rs1) { int32_t rd; __asm__ ("ctzw  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-static inline int32_t _rv32_pcnt(int32_t rs1) { int32_t rd; __asm__ ("pcntw %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-
+-static inline int64_t _rv64_clz (int64_t rs1) { int64_t rd; __asm__ ("clz   %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-static inline int64_t _rv64_ctz (int64_t rs1) { int64_t rd; __asm__ ("ctz   %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+-static inline int64_t _rv64_pcnt(int64_t rs1) { int64_t rd; __asm__ ("pcnt  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_clz   (int32_t rs1) { int32_t rd; __asm__ ("clzw    %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_ctz   (int32_t rs1) { int32_t rd; __asm__ ("ctzw    %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_pcnt  (int32_t rs1) { int32_t rd; __asm__ ("pcntw   %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_sext_b(int32_t rs1) { int32_t rd; __asm__ ("sext.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv32_sext_h(int32_t rs1) { int32_t rd; __asm__ ("sext.h  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++
++static inline int64_t _rv64_clz   (int64_t rs1) { int64_t rd; __asm__ ("clz     %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int64_t _rv64_ctz   (int64_t rs1) { int64_t rd; __asm__ ("ctz     %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int64_t _rv64_pcnt  (int64_t rs1) { int64_t rd; __asm__ ("pcnt    %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv64_sext_b(int32_t rs1) { int32_t rd; __asm__ ("sext.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
++static inline int32_t _rv64_sext_h(int32_t rs1) { int32_t rd; __asm__ ("sext.h  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
+ #endif
+ 
+ #ifdef RVINTRIN_RV32
+-static inline int32_t _rv32_pack(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("pack  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+-static inline int32_t _rv32_bfp (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("bfp   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_pack (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("pack  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_packu(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("packu %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_packh(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("packh %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_bfp  (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("bfp   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+ #endif
+ 
+ #ifdef RVINTRIN_RV64
+-static inline int32_t _rv32_pack(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("packw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+-static inline int32_t _rv32_bfp (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("bfpw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+-
+-static inline int64_t _rv64_pack(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("pack  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+-static inline int64_t _rv64_bfp (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("bfp   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_pack (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("packw  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_packu(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("packuw %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_packh(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("packh  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int32_t _rv32_bfp  (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("bfpw   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++
++static inline int64_t _rv64_pack (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("pack  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int64_t _rv64_packu(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("packu %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int64_t _rv64_packh(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("packh %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
++static inline int64_t _rv64_bfp  (int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("bfp   %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+ #endif
+ 
+ static inline int32_t _rv32_min (int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("min  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+@@ -339,9 +351,21 @@
+ static inline int64_t _rv64_pcnt(int64_t rs1) { return __builtin_popcountll(rs1); }
+ #endif
+ 
++static inline int32_t _rv32_sext_b(int32_t rs1) { return rs1 << (32-8) >> (32-8); }
++static inline int64_t _rv64_sext_b(int64_t rs1) { return rs1 << (64-8) >> (64-8); }
++
++static inline int32_t _rv32_sext_h(int32_t rs1) { return rs1 << (32-16) >> (32-16); }
++static inline int64_t _rv64_sext_h(int64_t rs1) { return rs1 << (64-16) >> (64-16); }
++
+ static inline int32_t _rv32_pack(int32_t rs1, int32_t rs2) { return (rs1 & 0x0000ffff)   | (rs2 << 16); }
+ static inline int64_t _rv64_pack(int64_t rs1, int64_t rs2) { return (rs1 & 0xffffffffLL) | (rs2 << 32); }
+ 
++static inline int32_t _rv32_packu(int32_t rs1, int32_t rs2) { return ((rs1 >> 16) & 0x0000ffff)   | (rs2 >> 16 << 16); }
++static inline int64_t _rv64_packu(int64_t rs1, int64_t rs2) { return ((rs1 >> 32) & 0xffffffffLL) | (rs2 >> 32 << 32); }
++
++static inline int32_t _rv32_packh(int32_t rs1, int32_t rs2) { return (rs1 & 0xff) | ((rs2 & 0xff) << 8); }
++static inline int64_t _rv64_packh(int64_t rs1, int64_t rs2) { return (rs1 & 0xff) | ((rs2 & 0xff) << 8); }
++
+ static inline int32_t _rv32_min (int32_t rs1, int32_t rs2) { return rs1 < rs2 ? rs1 : rs2; }
+ static inline int32_t _rv32_minu(int32_t rs1, int32_t rs2) { return (uint32_t)rs1 < (uint32_t)rs2 ? rs1 : rs2; }
+ static inline int32_t _rv32_max (int32_t rs1, int32_t rs2) { return rs1 > rs2 ? rs1 : rs2; }
+@@ -372,12 +396,13 @@
+ 
+ static inline int32_t _rv32_bfp(int32_t rs1, int32_t rs2)
+ {
+-        int len = (rs2 >> 24) & 15;
+-        int off = (rs2 >> 16) & 31;
+-        len = len ? len : 16;
+-        uint32_t mask = _rv32_rol(_rv32_slo(0, len), off);
+-        uint32_t data = _rv32_rol(rs2, off);
+-        return (data & mask) | (rs1 & ~mask);
++	uint32_t cfg = rs2 >> 16;
++	int len = (cfg >> 8) & 15;
++	int off = cfg & 31;
++	len = len ? len : 16;
++	uint32_t mask = _rv32_slo(0, len) << off;
++	uint32_t data = rs2 << off;
++	return (data & mask) | (rs1 & ~mask);
+ }
+ 
+ static inline int32_t _rv32_grev(int32_t rs1, int32_t rs2)
+@@ -447,12 +472,15 @@
+ 
+ static inline int64_t _rv64_bfp(int64_t rs1, int64_t rs2)
+ {
+-        int len = (rs2 >> 24) & 15;
+-        int off = (rs2 >> 16) & 63;
+-        len = len ? len : 16;
+-        uint64_t mask = _rv64_rol(_rv64_slo(0, len), off);
+-        uint64_t data = _rv64_rol(rs2, off);
+-        return (data & mask) | (rs1 & ~mask);
++	uint64_t cfg = (uint64_t)rs2 >> 32;
++	if ((cfg >> 30) == 2)
++		cfg = cfg >> 16;
++	int len = (cfg >> 8) & 31;
++	int off = cfg & 63;
++	len = len ? len : 32;
++	uint64_t mask = _rv64_slo(0, len) << off;
++	uint64_t data = rs2 << off;
++	return (data & mask) | (rs1 & ~mask);
+ }
+ 
+ static inline int64_t _rv64_grev(int64_t rs1, int64_t rs2)
+@@ -759,11 +787,15 @@
+ #endif // RVINTRIN_EMULATE
+ 
+ #ifdef RVINTRIN_RV32
+-static inline long _rv_clz  (long rs1) { return _rv32_clz (rs1); }
+-static inline long _rv_ctz  (long rs1) { return _rv32_ctz (rs1); }
+-static inline long _rv_pcnt (long rs1) { return _rv32_pcnt(rs1); }
++static inline long _rv_clz    (long rs1) { return _rv32_clz   (rs1); }
++static inline long _rv_ctz    (long rs1) { return _rv32_ctz   (rs1); }
++static inline long _rv_pcnt   (long rs1) { return _rv32_pcnt  (rs1); }
++static inline long _rv_sext_b (long rs1) { return _rv32_sext_b(rs1); }
++static inline long _rv_sext_h (long rs1) { return _rv32_sext_h(rs1); }
+ 
+ static inline long _rv_pack   (long rs1, long rs2) { return _rv32_pack   (rs1, rs2); }
++static inline long _rv_packu  (long rs1, long rs2) { return _rv32_packu  (rs1, rs2); }
++static inline long _rv_packh  (long rs1, long rs2) { return _rv32_packh  (rs1, rs2); }
+ static inline long _rv_bfp    (long rs1, long rs2) { return _rv32_bfp    (rs1, rs2); }
+ static inline long _rv_min    (long rs1, long rs2) { return _rv32_min    (rs1, rs2); }
+ static inline long _rv_minu   (long rs1, long rs2) { return _rv32_minu   (rs1, rs2); }
+@@ -798,9 +830,13 @@
+ static inline long _rv_clz     (long rs1) { return _rv64_clz     (rs1); }
+ static inline long _rv_ctz     (long rs1) { return _rv64_ctz     (rs1); }
+ static inline long _rv_pcnt    (long rs1) { return _rv64_pcnt    (rs1); }
++static inline long _rv_sext_b  (long rs1) { return _rv64_sext_b  (rs1); }
++static inline long _rv_sext_h  (long rs1) { return _rv64_sext_h  (rs1); }
+ static inline long _rv_bmatflip(long rs1) { return _rv64_bmatflip(rs1); }
+ 
+ static inline long _rv_pack   (long rs1, long rs2) { return _rv64_pack   (rs1, rs2); }
++static inline long _rv_packu  (long rs1, long rs2) { return _rv64_packu  (rs1, rs2); }
++static inline long _rv_packh  (long rs1, long rs2) { return _rv64_packh  (rs1, rs2); }
+ static inline long _rv_bfp    (long rs1, long rs2) { return _rv64_bfp    (rs1, rs2); }
+ static inline long _rv_min    (long rs1, long rs2) { return _rv64_min    (rs1, rs2); }
+ static inline long _rv_minu   (long rs1, long rs2) { return _rv64_minu   (rs1, rs2); }
+--- riscv-binutils/gas/config/tc-riscv.c
++++ riscv-binutils/gas/config/tc-riscv.c
+@@ -139,7 +139,6 @@
+ 
+     case INSN_CLASS_Q: return riscv_subset_supports ("q");
+ 
+-    case INSN_CLASS_B: return riscv_subset_supports ("b");
+     case INSN_CLASS_B_OR_ZBB:
+       return riscv_subset_supports ("b") || riscv_subset_supports ("zbb");
+ 
+@@ -149,6 +148,9 @@
+     case INSN_CLASS_B_OR_ZBE:
+       return riscv_subset_supports ("b") || riscv_subset_supports ("zbe");
+ 
++    case INSN_CLASS_B_OR_ZBF:
++      return riscv_subset_supports ("b") || riscv_subset_supports ("zbf");
++
+     case INSN_CLASS_B_OR_ZBM:
+       return riscv_subset_supports ("b") || riscv_subset_supports ("zbm");
+ 
+--- riscv-binutils/include/opcode/riscv-opc.h
++++ riscv-binutils/include/opcode/riscv-opc.h
+@@ -229,6 +229,10 @@
+ #define MASK_CTZ  0xfff0707f
+ #define MATCH_PCNT 0x60201013
+ #define MASK_PCNT  0xfff0707f
++#define MATCH_SEXT_B 0x60401013
++#define MASK_SEXT_B  0xfff0707f
++#define MATCH_SEXT_H 0x60501013
++#define MASK_SEXT_H  0xfff0707f
+ #define MATCH_CRC32_B 0x61001013
+ #define MASK_CRC32_B  0xfff0707f
+ #define MATCH_CRC32_H 0x61101013
+@@ -259,13 +263,17 @@
+ #define MASK_SHFL  0xfe00707f
+ #define MATCH_UNSHFL 0x8005033
+ #define MASK_UNSHFL  0xfe00707f
+-#define MATCH_BDEP 0x8002033
+-#define MASK_BDEP  0xfe00707f
+ #define MATCH_BEXT 0x8006033
+ #define MASK_BEXT  0xfe00707f
++#define MATCH_BDEP 0x48006033
++#define MASK_BDEP  0xfe00707f
+ #define MATCH_PACK 0x8004033
+ #define MASK_PACK  0xfe00707f
+-#define MATCH_BFP 0x8007033
++#define MATCH_PACKU 0x48004033
++#define MASK_PACKU  0xfe00707f
++#define MATCH_PACKH 0x8007033
++#define MASK_PACKH  0xfe00707f
++#define MATCH_BFP 0x48007033
+ #define MASK_BFP  0xfe00707f
+ #define MATCH_SHFLI 0x8001013
+ #define MASK_SHFLI  0xfe00707f
+@@ -351,13 +359,15 @@
+ #define MASK_SHFLW  0xfe00707f
+ #define MATCH_UNSHFLW 0x800503b
+ #define MASK_UNSHFLW  0xfe00707f
+-#define MATCH_BDEPW 0x800203b
+-#define MASK_BDEPW  0xfe00707f
+ #define MATCH_BEXTW 0x800603b
+ #define MASK_BEXTW  0xfe00707f
++#define MATCH_BDEPW 0x4800603b
++#define MASK_BDEPW  0xfe00707f
+ #define MATCH_PACKW 0x800403b
+ #define MASK_PACKW  0xfe00707f
+-#define MATCH_BFPW 0x800703b
++#define MATCH_PACKUW 0x4800403b
++#define MASK_PACKUW  0xfe00707f
++#define MATCH_BFPW 0x4800703b
+ #define MASK_BFPW  0xfe00707f
+ #define MATCH_AMOADD_W 0x202f
+ #define MASK_AMOADD_W  0xf800707f
+@@ -1134,6 +1144,8 @@
+ DECLARE_INSN(clz, MATCH_CLZ, MASK_CLZ)
+ DECLARE_INSN(ctz, MATCH_CTZ, MASK_CTZ)
+ DECLARE_INSN(pcnt, MATCH_PCNT, MASK_PCNT)
++DECLARE_INSN(sext_b, MATCH_SEXT_B, MASK_SEXT_B)
++DECLARE_INSN(sext_h, MATCH_SEXT_H, MASK_SEXT_H)
+ DECLARE_INSN(crc32_b, MATCH_CRC32_B, MASK_CRC32_B)
+ DECLARE_INSN(crc32_h, MATCH_CRC32_H, MASK_CRC32_H)
+ DECLARE_INSN(crc32_w, MATCH_CRC32_W, MASK_CRC32_W)
+@@ -1149,9 +1161,11 @@
+ DECLARE_INSN(maxu, MATCH_MAXU, MASK_MAXU)
+ DECLARE_INSN(shfl, MATCH_SHFL, MASK_SHFL)
+ DECLARE_INSN(unshfl, MATCH_UNSHFL, MASK_UNSHFL)
+-DECLARE_INSN(bdep, MATCH_BDEP, MASK_BDEP)
+ DECLARE_INSN(bext, MATCH_BEXT, MASK_BEXT)
++DECLARE_INSN(bdep, MATCH_BDEP, MASK_BDEP)
+ DECLARE_INSN(pack, MATCH_PACK, MASK_PACK)
++DECLARE_INSN(packu, MATCH_PACKU, MASK_PACKU)
++DECLARE_INSN(packh, MATCH_PACKH, MASK_PACKH)
+ DECLARE_INSN(bfp, MATCH_BFP, MASK_BFP)
+ DECLARE_INSN(shfli, MATCH_SHFLI, MASK_SHFLI)
+ DECLARE_INSN(unshfli, MATCH_UNSHFLI, MASK_UNSHFLI)
+@@ -1195,9 +1209,10 @@
+ DECLARE_INSN(clmulhw, MATCH_CLMULHW, MASK_CLMULHW)
+ DECLARE_INSN(shflw, MATCH_SHFLW, MASK_SHFLW)
+ DECLARE_INSN(unshflw, MATCH_UNSHFLW, MASK_UNSHFLW)
+-DECLARE_INSN(bdepw, MATCH_BDEPW, MASK_BDEPW)
+ DECLARE_INSN(bextw, MATCH_BEXTW, MASK_BEXTW)
++DECLARE_INSN(bdepw, MATCH_BDEPW, MASK_BDEPW)
+ DECLARE_INSN(packw, MATCH_PACKW, MASK_PACKW)
++DECLARE_INSN(packuw, MATCH_PACKUW, MASK_PACKUW)
+ DECLARE_INSN(bfpw, MATCH_BFPW, MASK_BFPW)
+ DECLARE_INSN(amoadd_w, MATCH_AMOADD_W, MASK_AMOADD_W)
+ DECLARE_INSN(amoxor_w, MATCH_AMOXOR_W, MASK_AMOXOR_W)
+--- riscv-binutils/include/opcode/riscv.h
++++ riscv-binutils/include/opcode/riscv.h
+@@ -311,16 +311,15 @@
+    INSN_CLASS_Q,
+ 
+    INSN_CLASS_B,
+-   INSN_CLASS_ZBT,
++   INSN_CLASS_B_OR_ZBT,
++   INSN_CLASS_B_OR_ZBR,
+    INSN_CLASS_B_OR_ZBB,
+    INSN_CLASS_B_OR_ZBC,
+    INSN_CLASS_B_OR_ZBE,
+    INSN_CLASS_B_OR_ZBF,
+    INSN_CLASS_B_OR_ZBM,
+    INSN_CLASS_B_OR_ZBP,
+-   INSN_CLASS_B_OR_ZBR,
+    INSN_CLASS_B_OR_ZBS,
+-   INSN_CLASS_B_OR_ZBT,
+    INSN_CLASS_B_OR_ZBB_OR_ZBP
+   };
+ 
+--- riscv-binutils/opcodes/riscv-opc.c
++++ riscv-binutils/opcodes/riscv-opc.c
+@@ -529,17 +529,19 @@
+ {"gorc",      0, INSN_CLASS_B_OR_ZBP,   "d,s,>",  MATCH_GORCI, MASK_GORCI, match_opcode, INSN_ALIAS },
+ {"grev",      0, INSN_CLASS_B_OR_ZBP,   "d,s,t",  MATCH_GREV, MASK_GREV, match_opcode, 0 },
+ {"grev",      0, INSN_CLASS_B_OR_ZBP,   "d,s,>",  MATCH_GREVI, MASK_GREVI, match_opcode, INSN_ALIAS },
+-{"cmix",      0, INSN_CLASS_ZBT,   "d,t,s,r",  MATCH_CMIX, MASK_CMIX, match_opcode, 0 },
+-{"cmov",      0, INSN_CLASS_ZBT,   "d,t,s,r",  MATCH_CMOV, MASK_CMOV, match_opcode, 0 },
+-{"fsli",      0, INSN_CLASS_ZBT,   "d,s,r,>",  0, (int) M_FL, match_never, INSN_MACRO },
+-{"fsri",      0, INSN_CLASS_ZBT,   "d,s,r,>",  MATCH_FSRI, MASK_FSRI, match_opcode, 0 },
+-{"fsl",       0, INSN_CLASS_ZBT,   "d,s,r,t",  MATCH_FSL, MASK_FSL, match_opcode, 0 },
+-{"fsl",       0, INSN_CLASS_ZBT,   "d,s,r,>",  0, (int) M_FL, match_never, INSN_MACRO },
+-{"fsr",       0, INSN_CLASS_ZBT,   "d,s,r,t",  MATCH_FSR, MASK_FSR, match_opcode, 0 },
+-{"fsr",       0, INSN_CLASS_ZBT,   "d,s,r,>",  MATCH_FSRI, MASK_FSRI, match_opcode, INSN_ALIAS },
++{"cmix",      0, INSN_CLASS_B_OR_ZBT,   "d,t,s,r",  MATCH_CMIX, MASK_CMIX, match_opcode, 0 },
++{"cmov",      0, INSN_CLASS_B_OR_ZBT,   "d,t,s,r",  MATCH_CMOV, MASK_CMOV, match_opcode, 0 },
++{"fsli",      0, INSN_CLASS_B_OR_ZBT,   "d,s,r,>",  0, (int) M_FL, match_never, INSN_MACRO },
++{"fsri",      0, INSN_CLASS_B_OR_ZBT,   "d,s,r,>",  MATCH_FSRI, MASK_FSRI, match_opcode, 0 },
++{"fsl",       0, INSN_CLASS_B_OR_ZBT,   "d,s,r,t",  MATCH_FSL, MASK_FSL, match_opcode, 0 },
++{"fsl",       0, INSN_CLASS_B_OR_ZBT,   "d,s,r,>",  0, (int) M_FL, match_never, INSN_MACRO },
++{"fsr",       0, INSN_CLASS_B_OR_ZBT,   "d,s,r,t",  MATCH_FSR, MASK_FSR, match_opcode, 0 },
++{"fsr",       0, INSN_CLASS_B_OR_ZBT,   "d,s,r,>",  MATCH_FSRI, MASK_FSRI, match_opcode, INSN_ALIAS },
+ {"clz",       0, INSN_CLASS_B_OR_ZBB,   "d,s",  MATCH_CLZ, MASK_CLZ, match_opcode, 0 },
+ {"ctz",       0, INSN_CLASS_B_OR_ZBB,   "d,s",  MATCH_CTZ, MASK_CTZ, match_opcode, 0 },
+ {"pcnt",      0, INSN_CLASS_B_OR_ZBB,   "d,s",  MATCH_PCNT, MASK_PCNT, match_opcode, 0 },
++{"sext.b",    0, INSN_CLASS_B_OR_ZBB,   "d,s",  MATCH_SEXT_B, MASK_SEXT_B, match_opcode, 0 },
++{"sext.h",    0, INSN_CLASS_B_OR_ZBB,   "d,s",  MATCH_SEXT_H, MASK_SEXT_H, match_opcode, 0 },
+ {"bmatflip", 64, INSN_CLASS_B_OR_ZBM,   "d,s",  MATCH_BMATFLIP, MASK_BMATFLIP, match_opcode, 0 },
+ {"crc32.b",   0, INSN_CLASS_B_OR_ZBR,   "d,s",  MATCH_CRC32_B, MASK_CRC32_B, match_opcode, 0 },
+ {"crc32.h",   0, INSN_CLASS_B_OR_ZBR,   "d,s",  MATCH_CRC32_H, MASK_CRC32_H, match_opcode, 0 },
+@@ -565,6 +567,8 @@
+ {"bdep",      0, INSN_CLASS_B_OR_ZBE,   "d,s,t",  MATCH_BDEP, MASK_BDEP, match_opcode, 0 },
+ {"bext",      0, INSN_CLASS_B_OR_ZBE,   "d,s,t",  MATCH_BEXT, MASK_BEXT, match_opcode, 0 },
+ {"pack",      0, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s,t",  MATCH_PACK, MASK_PACK, match_opcode, 0 },
++{"packu",     0, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s,t",  MATCH_PACKU, MASK_PACKU, match_opcode, 0 },
++{"packh",     0, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s,t",  MATCH_PACKH, MASK_PACKH, match_opcode, 0 },
+ {"bmator",   64, INSN_CLASS_B_OR_ZBM,   "d,s,t",  MATCH_BMATOR, MASK_BMATOR, match_opcode, 0 },
+ {"bmatxor",  64, INSN_CLASS_B_OR_ZBM,   "d,s,t",  MATCH_BMATXOR, MASK_BMATXOR, match_opcode, 0 },
+ {"bfp",       0, INSN_CLASS_B_OR_ZBF,   "d,s,t",  MATCH_BFP, MASK_BFP, match_opcode, 0 },
+@@ -616,10 +620,11 @@
+ {"clmulrw",  64, INSN_CLASS_B_OR_ZBC,   "d,s,t",  MATCH_CLMULRW, MASK_CLMULRW, match_opcode, 0 },
+ {"shflw",    64, INSN_CLASS_B_OR_ZBP,   "d,s,t",  MATCH_SHFLW, MASK_SHFLW, match_opcode, 0 },
+ {"unshflw",  64, INSN_CLASS_B_OR_ZBP,   "d,s,t",  MATCH_UNSHFLW, MASK_UNSHFLW, match_opcode, 0 },
+-{"bdepw",    64, INSN_CLASS_B_OR_ZBE,   "d,s,t",  MATCH_BDEPW, MASK_BDEP, match_opcode, 0 },
+-{"bextw",    64, INSN_CLASS_B_OR_ZBE,   "d,s,t",  MATCH_BEXTW, MASK_BEXT, match_opcode, 0 },
+-{"packw",    64, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s,t",  MATCH_PACKW, MASK_PACK, match_opcode, 0 },
+-{"bfpw",     64, INSN_CLASS_B_OR_ZBF,   "d,s,t",  MATCH_BFPW, MASK_BFP, match_opcode, 0 },
++{"bdepw",    64, INSN_CLASS_B_OR_ZBE,   "d,s,t",  MATCH_BDEPW, MASK_BDEPW, match_opcode, 0 },
++{"bextw",    64, INSN_CLASS_B_OR_ZBE,   "d,s,t",  MATCH_BEXTW, MASK_BEXTW, match_opcode, 0 },
++{"packw",    64, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s,t",  MATCH_PACKW, MASK_PACKW, match_opcode, 0 },
++{"packuw",   64, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s,t",  MATCH_PACKUW, MASK_PACKUW, match_opcode, 0 },
++{"bfpw",     64, INSN_CLASS_B_OR_ZBF,   "d,s,t",  MATCH_BFPW, MASK_BFPW, match_opcode, 0 },
+ 
+ /* Bitmanip pseudo-instructions */
+ {"rev.p",     0, INSN_CLASS_B_OR_ZBB_OR_ZBP,   "d,s",  0, (int) M_PERM, match_never, INSN_MACRO },
+--- riscv-isa-sim/riscv/encoding.h
++++ riscv-isa-sim/riscv/encoding.h
+@@ -412,6 +412,10 @@
+ #define MASK_CTZ  0xfff0707f
+ #define MATCH_PCNT 0x60201013
+ #define MASK_PCNT  0xfff0707f
++#define MATCH_SEXT_B 0x60401013
++#define MASK_SEXT_B  0xfff0707f
++#define MATCH_SEXT_H 0x60501013
++#define MASK_SEXT_H  0xfff0707f
+ #define MATCH_CRC32_B 0x61001013
+ #define MASK_CRC32_B  0xfff0707f
+ #define MATCH_CRC32_H 0x61101013
+@@ -442,13 +446,17 @@
+ #define MASK_SHFL  0xfe00707f
+ #define MATCH_UNSHFL 0x8005033
+ #define MASK_UNSHFL  0xfe00707f
+-#define MATCH_BDEP 0x8002033
+-#define MASK_BDEP  0xfe00707f
+ #define MATCH_BEXT 0x8006033
+ #define MASK_BEXT  0xfe00707f
++#define MATCH_BDEP 0x48006033
++#define MASK_BDEP  0xfe00707f
+ #define MATCH_PACK 0x8004033
+ #define MASK_PACK  0xfe00707f
+-#define MATCH_BFP 0x8007033
++#define MATCH_PACKU 0x48004033
++#define MASK_PACKU  0xfe00707f
++#define MATCH_PACKH 0x8007033
++#define MASK_PACKH  0xfe00707f
++#define MATCH_BFP 0x48007033
+ #define MASK_BFP  0xfe00707f
+ #define MATCH_SHFLI 0x8001013
+ #define MASK_SHFLI  0xfe00707f
+@@ -534,13 +542,15 @@
+ #define MASK_SHFLW  0xfe00707f
+ #define MATCH_UNSHFLW 0x800503b
+ #define MASK_UNSHFLW  0xfe00707f
+-#define MATCH_BDEPW 0x800203b
+-#define MASK_BDEPW  0xfe00707f
+ #define MATCH_BEXTW 0x800603b
+ #define MASK_BEXTW  0xfe00707f
++#define MATCH_BDEPW 0x4800603b
++#define MASK_BDEPW  0xfe00707f
+ #define MATCH_PACKW 0x800403b
+ #define MASK_PACKW  0xfe00707f
+-#define MATCH_BFPW 0x800703b
++#define MATCH_PACKUW 0x4800403b
++#define MASK_PACKUW  0xfe00707f
++#define MATCH_BFPW 0x4800703b
+ #define MASK_BFPW  0xfe00707f
+ #define MATCH_AMOADD_W 0x202f
+ #define MASK_AMOADD_W  0xf800707f
+@@ -2058,6 +2068,8 @@
+ DECLARE_INSN(clz, MATCH_CLZ, MASK_CLZ)
+ DECLARE_INSN(ctz, MATCH_CTZ, MASK_CTZ)
+ DECLARE_INSN(pcnt, MATCH_PCNT, MASK_PCNT)
++DECLARE_INSN(sext_b, MATCH_SEXT_B, MASK_SEXT_B)
++DECLARE_INSN(sext_h, MATCH_SEXT_H, MASK_SEXT_H)
+ DECLARE_INSN(crc32_b, MATCH_CRC32_B, MASK_CRC32_B)
+ DECLARE_INSN(crc32_h, MATCH_CRC32_H, MASK_CRC32_H)
+ DECLARE_INSN(crc32_w, MATCH_CRC32_W, MASK_CRC32_W)
+@@ -2073,9 +2085,11 @@
+ DECLARE_INSN(maxu, MATCH_MAXU, MASK_MAXU)
+ DECLARE_INSN(shfl, MATCH_SHFL, MASK_SHFL)
+ DECLARE_INSN(unshfl, MATCH_UNSHFL, MASK_UNSHFL)
+-DECLARE_INSN(bdep, MATCH_BDEP, MASK_BDEP)
+ DECLARE_INSN(bext, MATCH_BEXT, MASK_BEXT)
++DECLARE_INSN(bdep, MATCH_BDEP, MASK_BDEP)
+ DECLARE_INSN(pack, MATCH_PACK, MASK_PACK)
++DECLARE_INSN(packu, MATCH_PACKU, MASK_PACKU)
++DECLARE_INSN(packh, MATCH_PACKH, MASK_PACKH)
+ DECLARE_INSN(bfp, MATCH_BFP, MASK_BFP)
+ DECLARE_INSN(shfli, MATCH_SHFLI, MASK_SHFLI)
+ DECLARE_INSN(unshfli, MATCH_UNSHFLI, MASK_UNSHFLI)
+@@ -2119,9 +2133,10 @@
+ DECLARE_INSN(clmulhw, MATCH_CLMULHW, MASK_CLMULHW)
+ DECLARE_INSN(shflw, MATCH_SHFLW, MASK_SHFLW)
+ DECLARE_INSN(unshflw, MATCH_UNSHFLW, MASK_UNSHFLW)
+-DECLARE_INSN(bdepw, MATCH_BDEPW, MASK_BDEPW)
+ DECLARE_INSN(bextw, MATCH_BEXTW, MASK_BEXTW)
++DECLARE_INSN(bdepw, MATCH_BDEPW, MASK_BDEPW)
+ DECLARE_INSN(packw, MATCH_PACKW, MASK_PACKW)
++DECLARE_INSN(packuw, MATCH_PACKUW, MASK_PACKUW)
+ DECLARE_INSN(bfpw, MATCH_BFPW, MASK_BFPW)
+ DECLARE_INSN(amoadd_w, MATCH_AMOADD_W, MASK_AMOADD_W)
+ DECLARE_INSN(amoxor_w, MATCH_AMOXOR_W, MASK_AMOXOR_W)
+--- riscv-isa-sim/riscv/insns/bfp.h
++++ riscv-isa-sim/riscv/insns/bfp.h
+@@ -1,10 +1,10 @@
+ require_extension('B');
+-int len = (RS2 >> 24) & 15;
+-int off = (RS2 >> 16) & (xlen-1);
+-int roff = -off & (xlen-1);
+-len = len ? len : 16;
+-reg_t mask = (1 << len) - 1;
+-reg_t data = zext_xlen(RS2);
+-mask = (mask << off) | (mask >> roff);
+-data = (data << off) | (data >> roff);
++reg_t cfg = RS2 >> (xlen/2);
++if ((cfg >> 30) == 2)
++	cfg = cfg >> 16;
++int len = (cfg >> 8) & (xlen/2-1);
++int off = cfg & (xlen-1);
++len = len ? len : xlen/2;
++reg_t mask = ~(~reg_t(0) << len) << off;
++reg_t data = RS2 << off;
+ WRITE_RD(sext_xlen((data & mask) | (RS1 & ~mask)));
+--- riscv-isa-sim/riscv/insns/bfpw.h
++++ riscv-isa-sim/riscv/insns/bfpw.h
+@@ -1,10 +1,8 @@
+ require_extension('B');
+-int len = (RS2 >> 24) & 15;
+-int off = (RS2 >> 16) & 31;
+-int roff = -off & 31;
++reg_t cfg = RS2 >> 16;
++int len = (cfg >> 8) & 15;
++int off = cfg & 31;
+ len = len ? len : 16;
+-reg_t mask = (1 << len) - 1;
+-reg_t data = zext32(RS2);
+-mask = (mask << off) | (mask >> roff);
+-data = (data << off) | (data >> roff);
++reg_t mask = ~(~reg_t(0) << len) << off;
++reg_t data = RS2 << off;
+ WRITE_RD(sext32((data & mask) | (RS1 & ~mask)));
+--- riscv-isa-sim/riscv/insns/packh.h
++++ riscv-isa-sim/riscv/insns/packh.h
+@@ -0,0 +1,4 @@
++require_extension('B');
++reg_t lo = zext_xlen(RS1 << (xlen-8)) >> (xlen-8);
++reg_t hi = zext_xlen(RS2 << (xlen-8)) >> (xlen-16);
++WRITE_RD(sext_xlen(lo | hi));
+--- riscv-isa-sim/riscv/insns/packu.h
++++ riscv-isa-sim/riscv/insns/packu.h
+@@ -0,0 +1,4 @@
++require_extension('B');
++reg_t lo = zext_xlen(RS1) >> (xlen/2);
++reg_t hi = zext_xlen(RS2) >> (xlen/2) << (xlen/2);
++WRITE_RD(sext_xlen(lo | hi));
+--- riscv-isa-sim/riscv/insns/packuw.h
++++ riscv-isa-sim/riscv/insns/packuw.h
+@@ -0,0 +1,4 @@
++require_extension('B');
++reg_t lo = zext32(RS1) >> 16;
++reg_t hi = zext32(RS2) >> 16 << 16;
++WRITE_RD(sext32(lo | hi));
+--- riscv-isa-sim/riscv/insns/sext_b.h
++++ riscv-isa-sim/riscv/insns/sext_b.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++WRITE_RD((sreg_t)(int8_t)(RS1));
+--- riscv-isa-sim/riscv/insns/sext_h.h
++++ riscv-isa-sim/riscv/insns/sext_h.h
+@@ -0,0 +1,2 @@
++require_extension('B');
++WRITE_RD((sreg_t)(int16_t)(RS1));
+--- riscv-isa-sim/riscv/riscv.mk.in
++++ riscv-isa-sim/riscv/riscv.mk.in
+@@ -347,6 +347,9 @@
+ 	minu \
+ 	orn \
+ 	pack \
++	packh \
++	packu \
++	packuw \
+ 	packw \
+ 	pcnt \
+ 	pcntw \
+@@ -371,6 +374,8 @@
+ 	sbseti \
+ 	sbsetiw \
+ 	sbsetw \
++	sext_b \
++	sext_h \
+ 	shfl \
+ 	shfli \
+ 	shflw \
+--- riscv-opcodes/opcodes
++++ riscv-opcodes/opcodes
+@@ -124,6 +124,9 @@
+ clz        rd rs1 31..20=0x600 14..12=1 6..2=0x04 1..0=3
+ ctz        rd rs1 31..20=0x601 14..12=1 6..2=0x04 1..0=3
+ pcnt       rd rs1 31..20=0x602 14..12=1 6..2=0x04 1..0=3
++sext.b     rd rs1 31..20=0x604 14..12=1 6..2=0x04 1..0=3
++sext.h     rd rs1 31..20=0x605 14..12=1 6..2=0x04 1..0=3
++
+ crc32.b    rd rs1 31..20=0x610 14..12=1 6..2=0x04 1..0=3
+ crc32.h    rd rs1 31..20=0x611 14..12=1 6..2=0x04 1..0=3
+ crc32.w    rd rs1 31..20=0x612 14..12=1 6..2=0x04 1..0=3
+@@ -139,12 +142,14 @@
+ minu       rd rs1 rs2 31..25=5 14..12=6 6..2=0x0C 1..0=3
+ maxu       rd rs1 rs2 31..25=5 14..12=7 6..2=0x0C 1..0=3
+ 
+-shfl       rd rs1 rs2 31..25=4 14..12=1 6..2=0x0C 1..0=3
+-unshfl     rd rs1 rs2 31..25=4 14..12=5 6..2=0x0C 1..0=3
+-bdep       rd rs1 rs2 31..25=4 14..12=2 6..2=0x0C 1..0=3
+-bext       rd rs1 rs2 31..25=4 14..12=6 6..2=0x0C 1..0=3
+-pack       rd rs1 rs2 31..25=4 14..12=4 6..2=0x0C 1..0=3
+-bfp        rd rs1 rs2 31..25=4 14..12=7 6..2=0x0C 1..0=3
++shfl       rd rs1 rs2 31..25=4  14..12=1 6..2=0x0C 1..0=3
++unshfl     rd rs1 rs2 31..25=4  14..12=5 6..2=0x0C 1..0=3
++bext       rd rs1 rs2 31..25=4  14..12=6 6..2=0x0C 1..0=3
++bdep       rd rs1 rs2 31..25=36 14..12=6 6..2=0x0C 1..0=3
++pack       rd rs1 rs2 31..25=4  14..12=4 6..2=0x0C 1..0=3
++packu      rd rs1 rs2 31..25=36 14..12=4 6..2=0x0C 1..0=3
++packh      rd rs1 rs2 31..25=4  14..12=7 6..2=0x0C 1..0=3
++bfp        rd rs1 rs2 31..25=36 14..12=7 6..2=0x0C 1..0=3
+ 
+ shfli      rd rs1 31..25=4 shamtw 14..12=1 6..2=0x04 1..0=3
+ unshfli    rd rs1 31..25=4 shamtw 14..12=5 6..2=0x04 1..0=3
+@@ -199,12 +204,13 @@
+ clmulrw    rd rs1 rs2 31..25=5 14..12=2 6..2=0x0E 1..0=3
+ clmulhw    rd rs1 rs2 31..25=5 14..12=3 6..2=0x0E 1..0=3
+ 
+-shflw      rd rs1 rs2 31..25=4 14..12=1 6..2=0x0E 1..0=3
+-unshflw    rd rs1 rs2 31..25=4 14..12=5 6..2=0x0E 1..0=3
+-bdepw      rd rs1 rs2 31..25=4 14..12=2 6..2=0x0E 1..0=3
+-bextw      rd rs1 rs2 31..25=4 14..12=6 6..2=0x0E 1..0=3
+-packw      rd rs1 rs2 31..25=4 14..12=4 6..2=0x0E 1..0=3
+-bfpw       rd rs1 rs2 31..25=4 14..12=7 6..2=0x0E 1..0=3
++shflw      rd rs1 rs2 31..25=4  14..12=1 6..2=0x0E 1..0=3
++unshflw    rd rs1 rs2 31..25=4  14..12=5 6..2=0x0E 1..0=3
++bextw      rd rs1 rs2 31..25=4  14..12=6 6..2=0x0E 1..0=3
++bdepw      rd rs1 rs2 31..25=36 14..12=6 6..2=0x0E 1..0=3
++packw      rd rs1 rs2 31..25=4  14..12=4 6..2=0x0E 1..0=3
++packuw     rd rs1 rs2 31..25=36 14..12=4 6..2=0x0E 1..0=3
++bfpw       rd rs1 rs2 31..25=36 14..12=7 6..2=0x0E 1..0=3
+ 
+ # RV32A
+ amoadd.w    rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=2 6..2=0x0B 1..0=3

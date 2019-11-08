@@ -194,6 +194,7 @@ module rvb_full #(
 		.din_insn3  (in_insn[3] ),
 		.din_insn20 (in_insn[20]),
 		.din_insn21 (in_insn[21]),
+		.din_insn22 (in_insn[22]),
 		.dout_valid (out_bitcnt_valid),
 		.dout_ready (out_ready  ),
 		.dout_rd    (out_bitcnt )
@@ -266,6 +267,7 @@ module rvb_full #(
 		.din_rs2    (in_rs2     ),
 		.din_rs3    (in_rs3     ),
 		.din_insn3  (in_insn[3] ),
+		.din_insn13 (in_insn[13]),
 		.din_insn14 (in_insn[14]),
 		.din_insn26 (in_insn[26]),
 		.din_insn27 (in_insn[27]),
@@ -438,6 +440,8 @@ module rvb_full_decoder #(
 			33'b 0110000_00001_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // CTZ
 			33'b 0110000_00010_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // PCNT
 			33'b 0110000_00011_zzzzz_001_zzzzz_0010011_1: insn_bitcnt  = 1; // BMATFLIP
+			33'b 0110000_00100_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // SEXT.B
+			33'b 0110000_00101_zzzzz_001_zzzzz_0010011_z: insn_bitcnt  = 1; // SEXT.H
 
 			33'b 0110000_10000_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.B
 			33'b 0110000_10001_zzzzz_001_zzzzz_0010011_z: insn_crc     = 1; // CRC32.H
@@ -458,12 +462,14 @@ module rvb_full_decoder #(
 
 			33'b 0000100_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_bextdep = 1; // SHFL
 			33'b 0000100_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_bextdep = 1; // UNSHFL
-			33'b 0000100_zzzzz_zzzzz_010_zzzzz_0110011_z: insn_bextdep = 1; // BDEP
+			33'b 0100100_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_bextdep = 1; // BDEP
 			33'b 0000100_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_bextdep = 1; // BEXT
 			33'b 0000100_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple  = 1; // PACK
+			33'b 0100100_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple  = 1; // PACKU
+			33'b 0000100_zzzzz_zzzzz_111_zzzzz_0110011_z: insn_simple  = 1; // PACKH
 			33'b 0000100_zzzzz_zzzzz_011_zzzzz_0110011_1: insn_bmatxor = 1; // BMATOR
 			33'b 0100100_zzzzz_zzzzz_011_zzzzz_0110011_1: insn_bmatxor = 1; // BMATXOR
-			33'b 0000100_zzzzz_zzzzz_111_zzzzz_0110011_z: insn_shifter = 1; // BFP
+			33'b 0100100_zzzzz_zzzzz_111_zzzzz_0110011_z: insn_shifter = 1; // BFP
 
 			33'b 000010_00zzzz_zzzzz_001_zzzzz_0010011_0: insn_bextdep = 1; // SHFLI (RV32)
 			33'b 000010_00zzzz_zzzzz_101_zzzzz_0010011_0: insn_bextdep = 1; // UNSHFLI (RV32)
@@ -521,10 +527,11 @@ module rvb_full_decoder #(
 
 			33'b 0000100_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_bextdep = 1; // SHFLW
 			33'b 0000100_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_bextdep = 1; // UNSHFLW
-			33'b 0000100_zzzzz_zzzzz_010_zzzzz_0111011_1: insn_bextdep = 1; // BDEPW
+			33'b 0100100_zzzzz_zzzzz_110_zzzzz_0111011_1: insn_bextdep = 1; // BDEPW
 			33'b 0000100_zzzzz_zzzzz_110_zzzzz_0111011_1: insn_bextdep = 1; // BEXTW
 			33'b 0000100_zzzzz_zzzzz_100_zzzzz_0111011_1: insn_simple  = 1; // PACKW
-			33'b 0000100_zzzzz_zzzzz_111_zzzzz_0111011_1: insn_shifter = 1; // BFPW
+			33'b 0100100_zzzzz_zzzzz_100_zzzzz_0111011_1: insn_simple  = 1; // PACKUW
+			33'b 0100100_zzzzz_zzzzz_111_zzzzz_0111011_1: insn_shifter = 1; // BFPW
 		endcase
 	end
 endmodule

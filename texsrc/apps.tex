@@ -214,27 +214,27 @@ The following four instructions calculate the average of the unsigned
 integers in {\tt a0} and {\tt a1}, with compensation for overflow:
 
 \begin{verbatim}
-  and a2, a0, a1
-  xor a0, a0, a1
+  and  a2, a0, a1
+  xor  a0, a0, a1
   srli a0, a0, 1
-  add a0, a0, a2
+  add  a0, a0, a2
 \end{verbatim}
 
 And likewise the average of two signed integers:
 
 \begin{verbatim}
-  and a2, a0, a1
-  xor a0, a0, a1
+  and  a2, a0, a1
+  xor  a0, a0, a1
   srai a0, a0, 1
-  add a0, a0, a2
+  add  a0, a0, a2
 \end{verbatim}
 
 With {\tt fsri} the unsigned case can be accomplished in just three
 instructions:
 
 \begin{verbatim}
-  add a0, a0, a1
-  slt a1, a0, a1
+  add  a0, a0, a1
+  sltu a1, a0, a1
   fsri a0, a1, 1
 \end{verbatim}
 
@@ -245,19 +245,98 @@ instructions:
 Overflow in unsigned addition can be detected in two instructions:
 
 \begin{verbatim}
-  add a0, a0, a1
-  slt a0, a0, a1
+  add  a0, a1, a2
+  bltu a0, a1, overflow
 \end{verbatim}
 
-Overflow in signed addition can be detected in five instructions:
+For signed addition, if the sign of one operand is known, for example
+because it is constant:
 
 \begin{verbatim}
-  add a2, a0, a1
-  xnor a0, a0, a1
-  xor a1, a1, a2
-  and a0, a0, a1
-  slt a0, a0, zero
+  addi a0, a1, +imm
+  blt  a0, a1, overflow
 \end{verbatim}
+
+\begin{verbatim}
+  addi a0, a1, -imm
+  bgt  a0, a1, overflow
+\end{verbatim}
+
+And for signed addition in the general case:
+
+\begin{verbatim}
+  add  a0, a1, a2
+  slti a3, a1, 0
+  slt  a4, a0, a2
+  bne  a3, a4, overflow
+\end{verbatim}
+
+And finally, generating the carry flag for an addition:
+
+\begin{verbatim}
+  add  a0, a1, a2
+  sltu a3, a0, a1
+\end{verbatim}
+
+Thus, adding {\tt a0}, {\tt a1}, and {\tt a2} with results in {\tt a0} and carry-out in {\tt a1}:
+
+\begin{verbatim}
+  add  a0, a0, a1
+  sltu a1, a0, a1
+  add  a0, a0, a2
+  sltu a2, a0, a2
+  or   a1, a1, a2
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Fuse-able sequences for logic operations}
+
+RISC-V has dedicated instructions for branching on equal/not-equal. But C code
+such as the following would require set-equal and set-not-equal instructions, similar
+to {\tt slt}.
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int is_equal = (a == b);
+  int is_noteq = (c != d);
+\end{verbatim}
+\end{minipage}
+
+Those can be implemented using the following fuse-able sequences:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  sub rd, rs1, rs2
+  sltui rd, rd, 1
+
+  sub rd, rs1, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+Likewise for logic OR:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int logic_or  = (c || d);
+
+  or rd, rs1, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
+
+And for logic AND, if {\tt rd != rs2}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  int logic_and  = (c && d);
+
+  orc rd, rs1
+  and rd, rd, rs2
+  sltu rd, zero, rd
+\end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

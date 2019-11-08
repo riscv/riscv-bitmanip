@@ -863,15 +863,50 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 	return x >> shamt;
 }
 
+uint_xlen_t add(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 + rs2;
+}
+
+uint_xlen_t sub(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 + rs2;
+}
+
+uint_xlen_t slt(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return int_xlen_t(rs1) < int_xlen_t(rs2);
+}
+
+uint_xlen_t sltu(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 < rs2;
+}
+
 // --REF-BEGIN-- bfp
 uint_xlen_t bfp(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	int len = (rs2 >> 24) & 15;
-	int off = (rs2 >> 16) & (XLEN-1);
-	len = len ? len : 16;
-	uint_xlen_t mask = rol(slo(0, len), off);
-	uint_xlen_t data = rol(rs2, off);
+	uint_xlen_t cfg = rs2 >> (XLEN/2);
+	if ((cfg >> 30) == 2)
+		cfg = cfg >> 16;
+	int len = (cfg >> 8) & (XLEN/2-1);
+	int off = cfg & (XLEN-1);
+	len = len ? len : XLEN/2;
+	uint_xlen_t mask = slo(0, len) << off;
+	uint_xlen_t data = rs2 << off;
 	return (data & mask) | (rs1 & ~mask);
+}
+// --REF-END--
+
+// --REF-BEGIN-- sext
+uint_xlen_t sextb(uint_xlen_t x)
+{
+	return int_xlen_t(x << (XLEN-8)) >> (XLEN-8);
+}
+
+uint_xlen_t sexth(uint_xlen_t x)
+{
+	return int_xlen_t(x << (XLEN-16)) >> (XLEN-16);
 }
 // --REF-END--
 

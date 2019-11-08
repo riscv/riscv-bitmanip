@@ -71,6 +71,7 @@ module testbench_ff #(
 	reg din_insn3;
 	reg din_insn20;
 	reg din_insn21;
+	reg din_insn22;
 
 	wire [XLEN-1:0] dout_rd;
 
@@ -89,6 +90,7 @@ module testbench_ff #(
 			din_insn3 <= next_insn[3];
 		din_insn20 <= next_insn[20];
 		din_insn21 <= next_insn[21];
+		din_insn22 <= next_insn[22];
 	end
 
 	integer dout_index = 0;
@@ -118,6 +120,7 @@ module testbench_ff #(
 		.din_insn3  (din_insn3 ),
 		.din_insn20 (din_insn20),
 		.din_insn21 (din_insn21),
+		.din_insn22 (din_insn22),
 		.dout_valid (dout_valid),
 		.dout_ready (dout_ready),
 		.dout_rd    (dout_rd   )

@@ -31,6 +31,7 @@ module rvb_shifter #(
 	input  [XLEN-1:0] din_rs2,        // value of 2nd argument
 	input  [XLEN-1:0] din_rs3,        // value of 3rd argument
 	input             din_insn3,      // value of instruction bit 3
+	input             din_insn13,     // value of instruction bit 13
 	input             din_insn14,     // value of instruction bit 14
 	input             din_insn26,     // value of instruction bit 26
 	input             din_insn27,     // value of instruction bit 27
@@ -42,27 +43,27 @@ module rvb_shifter #(
 	input             dout_ready,     // accept output
 	output [XLEN-1:0] dout_rd         // output value
 );
-	// 30 29 27 26 14  3   Function
-	// -----------------   --------
-	//  0  0  0  0  0  W   SLL
-	//  0  0  0  0  1  W   SRL
-	//  1  0  0  0  1  W   SRA
-	//  0  1  0  0  0  W   SLO
-	//  0  1  0  0  1  W   SRO
-	//  1  1  0  0  0  W   ROL
-	//  1  1  0  0  1  W   ROR
-	// -----------------   --------
-	//  0  0  1  0  0  1   SLLIU.W
-	// -----------------   --------
-	//  -  -  -  1  0  W   FSL
-	//  -  -  -  1  1  W   FSR
-	// -----------------   --------
-	//  0  1  1  0  0  W   SBSET
-	//  1  0  1  0  0  W   SBCLR
-	//  1  1  1  0  0  W   SBINV
-	//  1  0  1  0  1  W   SBEXT
-	// -----------------   --------
-	//  0  0  1  0  1  W   BFP
+	// 30 29 27 26 14 13  3   Function
+	// --------------------   --------
+	//  0  0  0  0  0  0  W   SLL
+	//  0  0  0  0  1  0  W   SRL
+	//  1  0  0  0  1  0  W   SRA
+	//  0  1  0  0  0  0  W   SLO
+	//  0  1  0  0  1  0  W   SRO
+	//  1  1  0  0  0  0  W   ROL
+	//  1  1  0  0  1  0  W   ROR
+	// --------------------   --------
+	//  0  0  1  0  0  0  1   SLLIU.W
+	// --------------------   --------
+	//  -  -  -  1  0  0  W   FSL
+	//  -  -  -  1  1  0  W   FSR
+	// --------------------   --------
+	//  0  1  1  0  0  0  W   SBSET
+	//  1  0  1  0  0  0  W   SBCLR
+	//  1  1  1  0  0  0  W   SBINV
+	//  1  0  1  0  1  0  W   SBEXT
+	// --------------------   --------
+	//  1  0  1  0  1  1  W   BFP
 
 	assign dout_valid = din_valid;
 	assign din_ready = dout_ready;
@@ -70,19 +71,22 @@ module rvb_shifter #(
 	wire slliumode = (XLEN == 64) && !din_insn30 && !din_insn29 && din_insn27 && !din_insn26 && !din_insn14;
 	wire wmode = (XLEN == 32) || (din_insn3 && !slliumode);
 	wire sbmode = SBOP && (din_insn30 || din_insn29) && din_insn27 && !din_insn26;
-	wire bfpmode = BFP && !din_insn30 && !din_insn29 && din_insn27 && !din_insn26 && din_insn14;
+	wire bfpmode = BFP && din_insn13;
 
 	reg [63:0] Y;
-	wire [63:0] A, B, X, Z;
+	wire [63:0] A, B, X;
 	assign A = slliumode ? din_rs1[31:0] : din_rs1, B = din_rs3;
 	assign dout_rd = wmode ? {{32{Y[31]}}, Y[31:0]} : Y;
 
 	reg [63:0] aa, bb;
 	reg [6:0] shamt;
 
-	wire [4:0] bfp_len = {!din_rs2[27:24], din_rs2[27:24]};
-	wire [5:0] bfp_off = wmode ? din_rs2[20:16] : din_rs2[21:16];
-	wire [15:0] bfp_mask = 16'h FFFF << bfp_len;
+	wire [15:0] bfp_config_hi = din_rs2 >> 48, bfp_config_lo = din_rs2 >> 32;
+	wire [15:0] bfp_config = wmode ? din_rs2[31:16] : bfp_config_hi[15:14] == 2 ? bfp_config_hi : bfp_config_lo;
+
+	wire [5:0] bfp_len = wmode ? {!bfp_config[11:8], bfp_config[11:8]} : {!bfp_config[12:8], bfp_config[12:8]};
+	wire [5:0] bfp_off = wmode ? bfp_config[4:0] : bfp_config[5:0];
+	wire [31:0] bfp_mask = 32'h FFFFFFFF << bfp_len;
 
 	always @* begin
 		shamt = din_rs2;
@@ -111,8 +115,8 @@ module rvb_shifter #(
 		end
 
 		if (bfpmode) begin
-			aa = {48'h FFFF_FFFF_FFFF, din_rs2[15:0] | bfp_mask};
-			bb = {48'h 0000_0000_0000, din_rs2[15:0] & ~bfp_mask};
+			aa = {32'h 0000_0000, ~bfp_mask};
+			bb = 0;
 			shamt = bfp_off;
 		end
 	end
@@ -127,9 +131,8 @@ module rvb_shifter #(
 				3'b 11z: Y = A ^  X;
 			endcase
 		end
-		if (bfpmode) begin
-			Y = ((X | Z) & A) | (X & Z);
-		end
+		if (bfpmode)
+			Y = (A & ~X) | {32'b0, din_rs2[31:0] & ~bfp_mask} << bfp_off;
 	end
 
 	rvb_shifter_datapath #(
@@ -138,7 +141,6 @@ module rvb_shifter #(
 		.A     (aa   ),
 		.B     (bb   ),
 		.X     (X    ),
-		.Z     (Z    ),
 		.shamt (shamt),
 		.wmode (wmode)
 	);
@@ -148,7 +150,7 @@ module rvb_shifter_datapath #(
 	parameter integer XLEN = 64
 ) (
 	input  [63:0] A, B,
-	output [63:0] X, Z,
+	output [63:0] X,
 	input  [ 6:0] shamt,
 	input         wmode
 );
@@ -186,10 +188,7 @@ module rvb_shifter_datapath #(
 			tmp[63:0] = shamt[1] ? {tmp[61:0], tmp[63:62]} : tmp[63:0];
 			tmp[63:0] = shamt[0] ? {tmp[62:0], tmp[63:63]} : tmp[63:0];
 		end
-
-		if (XLEN == 32 || wmode)
-			tmp[95:64] = tmp[63:32];
 	end
 
-	assign {Z, X} = tmp;
+	assign X = (XLEN == 32) ? {32'bx, tmp[31:0]} : tmp[63:0];
 endmodule
