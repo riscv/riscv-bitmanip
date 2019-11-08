@@ -863,6 +863,26 @@ uint_xlen_t sra(uint_xlen_t x, int k)
 	return x >> shamt;
 }
 
+uint_xlen_t add(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 + rs2;
+}
+
+uint_xlen_t sub(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 + rs2;
+}
+
+uint_xlen_t slt(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return int_xlen_t(rs1) < int_xlen_t(rs2);
+}
+
+uint_xlen_t sltu(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return rs1 < rs2;
+}
+
 // --REF-BEGIN-- bfp
 uint_xlen_t bfp(uint_xlen_t rs1, uint_xlen_t rs2)
 {

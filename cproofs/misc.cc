@@ -216,10 +216,13 @@ int reference_overflow(uint32_t a0, uint32_t a1)
 	return 0;
 }
 
-int bitmanip_overflow(uint32_t a0, uint32_t a1)
+int bitmanip_overflow(uint32_t a1, uint32_t a2)
 {
-	uint32_t a = a0, b = a1, c = a0+a1;
-	return ((a^~b) & (a^c)) >> 31;
+	uint32_t a0, a3, a4;
+	a0 = rv32b::add(a1, a2);
+	a3 = rv32b::slt(a1, 0);
+	a4 = rv32b::slt(a0, a2);
+	return a3 != a4;
 }
 
 extern "C" void check_overflow(uint32_t a0, uint32_t a1)
@@ -227,6 +230,34 @@ extern "C" void check_overflow(uint32_t a0, uint32_t a1)
 	int reference_y = reference_overflow(a0, a1);
 	int bitmanip_y = bitmanip_overflow(a0, a1);
 	assert(reference_y == bitmanip_y);
+}
+
+// ---------------------------------------------------------
+
+int reference_bigadd(uint32_t a, uint32_t b, uint32_t c, uint32_t &cout)
+{
+	uint64_t sum = uint64_t(a) + uint64_t(b) + uint64_t(c);
+	cout = sum > 0xFFFFFFFF;
+	return sum;
+}
+
+int bitmanip_bigadd(uint32_t a, uint32_t b, uint32_t c, uint32_t &cout)
+{
+	uint32_t sum;
+	sum = rv32b::add(a, b);
+	cout = rv32b::sltu(sum, b);
+	sum = rv32b::add(sum, c);
+	cout = rv32b::sltu(sum, c) | cout;
+	return sum;
+}
+
+extern "C" void check_bigadd(uint32_t a, uint32_t b, uint32_t c)
+{
+	uint32_t reference_cout, bitmanip_cout;
+	int reference_sum = reference_bigadd(a, b, c, reference_cout);
+	int bitmanip_sum = bitmanip_bigadd(a, b, c, bitmanip_cout);
+	assert(reference_sum == bitmanip_sum);
+	assert(reference_cout == bitmanip_cout);
 }
 
 // ---------------------------------------------------------
