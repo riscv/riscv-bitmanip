@@ -239,12 +239,17 @@ void bm64m_bitmanip(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[
 
 	conv8x8(in2, in2_b);
 
+#if 1
+	extern void bm64m_bitmanip_kernel(const void*, const void*, void*);
+	bm64m_bitmanip_kernel(in1, in2_b, out_b);
+#else
 	for (int j = 0; j < 8; j++) {
 		uint64_t v = 0;
 		for (int i = 0; i < 8; i++)
 			v ^= _rv64_bmatxor(in2_b[i], _rv64_bmatflip(in1[8*j+i]));
 		out_b[j] = v;
 	}
+#endif
 
 	conv8x8(out_b, out);
 }
@@ -252,12 +257,17 @@ void bm64m_bitmanip(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[
 // with both inputs and output in block matrix form
 void bm64m_bitmanip_ideal(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[8])
 {
+#if 1
+	extern void bm64m_bitmanip_kernel_ideal(const void*, const void*, void*);
+	bm64m_bitmanip_kernel_ideal(in1, in2, out);
+#else
 	for (int j = 0; j < 8; j++) {
 		uint64_t v = 0;
 		for (int i = 0; i < 8; i++)
 			v ^= _rv64_bmatxor(in1[8*j+i], in2[i]);
 		out[j] = v;
 	}
+#endif
 }
 
 int main()
@@ -436,7 +446,17 @@ int main()
 	long t3_bitmanip_ideal = rdinstret();
 	bm64m_bitmanip_ideal(dout_reference, din2, dout3_bitmanip_ideal);
 	t3_bitmanip_ideal = rdinstret() - t3_bitmanip_ideal;
+
+#if 1
 	printf("  ~~dontcare~~\n");
+#else
+	for (int i = 0; i < 8; i++) {
+		printf("  ");
+		for (int j = 0; j < 64; j++)
+			printf("%c", ((dout3_bitmanip_ideal[i] >> j) & 1) ? 'X' : '.');
+		printf("\n");
+	}
+#endif
 
 	printf("\n");
 	printf("bm64_reference:  %5ld instructions\n", t_reference);
@@ -452,9 +472,9 @@ int main()
 
 	printf("\n");
 	printf("bm64m_reference: %5ld instructions\n", t3_reference);
-	printf("bm64m_baseisa:   %5ld instructions\n", t3_baseisa);
-	printf("bm64m_bitmanip:  %5ld instructions\n", t3_bitmanip);
-	printf("bm64m_bitmanip*: %5ld instructions\n", t3_bitmanip_ideal);
+	printf("bm64m_baseisa:   %5ld instructions   (%3ld instrc. / vec)\n", t3_baseisa, t3_baseisa / 8);
+	printf("bm64m_bitmanip:  %5ld instructions   (%3ld instrc. / vec)\n", t3_bitmanip, t3_bitmanip / 8);
+	printf("bm64m_bitmanip*: %5ld instructions   (%3ld instrc. / vec)\n", t3_bitmanip_ideal, t3_bitmanip_ideal / 8);
 
 	return 0;
 }
