@@ -37,7 +37,9 @@ uint64_t dout_bitmanip[64];
 
 uint64_t dout2_reference[64];
 uint64_t dout2_baseisa[64];
+uint64_t dout2_baseisa2[64];
 uint64_t dout2_bitmanip[64];
+uint64_t dout2_bitmanip_ideal[64];
 
 uint64_t dout3_reference[8];
 uint64_t dout3_baseisa[8];
@@ -52,15 +54,29 @@ void bm64_reference(const uint64_t in[64], uint64_t out[64])
 		out[i] = 0;
 
 	for (int i = 0; i < 64; i++) // in[] rows, word index
-	for (int j = 0; j < 64; j++) // in[] columns, bit index
-		if ((in[i] >> j) & 1)
-			out[j/8 + 8*(i/8)] |= 1L << (j%8 + 8*(i%8));
+	for (int j = 0; j < 64; j += 8) // in[] columns, bit index
+		out[j/8 + 8*(i/8)] |= ((in[i] >> j) & 255) << (j%8 + 8*(i%8));
 }
 
-// optimized non-bitmanip version of bm64_reference, TBD
+// optimized non-bitmanip version of bm64_reference
 void bm64_baseisa(const uint64_t in[64], uint64_t out[64])
 {
-	bm64_reference(in, out);
+	const uint64_t *q = in;
+	uint8_t *p = (void*)out;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			uint64_t v = *(q++);
+
+			#pragma GCC unroll 8
+			for (int k = 0; k < 64; k += 8)
+				p[k] = v >> k;
+
+			p++;
+		}
+		p += 56;
+	}
 }
 
 // bitmanip code for block-transmorming a 8x64 row major (or 64x8
@@ -135,7 +151,37 @@ void bm64t_reference(const uint64_t in[64], uint64_t out[64])
 // optimized non-bitmanip version of bm64t_reference, TBD
 void bm64t_baseisa(const uint64_t in[64], uint64_t out[64])
 {
-	bm64t_reference(in, out);
+	for (int j = 0; j < 64; j++)
+	{
+		uint64_t v = 0;
+
+		#pragma GCC unroll 64
+		for (int i = 0; i < 64; i++)
+			v |= ((in[i] >> j) & 1) << i;
+
+		out[j] = v;
+	}
+}
+
+// optimized non-bitmanip version of bm64t_reference, TBD
+void bm64t_baseisa2(const uint64_t in[64], uint64_t out[64])
+{
+	uint64_t t1[64], t2[64];
+
+	bm64_baseisa(in, t1);
+
+	for (int i = 0; i < 64; i ++)
+	{
+		uint64_t t = 0, v = t1[i];
+
+		#pragma GCC unroll 64
+		for (int j = 0; j < 64; j++)
+			t |= ((v >> (((j << 3)|(j >> 3)) & 63)) & 1) << j;
+
+		t2[((i << 3)|(i >> 3)) & 63] = t;
+	}
+
+	bm64_baseisa(t2, out);
 }
 
 // optimized bitmanip version of bm64t_reference
@@ -143,14 +189,21 @@ void bm64t_bitmanip(const uint64_t in[64], uint64_t out[64])
 {
 	uint64_t t1[64], t2[64];
 
-	for (int i = 0; i < 64; i += 8)
-		conv8x8(in+i, t1+i);
+	bm64_bitmanip(in, t1);
 
+	#pragma GCC unroll 64
 	for (int i = 0; i < 64; i ++)
 		t2[((i << 3)|(i >> 3)) & 63] = _rv64_bmatflip(t1[i]);
 
-	for (int i = 0; i < 64; i += 8)
-		conv8x8(t2+i, out+i);
+	bm64_bitmanip(t2, out);
+}
+
+// with input and output in block matrix form
+void bm64t_bitmanip_ideal(const uint64_t in[64], uint64_t out[64])
+{
+	#pragma GCC unroll 64
+	for (int i = 0; i < 64; i ++)
+		out[((i << 3)|(i >> 3)) & 63] = _rv64_bmatflip(in[i]);
 }
 
 // multiply a 64x64 bit matrix (row major) with a 64x8 bit matrix (column major)
@@ -166,10 +219,16 @@ void bm64m_reference(const uint64_t in1[64], const uint64_t in2[8], uint64_t out
 			out[j] |= 1L << i;
 }
 
-// optimized non-bitmanip version of bm64t_reference, TBD
+// optimized non-bitmanip version of bm64t_reference
 void bm64m_baseisa(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[8])
 {
-	bm64m_reference(in1, in2, out);
+	for (int j = 0; j < 8; j++)
+	{
+		uint64_t v = 0;
+		for (int i = 0; i < 64; i++)
+			v |= (uint64_t)(__builtin_popcountll(in1[i] & in2[j]) & 1) << i;
+		out[j] = v;
+	}
 }
 
 // optimized bitmanip version of bm64t_reference
@@ -190,6 +249,7 @@ void bm64m_bitmanip(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[
 	conv8x8(out_b, out);
 }
 
+// with both inputs and output in block matrix form
 void bm64m_bitmanip_ideal(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[8])
 {
 	for (int j = 0; j < 8; j++) {
@@ -292,6 +352,21 @@ int main()
 	assert(!memcmp(dout2_reference, dout2_baseisa, sizeof(dout2_reference)));
 
 	printf("\n");
+	printf("running bm64t_baseisa2..\n");
+	long t2_baseisa2 = rdinstret();
+	bm64t_baseisa2(din, dout2_baseisa2);
+	t2_baseisa2 = rdinstret() - t2_baseisa2;
+
+	for (int i = 0; i < 64; i++) { // rows
+		printf("  ");
+		for (int j = 0; j < 64; j++) // columns
+			printf("%c", ((dout2_baseisa2[j/8 + 8*(i/8)] >> (j%8 + 8*(i%8))) & 1) ? 'X' : '.');
+		printf("\n");
+	}
+
+	assert(!memcmp(dout2_reference, dout2_baseisa2, sizeof(dout2_reference)));
+
+	printf("\n");
 	printf("running bm64t_bitmanip..\n");
 	long t2_bitmanip = rdinstret();
 	bm64t_bitmanip(din, dout2_bitmanip);
@@ -305,6 +380,13 @@ int main()
 	}
 
 	assert(!memcmp(dout2_reference, dout2_bitmanip, sizeof(dout2_reference)));
+
+	printf("\n");
+	printf("running bm64t_bitmanip_ideal..\n");
+	long t2_bitmanip_ideal = rdinstret();
+	bm64t_bitmanip_ideal(din, dout2_bitmanip_ideal);
+	t2_bitmanip_ideal = rdinstret() - t2_bitmanip_ideal;
+	printf("  ~~dontcare~~\n");
 
 	printf("\n");
 	printf("running bm64m_reference..\n");
@@ -364,7 +446,9 @@ int main()
 	printf("\n");
 	printf("bm64t_reference: %5ld instructions\n", t2_reference);
 	printf("bm64t_baseisa:   %5ld instructions\n", t2_baseisa);
+	printf("bm64t_baseisa2:  %5ld instructions\n", t2_baseisa2);
 	printf("bm64t_bitmanip:  %5ld instructions\n", t2_bitmanip);
+	printf("bm64t_bitmanip*: %5ld instructions\n", t2_bitmanip_ideal);
 
 	printf("\n");
 	printf("bm64m_reference: %5ld instructions\n", t3_reference);
