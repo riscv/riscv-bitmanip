@@ -308,8 +308,7 @@ uint64_t leb128_encode_bitmanip(uint64_t in)
 {
 	uint64_t mask = _rv64_orc8(0x80);
 	uint64_t out = _rv64_bdep(in, ~mask);
-	uint64_t t = _rv64_clz(out);
-	t = (((uint64_t)!out)-1) >> (t & 63);
+	uint64_t t = (((uint64_t)!out)-1) >> (_rv64_clz(out) & 63);
 	return out | (mask & t);
 }
 
@@ -331,7 +330,8 @@ uint64_t leb128_decode_reference(uint64_t in)
 uint64_t leb128_decode_bitmanip(uint64_t in)
 {
 	uint64_t mask = _rv64_orc8(0x80);
-	return _rv64_bext(in & _rv64_slo(0, (_rv64_ctz(~_rv64_bext(in, mask)) << 3) + 7), ~mask);
+	long t = (_rv64_ctz(~_rv64_bext(in, mask)) << 3) + 7;
+	return _rv64_bext(in & _rv64_slo(0, t), ~mask);
 }
 
 #define TEST(_name, _iter, _code) \
