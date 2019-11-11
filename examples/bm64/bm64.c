@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-static inline long rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd)); return rd; }
+static inline long rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd) : : "memory"); return rd; }
 
 uint64_t din[64] = {
 	// for i in {1..64}; do echo $i | sha1sum; done | sed -r 's/(.{16}).*/0x\1,/' | fmt -w 80

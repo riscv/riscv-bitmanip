@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static inline long rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd)); return rd; }
+static inline long rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd) : : "memory"); return rd; }
 
 #define NUM 896
 

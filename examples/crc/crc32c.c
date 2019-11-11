@@ -10,7 +10,7 @@
 #define k2  0xD7A01665
 #define k3  0x3AAB4576
 
-static inline int64_t rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd)); return rd; }
+static inline int64_t rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd) : : "memory"); return rd; }
 
 uint32_t crc32c_table[256] = {
 	0x00000000, 0xf26b8303, 0xe13b70f7, 0x1350f3f4, 0xc79a971f, 0x35f1141c, 0x26a1e7e8, 0xd4ca64eb,
