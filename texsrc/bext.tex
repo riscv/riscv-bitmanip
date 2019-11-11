@@ -2194,6 +2194,30 @@ equivalent semantics.~\cite[p.~3-28]{m88k})
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Other micro-architectural considerations}
+
+In addition to macro-op fusion, we issue the following recommendations for
+cores that aim at better performance for bitmanipulation tasks.
+
+\subsection{Unaligned memory access}
+
+The base ISA spec requires load/store operations that are not naturally aligned
+to succeed in U-mode, but explicitly states that execution may be slow.
+
+For many bitmanipulation tasks it can be of great advantage to be able to
+perform load and store operations with arbitrary alignments quickly. Thus we
+recommend that cores optimized for bitmanipulation tasks provide fast hardware
+support for load/store with arbitrary alignment.
+
+\subsection{Fast multiply}
+
+A lot of bitmanipulation tricks rely on multiplication with ``magic numbers'' and
+similar tricks involving multiply/divide instructions. Thus cores optimized for
+bitmanipulation tasks should provide reasonably fast implementations of the
+``M''-extension multiply/divide instructions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{table}[h]
 \begin{center}
 \begin{tabular}{l|cc|ccc|}
