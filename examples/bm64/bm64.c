@@ -280,14 +280,19 @@ void bm64m_baseisa(const uint64_t in1[64], const uint64_t in2[8], uint64_t out[8
 {
 	for (int j = 0; j < 8; j++)
 	{
-		uint64_t v = 0;
-		for (int i = 0; i < 64; i++) {
+		uint64_t v = 0, t = in2[j];
+
+		#pragma GCC unroll 64
+		for (int i = 0; i < 64; i++)
+		{
+			uint64_t xorbits = in1[i] & t;
 	#if 1
-			v |= (uint64_t)(__builtin_popcountll(in1[i] & in2[j]) & 1) << i;
+			v |= (uint64_t)(__builtin_popcountll(xorbits) & 1) << i;
 	#else
-			v |= (_rv64_clmulr(in1[i] & in2[j], ~(uint64_t)0) & 1) << i;
+			v |= (_rv64_clmulr(xorbits, ~(uint64_t)0) & 1) << i;
 	#endif
 		}
+
 		out[j] = v;
 	}
 }
