@@ -141,10 +141,23 @@ long utf8_decode_reference(const uint8_t *in, uint32_t *out, long len)
 	return k;
 }
 
-// branch-free UTF-8 encoder using bitmanip instructions, TBD
+// branch-free UTF-8 encoder using bitmanip instructions and misaligned load
 long utf8_decode_bitmanip(const uint8_t *in, uint32_t *out, long len)
 {
-	return utf8_decode_reference(in, out, len);
+	uint32_t *p = out;
+	uint32_t mask = 0x3f3f3f3f;
+
+	for (int i = 0; i < len;) {
+		uint32_t v = *(uint32_t*)(in+i);
+		long bytes = _rv32_max(1, _rv32_clz(~(v << 24)));
+		v = _rv32_rev8(v) << bytes;
+		v = v >> ((bytes-8*bytes) & 31);
+		v = _rv32_bext(v, mask | (bytes-2));
+		*(p++) = v;
+		i += bytes;
+	}
+
+	return p - out;
 }
 
 #define TEST(_name, _iter, _code) \
@@ -272,6 +285,47 @@ int main()
 		len_utf8_decode_bitmanip = utf8_decode_bitmanip(dout_utf8_encode_bitmanip,
 				dout_utf8_decode_bitmanip, len_utf8_encode_bitmanip);
 	});
+
+#if 0
+	{
+		int cursor = 0;
+
+		for (int i = 0; i < NUM; i++)
+		{
+			uint32_t v = din[i];
+
+			if (v <= 0x7f) {
+				printf("U+%06x U+%06x | %02x\n", v, dout_utf8_decode_bitmanip[i],
+						dout_utf8_encode_reference[cursor]);
+				assert(dout_utf8_decode_reference[i] == dout_utf8_decode_bitmanip[i]);
+				cursor += 1;
+				continue;
+			}
+
+			if (v <= 0x7ff) {
+				printf("U+%06x U+%06x | %02x %02x\n", v, dout_utf8_decode_bitmanip[i],
+						dout_utf8_encode_reference[cursor], dout_utf8_encode_reference[cursor+1]);
+				assert(dout_utf8_decode_reference[i] == dout_utf8_decode_bitmanip[i]);
+				cursor += 2;
+				continue;
+			}
+
+			if (v <= 0xffff) {
+				printf("U+%06x U+%06x | %02x %02x %02x\n", v, dout_utf8_decode_bitmanip[i],
+						dout_utf8_encode_reference[cursor], dout_utf8_encode_reference[cursor+1], dout_utf8_encode_reference[cursor+2]);
+				assert(dout_utf8_decode_reference[i] == dout_utf8_decode_bitmanip[i]);
+				cursor += 3;
+				continue;
+			}
+
+			printf("U+%06x U+%06x | %02x %02x %02x %02x\n", v, dout_utf8_decode_bitmanip[i],
+					dout_utf8_encode_reference[cursor], dout_utf8_encode_reference[cursor+1],
+					dout_utf8_encode_reference[cursor+2], dout_utf8_encode_reference[cursor+3]);
+			assert(dout_utf8_decode_reference[i] == dout_utf8_decode_bitmanip[i]);
+			cursor += 4;
+		}
+	}
+#endif
 
 	assert(len_utf8_decode_reference == len_utf8_decode_bitmanip);
 	assert(!memcmp(dout_utf8_decode_reference, dout_utf8_decode_bitmanip, sizeof(din)));
