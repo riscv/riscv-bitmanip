@@ -63,57 +63,44 @@ long utf8_encode_reference(const uint32_t *in, uint8_t *out, long len)
 	return k;
 }
 
+static const uint8_t utf8_lz_bytes[33] = {
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 4, 4, 4, 4, 4,
+	3, 3, 3, 3, 3, 2, 2, 2,
+	2, 1, 1, 1, 1, 1, 1, 1, 1
+};
+
+static const uint32_t utf8_mask[5] = {
+	0x00000000,
+	0x0000007f,
+	0x3f3f3f3f,
+	0x3f3f3f3f,
+	0x3f3f3f3f
+};
+
+static const uint32_t utf8_ctrlbits[5] = {
+	0x00000000,
+	0x00000000,
+	0x0000c080,
+	0x00e08080,
+	0xf0808080
+};
+
+// branch-free UTF-8 encoder using bitmanip instructions and misaligned store
 long utf8_encode_bitmanip(const uint32_t *in, uint8_t *out, long len)
 {
 	uint32_t *p = (void*)out;
-	uint64_t outbuf = 0;
-	long outcursor = 0;
 
-	uint64_t mask = 0x3f3f3f3f;
-	uint64_t pf16 = 0x0000c080;
-	uint64_t pf24 = 0x00e08080;
-	uint64_t pf32 = 0xf0808080;
-
-	for (int i = 0; i < len; i++)
-	{
+	for (int i = 0; i < len; i++) {
 		uint32_t v = in[i];
-
-		if (outcursor >= 32)
-		{
-			*(p++) = outbuf;
-			outbuf >>= 32;
-			outcursor -= 32;
-		}
-
-		if (v < 0x80)
-		{
-			outbuf |= v << outcursor;
-			outcursor += 8;
-			continue;
-		}
-
-		if (v < 0x800)
-		{
-			outbuf |= _rv64_rev8_h(pf16 | _rv64_bdep(v, mask)) << outcursor;
-			outcursor += 16;
-			continue;
-		}
-
-		if (v < 0x10000)
-		{
-			outbuf |= _rv64_rev8_w(pf24 | _rv64_bdep(v, mask)) >> 8 << outcursor;
-			outcursor += 24;
-			continue;
-		}
-
-		outbuf |= _rv64_rev8_w(pf32 | _rv64_bdep(v, mask)) << outcursor;
-		outcursor += 32;
+		int bytes = utf8_lz_bytes[_rv32_clz(v)];
+		v = _rv32_bdep(v, utf8_mask[bytes]);
+		v = _rv32_rev8(v | utf8_ctrlbits[bytes]);
+		*p = v >> (32 - (bytes << 3));
+		p = (void*)p + bytes;
 	}
 
-	for (int i = 0; i < outcursor; i += 8)
-		((uint8_t*)p)[i/8] = outbuf >> i;
-
-	return (void*)p - (void*)out + outcursor / 8;
+	return (void*)p - (void*)out;
 }
 
 long utf8_decode_reference(const uint8_t *in, uint32_t *out, long len)
@@ -154,6 +141,7 @@ long utf8_decode_reference(const uint8_t *in, uint32_t *out, long len)
 	return k;
 }
 
+// branch-free UTF-8 encoder using bitmanip instructions, TBD
 long utf8_decode_bitmanip(const uint8_t *in, uint32_t *out, long len)
 {
 	return utf8_decode_reference(in, out, len);
