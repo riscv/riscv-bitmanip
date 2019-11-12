@@ -63,40 +63,32 @@ long utf8_encode_reference(const uint32_t *in, uint8_t *out, long len)
 	return k;
 }
 
-static const uint8_t utf8_lz_bytes[33] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 4, 4, 4, 4, 4,
-	3, 3, 3, 3, 3, 2, 2, 2,
-	2, 1, 1, 1, 1, 1, 1, 1, 1
-};
-
-static const uint32_t utf8_mask[5] = {
-	0x00000000,
-	0x0000007f,
-	0x3f3f3f3f,
-	0x3f3f3f3f,
-	0x3f3f3f3f
-};
-
-static const uint32_t utf8_ctrlbits[5] = {
-	0x00000000,
-	0x00000000,
-	0x0000c080,
-	0x00e08080,
-	0xf0808080
-};
-
 // branch-free UTF-8 encoder using bitmanip instructions and misaligned store
 long utf8_encode_bitmanip(const uint32_t *in, uint8_t *out, long len)
 {
 	uint32_t *p = (void*)out;
 
+	static const uint8_t lz_bytes[33] = {
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 4, 4, 4, 4, 4,
+		3, 3, 3, 3, 3, 2, 2, 2,
+		2, 1, 1, 1, 1, 1, 1, 1, 1
+	};
+
+	static const uint32_t ctrlbits[5] = {
+		0x00000000,
+		0x00000000,
+		0x000080c0,
+		0x008080e0,
+		0x808080f0
+	};
+
 	for (int i = 0; i < len; i++) {
 		uint32_t v = in[i];
-		int bytes = utf8_lz_bytes[_rv32_clz(v)];
-		v = _rv32_bdep(v, utf8_mask[bytes]);
-		v = _rv32_rev8(v | utf8_ctrlbits[bytes]);
-		*p = v >> (32 - (bytes << 3));
+		int bytes = lz_bytes[_rv32_clz(v)];
+		v = _rv32_bdep(v, 0x3f3f3f3f | (bytes-2));
+		v = _rv32_rev8(v) >> (32 - (bytes << 3));
+		*p = v | ctrlbits[bytes];
 		p = (void*)p + bytes;
 	}
 
@@ -149,7 +141,7 @@ long utf8_decode_bitmanip(const uint8_t *in, uint32_t *out, long len)
 
 	for (int i = 0; i < len;) {
 		uint32_t v = *(uint32_t*)(in+i);
-		long bytes = _rv32_max(1, _rv32_clz(~(v << 24)));
+		int bytes = _rv32_max(1, _rv32_clz(~(v << 24)));
 		v = _rv32_rev8(v) << bytes;
 		v = v >> ((bytes-8*bytes) & 31);
 		v = _rv32_bext(v, mask | (bytes-2));
