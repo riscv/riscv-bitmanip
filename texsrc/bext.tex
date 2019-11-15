@@ -2209,10 +2209,14 @@ perform load and store operations with arbitrary alignments quickly. Thus we
 recommend that cores optimized for bitmanipulation tasks provide fast hardware
 support for load/store with arbitrary alignment.
 
+There should be a {\tt getauxval()}-based mechanism as part of the RISC-V Linux
+ABI that can be used to query information on support for unaligned memory
+access.~\cite{FastLdSt}
+
 \subsection{Fast multiply}
 
 A lot of bitmanipulation tricks rely on multiplication with ``magic numbers'' and
-similar tricks involving multiply/divide instructions. Thus cores optimized for
+similar tricks involving multiply/divide instructions. Thus, cores optimized for
 bitmanipulation tasks should provide reasonably fast implementations of the
 ``M''-extension multiply/divide instructions.
 
