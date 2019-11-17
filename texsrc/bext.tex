@@ -1953,6 +1953,46 @@ and are marked with a {\tt *}.
 \end{verbatim}
 \end{minipage}
 
+\begin{minipage}{\linewidth}
+\begin{verbnobox}[\tiny]
+|   funct7  |                                             funct3                                            |
+|30|29|27|25|    001    |    101    |    000    |    010    |    011    |    100    |    110    |    111    |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -00-0-0  |    SLL    |    SRL    |    ADD    |    SLT    |    SLTU   |    XOR    |     OR    |    AND    |
+|  -10-0-0  |           |    SRA    |    SUB    |           |           |    XNOR   |     ORN   |    ANDN   |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -00-0-1  |   MULH (2)|   DIVU (2)|    MUL    |   MULHSU  |   MULHU   |    DIV    |    REM    |    REMU   |
+|  -10-0-1  |        (2)|        (2)|           |           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR  |    PACK   |    BEXT   |   PACKH   |
+|  -10-1-0  |   SBCLR   |   SBEXT   | SUBU.W (1)|           |  BMATXOR  |   PACKU   |    BDEP   |    BFP    |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -00-1-1  |  CLMUL (2)|    MAX (2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN    |    MINU   |    MAXU   |
+|  -10-1-1  |        (2)|        (2)|  SUBWU (1)|           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -01-0-0  |    SLO    |    SRO    |           |           |           |           |           |           |
+|  -11-0-0  |    ROL (3)|    ROR    |           |           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -01-0-1  |        (2)|        (2)|           |           |           |           |           |           |
+|  -11-0-1  |        (2)|        (2)|           |           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -01-1-0  |   SBSET   |    GORC   |           |           |           |           |           |           |
+|  -11-1-0  |   SBINV   |    GREV   |           |           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -01-1-1  |        (2)|        (2)|           |           |           |           |           |           |
+|  -11-1-1  |        (2)|        (2)|           |           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+Notes:
+- funct7 bits not shown: 31,28 unused (always zero), 26 used for ternary instructions
+- columns reordered to show shift opcodes on the left
+- rows reordered in groups with and without bit 30 set
+(1) These instructions only exist in OP-32.
+(2) No "shift-immediate" encoding for opcodes with bit 25 set.
+(3) All unary instructions use the code space for the non-existing ROLI instruction.
+(4) SLLIU.W is encoded in the code space for the non-existing SHFLIW instruction.
+\end{verbnobox}
+\end{minipage}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Future compressed instructions}
