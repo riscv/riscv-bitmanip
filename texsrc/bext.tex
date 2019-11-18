@@ -1953,21 +1953,23 @@ and are marked with a {\tt *}.
 \end{verbatim}
 \end{minipage}
 
+\begin{figure}[t]
+\begin{center}
 \begin{minipage}{\linewidth}
 \begin{verbnobox}[\tiny]
 |   funct7  |                                             funct3                                            |
 |30|29|27|25|    001    |    101    |    000    |    010    |    011    |    100    |    110    |    111    |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-0-0  |    SLL    |    SRL    |    ADD    |    SLT    |    SLTU   |    XOR    |     OR    |    AND    |
-|  -10-0-0  |           |    SRA    |    SUB    |           |           |    XNOR   |     ORN   |    ANDN   |
+|  -00-0-0  |    SLL    |    SRL    |    ADD    |    SLT^   |    SLTU^  |    XOR^   |     OR^   |    AND^   |
+|  -10-0-0  |           |    SRA    |    SUB    |           |           |    XNOR^  |     ORN^  |    ANDN^  |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-0-1  |   MULH (2)|   DIVU (2)|    MUL    |   MULHSU  |   MULHU   |    DIV    |    REM    |    REMU   |
+|  -00-0-1  |   MULH^(2)|   DIVU (2)|    MUL    |   MULHSU^ |   MULHU^  |    DIV    |    REM    |    REMU   |
 |  -10-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR  |    PACK   |    BEXT   |   PACKH   |
-|  -10-1-0  |   SBCLR   |   SBEXT   | SUBU.W (1)|           |  BMATXOR  |   PACKU   |    BDEP   |    BFP    |
+|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
+|  -10-1-0  |   SBCLR   |   SBEXT   | SUBU.W (1)|           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-1  |  CLMUL (2)|    MAX (2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN    |    MINU   |    MAXU   |
+|  -00-1-1  |  CLMUL (2)|    MAX^(2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN^   |    MINU^  |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|  SUBWU (1)|           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-0-0  |    SLO    |    SRO    |           |           |           |           |           |           |
@@ -1990,8 +1992,35 @@ Notes:
 (2) No "shift-immediate" encoding for opcodes with bit 25 set.
 (3) All unary instructions use the code space for the non-existing ROLI instruction.
 (4) SLLIU.W is encoded in the code space for the non-existing SHFLIW instruction.
+^ Instructions marked with ^ have no *W equivalent in OP-32
 \end{verbnobox}
 \end{minipage}
+\end{center}
+\caption{OP/OP-32 Binary Instruction Map}
+\label{op-op32-bin}
+\end{figure}
+
+\begin{figure}[t]
+\begin{center}
+\begin{minipage}{\linewidth}
+\begin{verbnobox}[\tiny]
+|   funct7  |                                             funct3                                            |
+| RS3|26|25 |    001    |    101    |    000    |    010    |    011    |    100    |    110    |    111    |
+|-----------|-----------------------------------------------------------------------------------------------|
+|  -----10  |    FSL (2)|    FSR (1)|           |           |           |           |           |           |
+|  -----11  |    CMIX   |    CMOV   |           |           |           |           |           |           |
+|-----------|-----------------------------------------------------------------------------------------------|
+Notes:
+- funct7 bits: bits 31:27 RS3, bit 26 always set for ternary instructions
+- columns reordered to show shift opcodes on the left
+(1) There is also an FSRI instruction in OP-IMM/OP-IMM-32 (except OP-IMM on RV128)
+(2) The encoding for the non-existing FSLI instruction is reserved
+\end{verbnobox}
+\end{minipage}
+\end{center}
+\caption{OP/OP-32 Ternary Instruction Map}
+\label{op-op32-tern}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
