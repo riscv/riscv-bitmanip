@@ -25,6 +25,9 @@ look like exactly, but it will probably look something like this:
  \node (sbinv) [right=4.1cm of min.west,anchor=west] { \texttt{sbinv[i]} };
  \node (sbext) [right=4.1cm of addwu.west,anchor=west] { \texttt{sbext[i]} };
 
+ \node (shNadd) [right=3.9cm of adduw.west,anchor=north west] { \texttt{shNadd} };
+ \node (shNadduw) [right=3.9cm of slliuw.west,anchor=north west] { \texttt{shNaddu.w} };
+
  \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack[hu]} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
@@ -61,6 +64,10 @@ look like exactly, but it will probably look something like this:
    \node (bs) at ($ (sbset.west) + (2.4cm,0) $) [right, text=blue] { \textbf{Zbs} };
    \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
    \draw [draw=black, fill=blue, opacity=0.2] ($ (sbset.north west) + (-0.2cm,0) $) rectangle ($ (sbext.south west) + (2.4cm,0) $);
+
+   \node (ba) at ($ (shNadd.west) + (2.6cm,0) $) [right, text=blue] { \textbf{Zba} };
+   \node (baddr) [below=-0.1cm of ba.south west,anchor=north west] { (addr calc) };
+   \draw [draw=black, fill=blue, opacity=0.2] ($ (shNadd.north west) + (-0.0cm,0) $) rectangle ($ (shNadduw.south west) + (2.6cm,0) $);
 
    \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
    \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (permutation) };
