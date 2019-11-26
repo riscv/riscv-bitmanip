@@ -38,7 +38,8 @@
 
 #define CPU_PREFIX "Bit Manipulation"
 
-#define EXTB_REVISION "extB Version(0.91) August 29 2019"
+//#define EXTB_REVISION "extB Version(0.91) August 29 2019"
+#define EXTB_REVISION "extB Version(0.92) November 08 2019"
 
 #define RISCV_GPR_NUM  32
 #define RV_MAX_AREGS   4
@@ -82,9 +83,10 @@ DEFINE_S (riscv);
 typedef enum extbVerE {
     RVB_0_90,                  // version 0.90
     RVB_0_91,                  // version 0.91
+    RVB_0_92,                  // version 0.92
     RVB_LAST,                  // for sizing
 
-    RVB_DEFAULT = RVB_0_91,    // default version
+    RVB_DEFAULT = RVB_0_92,    // default version
 } extbVer;
 
 typedef struct vmiosObjectS {
@@ -132,6 +134,11 @@ static vmiEnumParameter extbVersions[RVB_LAST+1] = {
         .value       = RVB_0_91,
         .description = "Bit Manipulation Architecture Version v0.91-20190829",
     },
+    [RVB_0_92] = {
+        .name        = "0.92",
+        .value       = RVB_0_92,
+        .description = "Bit Manipulation Architecture Version v0.92-20191108",
+    },
 
     // KEEP LAST: terminator
     {0}
@@ -146,7 +153,7 @@ typedef struct paramValuesS {
 // Define formals
 //
 static vmiParameter parameters[] = {
-    VMI_ENUM_PARAM_SPEC_WITH_DEFAULT(paramValues, version, extbVersions, &extbVersions[RVB_0_91], "Specify required Bit Manipulation version"),
+    VMI_ENUM_PARAM_SPEC_WITH_DEFAULT(paramValues, version, extbVersions, &extbVersions[RVB_DEFAULT], "Specify required Bit Manipulation version"),
     VMI_END_PARAM
 };
 
@@ -230,6 +237,8 @@ typedef enum riscvITypeB {
     EXTB_CTZ,
     EXTB_PCNT,
     EXTB_BMATFLIP,
+    EXTB_SEXTB,
+    EXTB_SEXTH,
 
     EXTB_CRC32_B,
     EXTB_CRC32_H,
@@ -253,8 +262,10 @@ typedef enum riscvITypeB {
     EXTB_BDEP,
     EXTB_BEXT,
     EXTB_PACK,
+    EXTB_PACKU,
     EXTB_BMATOR,
     EXTB_BMATXOR,
+    EXTB_PACKH,
     EXTB_BFP,
 
     EXTB_SHFLI,
@@ -307,12 +318,119 @@ typedef enum riscvITypeB {
     EXTB_BDEPW,
     EXTB_BEXTW,
     EXTB_PACKW,
+    EXTB_PACKUW,
     EXTB_BFPW,
 
     // KEEP LAST: for sizing the array
     EXTB_LAST
 
 } riscvITypeB;
+
+const static char *opcodes[] = {
+    [EXTB_ANDN]     = "andn",
+    [EXTB_ORN]      = "orn",
+    [EXTB_XNOR]     = "xnor",
+    [EXTB_SLO]      = "slo",
+    [EXTB_SRO]      = "sro",
+    [EXTB_ROL]      = "rol",
+    [EXTB_ROR]      = "ror",
+    [EXTB_SBCLR]    = "sbclr",
+    [EXTB_SBSET]    = "sbset",
+    [EXTB_SBINV]    = "sbinv",
+    [EXTB_SBEXT]    = "sbext",
+    [EXTB_GORC]     = "gorc",
+    [EXTB_GREV]     = "grev",
+    [EXTB_SLOI]     = "sloi",
+    [EXTB_SROI]     = "sroi",
+    [EXTB_RORI]     = "rori",
+    [EXTB_SBCLRI]   = "sbclri",
+    [EXTB_SBSETI]   = "sbseti",
+    [EXTB_SBINVI]   = "sbinvi",
+    [EXTB_SBEXTI]   = "sbexti",
+    [EXTB_GORCI]    = "gorci",
+    [EXTB_GREVI]    = "grevi",
+    [EXTB_CMIX]     = "cmix",
+    [EXTB_CMOV]     = "cmov",
+    [EXTB_FSL]      = "fsl",
+    [EXTB_FSR]      = "fsr",
+    [EXTB_FSRI]     = "fsri",
+    [EXTB_CLZ]      = "clz",
+    [EXTB_CTZ]      = "ctz",
+    [EXTB_PCNT]     = "pcnt",
+    [EXTB_BMATFLIP] = "bmatflip",
+    [EXTB_SEXTB]    = "sext.b",
+    [EXTB_SEXTH]    = "sext.h",
+    [EXTB_CRC32_B]  = "crc32.b",
+    [EXTB_CRC32_H]  = "crc32.h",
+    [EXTB_CRC32_W]  = "crc32.w",
+    [EXTB_CRC32_D]  = "crc32.d",
+    [EXTB_CRC32C_B] = "crc32c.b",
+    [EXTB_CRC32C_H] = "crc32c.h",
+    [EXTB_CRC32C_W] = "crc32c.w",
+    [EXTB_CRC32C_D] = "crc32c.d",
+    [EXTB_CLMUL]    = "clmul",
+    [EXTB_CLMULR]   = "clmulr",
+    [EXTB_CLMULH]   = "clmulh",
+    [EXTB_MIN]      = "min",
+    [EXTB_MAX]      = "max",
+    [EXTB_MINU]     = "minu",
+    [EXTB_MAXU]     = "maxu",
+    [EXTB_SHFL]     = "shfl",
+    [EXTB_UNSHFL]   = "unshfl",
+    [EXTB_BDEP]     = "bdep",
+    [EXTB_BEXT]     = "bext",
+    [EXTB_PACK]     = "pack",
+    [EXTB_PACKU]    = "packu",
+    [EXTB_BMATOR]   = "bmator",
+    [EXTB_BMATXOR]  = "bmatxor",
+    [EXTB_PACKH]    = "packh",
+    [EXTB_BFP]      = "bfp",
+    [EXTB_SHFLI]    = "shfli",
+    [EXTB_UNSHFLI]  = "unshfli",
+    [EXTB_ADDIWU]   = "addiwu",
+    [EXTB_SLLIU_W]  = "slliu.w",
+    [EXTB_ADDWU]    = "addwu",
+    [EXTB_SUBWU]    = "subwu",
+    [EXTB_ADDU_W]   = "addu.w",
+    [EXTB_SUBU_W]   = "subu.w",
+    [EXTB_SLOW]     = "slow",
+    [EXTB_SROW]     = "srow",
+    [EXTB_ROLW]     = "rolw",
+    [EXTB_RORW]     = "rorw",
+    [EXTB_SBCLRW]   = "sbclrw",
+    [EXTB_SBSETW]   = "sbsetw",
+    [EXTB_SBINVW]   = "sbinvw",
+    [EXTB_SBEXTW]   = "sbextw",
+    [EXTB_GORCW]    = "gorcw",
+    [EXTB_GREVW]    = "grevw",
+    [EXTB_SLOIW]    = "sloiw",
+    [EXTB_SROIW]    = "sroiw",
+    [EXTB_RORIW]    = "roriw",
+    [EXTB_SBCLRIW]  = "sbclriw",
+    [EXTB_SBSETIW]  = "sbsetiw",
+    [EXTB_SBINVIW]  = "sbinviw",
+    [EXTB_GORCIW]   = "gorciw",
+    [EXTB_GREVIW]   = "greviw",
+    [EXTB_FSLW]     = "fslw",
+    [EXTB_FSRW]     = "fsrw",
+    [EXTB_FSRIW]    = "fsriw",
+    [EXTB_CLZW]     = "clzw",
+    [EXTB_CTZW]     = "ctzw",
+    [EXTB_PCNTW]    = "pcntw",
+    [EXTB_CLMULW]   = "clmulw",
+    [EXTB_CLMULRW]  = "clmulrw",
+    [EXTB_CLMULHW]  = "clmulhw",
+    [EXTB_SHFLW]    = "shflw",
+    [EXTB_UNSHFLW]  = "unshflw",
+    [EXTB_BDEPW]    = "bdepw",
+    [EXTB_BEXTW]    = "bextw",
+    [EXTB_PACKW]    = "packw",
+    [EXTB_PACKUW]   = "packuw",
+    [EXTB_BFPW]     = "bfpw",
+
+    // KEEP LAST: for sizing the array
+    [EXTB_LAST]     = "NULL"
+};
 
 //
 // Structure defining one 32-bit decode table entry
@@ -334,7 +452,6 @@ DEFINE_CS(decodeEntry32);
 //
 #define DECODE32_ENTRY(_PRIORITY, _NAME, _PATTERN) { \
     type     : EXTB_##_NAME, \
-    name     : #_NAME,       \
     pattern  : _PATTERN,     \
     priority : _PRIORITY     \
 }
@@ -411,7 +528,6 @@ const static decodeEntry32 decodeCommon32[] = {
 
     DECODE32_ENTRY(0, SHFL,     "|0000100|.....|.....|001|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, UNSHFL,   "|0000100|.....|.....|101|.....|0110011|"),  // R-type
-    DECODE32_ENTRY(0, BDEP,     "|0000100|.....|.....|010|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, BEXT,     "|0000100|.....|.....|110|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, PACK,     "|0000100|.....|.....|100|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, BMATOR,   "|0000100|.....|.....|011|.....|0110011|"),  // R-type
@@ -459,7 +575,6 @@ const static decodeEntry32 decodeCommon32[] = {
 
     DECODE32_ENTRY(0, SHFLW,    "|0000100|.....|.....|001|.....|0111011|"),  // R-type
     DECODE32_ENTRY(0, UNSHFLW,  "|0000100|.....|.....|101|.....|0111011|"),  // R-type
-    DECODE32_ENTRY(0, BDEPW,    "|0000100|.....|.....|010|.....|0111011|"),  // R-type
     DECODE32_ENTRY(0, BEXTW,    "|0000100|.....|.....|110|.....|0111011|"),  // R-type
     DECODE32_ENTRY(0, PACKW,    "|0000100|.....|.....|100|.....|0111011|"),  // R-type
 
@@ -473,6 +588,9 @@ const static decodeEntry32 decode32_0_90[] = {
     DECODE32_ENTRY(0, BMATXOR,  "|0000100|.....|.....|111|.....|0110011|"),  // R-type **PARAM** v0.90
     DECODE32_ENTRY(0, GREVW,    "|0100000|.....|.....|001|.....|0111011|"),  // R-type **PARAM** v0.90
     DECODE32_ENTRY(0, GREVIW,   "|0100000|.....|.....|001|.....|0011011|"),  // R-type **PARAM** v0.90
+
+    DECODE32_ENTRY(0, BDEP,     "|0000100|.....|.....|010|.....|0110011|"),  // R-type **PARAM** v0.90
+    DECODE32_ENTRY(0, BDEPW,    "|0000100|.....|.....|010|.....|0111011|"),  // R-type **PARAM** v0.90
 
     // table termination entry
     {0}
@@ -497,8 +615,50 @@ const static decodeEntry32 decode32_0_91[] = {
     DECODE32_ENTRY(0, GREVIW,   "|0110100|.....|.....|101|.....|0011011|"),  // R-type **PARAM** v0.91
     DECODE32_ENTRY(0, BFPW,     "|0000100|.....|.....|111|.....|0111011|"),  // R-type **PARAM** v0.91
 
+    DECODE32_ENTRY(0, BDEP,     "|0000100|.....|.....|010|.....|0110011|"),  // R-type **PARAM** v0.90
+    DECODE32_ENTRY(0, BDEPW,    "|0000100|.....|.....|010|.....|0111011|"),  // R-type **PARAM** v0.90
+
     // table termination entry
     {0}
+};
+
+//
+// 2019-11-08 0.92 Add packh and packu[w] instructions
+// Add sext.b and sext.h instructions
+// Change encoding and behavior of bfp[w]
+// Change encoding of bdep[w]
+//
+const static decodeEntry32 decode32_0_92[] = {
+    DECODE32_ENTRY(0, GORC,     "|0010100|.....|.....|101|.....|0110011|"),  // R-type **PARAM** v0.91
+    DECODE32_ENTRY(0, GREV,     "|0110100|.....|.....|101|.....|0110011|"),  // R-type **PARAM** v0.91
+    DECODE32_ENTRY(0, GORCI,    "|00101|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI) **PARAM** v0.91
+    //    Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+    //    Error (DEC_DTEC1)     GORCI      mask : 0xf800707f pattern : 0x28005013)
+    //    Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+    DECODE32_ENTRY(0, GREVI,    "|01101|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI) **PARAM** v0.91
+    //    Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+    //    Error (DEC_DTEC1)     GREVI      mask : 0xf800707f pattern : 0x68005013)
+    //    Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+    DECODE32_ENTRY(0, BMATXOR,  "|0100100|.....|.....|011|.....|0110011|"),  // R-type **PARAM** v0.91
+    DECODE32_ENTRY(0, GORCW,    "|0010100|.....|.....|101|.....|0111011|"),  // R-type **PARAM** v0.91
+    DECODE32_ENTRY(0, GREVW,    "|0110100|.....|.....|101|.....|0111011|"),  // R-type **PARAM** v0.91
+    DECODE32_ENTRY(0, GORCIW,   "|0010100|.....|.....|101|.....|0011011|"),  // R-type **PARAM** v0.91
+    DECODE32_ENTRY(0, GREVIW,   "|0110100|.....|.....|101|.....|0011011|"),  // R-type **PARAM** v0.91
+
+    DECODE32_ENTRY(0, BFP,      "|0100100|.....|.....|111|.....|0110011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, BFPW,     "|0100100|.....|.....|111|.....|0111011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, BDEP,     "|0100100|.....|.....|110|.....|0110011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, BDEPW,    "|0100100|.....|.....|110|.....|0111011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, PACKU,    "|0100100|.....|.....|100|.....|0110011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, PACKH,    "|0000100|.....|.....|111|.....|0110011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, PACKUW,   "|0100100|.....|.....|100|.....|0111011|"),  // R-type **PARAM** v0.92
+
+    DECODE32_ENTRY(0, SEXTB,    "|0110000|00100|.....|001|.....|0010011|"),  // R-type **PARAM** v0.92
+    DECODE32_ENTRY(0, SEXTH,    "|0110000|00101|.....|001|.....|0010011|"),  // R-type **PARAM** v0.92
+
+    // table termination entry
+    {0}
+
 };
 
 //
@@ -509,9 +669,10 @@ static void insertEntries32(vmidDecodeTableP table, decodeEntry32CP decEntries) 
     decodeEntry32CP decEntry;
 
     for(decEntry=decEntries; decEntry->pattern; decEntry++) {
+        const char *name = opcodes[decEntry->type];
         vmidNewEntryFmtBin(
             table,
-            decEntry->name,
+            name,
             decEntry->type,
             decEntry->pattern,
             decEntry->priority
@@ -533,6 +694,9 @@ static vmidDecodeTableP createDecodeTable32(vmiosObjectP  object) {
 
     } else if (version==RVB_0_91) {
         insertEntries32(table, &decode32_0_91[0]);
+
+    } else if (version==RVB_0_92) {
+        insertEntries32(table, &decode32_0_92[0]);
     }
 
     return table;
@@ -749,7 +913,16 @@ EXTB_MORPH_FN(emitPCNTW) {
     vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
     regEpilog(processor, object, instruction);
 }
-
+EXTB_MORPH_FN(emitSEXTB) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 8, object->reg_rs1, 1);
+    regEpilog(processor, object, instruction);
+}
+EXTB_MORPH_FN(emitSEXTH) {
+    regProlog(processor, object, instruction, BM_RR);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 16, object->reg_rs1, 1);
+    regEpilog(processor, object, instruction);
+}
 EXTB_MORPH_FN(emitANDN) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtBinopRRR(object->xlen, vmi_ANDN, object->reg_rd, object->reg_rs1, object->reg_rs2, 0);
@@ -1014,10 +1187,62 @@ static void commonPACK (
 
     Uns32 shift = result / 2;
     vmimtMoveRR(result, object->reg_tmp1, object->reg_rs1);
-    vmimtBinopRC(result, vmi_SHL, object->reg_tmp1, shift, 0);
-    vmimtBinopRC(result, vmi_SHR, object->reg_tmp1, shift, 0);
+    vmimtBinopRC(result, vmi_SHL, object->reg_tmp1, shift, 0); // lower
+    vmimtBinopRC(result, vmi_SHR, object->reg_tmp1, shift, 0); // lower
 
-    vmimtBinopRRC(result, vmi_SHL, object->reg_tmp2, object->reg_rs2, shift, 0);
+    vmimtBinopRRC(result, vmi_SHL, object->reg_tmp2, object->reg_rs2, shift, 0); // upper
+
+    vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+static void commonPACKU (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    Uns32 shift = result / 2;
+    vmimtBinopRRC(result, vmi_SHR, object->reg_tmp1, object->reg_rs1, shift, 0); // lower
+
+    vmimtMoveRR(result, object->reg_tmp2, object->reg_rs2);
+    vmimtBinopRC(result, vmi_SHR, object->reg_tmp2, shift, 0); // upper
+    vmimtBinopRC(result, vmi_SHL, object->reg_tmp2, shift, 0); // upper
+
+
+    vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
+
+    if (word) {
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    }
+
+    regEpilog(processor, object, instruction);
+}
+
+static void commonPACKH (
+    vmiProcessorP processor,
+    vmiosObjectP  object,
+    Uns32         instruction,
+    Uns32         word
+) {
+    regProlog(processor, object, instruction, BM_RR);
+
+    Uns32 result = (word==1) ? 32 : object->xlen;
+
+    Uns32 shift = 8;
+    vmimtBinopRRC(result, vmi_AND, object->reg_tmp1, object->reg_rs1, 255, 0); // lower
+
+    vmimtBinopRRC(result, vmi_AND, object->reg_tmp2, object->reg_rs2, 255, 0); // upper
+    vmimtBinopRC(result, vmi_SHL, object->reg_tmp2, shift, 0); // upper
 
     vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
 
@@ -1033,8 +1258,17 @@ static void commonPACK (
 EXTB_MORPH_FN(emitPACK) {
     commonPACK(processor, object, instruction, 0);
 }
+EXTB_MORPH_FN(emitPACKU) {
+    commonPACKU(processor, object, instruction, 0);
+}
+EXTB_MORPH_FN(emitPACKH) {
+    commonPACKH(processor, object, instruction, 0);
+}
 EXTB_MORPH_FN(emitPACKW) {
     commonPACK(processor, object, instruction, 1);
+}
+EXTB_MORPH_FN(emitPACKUW) {
+    commonPACKU(processor, object, instruction, 1);
 }
 
 static void commonSxO(
@@ -2078,13 +2312,27 @@ static Uns32 slo32(Uns32 rs1, Uns32 rs2) {
     Int32 shamt = rs2 & (XLEN - 1);
     return ~(~rs1 << shamt);
 }
-static Uns32 bfp32_c(Uns32 rs1, Uns32 rs2) {
+
+static Uns32 bfp32_c_0_91(Uns32 rs1, Uns32 rs2) {
     Int32 XLEN = 32;
     Int32 len = (rs2 >> 24) & 15;
     Int32 off = (rs2 >> 16) & (XLEN-1);
     len = len ? len : 16;
     Uns32 mask = rol32(slo32(0, len), off);
     Uns32 data = rol32(rs2, off);
+    return (data & mask) | (rs1 & ~mask);
+}
+static Uns32 bfp32_c_0_92(Uns32 rs1, Uns32 rs2) {
+    Int32 XLEN = 32;
+    Uns32 cfg = rs2 >> (XLEN/2);
+    if ((cfg >> 30) == 2) {
+        cfg = cfg >> 16;
+    }
+    Int32 len = (cfg >> 8) & (XLEN/2-1);
+    Int32 off = cfg & (XLEN-1);
+    len = len ? len : XLEN/2;
+    Uns32 mask = slo32(0, len) << off;
+    Uns32 data = rs2 << off;
     return (data & mask) | (rs1 & ~mask);
 }
 
@@ -2098,13 +2346,26 @@ static Uns64 slo64(Uns64 rs1, Uns64 rs2) {
     Int32 shamt = rs2 & (XLEN - 1);
     return ~(~rs1 << shamt);
 }
-static Uns64 bfp64_c(Uns64 rs1, Uns64 rs2) {
+static Uns64 bfp64_c_0_91(Uns64 rs1, Uns64 rs2) {
     Int32 XLEN = 64;
     Int32 len = (rs2 >> 24) & 15;
     Int32 off = (rs2 >> 16) & (XLEN-1);
     len = len ? len : 16;
     Uns64 mask = rol64(slo64(0, len), off);
     Uns64 data = rol64(rs2, off);
+    return (data & mask) | (rs1 & ~mask);
+}
+static Uns64 bfp64_c_0_92(Uns64 rs1, Uns64 rs2) {
+    Int32 XLEN = 64;
+    Uns64 cfg = rs2 >> (XLEN/2);
+    if ((cfg >> 30) == 2) {
+        cfg = cfg >> 16;
+    }
+    Int32 len = (cfg >> 8) & (XLEN/2-1);
+    Int32 off = cfg & (XLEN-1);
+    len = len ? len : XLEN/2;
+    Uns64 mask = slo64(0, len) << off;
+    Uns64 data = rs2 << off;
     return (data & mask) | (rs1 & ~mask);
 }
 
@@ -2117,12 +2378,22 @@ static void commonBFP (
     regProlog(processor, object, instruction, BM_RR);
     Uns32 result = (word==1) ? 32 : object->xlen;
 
+    extbVer version = extbVersion(object);
+
     vmimtArgReg(result, object->reg_rs1);
     vmimtArgReg(result, object->reg_rs2);
     if (object->xlen==32 || word) {
-        vmimtCallResult((vmiCallFn)bfp32_c, object->xlen, object->reg_rd);
+        if (version==RVB_0_91) {
+            vmimtCallResult((vmiCallFn)bfp32_c_0_91, object->xlen, object->reg_rd);
+        } else if (version==RVB_0_92) {
+            vmimtCallResult((vmiCallFn)bfp32_c_0_92, object->xlen, object->reg_rd);
+        }
     } else {
-        vmimtCallResult((vmiCallFn)bfp64_c, object->xlen, object->reg_rd);
+        if (version==RVB_0_91) {
+            vmimtCallResult((vmiCallFn)bfp64_c_0_91, object->xlen, object->reg_rd);
+        } else if (version==RVB_0_92) {
+            vmimtCallResult((vmiCallFn)bfp64_c_0_92, object->xlen, object->reg_rd);
+        }
     }
 
     if (word) {
@@ -2245,6 +2516,10 @@ static VMIOS_MORPH_FN(doMorph) {
         emitBEXT(processor, object, instruction);
     } else if (type==EXTB_PACK   ) {
         emitPACK(processor, object, instruction);
+    } else if (type==EXTB_PACKU  ) {
+        emitPACKU(processor, object, instruction);
+    } else if (type==EXTB_PACKH  ) {
+        emitPACKH(processor, object, instruction);
     } else if (type==EXTB_BDEP   ) {
         emitBDEP(processor, object, instruction);
 //    } else if (type==EXTB_NOT    ) {
@@ -2303,6 +2578,10 @@ static VMIOS_MORPH_FN(doMorph) {
         emitBMATOR(processor, object, instruction);
     } else if (type==EXTB_BMATFLIP && (object->xlen==64)) {
         emitBMATFLIP(processor, object, instruction);
+    } else if (type==EXTB_SEXTB) {
+        emitSEXTB(processor, object, instruction);
+    } else if (type==EXTB_SEXTH) {
+        emitSEXTH(processor, object, instruction);
 
     // Additions in version 0.90
     } else if (type==EXTB_GORCW && (object->xlen==64)) {
@@ -2369,6 +2648,8 @@ static VMIOS_MORPH_FN(doMorph) {
         emitBEXTW(processor, object, instruction);
     } else if (type==EXTB_PACKW && (object->xlen==64)) {
         emitPACKW(processor, object, instruction);
+    } else if (type==EXTB_PACKUW && (object->xlen==64)) {
+        emitPACKUW(processor, object, instruction);
     } else if (type==EXTB_BFPW && (object->xlen==64)) {
         emitBFPW(processor, object, instruction);
 
@@ -2393,7 +2674,7 @@ static void print_instr(Uns32 xlen, Addr thisPC, char **bufferP, Uns32 instructi
     }
 }
 
-//static void diss_rdp(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+//static void diss_rdp(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
 //    Uns32 rd  = RDp(instruction);
 //
 //    print_instr(object->xlen, thisPC, &buffer, instruction, bytes, attrs);
@@ -2401,7 +2682,7 @@ static void print_instr(Uns32 xlen, Addr thisPC, char **bufferP, Uns32 instructi
 //}
 //#define DISS_RDP(NAME) diss_rdp(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
 
@@ -2410,7 +2691,7 @@ static void diss_rd_rs1(vmiosObjectP object, Addr thisPC, char *buffer, char *na
 }
 #define DISS_RD_RS1(NAME) diss_rd_rs1(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_rs2(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_rs2(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 rs2 = RS2(instruction);
@@ -2420,7 +2701,7 @@ static void diss_rd_rs1_rs2(vmiosObjectP object, Addr thisPC, char *buffer, char
 }
 #define DISS_RD_RS1_RS2(NAME) diss_rd_rs1_rs2(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_rs2_rs3(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_rs2_rs3(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 rs2 = RS2(instruction);
@@ -2431,7 +2712,7 @@ static void diss_rd_rs1_rs2_rs3(vmiosObjectP object, Addr thisPC, char *buffer, 
 }
 #define DISS_RD_RS1_RS2_RS3(NAME) diss_rd_rs1_rs2_rs3(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_rs3_imm5(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_rs3_imm5(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 rs3 = RS3(instruction);
@@ -2442,7 +2723,7 @@ static void diss_rd_rs1_rs3_imm5(vmiosObjectP object, Addr thisPC, char *buffer,
 }
 #define DISS_RD_RS1_RS3_IMM5(NAME) diss_rd_rs1_rs3_imm5(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_rs3_imm6(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_rs3_imm6(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 rs3 = RS3(instruction);
@@ -2453,7 +2734,7 @@ static void diss_rd_rs1_rs3_imm6(vmiosObjectP object, Addr thisPC, char *buffer,
 }
 #define DISS_RD_RS1_RS3_IMM6(NAME) diss_rd_rs1_rs3_imm6(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_imm12(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_imm12(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd   = RD(instruction);
     Uns32 rs1  = RS1(instruction);
     Uns32 cu12 = CU12(instruction);
@@ -2463,7 +2744,7 @@ static void diss_rd_rs1_imm12(vmiosObjectP object, Addr thisPC, char *buffer, ch
 }
 #define DISS_RD_RS1_IMM12(NAME) diss_rd_rs1_imm12(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_imm7(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_imm7(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 cu7 = CU7(instruction);
@@ -2473,7 +2754,7 @@ static void diss_rd_rs1_imm7(vmiosObjectP object, Addr thisPC, char *buffer, cha
 }
 #define DISS_RD_RS1_IMM7(NAME) diss_rd_rs1_imm7(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
-static void diss_rd_rs1_imm6(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_imm6(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 cu6 = CU6(instruction);
@@ -2484,7 +2765,7 @@ static void diss_rd_rs1_imm6(vmiosObjectP object, Addr thisPC, char *buffer, cha
 #define DISS_RD_RS1_IMM6(NAME) diss_rd_rs1_imm6(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
 
-static void diss_rd_rs1_imm5(vmiosObjectP object, Addr thisPC, char *buffer, char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
+static void diss_rd_rs1_imm5(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd  = RD(instruction);
     Uns32 rs1 = RS1(instruction);
     Uns32 cu5 = CU5(instruction);
@@ -2507,207 +2788,220 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
         // RISC-V XBitmanip Extension all (except pseudo instruction)
         //
         if        (type==EXTB_CLZ    ) {
-            DISS_RD_RS1("clz");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CTZ    ) {
-            DISS_RD_RS1("ctz");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_PCNT   ) {
-            DISS_RD_RS1("pcnt");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_ANDN   ) {
-            DISS_RD_RS1_RS2("andn");
+            DISS_RD_RS1(opcodes[type]);
 
         } else if (type==EXTB_ORN   ) {
-            DISS_RD_RS1_RS2("orn");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_XNOR   ) {
-            DISS_RD_RS1_RS2("xnor");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBSET  ) {
-            DISS_RD_RS1_RS2("sbset");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBCLR  ) {
-            DISS_RD_RS1_RS2("sbclr");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBINV  ) {
-            DISS_RD_RS1_RS2("sbinv");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBEXT  ) {
-            DISS_RD_RS1_RS2("sbext");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBSETI ) {
-            DISS_RD_RS1_IMM7("sbseti");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_SBCLRI ) {
-            DISS_RD_RS1_IMM7("sbclri");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_SBINVI ) {
-            DISS_RD_RS1_IMM7("sbinvi");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_SBEXTI ) {
-            DISS_RD_RS1_IMM7("sbexti");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_FSRI   ) {
-            DISS_RD_RS1_RS3_IMM6("fsri");
+            DISS_RD_RS1_RS3_IMM6(opcodes[type]);
 
         } else if (type==EXTB_ADDIWU ) {
-            DISS_RD_RS1_IMM12("addiwu");
+            DISS_RD_RS1_IMM12(opcodes[type]);
         } else if (type==EXTB_SLLIU_W ) {
-            DISS_RD_RS1_IMM7("slliu.w");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_ADDWU ) {
-            DISS_RD_RS1_RS2("addwu");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SUBWU ) {
-            DISS_RD_RS1_RS2("subwu");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_ADDU_W ) {
-            DISS_RD_RS1_RS2("addu.w");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SUBU_W ) {
-            DISS_RD_RS1_RS2("subu.w");
+            DISS_RD_RS1_RS2(opcodes[type]);
 
         } else if (type==EXTB_SLO    ) {
-            DISS_RD_RS1_RS2("slo");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SLOI   ) {
-            DISS_RD_RS1_IMM7("sloi");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_SRO    ) {
-            DISS_RD_RS1_RS2("sro");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SROI   ) {
-            DISS_RD_RS1_IMM7("sroi");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_ROL    ) {
-            DISS_RD_RS1_RS2("rol");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_ROR    ) {
-            DISS_RD_RS1_RS2("ror");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_RORI   ) {
-            DISS_RD_RS1_IMM7("rori");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_GORC   ) {
-            DISS_RD_RS1_RS2("gorc");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_GREV   ) {
-            DISS_RD_RS1_RS2("grev");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_GORCI  ) {
-            DISS_RD_RS1_IMM7("gorci");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_GREVI  ) {
-            DISS_RD_RS1_IMM7("grevi");
+            DISS_RD_RS1_IMM7(opcodes[type]);
         } else if (type==EXTB_SHFL   ) {
-            DISS_RD_RS1_RS2("shfl");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_UNSHFL ) {
-            DISS_RD_RS1_RS2("unshfl");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SHFLI  ) {
-            DISS_RD_RS1_IMM6("shfli");
+            DISS_RD_RS1_IMM6(opcodes[type]);
         } else if (type==EXTB_UNSHFLI) {
-            DISS_RD_RS1_IMM6("unshfli");
+            DISS_RD_RS1_IMM6(opcodes[type]);
         } else if (type==EXTB_BEXT   ) {
-            DISS_RD_RS1_RS2("bext");
+            DISS_RD_RS1_RS2(opcodes[type]);
+        } else if (type==EXTB_PACK   ) {
+            DISS_RD_RS1_RS2(opcodes[type]);
+        } else if (type==EXTB_PACKU  ) {
+            DISS_RD_RS1_RS2(opcodes[type]);
+        } else if (type==EXTB_PACKH  ) {
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BDEP   ) {
-            DISS_RD_RS1_RS2("bdep");
+            DISS_RD_RS1_RS2(opcodes[type]);
 //        } else if (type==EXTB_NOT    ) {
 //            DISS_RDP("c.not");
 
         // RISC-V XTernarybits Extension all
         //
         } else if (type==EXTB_CMIX  ) {
-            DISS_RD_RS1_RS2_RS3("cmix");
+            DISS_RD_RS1_RS2_RS3(opcodes[type]);
         } else if (type==EXTB_CMOV  ) {
-            DISS_RD_RS1_RS2_RS3("cmov");
+            DISS_RD_RS1_RS2_RS3(opcodes[type]);
         } else if (type==EXTB_FSL   ) {
-            DISS_RD_RS1_RS2_RS3("fsl");
+            DISS_RD_RS1_RS2_RS3(opcodes[type]);
         } else if (type==EXTB_FSR   ) {
-            DISS_RD_RS1_RS2_RS3("fsr");
+            DISS_RD_RS1_RS2_RS3(opcodes[type]);
 
         //
         // Additional Instructions all
         //
         } else if (type==EXTB_MIN    ) {
-            DISS_RD_RS1_RS2("min");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_MAX    ) {
-            DISS_RD_RS1_RS2("max");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_MINU   ) {
-            DISS_RD_RS1_RS2("minu");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_MAXU   ) {
-            DISS_RD_RS1_RS2("maxu");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_CLMUL      ) {
-            DISS_RD_RS1_RS2("clmul");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_CLMULR     ) {
 
         // Additions in version 0.90
         } else if (type==EXTB_GORCW) {
-            DISS_RD_RS1_RS2("gorcw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_GREVW) {
-            DISS_RD_RS1_RS2("grevw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SLOW) {
-            DISS_RD_RS1_RS2("slow");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SROW) {
-            DISS_RD_RS1_RS2("srow");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_ROLW) {
-            DISS_RD_RS1_RS2("rolw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_RORW) {
-            DISS_RD_RS1_RS2("rorw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBSETW) {
-            DISS_RD_RS1_RS2("sbsetw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBCLRW) {
-            DISS_RD_RS1_RS2("sbclrw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBINVW) {
-            DISS_RD_RS1_RS2("sbinvw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SBEXTW) {
-            DISS_RD_RS1_RS2("sbextw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_GORCIW) {
-            DISS_RD_RS1_IMM5("gorciw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_GREVIW) {
-            DISS_RD_RS1_IMM5("greviw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_SLOIW) {
-            DISS_RD_RS1_IMM5("sloiw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_SROIW) {
-            DISS_RD_RS1_IMM5("sroiw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_RORIW) {
-            DISS_RD_RS1_IMM5("roriw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_SBSETIW) {
-            DISS_RD_RS1_IMM5("sbsetiw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_SBCLRIW) {
-            DISS_RD_RS1_IMM5("sbclriw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_SBINVIW) {
-            DISS_RD_RS1_IMM5("sbinviw");
+            DISS_RD_RS1_IMM5(opcodes[type]);
         } else if (type==EXTB_FSLW) {
-            DISS_RD_RS1_RS2_RS3("fslw");
+            DISS_RD_RS1_RS2_RS3(opcodes[type]);
         } else if (type==EXTB_FSRW) {
-            DISS_RD_RS1_RS2_RS3("fsrw");
+            DISS_RD_RS1_RS2_RS3(opcodes[type]);
         } else if (type==EXTB_FSRIW) {
-            DISS_RD_RS1_RS3_IMM5("fsriw");
+            DISS_RD_RS1_RS3_IMM5(opcodes[type]);
         } else if (type==EXTB_CLZW) {
-            DISS_RD_RS1("clzw");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CTZW) {
-            DISS_RD_RS1("ctzw");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_PCNTW) {
-            DISS_RD_RS1("pcntw");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CLMULW) {
-            DISS_RD_RS1_RS2("clmulw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_CLMULRW) {
-            DISS_RD_RS1_RS2("clmulrw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_CLMULHW) {
-            DISS_RD_RS1_RS2("clmulhw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_SHFLW) {
-            DISS_RD_RS1_RS2("shflw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_UNSHFLW) {
-            DISS_RD_RS1_RS2("unshflw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BDEPW) {
-            DISS_RD_RS1_RS2("bdepw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BEXTW) {
-            DISS_RD_RS1_RS2("bextw");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_PACKW) {
-            DISS_RD_RS1_RS2("packw");
+            DISS_RD_RS1_RS2(opcodes[type]);
+        } else if (type==EXTB_PACKUW) {
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BFPW) {
-            DISS_RD_RS1_RS2("bfpw");
+            DISS_RD_RS1_RS2(opcodes[type]);
 
         } else if (type==EXTB_CLMULH     ) {
-            DISS_RD_RS1_RS2("clmulh");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_CRC32_B    ) {
-            DISS_RD_RS1("crc32.b");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32_H    ) {
-            DISS_RD_RS1("crc32.h");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32_W    ) {
-            DISS_RD_RS1("crc32.w");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32_D    ) {
-            DISS_RD_RS1("crc32.d");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32C_B   ) {
-            DISS_RD_RS1("crc32c.b");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32C_H   ) {
-            DISS_RD_RS1("crc32c.h");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32C_W   ) {
-            DISS_RD_RS1("crc32c.w");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_CRC32C_D   ) {
-            DISS_RD_RS1("crc32c.d");
+            DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_BMATXOR    ) {
-            DISS_RD_RS1_RS2("bmatxor");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BFP        ) {
-            DISS_RD_RS1_RS2("bfp");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BMATOR     ) {
-            DISS_RD_RS1_RS2("bmator");
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_BMATFLIP ) {
-            DISS_RD_RS1("bmatflip");
+            DISS_RD_RS1(opcodes[type]);
+
+        } else if (type==EXTB_SEXTB ) {
+            DISS_RD_RS1(opcodes[type]);
+        } else if (type==EXTB_SEXTH ) {
+            DISS_RD_RS1(opcodes[type]);
 
         } else {
             return 0;
@@ -2747,7 +3041,6 @@ VMIOS_DOC_FN(doDoc) {
     vmidocAddText(extb2,"Generalized Reverse (grev, grevi)");
     vmidocAddText(extb2,"Generalized Shuffle (shfl, unshfl, shfli, unshfli)");
     vmidocAddText(extb2,"Bit Extract/Deposit (bext, bdep)");
-    vmidocAddText(extb2,"Compressed instructions (c.not)");
 
     vmiDocNodeP extb4 = vmidocAddSection(extb, "RISC-V XTernarybits Extension");
     vmidocAddText(extb4,"Conditional mix (cmix)");

@@ -215,7 +215,9 @@ typedef enum riscvITypeE {
     RV_IT_VSADD_VR,
     RV_IT_VSSUBU_VR,
     RV_IT_VSSUB_VR,
+    RV_IT_VAADDU_VR,
     RV_IT_VAADD_VR,
+    RV_IT_VASUBU_VR,
     RV_IT_VASUB_VR,
     RV_IT_VSMUL_VR,
     RV_IT_VWSMACCU_VR,
@@ -255,6 +257,10 @@ typedef enum riscvITypeE {
     RV_IT_VWMACC_VR,
     RV_IT_VWMACCSU_VR,
     RV_IT_VWMACCUS_VR,
+    RV_IT_VQMACCU_VR,
+    RV_IT_VQMACC_VR,
+    RV_IT_VQMACCSU_VR,
+    RV_IT_VQMACCUS_VR,
 
     // V-extension IVV-type instructions
     RV_IT_VWREDSUMU_VS,
@@ -375,6 +381,7 @@ typedef enum riscvITypeE {
     RV_IT_VSADD_VI,
     RV_IT_VAADD_VI,
     RV_IT_VSLL_VI,
+    RV_IT_VMVR_VI,
     RV_IT_VSRL_VI,
     RV_IT_VSRA_VI,
     RV_IT_VSSRL_VI,
@@ -450,10 +457,12 @@ typedef enum riscvVITypeE {
 
     RV_VIT_NA,      // not a vector instruction
     RV_VIT_V,       // instruction type .v
+    RV_VIT_W,       // instruction type .w
     RV_VIT_VV,      // instruction type .vv
     RV_VIT_VI,      // instruction type .vi
     RV_VIT_VX,      // instruction type .vx
     RV_VIT_WV,      // instruction type .wv
+    RV_VIT_WI,      // instruction type .wi
     RV_VIT_WX,      // instruction type .wx
     RV_VIT_VF,      // instruction type .vf
     RV_VIT_WF,      // instruction type .wf
@@ -465,6 +474,11 @@ typedef enum riscvVITypeE {
     RV_VIT_VXM,     // instruction type .vxm
     RV_VIT_VIM,     // instruction type .vim
     RV_VIT_VFM,     // instruction type .vfm
+    RV_VIT_VN,      // instruction type .v/.w (version-dependent)
+    RV_VIT_VVN,     // instruction type .vv/.wv (version-dependent)
+    RV_VIT_VIN,     // instruction type .vi/.wi (version-dependent)
+    RV_VIT_VXN,     // instruction type .vx/.wx (version-dependent)
+    RV_VIT_LAST     // KEEP LAST: for sizing
 
 } riscvVIType;
 
@@ -486,6 +500,7 @@ typedef struct riscvInstrInfoS {
     Uns8              bytes;            // instruction size in bytes (2 or 4)
     riscvIType        type;             // instruction type
     riscvArchitecture arch;             // architecture requirements
+    riscvVIType       VIType;           // vector instruction type
     Bool              explicitType;     // whether types are explicit in opcode
     Bool              explicitW;        // whether 'w' explicit in opcode
     Bool              unsExt;           // whether to extend unsigned
@@ -500,11 +515,11 @@ typedef struct riscvInstrInfoS {
     riscvFenceDesc    succ;             // successor fence
     riscvRMDesc       rm;               // rounding mode
     riscvCSRUDesc     csrUpdate;        // CSR update semantics
-    riscvVIType       VIType;           // vector instruction type
     Uns32             csr;              // CSR index
     Uns8              vsew;             // vsew value
     Uns8              vlmul;            // vmul value
     Uns8              nf;               // nf value
+    Bool              isWhole;          // is this a whole-register instruction?
     Bool              isFF;             // is this a first-fault instruction?
 
 } riscvInstrInfo;

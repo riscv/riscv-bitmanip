@@ -105,9 +105,9 @@
     .int 0x08006033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm    
 
-# DECODE_ENTRY(0, BDEP,    "|0000100|.....|.....|010|.....|0110011|");  // R-type
+# DECODE_ENTRY(0, BDEP,    "|0100100|.....|.....|110|.....|0110011|");  // R-type
 .macro BDEP rd rs1 rs2
-    .int 0x08002033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x48006033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
 # DECODE_ENTRY(0, CMIX,     "|.....|11|.....|.....|001|.....|0110011|"); // R4-type
@@ -317,14 +317,14 @@
     .int 0x08004033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
-# DECODE_ENTRY(0, BFP,     "|0000100|.....|.....|111|.....|0110011|");  // R-type
+# DECODE_ENTRY(0, BFP,     "|0100100|.....|.....|111|.....|0110011|");  // R-type
 .macro BFP rd rs1 rs2
-    .int 0x08007033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x48007033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
-# DECODE_ENTRY(0, BFPW,     "|0000100|.....|.....|111|.....|0111011|");  // R-type
+# DECODE_ENTRY(0, BFPW,     "|0100100|.....|.....|111|.....|0111011|");  // R-type
 .macro BFPW rd rs1 rs2
-    .int 0x0800703B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x4800703B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
 # DECODE_ENTRY(0, GREVW,    "|0110100|.....|.....|101|.....|0111011|");  // R-type
@@ -477,13 +477,40 @@
     .int 0x0800603B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm    
 
-# DECODE_ENTRY(0, BDEPW,   "|0000100|.....|.....|010|.....|0111011|");  // R-type
+# DECODE_ENTRY(0, BDEPW,   "|0100100|.....|.....|110|.....|0111011|");  // R-type
 .macro BDEPW rd rs1 rs2
-    .int 0x0800203B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+    .int 0x4800603B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
 
 # DECODE_ENTRY(0, PACKW,    "|0000100|.....|.....|100|.....|0111011|");  // R-type
 .macro PACKW rd rs1 rs2
     .int 0x0800403B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
 .endm
-   
+
+# DECODE_ENTRY(0, PACKU,    "|0100100|.....|.....|100|.....|0110011|");  // R-type
+.macro PACKU rd rs1 rs2
+    .int 0x48004033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, PACKH,    "|0000100|.....|.....|111|.....|0110011|");  // R-type
+.macro PACKH rd rs1 rs2
+    .int 0x08007033 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE_ENTRY(0, PACKUW,   "|0100100|.....|.....|100|.....|0111011|");  // R-type
+.macro PACKUW rd rs1 rs2
+    .int 0x4800403B | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15) | ((\rs2&0x1F)<<20)
+.endm
+
+# DECODE32_ENTRY(0, SEXTB,    "|0110000|00100|.....|001|.....|0010011|"), // R-type
+.macro SEXTB rd rs1
+    .int 0x60401013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+# DECODE32_ENTRY(0, SEXTH,    "|0110000|00101|.....|001|.....|0010011|") // R-type
+.macro SEXTH rd rs1
+    .int 0x60501013 | ((\rd&0x1F)<<7) | ((\rs1&0x1F)<<15)
+.endm
+
+ 
+ 

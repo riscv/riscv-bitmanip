@@ -57,6 +57,9 @@ typedef enum riscvParamVariantE {
     RVPV_V       = (1<<6),      // requires Vector extension
     RVPV_MPCORE  = (1<<7),      // present for multicore variants
 
+                                // COMPOSITE PARAMETER IDENTIFIERS
+    RVPV_FPV     = RVPV_FP|RVPV_V,
+
 } riscvParamVariant;
 
 //
@@ -114,10 +117,37 @@ static vmiEnumParameter vectorVariants[] = {
         .value       = RVVV_0_7_1,
         .description = "Vector Architecture Version 0.7.1-draft-20190605",
     },
+    [RVVV_0_7_1_P] = {
+        .name        = "0.7.1-draft-20190605+",
+        .value       = RVVV_0_7_1_P,
+        .description = "Vector Architecture Version 0.7.1-draft-20190605 "
+                       "with some 0.8 features (see model documentation)",
+    },
+    [RVVV_0_8_20190906] = {
+        .name        = "0.8-draft-20190906",
+        .value       = RVVV_0_8_20190906,
+        .description = "Vector Architecture Version 0.8-draft-20190906",
+    },
+    [RVVV_0_8_20191004] = {
+        .name        = "0.8-draft-20191004",
+        .value       = RVVV_0_8_20191004,
+        .description = "Vector Architecture Version 0.8-draft-20191004",
+    },
+    [RVVV_0_8_20191117] = {
+        .name        = "0.8-draft-20191117",
+        .value       = RVVV_0_8_20191117,
+        .description = "Vector Architecture Version 0.8-draft-20191117",
+    },
+    [RVVV_0_8_20191118] = {
+        .name        = "0.8-draft-20191118",
+        .value       = RVVV_0_8_20191118,
+        .description = "Vector Architecture Version 0.8-draft-20191118",
+    },
     [RVVV_MASTER] = {
         .name        = "master",
         .value       = RVVV_MASTER,
-        .description = "Vector Architecture Master Branch (unstable)",
+        .description = "Vector Architecture Master Branch as of commit "
+                       RVVV_MASTER_TAG" (this is subject to change)",
     },
     // KEEP LAST: terminator
     {0}
@@ -415,7 +445,7 @@ static riscvParameter parameters[] = {
     {  RVPV_ALL,     default_user_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, user_version,         userVariants,              "Specify required User Architecture version")},
     {  RVPV_ALL,     default_priv_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, priv_version,         privVariants,              "Specify required Privileged Architecture version")},
     {  RVPV_V,       default_vect_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, vector_version,       vectorVariants,            "Specify required Vector Architecture version")},
-    {  RVPV_FP,      default_fp16_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, fp16_version,         fp16Variants,              "Specify required 16-bit floating point format")},
+    {  RVPV_FPV,     default_fp16_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, fp16_version,         fp16Variants,              "Specify required 16-bit floating point format")},
     {  RVPV_FP,      default_mstatus_fs_mode,      VMI_ENUM_PARAM_SPEC  (riscvParamValues, mstatus_fs_mode,      FSModes,                   "Specify conditions causing update of mstatus.FS to dirty")},
     {  RVPV_ALL,     0,                            VMI_BOOL_PARAM_SPEC  (riscvParamValues, verbose,              True,                      "Specify verbose output messages")},
     {  RVPV_MPCORE,  default_numHarts,             VMI_UNS32_PARAM_SPEC (riscvParamValues, numHarts,             0, 0,          32,         "Specify the number of hart contexts in a multiprocessor")},

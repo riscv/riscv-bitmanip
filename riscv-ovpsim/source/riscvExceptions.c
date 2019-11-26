@@ -163,13 +163,6 @@ inline static void setPCxRET(riscvP riscv, Uns64 newPC) {
 }
 
 //
-// Is the processor halted?
-//
-inline static Bool isHalted(riscvP riscv) {
-    return vmirtIsHalted((vmiProcessorP)riscv);
-}
-
-//
 // Clear any active exclusive access
 //
 inline static void clearEA(riscvP riscv) {
@@ -468,6 +461,40 @@ void riscvTakeException(
 }
 
 //
+// Return description of the given exception
+//
+static const char *getExceptionDesc(riscvException exception) {
+
+    const char          *result = 0;
+    riscvExceptionDescCP desc;
+
+    for(desc=&exceptions[0]; desc->vmiInfo.description && !result; desc++) {
+        if(desc->vmiInfo.code==exception) {
+            result = desc->vmiInfo.description;
+        }
+    }
+
+    return result;
+}
+
+//
+// Report memory exception in verbose mode
+//
+static void reportMemoryException(
+    riscvP         riscv,
+    riscvException exception,
+    Uns64          tval
+) {
+    if(riscv->verbose) {
+        vmiMessage("W", CPU_PREFIX "_IMA",
+            SRCREF_FMT "%s (0x"FMT_Ax")",
+            SRCREF_ARGS(riscv, getPC(riscv)),
+            getExceptionDesc(exception), tval
+        );
+    }
+}
+
+//
 // Take processor exception because of memory access error which could be
 // suppressed for a fault-only-first instruction
 //
@@ -477,6 +504,7 @@ void riscvTakeMemoryException(
     Uns64          tval
 ) {
     if(!handleFF(riscv)) {
+        reportMemoryException(riscv, exception, tval);
         riscvTakeException(riscv, exception, tval);
     }
 }
@@ -500,7 +528,11 @@ void riscvIllegalInstruction(riscvP riscv) {
 // Take Instruction Address Misaligned exception
 //
 void riscvInstructionAddressMisaligned(riscvP riscv, Uns64 tval) {
-    riscvTakeException(riscv, riscv_E_InstructionAddressMisaligned, tval & -2);
+
+    riscvException exception = riscv_E_InstructionAddressMisaligned;
+
+    reportMemoryException(riscv, exception, tval);
+    riscvTakeException(riscv, exception, tval & -2);
 }
 
 //
@@ -1129,13 +1161,6 @@ inline static Bool posedge(Bool old, Bool new) {
 //
 inline static Bool negedge(Uns32 old, Uns32 new) {
     return old && !new;
-}
-
-//
-// Detect any edge
-//
-inline static Bool change(Uns32 old, Uns32 new) {
-    return old != new;
 }
 
 //

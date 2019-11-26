@@ -26,9 +26,11 @@
 #define XLEN64_CHAR             ('Z'+2)
 #define RM_INVALID_CHAR         ('Z'+3)
 #define RISCV_FAND_CHAR         ('Z'+4)
+#define MSTATUS_FS_CHAR         ('Z'+5)
 #define RISCV_FEATURE_INDEX(_C) ((_C)-'A')
 #define RISCV_FEATURE_BIT(_C)   (1<<RISCV_FEATURE_INDEX(_C))
 #define XLEN_SHIFT              RISCV_FEATURE_INDEX(XLEN32_CHAR)
+#define MSTATUS_FS_SHIFT        RISCV_FEATURE_INDEX(MSTATUS_FS_CHAR)
 
 //
 // This enumerates architecture features in a format compatible with the MISA
@@ -44,8 +46,11 @@ typedef enum riscvArchitectureE {
     // ROUNDING MODE INVALID
     ISA_RM_INVALID = RISCV_FEATURE_BIT(RM_INVALID_CHAR),
 
+    // MSTATUS FIELDS
+    ISA_FS    = RISCV_FEATURE_BIT(MSTATUS_FS_CHAR),
+
     // FEATURES A AND B
-    ISA_and  = RISCV_FEATURE_BIT(RISCV_FAND_CHAR),
+    ISA_and   = RISCV_FEATURE_BIT(RISCV_FAND_CHAR),
 
     // BASE ISA FEATURES
     ISA_A     = RISCV_FEATURE_BIT('A'), // atomic instructions
@@ -130,39 +135,49 @@ typedef enum riscvArchitectureE {
 // Supported User Architecture versions
 //
 typedef enum riscvUserVerE {
-    RVUV_2_2,                       // version 2.2
-    RVUV_2_3,                       // version 2.3 (legacy naming)
-    RVUV_20190305,                  // version 20190305
-    RVUV_DEFAULT = RVUV_20190305,   // default version
+    RVUV_2_2,                           // version 2.2
+    RVUV_2_3,                           // version 2.3 (legacy naming)
+    RVUV_20190305,                      // version 20190305
+    RVUV_DEFAULT = RVUV_20190305,       // default version
 } riscvUserVer;
 
 //
 // Supported Privileged Architecture versions
 //
 typedef enum riscvPrivVerE {
-    RVPV_1_10,                      // version 1.10
-    RVPV_1_11,                      // version 1.11 (legacy naming)
-    RVPV_20190405,                  // version 20190405
-    RVPV_DEFAULT = RVPV_20190405,   // default version
+    RVPV_1_10,                          // version 1.10
+    RVPV_1_11,                          // version 1.11 (legacy naming)
+    RVPV_20190405,                      // version 20190405
+    RVPV_DEFAULT = RVPV_20190405,       // default version
 } riscvPrivVer;
+
+//
+// Tag of master version
+//
+#define RVVV_MASTER_TAG "6701109"
 
 //
 // Supported Vector Architecture versions
 //
 typedef enum riscvVectVerE {
-    RVVV_0_7_1,                     // version 0.7.1-draft-20190605
-    RVVV_MASTER,                    // master branch
-    RVVV_LAST,                      // for sizing
-    RVVV_DEFAULT = RVVV_0_7_1,      // default version
+    RVVV_0_7_1,                         // version 0.7.1-draft-20190605
+    RVVV_0_7_1_P,                       // version 0.7.1 with some 0.8 features
+    RVVV_0_8_20190906,                  // version 0.8-draft-20190906
+    RVVV_0_8_20191004,                  // version 0.8-draft-20191004
+    RVVV_0_8_20191117,                  // version 0.8-draft-20191117
+    RVVV_0_8_20191118,                  // version 0.8-draft-20191118
+    RVVV_MASTER,                        // master branch
+    RVVV_LAST,                          // for sizing
+    RVVV_DEFAULT = RVVV_0_8_20191004,   // default version
 } riscvVectVer;
 
 //
 // Supported 16-bit floating point version
 //
 typedef enum riscvFP16VerE {
-    RVFP16_NA,                      // no 16-bit floating point (default)
-    RVFP16_IEEE754,                 // IEEE 754 half precision
-    RVFP16_BFLOAT16,                // BFLOAT16
+    RVFP16_NA,                          // no 16-bit floating point (default)
+    RVFP16_IEEE754,                     // IEEE 754 half precision
+    RVFP16_BFLOAT16,                    // BFLOAT16
 } riscvFP16Ver;
 
 //

@@ -69,6 +69,20 @@ typedef RISCV_CSR_WSTATEFN((*riscvCSRWStateFn));
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// CSR SUPPORT FUNCTION TYPE
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Function called to indicate CSR presence
+//
+#define RISCV_CSR_PRESENTFN(_NAME) Bool _NAME( \
+    riscvCSRAttrsCP attrs,      \
+    riscvP          riscv       \
+)
+typedef RISCV_CSR_PRESENTFN((*riscvCSRPresentFn));
+
+
+////////////////////////////////////////////////////////////////////////////////
 // CSR DEFINITION TYPE
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -81,12 +95,14 @@ typedef struct riscvCSRAttrsS {
     const char       *desc;             // register description
     void             *object;           // client-specific object
     Uns32             csrNum;           // CSR number (includes privilege and r/w access)
-    riscvArchitecture arch;             // required architecture
+    riscvArchitecture arch;             // required architecture (presence)
+    riscvArchitecture access;           // required architecture (access)
     riscvPrivVer      version;          // minimum specification version
     Bool              wEndBlock;        // whether write terminates this block
     Bool              wEndRM;           // whether write invalidates RM assumption
     Bool              noTraceChange;    // whether to exclude from trace change
     Bool              TVMT;             // whether trapped by mstatus.TVM
+    riscvCSRPresentFn presentCB;        // CSR present callback
     riscvCSRReadFn    readCB;           // read callback
     riscvCSRReadFn    readWriteCB;      // read callback (in r/w context)
     riscvCSRWriteFn   writeCB;          // write callback
