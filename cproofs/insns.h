@@ -925,3 +925,38 @@ uint64_t sextw(uint64_t x)
 	return x;
 }
 #endif
+
+// --REF-BEGIN-- shadd
+uint_xlen_t sh1add(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return (rs1 << 1) + rs2;
+}
+
+uint_xlen_t sh2add(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return (rs1 << 2) + rs2;
+}
+
+uint_xlen_t sh3add(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	return (rs1 << 3) + rs2;
+}
+
+uint_xlen_t sh1adduw(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t rs1z = rs1 & 0xFFFFFFFF;
+	return (rs1z << 1) + rs2;
+}
+
+uint_xlen_t sh2adduw(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t rs1z = rs1 & 0xFFFFFFFF;
+	return (rs1z << 2) + rs2;
+}
+
+uint_xlen_t sh3adduw(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t rs1z = rs1 & 0xFFFFFFFF;
+	return (rs1z << 3) + rs2;
+}
+// --REF-END--
