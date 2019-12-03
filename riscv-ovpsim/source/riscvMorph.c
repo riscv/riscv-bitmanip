@@ -100,14 +100,23 @@ typedef enum riscvVArgTypeE {
 //
 typedef enum riscvFPRelationE {
     RVFCMP_QNOK = 0x10,
-    RVFCMP_ORD  = vmi_FPRL_EQUAL|vmi_FPRL_LESS|vmi_FPRL_GREATER | RVFCMP_QNOK,
-    RVFCMP_EQ   = vmi_FPRL_EQUAL                                | RVFCMP_QNOK,
-    RVFCMP_NE   = vmi_FPRL_LESS|vmi_FPRL_GREATER                | RVFCMP_QNOK,
+    RVFCMP_ORD  = vmi_FPRL_EQUAL|vmi_FPRL_LESS|vmi_FPRL_GREATER    |RVFCMP_QNOK,
+    RVFCMP_EQ   = vmi_FPRL_EQUAL                                   |RVFCMP_QNOK,
+    RVFCMP_NE   = vmi_FPRL_LESS|vmi_FPRL_GREATER|vmi_FPRL_UNORDERED|RVFCMP_QNOK,
     RVFCMP_LT   = vmi_FPRL_LESS,
     RVFCMP_LE   = vmi_FPRL_LESS|vmi_FPRL_EQUAL,
     RVFCMP_GT   = vmi_FPRL_GREATER,
     RVFCMP_GE   = vmi_FPRL_GREATER|vmi_FPRL_EQUAL
 } riscvFPRelation;
+
+//
+// Constraints on vstart
+//
+typedef enum riscvVStartTypeE {
+    RVVS_NO_INT = 0,        // instruction not interruptible
+    RVVS_ZERO,              // must be zero
+    RVVS_ANY,               // any vstart value allowed
+} riscvVStartType;
 
 //
 // Attributes controlling JIT code translation
@@ -130,10 +139,10 @@ typedef struct riscvMorphAttrS {
     riscvVShape           vShape     : 8;   // vector operation shape
     vmiCondition          cond       : 4;   // comparison condition
     riscvVArgType         argType    : 4;   // vector argument types
+    riscvVStartType       vstart0    : 4;   // constraints on vstart=0
     Bool                  fpQNaNOk   : 1;   // allow QNaN in floating point compare?
     Bool                  clearFS1   : 1;   // clear FS1 sign (FSgn operation)
     Bool                  negFS2     : 1;   // negate FS2 sign (FSgn operation)
-    Bool                  vstart0    : 1;   // must vstart be zero?
     Bool                  implicitTZ : 1;   // is top part implicitly zeroed?
 } riscvMorphAttr;
 
@@ -199,31 +208,31 @@ inline static void emitCheckPolymorphic(void) {
 }
 
 //
-// Is vector version the given version or earlier?
+// Are only unit stride load/store instructions supported?
 //
-inline static Bool vectVerLE(riscvP riscv, riscvVectVer version) {
-    return (riscv->configInfo.vect_version<=version);
+inline static Bool unitStrideOnly(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_UNIT_STRIDE_ONLY);
 }
 
 //
 // Should vxsat and vxrm be treated as members of fcsr for dirty state update?
 //
-static Bool vxSatRMInFCSR(riscvP riscv) {
-    return !vectVerLE(riscv, RVVV_0_8_20191118);
+inline static Bool vxSatRMInFCSR(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_VXSAT_VXRM_IN_FCSR);
 }
 
 //
 // Do vector floating point instructions require mstatus.FS!=0?
 //
-static Bool vectorFPRequiresFSNZ(riscvP riscv) {
-    return !vectVerLE(riscv, RVVV_0_8_20191118);
+inline static Bool vectorFPRequiresFSNZ(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_FP_REQUIRES_FSNZ);
 }
 
 //
 // Are whole-register move and load/store instructions restricted?
 //
 static Bool vectorRestrictWhole(riscvP riscv) {
-    return !vectVerLE(riscv, RVVV_0_8_20191118);
+    return riscvVFSupport(riscv, RVVF_FP_RESTRICT_WHOLE);
 }
 
 
@@ -578,11 +587,25 @@ static void emitTrapInstructionMask(
 ////////////////////////////////////////////////////////////////////////////////
 
 //
+// Is mstatus.FS always dirty if enabled?
+//
+inline static Bool alwaysDirtyFS(riscvP riscv) {
+    return riscv->configInfo.mstatus_fs_mode==RVFS_ALWAYS_DIRTY;
+}
+
+//
+// Is mstatus.FS always dirty if flags are written?
+//
+inline static Bool writeAnyFS(riscvP riscv) {
+    return riscv->configInfo.mstatus_fs_mode==RVFS_WRITE_ANY;
+}
+
+//
 // Indicate that this instruction may update mstatus (by changing mstatus.FS)
 //
 inline static void mayWriteMStatusFS(riscvP riscv) {
 
-    if(riscv->configInfo.mstatus_fs_mode!=RVFS_ALWAYS_DIRTY) {
+    if(!alwaysDirtyFS(riscv)) {
         vmimtRegReadImpl("mstatus");
         vmimtRegWriteImpl("mstatus");
     }
@@ -593,7 +616,7 @@ inline static void mayWriteMStatusFS(riscvP riscv) {
 //
 inline static void mayWriteMStatusVS(riscvP riscv) {
 
-    if(RD_CSR_MASK_FIELD(riscv, mstatus, VS)) {
+    if(RD_CSR_MASK_FIELD(riscv, mstatus, VS) && !alwaysDirtyFS(riscv)) {
         vmimtRegReadImpl("mstatus");
         vmimtRegWriteImpl("mstatus");
     }
@@ -604,7 +627,7 @@ inline static void mayWriteMStatusVS(riscvP riscv) {
 //
 static void updateFS(riscvP riscv) {
 
-    if(riscv->configInfo.mstatus_fs_mode!=RVFS_ALWAYS_DIRTY) {
+    if(!alwaysDirtyFS(riscv)) {
 
         riscvBlockStateP blockState = riscv->blockState;
 
@@ -623,7 +646,7 @@ static void updateFS(riscvP riscv) {
 //
 static void updateVS(riscvP riscv) {
 
-    if(RD_CSR_MASK_FIELD(riscv, mstatus, VS)) {
+    if(RD_CSR_MASK_FIELD(riscv, mstatus, VS) && !alwaysDirtyFS(riscv)) {
 
         riscvBlockStateP blockState = riscv->blockState;
 
@@ -835,11 +858,6 @@ void riscvWriteRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits) {
 
         // set mstatus.FS
         updateFS(riscv);
-
-    } else if(isVReg(r)) {
-
-        // set mstatus.VS
-        updateVS(riscv);
 
     } else {
 
@@ -3028,7 +3046,7 @@ vmiReg riscvGetFPFlagsMT(riscvP riscv) {
     mayWriteMStatusFS(riscv);
 
     // set mstatus.FS if required
-    if(riscv->configInfo.mstatus_fs_mode==RVFS_WRITE_ANY) {
+    if(writeAnyFS(riscv)) {
         updateFS(riscv);
     }
 
@@ -3733,7 +3751,7 @@ inline static riscvVLMULMt vlmulToVLMUL(Uns32 vlmul) {
 // NOTE: after version 0.7.1, top parts are preserved, not zeroed
 //
 inline static Bool requireZeroTail(riscvP riscv) {
-    return vectVerLE(riscv, RVVV_0_7_1);
+    return riscvVFSupport(riscv, RVVF_ZERO_TAIL);
 }
 
 //
@@ -4352,71 +4370,75 @@ static vmiFType getSEWFType(riscvMorphStateP state, Uns32 SEW) {
 //
 static Bool validateNoOverlap(riscvMorphStateP state, iterDescP id) {
 
-    riscvP       riscv     = state->riscv;
-    riscvVShape  vShape    = state->attrs->vShape;
-    riscvRegDesc mask      = state->info.mask;
-    riscvRegDesc rD        = getRVReg(state, 0);
-    Uns32        index     = getRIndex(rD);
-    riscvVLMULMt dstRegNum = getVRegNumN(state, id, 0);
-    overlapType  ot        = getOverlapType(vShape);
-    Bool         ok        = True;
-    Uns32        badMask   = 0;
-    Uns32        i;
-    Uns32        srcNum;
+    riscvVShape  vShape = state->attrs->vShape;
+    riscvRegDesc rD     = getRVReg(state, 0);
+    Bool         ok     = True;
 
-    // construct mask of registers that may not be sources
-    for(i=0; i<dstRegNum; i++) {
+    if(isVReg(rD) && !isScalarN(vShape, 0)) {
 
-        Uns32 part = i+index;
+        riscvP       riscv     = state->riscv;
+        riscvRegDesc mask      = state->info.mask;
+        Uns32        index     = getRIndex(rD);
+        riscvVLMULMt dstRegNum = getVRegNumN(state, id, 0);
+        overlapType  ot        = getOverlapType(vShape);
+        Uns32        badMask   = 0;
+        Uns32        i;
+        Uns32        srcNum;
 
-        if(part<VREG_NUM) {
-            badMask |= (1<<part);
+        // construct mask of registers that may not be sources
+        for(i=0; i<dstRegNum; i++) {
+
+            Uns32 part = i+index;
+
+            if(part<VREG_NUM) {
+                badMask |= (1<<part);
+            }
         }
-    }
 
-    // destination must not overlap the mask for some instructions in version
-    // 0.7.1 only (constraint relaxed from 0.8)
-    if((ot&OT_M71) && vectVerLE(riscv, RVVV_0_7_1)) {
-        ot |= OT_M;
-    }
-
-    // validate overlap with mask if required
-    if(mask && ((ot&OT_M) || (dstRegNum!=VLMULMT_1))) {
-
-        Uns32 index = getRIndex(mask);
-
-        if(mask && indexInMask(index, badMask)) {
-            ok = False;
+        // destination must not overlap the mask for some instructions in
+        // version 0.7.1 only (constraint relaxed from 0.8)
+        if((ot&OT_M71) && riscvVFSupport(riscv, RVVF_STRICT_OVERLAP)) {
+            ot |= OT_M;
         }
-    }
 
-    // validate overlap with sources if required
-    for(srcNum=1; srcNum<RV_MAX_AREGS; srcNum++) {
+        // validate overlap with mask if required
+        if(mask && ((ot&OT_M) || (dstRegNum!=VLMULMT_1))) {
 
-        riscvRegDesc rA = getRVReg(state, srcNum);
+            Uns32 index = getRIndex(mask);
 
-        if(isVReg(rA)) {
+            if(mask && indexInMask(index, badMask)) {
+                ok = False;
+            }
+        }
 
-            Uns32        index     = getRIndex(rA);
-            riscvVLMULMt srcRegNum = getVRegNumN(state, id, srcNum);
+        // validate overlap with sources if required
+        for(srcNum=1; srcNum<RV_MAX_AREGS; srcNum++) {
 
-            if((ot&OT_S) || (dstRegNum!=srcRegNum)) {
+            riscvRegDesc rA = getRVReg(state, srcNum);
 
-                for(i=0; i<srcRegNum; i++) {
+            if(isVReg(rA)) {
 
-                    Uns32 part = i+index;
+                Uns32        index     = getRIndex(rA);
+                riscvVLMULMt srcRegNum = getVRegNumN(state, id, srcNum);
 
-                    if((part<VREG_NUM) && indexInMask(part, badMask)) {
-                        ok = False;
+                if((ot&OT_S) || (dstRegNum!=srcRegNum)) {
+
+                    for(i=0; i<srcRegNum; i++) {
+
+                        Uns32 part = i+index;
+
+                        if((part<VREG_NUM) && indexInMask(part, badMask)) {
+                            ok = False;
+                        }
                     }
                 }
             }
         }
-    }
 
-    // error if illegal overlap found
-    if(!ok) {
-        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IOVP", "Illegal register overlap");
+        // error if illegal overlap found
+        if(!ok) {
+            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IOVP", "Illegal register overlap");
+        }
     }
 
     return ok;
@@ -4584,7 +4606,15 @@ static vmiFlagsCP getSatFlags(riscvMorphStateP state) {
 //
 // Update vxsat after saturating operation
 //
-static void updateVXSat(void) {
+static void updateVXSat(riscvMorphStateP state) {
+
+    riscvP riscv = state->riscv;
+
+    // set mstatus.FS if required
+    if(writeAnyFS(riscv) && vxSatRMInFCSR(riscv)) {
+        updateFS(riscv);
+    }
+
     vmimtBinopRR(8, vmi_OR, RISCV_SF_FLAGS, RISCV_SF_TMP, 0);
 }
 
@@ -4616,7 +4646,7 @@ static void narrowResult(riscvMorphStateP state, iterDescP id) {
         vmimtBinopRC(id->SEW*2, shiftop, id->r[0], id->SEW, flags);
 
         // merge saturation flag with sticky vxsat
-        updateVXSat();
+        updateVXSat(state);
 
         // extract high part of result
         vmimtMoveRR(id->SEW, id->rdNarrow, VMI_REG_DELTA(id->r[0], bytes));
@@ -4866,10 +4896,18 @@ static vmiReg getSegmentRegisterV0(riscvMorphStateP state, iterDescP id, Uns32 i
 //
 static void checkVStartZero(riscvMorphStateP state, iterDescP id) {
 
-    riscvP           riscv      = state->riscv;
-    riscvBlockStateP blockState = riscv->blockState;
+    riscvP           riscv          = state->riscv;
+    riscvBlockStateP blockState     = riscv->blockState;
+    riscvVStartType  vstart0        = state->attrs->vstart0;
+    Bool             requireVStart0 = (vstart0==RVVS_ZERO);
 
-    if(state->attrs->vstart0 && !blockState->VStartZeroMt) {
+    // non-interruptible instructions allow non-zero vstart only if configured
+    if(vstart0==RVVS_NO_INT) {
+        requireVStart0 = riscv->configInfo.require_vstart0;
+    }
+
+    // check for non-zero vstart if required
+    if(requireVStart0 && !blockState->VStartZeroMt) {
 
         vmiReg    vstart = CSR_REG_MT(vstart);
         vmiLabelP doOp   = vmimtNewLabel();
@@ -5581,12 +5619,12 @@ static setVLOption getSetVLOption(riscvMorphStateP state) {
         // set vl to rs1 if rs1!=zero
         return SVT_SET;
 
-    } else if(vectVerLE(riscv, RVVV_0_7_1_P)) {
+    } else if(riscvVFSupport(riscv, RVVF_SETVLZ_MAX)) {
 
         // legacy behavior when rs1=zero: set vl to maximum
         return SVT_MAX;
 
-    } else if(vectVerLE(riscv, RVVV_0_8_20191117)) {
+    } else if(riscvVFSupport(riscv, RVVF_SETVLZ_PRESERVE)) {
 
         // legacy behavior when rs1=zero: preserve vl
         return SVT_PRESERVE;
@@ -5602,19 +5640,27 @@ static setVLOption getSetVLOption(riscvMorphStateP state) {
 }
 
 //
+// Is CSR vstart forced to zero?
+//
+inline static Bool forceVStart0(riscvP riscv) {
+    return !RD_CSR_MASK(riscv, vstart);
+}
+
+//
 // Adjust JIT code generator state after write of vstart CSR
 //
 void riscvWVStart(riscvMorphStateP state, Bool useRS1) {
 
-    riscvBlockStateP blockState = state->riscv->blockState;
+    riscvP           riscv      = state->riscv;
+    riscvBlockStateP blockState = riscv->blockState;
 
     if(!useRS1 && (state->info.csrUpdate==RV_CSR_RW) && !state->info.c) {
         blockState->VStartZeroMt = True;
     } else {
-        blockState->VStartZeroMt = False;
+        blockState->VStartZeroMt = forceVStart0(riscv);
     }
 
-    updateVS(state->riscv);
+    updateVS(riscv);
 }
 
 //
@@ -6027,6 +6073,41 @@ static RISCV_CHECKV_FN(emitVLdStCheckCB) {
 }
 
 //
+// Disable non-unit-stride load/store instructions if required
+//
+static Bool nonUnitStrideVLdStOk(riscvP riscv) {
+
+    Bool ok = !unitStrideOnly(riscv);
+
+    if(!ok) {
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "UVI", "Unimplemented instruction");
+    }
+
+    return ok;
+}
+
+//
+// Operation-specific argument checks for unit stride loads and stores
+//
+static RISCV_CHECKV_FN(emitVLdStCheckUCB) {
+    return emitVLdStCheckCB(state, id);
+}
+
+//
+// Operation-specific argument checks for strided loads and stores
+//
+static RISCV_CHECKV_FN(emitVLdStCheckSCB) {
+    return nonUnitStrideVLdStOk(state->riscv) && emitVLdStCheckCB(state, id);
+}
+
+//
+// Operation-specific argument checks for indexed loads and stores
+//
+static RISCV_CHECKV_FN(emitVLdStCheckXCB) {
+    return nonUnitStrideVLdStOk(state->riscv) && emitVLdStCheckCB(state, id);
+}
+
+//
 // Operation-specific argument checks for vmv<n>r.v
 //
 static RISCV_CHECKV_FN(emitVMVRCheckCB) {
@@ -6157,7 +6238,7 @@ static vmiReg emitVLdStIOffset(riscvMorphStateP state, iterDescP id) {
     vmiReg       ra      = newTmp(state);
     Uns32        raBits  = getRBits(rs1A);
     Uns32        iBits   = (id->SEW<raBits) ? id->SEW : raBits;
-    Bool         sExtend = vectVerLE(state->riscv, RVVV_0_8_20191004);
+    Bool         sExtend = riscvVFSupport(state->riscv, RVVF_SEXT_IOFFSET);
 
     vmimtMoveExtendRR(raBits, ra, iBits, id->r[2], sExtend);
 
@@ -7152,7 +7233,7 @@ static RISCV_MORPHV_FN(emitVRSBinaryCB) {
     vmimtBinopRRR(id->SEW, state->attrs->binop, id->r[0], id->r[1], arg2, flags);
 
     // merge saturation flag with sticky vxsat
-    updateVXSat();
+    updateVXSat(state);
 }
 
 //
@@ -7168,7 +7249,7 @@ static RISCV_MORPHV_FN(emitVISBinaryCB) {
     vmimtBinopRRC(id->SEW, state->attrs->binop, id->r[0], id->r[1], arg2, flags);
 
     // merge saturation flag with sticky vxsat
-    updateVXSat();
+    updateVXSat(state);
 }
 
 //
@@ -7302,7 +7383,7 @@ static RISCV_MORPHV_FN(emitVRSMULCB) {
     vmimtBinopRC(bits, vmi_SHLSQ, id->r[0], 1, flags);
 
     // merge saturation flag with sticky vxsat
-    updateVXSat();
+    updateVXSat(state);
 
     // rotate LSW to place retained bit at bit 0 and discard bits at N..1
     vmimtBinopRC(bits, vmi_ROL, t1, 1, 0);
@@ -7358,7 +7439,7 @@ static void emitVRSMAddIntInt(
     vmimtBinopRRR(bits, state->attrs->binop, id->r[0], arg1, t0, flags);
 
     // merge saturation flag with sticky vxsat
-    updateVXSat();
+    updateVXSat(state);
 }
 
 //
@@ -7892,7 +7973,7 @@ static RISCV_MORPHV_FN(initVRSLIDE1CB) {
 
     riscvRegDesc rs1A    = getRVReg(state, 2);
     Uns32        sBits   = getMinBits(id, getRBits(rs1A));
-    Bool         sExtend = !vectVerLE(state->riscv, RVVV_0_8_20191004);
+    Bool         sExtend = riscvVFSupport(state->riscv, RVVF_SEXT_SLIDE1_SRC);
 
     // prepare zero-extended input
     vmimtMoveExtendRR(id->SEW, RISCV_VTMP, sBits, id->r[2], sExtend);
@@ -8232,23 +8313,23 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VSETVL_I]         = {morph:emitVSetVLRRC},
 
     // V-extension load/store instructions
-    [RV_IT_VL_I]             = {morph:emitVectorOp, opTCB:emitVLdUCB, checkCB:emitVLdStCheckCB, initCB:emitVLdStInitCB},
-    [RV_IT_VLS_I]            = {morph:emitVectorOp, opTCB:emitVLdSCB, checkCB:emitVLdStCheckCB, initCB:emitVLdStInitCB},
-    [RV_IT_VLX_I]            = {morph:emitVectorOp, opTCB:emitVLdICB, checkCB:emitVLdStCheckCB, initCB:emitVLdStInitCB},
-    [RV_IT_VS_I]             = {morph:emitVectorOp, opTCB:emitVStUCB, checkCB:emitVLdStCheckCB, initCB:emitVLdStInitCB},
-    [RV_IT_VSS_I]            = {morph:emitVectorOp, opTCB:emitVStSCB, checkCB:emitVLdStCheckCB, initCB:emitVLdStInitCB},
-    [RV_IT_VSX_I]            = {morph:emitVectorOp, opTCB:emitVStICB, checkCB:emitVLdStCheckCB, initCB:emitVLdStInitCB},
+    [RV_IT_VL_I]             = {morph:emitVectorOp, opTCB:emitVLdUCB, checkCB:emitVLdStCheckUCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY},
+    [RV_IT_VLS_I]            = {morph:emitVectorOp, opTCB:emitVLdSCB, checkCB:emitVLdStCheckSCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY},
+    [RV_IT_VLX_I]            = {morph:emitVectorOp, opTCB:emitVLdICB, checkCB:emitVLdStCheckXCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY},
+    [RV_IT_VS_I]             = {morph:emitVectorOp, opTCB:emitVStUCB, checkCB:emitVLdStCheckUCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY},
+    [RV_IT_VSS_I]            = {morph:emitVectorOp, opTCB:emitVStSCB, checkCB:emitVLdStCheckSCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY},
+    [RV_IT_VSX_I]            = {morph:emitVectorOp, opTCB:emitVStICB, checkCB:emitVLdStCheckXCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY},
 
     // V-extension AMO operations (Zvamo)
-    [RV_IT_VAMOADD_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_ADD },
-    [RV_IT_VAMOAND_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_AND },
-    [RV_IT_VAMOMAX_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_IMAX},
-    [RV_IT_VAMOMAXU_R]       = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_MAX },
-    [RV_IT_VAMOMIN_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_IMIN},
-    [RV_IT_VAMOMINU_R]       = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_MIN },
-    [RV_IT_VAMOOR_R]         = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_OR  },
-    [RV_IT_VAMOSWAP_R]       = {morph:emitVectorOp, opTCB:emitVAMOSwapRRR,  checkCB:emitVAMOCheckCB                },
-    [RV_IT_VAMOXOR_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_XOR },
+    [RV_IT_VAMOADD_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_ADD,  vstart0:RVVS_ANY},
+    [RV_IT_VAMOAND_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_AND,  vstart0:RVVS_ANY},
+    [RV_IT_VAMOMAX_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_IMAX, vstart0:RVVS_ANY},
+    [RV_IT_VAMOMAXU_R]       = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_MAX,  vstart0:RVVS_ANY},
+    [RV_IT_VAMOMIN_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_IMIN, vstart0:RVVS_ANY},
+    [RV_IT_VAMOMINU_R]       = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_MIN,  vstart0:RVVS_ANY},
+    [RV_IT_VAMOOR_R]         = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_OR,   vstart0:RVVS_ANY},
+    [RV_IT_VAMOSWAP_R]       = {morph:emitVectorOp, opTCB:emitVAMOSwapRRR,  checkCB:emitVAMOCheckCB,                 vstart0:RVVS_ANY},
+    [RV_IT_VAMOXOR_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_XOR,  vstart0:RVVS_ANY},
 
     // V-extension IVV/IVX-type common instructions
     [RV_IT_VMERGE_VR]        = {morph:emitVectorOp, opTCB:emitVRMERGETCB, opFCB:emitVRMERGEFCB},
@@ -8334,8 +8415,8 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VQMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_411_II,  argType:RVVX_US},
 
     // V-extension IVV-type instructions
-    [RV_IT_VWREDSUMU_VS]     = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SI, argType:RVVX_UU, vstart0:1},
-    [RV_IT_VWREDSUM_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SI, argType:RVVX_SS, vstart0:1},
+    [RV_IT_VWREDSUMU_VS]     = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SI, argType:RVVX_UU, vstart0:RVVS_ZERO},
+    [RV_IT_VWREDSUM_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SI, argType:RVVX_SS, vstart0:RVVS_ZERO},
     [RV_IT_VDOTU_VV]         = {morph:emitVectorOp, checkCB:emitEDIVCheckCB},
     [RV_IT_VDOT_VV]          = {morph:emitVectorOp, checkCB:emitEDIVCheckCB},
 
@@ -8379,10 +8460,10 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VFGT_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_GT,     vShape:RVVW_111_PF},
 
     // V-extension FVV-type instructions
-    [RV_IT_VFREDSUM_VS]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_111_SF, vstart0:1},
-    [RV_IT_VFREDOSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_111_SF, vstart0:1},
-    [RV_IT_VFREDMIN_VS]      = {fpConfig:RVFP_FMIN,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMIN, vShape:RVVW_111_SF, vstart0:1},
-    [RV_IT_VFREDMAX_VS]      = {fpConfig:RVFP_FMAX,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMAX, vShape:RVVW_111_SF, vstart0:1},
+    [RV_IT_VFREDSUM_VS]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_111_SF, vstart0:RVVS_ZERO},
+    [RV_IT_VFREDOSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_111_SF, vstart0:RVVS_ZERO},
+    [RV_IT_VFREDMIN_VS]      = {fpConfig:RVFP_FMIN,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMIN, vShape:RVVW_111_SF, vstart0:RVVS_ZERO},
+    [RV_IT_VFREDMAX_VS]      = {fpConfig:RVFP_FMAX,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMAX, vShape:RVVW_111_SF, vstart0:RVVS_ZERO},
     [RV_IT_VFMV_F_S]         = {                      morph:emitScalarOp, opTCB:emitVFMVFS},
     [RV_IT_VFCVT_XUF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_111_IF, argType:RVVX_UU},
     [RV_IT_VFCVT_XF_V]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_111_IF, argType:RVVX_SS},
@@ -8399,28 +8480,28 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VFNCVT_FX_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_12_FIQ, argType:RVVX_SS},
     [RV_IT_VFNCVT_FF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_121_FFQ                },
     [RV_IT_VFCLASS_V]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFClassFltCB,  vShape:RVVW_111_FF                 },
-    [RV_IT_VFWREDSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_212_SF, vstart0:1},
-    [RV_IT_VFWREDOSUM_VS]    = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_212_SF, vstart0:1},
+    [RV_IT_VFWREDSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_212_SF, vstart0:RVVS_ZERO},
+    [RV_IT_VFWREDOSUM_VS]    = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_212_SF, vstart0:RVVS_ZERO},
     [RV_IT_VFDOT_VV]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, checkCB:emitEDIVCheckCB,  vShape:RVVW_111_FF                 },
 
     // V-extension MVV-type instructions
-    [RV_IT_VREDSUM_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD,  vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDAND_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_AND,  vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDOR_VS]        = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_OR,   vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDXOR_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_XOR,  vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDMINU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MIN,  vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDMIN_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMIN, vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDMAXU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MAX,  vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VREDMAX_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMAX, vShape:RVVW_111_SI,  vstart0:1},
-    [RV_IT_VEXT_X_V]         = {morph:emitScalarOp, opTCB:emitVEXTXV,                                                              vShape:RVVW_EXT_II,  vstart0:0},
-    [RV_IT_VPOPC_M]          = {morph:emitVectorOp, opTCB:emitVPOPCCB,                     initCB:initVPOPCCB,                     vShape:RVVW_111_PP,  vstart0:1},
-    [RV_IT_VFIRST_M]         = {morph:emitVectorOp, opTCB:emitVFIRSTCB,                    initCB:initVFIRSTCB,                    vShape:RVVW_111_PP,  vstart0:1},
-    [RV_IT_VMSBF_M]          = {morph:emitVectorOp, opTCB:emitVMSBFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:1},
-    [RV_IT_VMSOF_M]          = {morph:emitVectorOp, opTCB:emitVMSOFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:1},
-    [RV_IT_VMSIF_M]          = {morph:emitVectorOp, opTCB:emitVMSIFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:1},
-    [RV_IT_VIOTA_M]          = {morph:emitVectorOp, opTCB:emitVIOTACB,                     initCB:initVIOTACB,                     vShape:RVVW_111_IP,  vstart0:1},
-    [RV_IT_VID_V]            = {morph:emitVectorOp, opTCB:emitVIDTCB,    opFCB:emitVIDFCB, initCB:initVIOTACB,                     vShape:RVVW_111_IP,  vstart0:0},
-    [RV_IT_VCOMPRESS_VM]     = {morph:emitVectorOp, opTCB:emitVCOMPRESSCB,                 initCB:initVCOMPRESSCB,                 vShape:RVVW_111_CMP, vstart0:1, implicitTZ:1},
+    [RV_IT_VREDSUM_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD,  vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDAND_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_AND,  vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDOR_VS]        = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_OR,   vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDXOR_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_XOR,  vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDMINU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MIN,  vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDMIN_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMIN, vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDMAXU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MAX,  vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VREDMAX_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMAX, vShape:RVVW_111_SI,  vstart0:RVVS_ZERO},
+    [RV_IT_VEXT_X_V]         = {morph:emitScalarOp, opTCB:emitVEXTXV,                                                              vShape:RVVW_EXT_II,                   },
+    [RV_IT_VPOPC_M]          = {morph:emitVectorOp, opTCB:emitVPOPCCB,                     initCB:initVPOPCCB,                     vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
+    [RV_IT_VFIRST_M]         = {morph:emitVectorOp, opTCB:emitVFIRSTCB,                    initCB:initVFIRSTCB,                    vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
+    [RV_IT_VMSBF_M]          = {morph:emitVectorOp, opTCB:emitVMSBFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
+    [RV_IT_VMSOF_M]          = {morph:emitVectorOp, opTCB:emitVMSOFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
+    [RV_IT_VMSIF_M]          = {morph:emitVectorOp, opTCB:emitVMSIFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
+    [RV_IT_VIOTA_M]          = {morph:emitVectorOp, opTCB:emitVIOTACB,                     initCB:initVIOTACB,                     vShape:RVVW_111_IP,  vstart0:RVVS_ZERO},
+    [RV_IT_VID_V]            = {morph:emitVectorOp, opTCB:emitVIDTCB,    opFCB:emitVIDFCB, initCB:initVIOTACB,                     vShape:RVVW_111_IP,                   },
+    [RV_IT_VCOMPRESS_VM]     = {morph:emitVectorOp, opTCB:emitVCOMPRESSCB,                 initCB:initVCOMPRESSCB,                 vShape:RVVW_111_CMP, vstart0:RVVS_ZERO, implicitTZ:1},
     [RV_IT_VMAND_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_AND,  vShape:RVVW_111_PP},
     [RV_IT_VMANDNOT_MM]      = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_ANDN, vShape:RVVW_111_PP},
     [RV_IT_VMOR_MM]          = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_OR,   vShape:RVVW_111_PP},
@@ -8501,7 +8582,7 @@ VMI_START_END_BLOCK_FN(riscvStartBlock) {
     thisState->VLClassMt              = VLCLASSMT_UNKNOWN;
     thisState->VZeroTopMt[VTZ_SINGLE] = 0;
     thisState->VZeroTopMt[VTZ_GROUP]  = 0;
-    thisState->VStartZeroMt           = False;
+    thisState->VStartZeroMt           = forceVStart0(riscv);
 
     // inherit any previously-active SEW, VLMUL and VLClass
     if(prevState) {

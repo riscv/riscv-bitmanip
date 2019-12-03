@@ -11,6 +11,28 @@ NOTE: X-commit messages below refer to git commits in the following Risc-V
 
 ---
 
+- Some Vector Extension issues have been corrected:
+  - vfmne behavior has been corrected to return 1 for unordered operands
+    (previously, 0 was returned).
+
+Date 2019-November-29
+Release 20191128.0
+===
+
+- New parameter require_vstart0 has been added to control whether
+  non-interruptible Vector Extension instructions require CSR vstart to be zero.
+- Some Vector Extension issues have been corrected:
+  - An issue has been corrected that caused some variants of AMO instructions
+    discarding the operation result to cause Illegal Instruction exceptions
+    incorrectly.
+  - Reduction operations with destination overlapping a source are now legal
+    when LMUL>1; previously, such operations caused Illegal Instruction
+    exceptions.
+
+Date 2019-November-26
+Release 20191126.0
+===
+
 - Bit Manipulation Extension has been updated to Version 0.92
 - The vector version master branch currently has these differences compared to
   the previous 0.8-draft-20191118 version:

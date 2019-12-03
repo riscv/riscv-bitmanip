@@ -96,13 +96,6 @@ static riscvArchitecture getXLenArch(riscvP riscv) {
     return getXLenBits(riscv)==32 ? ISA_XLEN_32 : ISA_XLEN_64;
 }
 
-//
-// Return Vector Extension version
-//
-inline static riscvVectVer vectorVersion(riscvP riscv) {
-    return riscv->configInfo.vect_version;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // FIELD EXTRACTION MACROS
@@ -2415,7 +2408,7 @@ static riscvIType32 getInstructionType32(riscvP riscv, riscvInstrInfoP info) {
     static vmidDecodeTableP decodeTables[RVVV_LAST];
 
     // select decode table depending on vector instruction version
-    riscvVectVer vect_version = vectorVersion(riscv);
+    riscvVectVer vect_version = riscv->configInfo.vect_version;
 
     // create instruction decode table if required
     if(!decodeTables[vect_version]) {
@@ -3042,7 +3035,7 @@ static riscvRegDesc getRegister(
 
     // after version 0.8-draft-20191004, vadc/vmadc/vsbc/vmsbc use standard
     // meaning of the mask register bit
-    if((r==RS_V0) && (vectorVersion(riscv)>RVVV_0_8_20191004)) {
+    if((r==RS_V0) && riscvVFSupport(riscv, RVVF_ADC_SBC_MASK)) {
         r = RS_V_M_25;
     }
 
@@ -3225,7 +3218,7 @@ static Uns32 getMemBits(
             result = 32<<U_12(instr);
             break;
         case MBS_12_VAMO:
-            if(vectorVersion(riscv)==RVVV_0_7_1) {
+            if(!riscvVFSupport(riscv, RVVF_VAMO_SEW)) {
                 result = 32<<U_12(instr);
             } else {
                 result = U_12(instr) ? -1 : 32;
@@ -3467,20 +3460,20 @@ static riscvVIType getVIType(
     riscvVIType     VIType
 ) {
     // select type depending on vector instruction version
-    Bool use071 = (vectorVersion(riscv)==RVVV_0_7_1);
+    Bool useVSyntax = !riscvVFSupport(riscv, RVVF_W_SYNTAX);
 
     switch(VIType) {
         case RV_VIT_VN:
-            VIType = use071 ? RV_VIT_V : RV_VIT_W;
+            VIType = useVSyntax ? RV_VIT_V : RV_VIT_W;
             break;
         case RV_VIT_VVN:
-            VIType = use071 ? RV_VIT_VV : RV_VIT_WV;
+            VIType = useVSyntax ? RV_VIT_VV : RV_VIT_WV;
             break;
         case RV_VIT_VIN:
-            VIType = use071 ? RV_VIT_VI : RV_VIT_WI;
+            VIType = useVSyntax ? RV_VIT_VI : RV_VIT_WI;
             break;
         case RV_VIT_VXN:
-            VIType = use071 ? RV_VIT_VX : RV_VIT_WX;
+            VIType = useVSyntax ? RV_VIT_VX : RV_VIT_WX;
             break;
         default:
             break;

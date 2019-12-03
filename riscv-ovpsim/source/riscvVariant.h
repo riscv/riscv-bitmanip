@@ -19,6 +19,12 @@
 
 #pragma once
 
+// Imperas header files
+#include "hostapi/impTypes.h"
+
+// model header files
+#include "riscvTypeRefs.h"
+
 //
 // Map from feature character to feature mask
 //
@@ -204,3 +210,29 @@ typedef enum riscvFSModeE {
 // macro returning 16-bit floating point version
 #define RISCV_FS_MODE(_P)       ((_P)->configInfo.mstatus_fs_mode)
 
+//
+// Supported version-dependent architectural features
+//
+typedef enum riscvVFeatureE {
+    RVVF_W_SYNTAX,          // use .w syntax in disassembly (not .v)
+    RVVF_ZERO_TAIL,         // is zeroing of tail elements required?
+    RVVF_STRICT_OVERLAP,    // strict source/destination overlap?
+    RVVF_SEXT_IOFFSET,      // sign-extend indexed load/store offset?
+    RVVF_SETVLZ_MAX,        // setvl* with rs1=zero: set vl to maximum
+    RVVF_SETVLZ_PRESERVE,   // setvl* with rs1=zero: preserve vl
+    RVVF_VAMO_SEW,          // use SEW AMO size (not 64-bit size)
+    RVVF_ADC_SBC_MASK,      // vadc/vmadc/vsbc/vmsbc use standard mask bit
+    RVVF_SEXT_SLIDE1_SRC,   // sign-extend slide1* ssource value?
+    RVVF_FP_REQUIRES_FSNZ,  // VFP instructions require mstatus.FS!=0?
+    RVVF_VXSAT_VXRM_IN_FCSR,// vxsat/vxrm treated as members of fcsr?
+    RVVF_VLENB_PRESENT,     // is vlenb register present?
+    RVVF_FP_RESTRICT_WHOLE, // whole register load/store/move restricted?
+    RVVF_UNIT_STRIDE_ONLY,  // only unit-stride load/store supported?
+    RVVF_VSTART_Z,          // is vstart forced to zero?
+    RVVF_LAST,              // for sizing
+} riscvVFeature;
+
+//
+// Is the indicated feature supported?
+//
+Bool riscvVFSupport(riscvP riscv, riscvVFeature feature);

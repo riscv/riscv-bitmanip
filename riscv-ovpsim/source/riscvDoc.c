@@ -752,6 +752,16 @@ void riscvDoc(riscvP rootProcessor) {
         );
         vmidocAddText(Parameters, string);
 
+        // document require_vstart0
+        snprintf(
+            SNPRINTF_TGT(string),
+            "Parameter require_vstart0 is used to specify whether non-"
+            "interruptible vector instructions require vstart=0. By default, "
+            "require_vstart0 is set to %u in this variant.",
+            riscv->configInfo.require_vstart0
+        );
+        vmidocAddText(Parameters, string);
+
         vmiDocNodeP Features = vmidocAddSection(
             Vector, "Vector Extension Features"
         );
@@ -832,8 +842,24 @@ void riscvDoc(riscvP rootProcessor) {
 
             vmidocAddText(
                 Version,
-                "Version 0.7.1, with additional 0.8 features. Changes "
-                "compared to the previous version are:"
+                "Version 0.7.1, with some 0.8 and custom features. Not "
+                "intended for general use."
+            );
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // VECTOR EXTENSION VERSION 0.8-draft-20190906
+        ////////////////////////////////////////////////////////////////////////
+
+        {
+            vmiDocNodeP Version = vmidocAddSection(
+                Vector, "Version 0.8-draft-20190906"
+            );
+
+            vmidocAddText(
+                Version,
+                "Stable 0.8 draft of September 6 2019, with these changes "
+                "compared to version 0.7.1-draft-20190605:"
             );
             vmidocAddText(
                 Version,
@@ -859,22 +885,6 @@ void riscvDoc(riscvP rootProcessor) {
                 "- 64-bit vector AMO operations replaced with SEW-width vector "
                 "AMO operations;"
             );
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        // VECTOR EXTENSION VERSION 0.8-draft-20190906
-        ////////////////////////////////////////////////////////////////////////
-
-        {
-            vmiDocNodeP Version = vmidocAddSection(
-                Vector, "Version 0.8-draft-20190906"
-            );
-
-            vmidocAddText(
-                Version,
-                "Stable 0.8 draft of September 6 2019, with these changes "
-                "compared to the previous version:"
-            );
             vmidocAddText(
                 Version,
                 "- vsetvl and vsetvli instructions when rs1 = x0 preserve the "
@@ -899,7 +909,7 @@ void riscvDoc(riscvP rootProcessor) {
             vmidocAddText(
                 Version,
                 "Stable 0.8 draft of October 4 2019, with these changes "
-                "compared to the previous version:"
+                "compared to version 0.8-draft-20190906:"
             );
             vmidocAddText(
                 Version,
@@ -919,7 +929,7 @@ void riscvDoc(riscvP rootProcessor) {
             vmidocAddText(
                 Version,
                 "Stable 0.8 draft of November 17 2019, with these changes "
-                "compared to the previous version:"
+                "compared to version 0.8-draft-20191004:"
             );
             vmidocAddText(
                 Version,
@@ -992,7 +1002,7 @@ void riscvDoc(riscvP rootProcessor) {
             vmidocAddText(
                 Version,
                 "Stable 0.8 draft of November 18 2019, with these changes "
-                "compared to the previous version:"
+                "compared to version 0.8-draft-20191117:"
             );
             vmidocAddText(
                 Version,
@@ -1013,8 +1023,8 @@ void riscvDoc(riscvP rootProcessor) {
             vmidocAddText(
                 Version,
                 "Unstable master version as of 26 November 2019 (commit "
-                RVVV_MASTER_TAG"), with these changes compared to the previous "
-                "version:"
+                RVVV_MASTER_TAG"), with these changes compared to version "
+                "0.8-draft-20191118:"
             );
             vmidocAddText(
                 Version,

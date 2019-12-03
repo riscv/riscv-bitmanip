@@ -260,6 +260,7 @@ static void applyParamsSMP(riscvP riscv, riscvParamValuesP params) {
     cfg->enable_CSR_bus    = params->enable_CSR_bus;
     cfg->d_requires_f      = params->d_requires_f;
     cfg->xret_preserves_lr = params->xret_preserves_lr;
+    cfg->require_vstart0   = params->require_vstart0;
     cfg->ELEN              = powerOfTwo(params->ELEN, "ELEN");
     cfg->SLEN              = powerOfTwo(params->SLEN, "SLEN");
     cfg->VLEN              = powerOfTwo(params->VLEN, "VLEN");

@@ -503,6 +503,12 @@ void riscvTakeMemoryException(
     riscvException exception,
     Uns64          tval
 ) {
+    // force vstart to zero if required
+    if(!RD_CSR_MASK(riscv, vstart)) {
+        WR_CSR(riscv, vstart, 0);
+    }
+
+    // take exception unless fault-only-first mode overrides it
     if(!handleFF(riscv)) {
         reportMemoryException(riscv, exception, tval);
         riscvTakeException(riscv, exception, tval);

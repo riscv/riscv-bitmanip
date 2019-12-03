@@ -121,7 +121,7 @@ static vmiEnumParameter vectorVariants[] = {
         .name        = "0.7.1-draft-20190605+",
         .value       = RVVV_0_7_1_P,
         .description = "Vector Architecture Version 0.7.1-draft-20190605 "
-                       "with some 0.8 features (see model documentation)",
+                       "with custom features (not for general use)",
     },
     [RVVV_0_8_20190906] = {
         .name        = "0.8-draft-20190906",
@@ -177,7 +177,7 @@ static vmiEnumParameter fp16Variants[] = {
 };
 
 //
-// Supported 16-bit floating point variants
+// Specify effect of flag writes on FS
 //
 static vmiEnumParameter FSModes[] = {
     [RVFS_WRITE_NZ] = {
@@ -312,6 +312,7 @@ static RISCV_BOOL_PDEFAULT_CFG_FN(instret_undefined);
 static RISCV_BOOL_PDEFAULT_CFG_FN(enable_CSR_bus);
 static RISCV_BOOL_PDEFAULT_CFG_FN(d_requires_f);
 static RISCV_BOOL_PDEFAULT_CFG_FN(xret_preserves_lr);
+static RISCV_BOOL_PDEFAULT_CFG_FN(require_vstart0);
 
 //
 // Set default value of raw Uns32 parameters
@@ -466,6 +467,7 @@ static riscvParameter parameters[] = {
     {  RVPV_ALL,     default_enable_CSR_bus,       VMI_BOOL_PARAM_SPEC  (riscvParamValues, enable_CSR_bus,       False,                     "Add artifact CSR bus port, allowing CSR registers to be externally implemented")},
     {  RVPV_FP,      default_d_requires_f,         VMI_BOOL_PARAM_SPEC  (riscvParamValues, d_requires_f,         False,                     "If D and F extensions are separately enabled in the misa CSR, whether D is enabled only if F is enabled")},
     {  RVPV_A,       default_xret_preserves_lr,    VMI_BOOL_PARAM_SPEC  (riscvParamValues, xret_preserves_lr,    False,                     "Whether an xRET instruction preserves the value of LR")},
+    {  RVPV_V,       default_require_vstart0,      VMI_BOOL_PARAM_SPEC  (riscvParamValues, require_vstart0,      False,                     "Whether CSR vstart must be 0 for non-interruptible vector instructions")},
     {  RVPV_S,       default_ASID_bits,            VMI_UNS32_PARAM_SPEC (riscvParamValues, ASID_bits,            0, 0,          16,         "Specify the number of implemented ASID bits")},
     {  RVPV_A,       default_lr_sc_grain,          VMI_UNS32_PARAM_SPEC (riscvParamValues, lr_sc_grain,          1, 1,          (1<<16),    "Specify byte granularity of ll/sc lock region (constrained to a power of two)")},
     {  RVPV_ALL,     default_reset_address,        VMI_UNS64_PARAM_SPEC (riscvParamValues, reset_address,        0, 0,          -1,         "Override reset vector address")},
