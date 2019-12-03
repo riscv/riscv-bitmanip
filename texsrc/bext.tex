@@ -14,15 +14,15 @@ look like exactly, but it will probably look something like this:
 \begin{center}
 \begin{tikzpicture}
  \node (clz) { \texttt{clz, ctz, pcnt} };
- \node (slo) [below=0.5cm of clz.west,anchor=west] { \texttt{slo[i], sro[i]} };
- \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
- \node (addwu) [below=0.5cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
+ \node (min) [below=0.5cm of clz.west,anchor=west] { \texttt{min[u], max[u]} };
+
+ \node (addwu) [below=1.0cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
  \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
  \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
  \node (sbset) [right=4.1cm of clz.west,anchor=west] { \texttt{sbset[i]} };
- \node (sbclr) [right=4.1cm of slo.west,anchor=west] { \texttt{sbclr[i]} };
- \node (sbinv) [right=4.1cm of min.west,anchor=west] { \texttt{sbinv[i]} };
+ \node (sbclr) [right=4.1cm of min.west,anchor=west] { \texttt{sbclr[i]} };
+ \node (sbinv) [below=0.5cm of sbclr.east,anchor=east] { \texttt{sbinv[i]} };
  \node (sbext) [right=4.1cm of addwu.west,anchor=west] { \texttt{sbext[i]} };
 
  \node (shNadd) [right=3.9cm of adduw.west,anchor=north west] { \texttt{shNadd} };
@@ -32,7 +32,10 @@ look like exactly, but it will probably look something like this:
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack[hu]} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
- \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b} };
+ \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b, orc16} };
+
+ \node (slo) [right=4.5cm of andn.west,anchor=west] { \texttt{slo[i]} };
+ \node (sro) [right=4.5cm of xnor.west,anchor=west] { \texttt{sro[i]} };
 
  \node (grev) [right=4.3cm of rev8.west,anchor=west] { \texttt{grev[i]} };
  \node (gorc) [right=4.3cm of orcb.west,anchor=west] { \texttt{gorc[i]} };
