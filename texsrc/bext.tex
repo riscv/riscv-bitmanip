@@ -14,15 +14,15 @@ look like exactly, but it will probably look something like this:
 \begin{center}
 \begin{tikzpicture}
  \node (clz) { \texttt{clz, ctz, pcnt} };
- \node (slo) [below=0.5cm of clz.west,anchor=west] { \texttt{slo[i], sro[i]} };
- \node (min) [below=0.5cm of slo.west,anchor=west] { \texttt{min[u], max[u]} };
- \node (addwu) [below=0.5cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
+ \node (min) [below=0.5cm of clz.west,anchor=west] { \texttt{min[u], max[u]} };
+
+ \node (addwu) [below=1.0cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
  \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
  \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
  \node (sbset) [right=4.1cm of clz.west,anchor=west] { \texttt{sbset[i]} };
- \node (sbclr) [right=4.1cm of slo.west,anchor=west] { \texttt{sbclr[i]} };
- \node (sbinv) [right=4.1cm of min.west,anchor=west] { \texttt{sbinv[i]} };
+ \node (sbclr) [right=4.1cm of min.west,anchor=west] { \texttt{sbclr[i]} };
+ \node (sbinv) [below=0.5cm of sbclr.east,anchor=east] { \texttt{sbinv[i]} };
  \node (sbext) [right=4.1cm of addwu.west,anchor=west] { \texttt{sbext[i]} };
 
  \node (shNadd) [right=3.9cm of adduw.west,anchor=north west] { \texttt{shNadd} };
@@ -32,7 +32,10 @@ look like exactly, but it will probably look something like this:
  \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack[hu]} };
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
- \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b} };
+ \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b, orc16} };
+
+ \node (slo) [right=4.5cm of andn.west,anchor=west] { \texttt{slo[i]} };
+ \node (sro) [right=4.5cm of xnor.west,anchor=west] { \texttt{sro[i]} };
 
  \node (grev) [right=4.3cm of rev8.west,anchor=west] { \texttt{grev[i]} };
  \node (gorc) [right=4.3cm of orcb.west,anchor=west] { \texttt{gorc[i]} };
@@ -1605,28 +1608,48 @@ On RV128 there is no {\tt fsri} instruction. But there is {\tt fsriw} and {\tt f
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Unsigned address calculation instructions}
+\section{Address calculation instructions}
 
-Consider C code that's using unsigned 32-bit ints as array indices. For example:
+\begin{rvb}
+  RV32, RV64:
+    sh1add rd, rs1, rs2
+    sh2add rd, rs1, rs2
+    sh3add rd, rs1, rs2
+
+  RV64 only:
+    sh1addu.w rd, rs1, rs2
+    sh2addu.w rd, rs1, rs2
+    sh3addu.w rd, rs1, rs2
+\end{rvb}
+
+These instructions shift {\tt rs1} left by 1, 2, or 3 bits, then add the result
+to {\tt rs2}. The {\tt sh?addu.w} instructions are identical to {\tt sh?add}, except
+that bits XLEN-1:32 of the {\tt rs1} argument are cleared before the shift.
+
+\input{bextcref-shadd}
+
+An opcode for {\tt sh4add}/{\tt sh4addu.w} for RV128 and/or RVQ is reserved.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Mixed uint32/int64 arithmetic instructions}
+
+Consider RV64 C code that's using unsigned 32-bit ints as array indices. For example:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  char addiwu_demo(char *p, unsigned int i) {
+  char u32i64demo(char *p, unsigned int i) {
     return p[i-1];
-  }
-
-  int slliuw_demo(int *p, unsigned int i, unsigned int j) {
-    return p[i^j];
   }
 \end{verbatim}
 \end{minipage}
 
-In both cases the expression within {\tt p[\dots]} must overflow according to
+In such cases the expression within {\tt p[\dots]} must overflow according to
 32-bit arithmetic, then be zero-extended, and then this zero-extended result
 must be used in the address calculation.
 
 The instructions below make sure that no explicit {\tt zext.w} instruction
-is needed in those cases, to make sure there is no systematic performance
+is needed in such cases, to make sure there is no systematic performance
 penalty for code like shown above on RV64 compared to RV32.
 
 \subsection{Add/sub with postfix zero-extend ({\tt addwu}, {\tt subwu}, {\tt addiwu})}
@@ -1823,6 +1846,10 @@ and are marked with a {\tt *}.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  ROL
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  ROR
 |---------------------------------------------------------------|
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  SH1ADD
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  SH2ADD
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  SH3ADD
+|---------------------------------------------------------------|
 |  0100100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBCLR
 |  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBSET
 |  0110100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBINV
@@ -1920,6 +1947,10 @@ and are marked with a {\tt *}.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
 |---------------------------------------------------------------|
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  SH1ADDU.W
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADDU.W
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADDU.W
+|---------------------------------------------------------------|
 |  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBCLRW
 |  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSETW
 |  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBINVW
@@ -1960,6 +1991,25 @@ and are marked with a {\tt *}.
 \end{verbatim}
 \end{minipage}
 
+Changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
+{\tt -} for removal):
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+|  3                   2                   1                    |
+|1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
+|===============================================================|
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  + SH1ADD
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + SH2ADD
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + SH3ADD
+|---------------------------------------------------------------|
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  + SH1ADDU.W
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + SH2ADDU.W
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + SH3ADDU.W
+|---------------------------------------------------------------|
+\end{verbatim}
+\end{minipage}
+
 \begin{figure}[t]
 \begin{center}
 \begin{minipage}{\linewidth}
@@ -1979,7 +2029,7 @@ and are marked with a {\tt *}.
 |  -00-1-1  |  CLMUL (2)|    MAX^(2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN^   |    MINU^  |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|  SUBWU (1)|           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -01-0-0  |    SLO    |    SRO    |           |           |           |           |           |           |
+|  -01-0-0  |    SLO    |    SRO    |  (SH4ADD) |   SH1ADD  |           |   SH2ADD  |   SH3ADD  |           |
 |  -11-0-0  |    ROL (3)|    ROR    |           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-0-1  |        (2)|        (2)|           |           |           |           |           |           |
