@@ -48,7 +48,7 @@ can be used to produce the constant:
   pack a0, a0, zero
 \end{verbatim}
 
-64-bit constants of the form $R\times1 S\times0 T\times1$ (with $R+S+T=64$)
+64-bit constants of the form $R\times1$ $S\times0$ $T\times1$ (with $R+S+T=64$)
 can be constructed using {\tt sloi} and {\tt rori}:
 
 \begin{verbatim}
@@ -56,7 +56,7 @@ can be constructed using {\tt sloi} and {\tt rori}:
   rori a0, a0, R
 \end{verbatim}
 
-Likewise, constructing $R\times0 S\times1 T\times0$:
+Likewise, constructing $R\times0$ $S\times1$ $T\times0$:
 
 \begin{verbatim}
   sloi a0, zero, S

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 static inline long rdinstret() { int64_t rd; asm volatile ("rdinstret %0" : "=r"(rd) : : "memory"); return rd; }
@@ -133,7 +134,7 @@ long utf8_decode_reference(const uint8_t *in, uint32_t *out, long len)
 	return k;
 }
 
-// branch-free UTF-8 encoder using bitmanip instructions and misaligned load
+// branch-free UTF-8 decoder using bitmanip instructions and misaligned load
 long utf8_decode_bitmanip(const uint8_t *in, uint32_t *out, long len)
 {
 	uint32_t *p = out;
@@ -142,6 +143,7 @@ long utf8_decode_bitmanip(const uint8_t *in, uint32_t *out, long len)
 	for (int i = 0; i < len;) {
 		uint32_t v = *(uint32_t*)(in+i);
 		int bytes = _rv32_max(1, _rv32_clz(~(v << 24)));
+		if (__builtin_expect(bytes > 4, 0)) abort();
 		v = _rv32_rev8(v) << bytes;
 		v = v >> ((bytes-8*bytes) & 31);
 		v = _rv32_bext(v, mask | (bytes-2));
