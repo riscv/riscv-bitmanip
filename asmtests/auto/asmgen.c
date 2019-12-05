@@ -188,12 +188,22 @@ uint32_t packw(uint32_t rs1, uint32_t rs2) {
 
 uint32_t bfpw(uint32_t rs1, uint32_t rs2)
 {
-    int len = (rs2 >> 24) & 15;
-    int off = (rs2 >> 16) & (XLEN_W-1);
-    len = len ? len : 16;
-    uint32_t mask = rolw(slow(0, len), off);
-    uint32_t data = rolw(rs2, off);
+    uint32_t cfg = rs2 >> (XLEN_W/2);
+    if ((cfg >> 30) == 2)
+        cfg = cfg >> 16;
+    int len = (cfg >> 8) & (XLEN_W/2-1);
+    int off = cfg & (XLEN_W-1);
+    len = len ? len : XLEN_W/2;
+    uint32_t mask = slo(0, len) << off;
+    uint32_t data = rs2 << off;
     return (data & mask) | (rs1 & ~mask);
+}
+
+uint32_t packuw(uint32_t rs1, uint32_t rs2)
+{
+    uint32_t lower = rs1 >> XLEN_W/2;
+    uint32_t upper = (rs2 >> XLEN_W/2) << XLEN_W/2;
+    return lower | upper;
 }
 
 int getnum(int lo, int hi) {
@@ -411,6 +421,14 @@ void do_pcntw(int test) {
     PROLOG_RR(pcntw, test);
     EPILOG(pcntw, test);
 }
+void do_sextb(int test) {
+    PROLOG_RR(sextb, test);
+    EPILOG(sextb, test);
+}
+void do_sexth(int test) {
+    PROLOG_RR(sexth, test);
+    EPILOG(sexth, test);
+}
 void do_andn(int test) {
     PROLOG_RRR(andn, test);
     EPILOG(andn, test);
@@ -595,9 +613,21 @@ void do_pack(int test) {
     PROLOG_RRR(pack, test);
     EPILOG(pack, test);
 }
+void do_packu(int test) {
+    PROLOG_RRR(packu, test);
+    EPILOG(packu, test);
+}
+void do_packh(int test) {
+    PROLOG_RRR(packh, test);
+    EPILOG(packh, test);
+}
 void do_packw(int test) {
     PROLOG_RRR(packw, test);
     EPILOG(packw, test);
+}
+void do_packuw(int test) {
+    PROLOG_RRR(packuw, test);
+    EPILOG(packuw, test);
 }
 void do_bfpw(int test) {
     PROLOG_RRR(bfpw, test);
@@ -835,6 +865,8 @@ int main(int argc, char **argv) {
         do_clz(++test);
         do_ctz(++test);
         do_pcnt(++test);
+        do_sextb(++test);
+        do_sexth(++test);
 #if (XLEN==64)
         do_bmatflip(++test);
 #endif
@@ -865,10 +897,12 @@ int main(int argc, char **argv) {
         do_bdep(++test);
         do_bext(++test);
         do_pack(++test);
+        do_packu(++test);
 #if (XLEN==64)
         do_bmator(++test);
         do_bmatxor(++test);
 #endif
+        do_packh(++test);
         do_bfp(++test);
 
         do_shfli(++test);
@@ -923,6 +957,7 @@ int main(int argc, char **argv) {
         do_bdepw(++test);
         do_bextw(++test);
         do_packw(++test);
+        do_packuw(++test);
         do_bfpw(++test);
 #endif
     }

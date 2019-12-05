@@ -85,6 +85,7 @@ typedef struct riscvBlockStateS {
     riscvBlockStateP prevState;     // previous block state
     Uns32            fpNaNBoxMask[2];// mask of known NaN-boxed registers
     Bool             FSDirty;       // is status.FS known to be dirty?
+    Bool             VSDirty;       // is status.VS known to be dirty?
     riscvSEWMt       SEWMt;         // known active vector SEW
     riscvVLMULMt     VLMULMt;       // known active vector VLMUL
     riscvVLClassMt   VLClassMt;     // known active vector VL zero/non-zero/max

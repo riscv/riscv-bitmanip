@@ -23,6 +23,7 @@
 #include "riscvBlockState.h"
 #include "riscvRegisterTypes.h"
 #include "riscvTypeRefs.h"
+#include "riscvVectorTypes.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,9 +119,27 @@ void riscvConfigureFPU(riscvP riscv);
 void riscvWFS(riscvMorphStateP state, Bool useRS1);
 
 //
+// Adjust JIT code generator state after write of vector register that affects
+// floating point state (behavior clearly defined only after version 20191118)
+//
+void riscvWFSVS(riscvMorphStateP state, Bool useRS1);
+
+//
 // Reset JIT code generator state after possible write of mstatus.FS
 //
 void riscvRstFS(riscvMorphStateP state, Bool useRS1);
+
+//
+// Return VMI register for floating point status flags when written (NOTE:
+// mstatus.FS might need to be updated as well)
+//
+vmiReg riscvGetFPFlagsMT(riscvP riscv);
+
+//
+// Validate the given rounding mode is legal and emit an Illegal Instruction
+// exception call if not
+//
+Bool riscvEmitCheckLegalRM(riscvP riscv, riscvRMDesc rm);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,4 +160,19 @@ void riscvWVStart(riscvMorphStateP state, Bool useRS1);
 // Is the specified SEW valid?
 //
 riscvSEWMt riscvValidSEW(riscvP riscv, Uns8 vsew);
+
+//
+// Emit externally-implemented vector operation
+//
+void riscvMorphVOp(
+    riscvP           riscv,
+    Uns64            thisPC,
+    riscvRegDesc     r0,
+    riscvRegDesc     r1,
+    riscvRegDesc     r2,
+    riscvRegDesc     mask,
+    riscvVShape      shape,
+    riscvVExternalFn externalCB,
+    void            *userData
+);
 

@@ -92,6 +92,7 @@ typedef struct riscvConfigS {
     Bool              instret_undefined;// whether instret CSR is undefined
     Bool              d_requires_f;     // when misa D requires F to be set
     Bool              xret_preserves_lr;// whether xRET preserves current LR
+    Bool              require_vstart0;  // require vstart 0 if uninterruptible?
     Bool              enable_CSR_bus;   // enable CSR implementation bus
     Bool              tval_ii_code;     // instruction bits in [sm]tval for
                                         // illegal instruction exception?

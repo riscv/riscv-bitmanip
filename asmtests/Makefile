@@ -13,7 +13,15 @@ LOG32 = $(ELF32:.32.elf=.32.log)
 ELF   = $(ELF32) $(ELF64)
 LOG   = $(LOG32) $(LOG64)
 
-REDIR = >/dev/null
+V=@
+REDIR=>/dev/null
+ifeq ($(VERBOSE),1)
+	REDIR=
+	V=
+endif
+ifeq ($(TRACE),1)
+	REDIR=--trace --tracechange --tracefile $(@).trc >/dev/null
+endif
 
 ifeq ($(OS),Windows_NT)
     TARGET_SIM ?= ../riscv-ovpsim/bin/Windows64/riscvOVPsim.exe
@@ -45,14 +53,12 @@ verify:
 	@ bash verify.sh
 
 %.32.log: %.32.elf FORCE
-	#$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).trc --trace --tracechange $(REDIR)
-	$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).tmp
+	$(RUN_TARGET) --variant RV32GC --program $(<) --logfile $(@).tmp $(REDIR)
 	@ -grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 
 %.64.log: %.64.elf FORCE
-	#$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).trc --trace --tracechange $(REDIR)
-	$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).tmp
+	$(RUN_TARGET) --variant RV64GC --program $(<) --logfile $(@).tmp $(REDIR)
 	@ -grep "^LOG: " $(@).tmp > $@
 	@ rm -f $(@).tmp
 

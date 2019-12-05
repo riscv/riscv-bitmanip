@@ -47,17 +47,28 @@ inline static riscvP getChild(riscvP riscv) {
 //
 void riscvSetCurrentArch(riscvP riscv) {
 
+    Uns32 MXL = RD_CSR_FIELD(riscv, misa, MXL);
+    Bool  FS  = (RD_CSR_FIELD(riscv, mstatus, FS) != 0);
+
     // derive new architecture value based on misa value, preserving rounding
     // mode invalid setting
     riscvArchitecture arch = (
         (riscv->currentArch & ISA_RM_INVALID) |
         RD_CSR_FIELD(riscv, misa, Extensions) |
-        (RD_CSR_FIELD(riscv, misa, MXL)<<XLEN_SHIFT)
+        (MXL<< XLEN_SHIFT)                    |
+        (FS << MSTATUS_FS_SHIFT)
     );
 
     // mstatus.FS=0 disables floating point extensions
-    if(!RD_CSR_FIELD(riscv, mstatus, FS)) {
+    if(!FS) {
         arch &= ~ISA_DF;
+    }
+
+    // mstatus.VS=0 disables vector extensions (if implemented)
+    if(!RD_CSR_MASK_FIELD(riscv, mstatus, VS)) {
+        // mstatus.VS not implemented
+    } else if(!RD_CSR_FIELD(riscv, mstatus, VS)) {
+        arch &= ~ISA_V;
     }
 
     if(riscv->currentArch != arch) {
@@ -114,9 +125,9 @@ Uns32 riscvGetFlenArch(riscvP riscv) {
 }
 
 //
-// Register extension callback block with the base model
+// Register extension callback block for the id with the base model
 //
-void riscvRegisterExtCB(riscvP riscv, riscvExtCBP extCB) {
+void riscvRegisterExtCB(riscvP riscv, riscvExtCBP extCB, Uns32 id) {
 
     riscvExtCBPP tail = &riscv->extCBs;
     riscvExtCBP  this;
@@ -127,6 +138,21 @@ void riscvRegisterExtCB(riscvP riscv, riscvExtCBP extCB) {
 
     *tail = extCB;
     extCB->next = 0;
+    extCB->id   = id;
+}
+
+//
+// Return the indexed extension's extCB clientData
+//
+void *riscvGetExtClientData(riscvP riscv, Uns32 id) {
+
+    riscvExtCBP this = riscv->extCBs;
+
+    while(this && (this->id!=id)) {
+        this = this->next;
+    }
+
+    return this ? this->clientData : 0;
 }
 
 //

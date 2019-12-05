@@ -246,20 +246,20 @@ static void putOptRM(char **result, riscvRMDesc rm, Bool uncooked) {
 
         putUncookedKey(result, " RM", uncooked);
 
-        if(uncooked && (rm==RV_RM_CURRENT)) {
+        if(!uncooked && (rm==RV_RM_ROD)) {
 
-            putString(result, "rmc");
+            // rounding mode in opcode (not consistent with base architecture)
 
         } else {
 
             static const char *map[] = {
-                [RV_RM_NA]      = "",
                 [RV_RM_CURRENT] = "",
                 [RV_RM_RTE]     = "rte",
                 [RV_RM_RTZ]     = "rtz",
                 [RV_RM_RDN]     = "rdn",
                 [RV_RM_RUP]     = "rup",
                 [RV_RM_RMM]     = "rmm",
+                [RV_RM_ROD]     = "rod",
                 [RV_RM_BAD5]    = "rm5",
                 [RV_RM_BAD6]    = "rm6",
             };
@@ -344,19 +344,28 @@ static void putOpcode(char **result, riscvP riscv, riscvInstrInfoP info) {
         type = putType(result, info, info->r[i], type);
     }
 
-    // emit number of fields if required
-    if(info->nf) {
-        putString(result, "seg");
-        putD(result, info->nf+1);
-    }
+    if(info->isWhole) {
 
-    // emit size modifier if required
-    switch(info->memBits) {
-        case 8:  putChar(result, 'b'); break;
-        case 16: putChar(result, 'h'); break;
-        case 32: putChar(result, 'w'); break;
-        case 64: putChar(result, 'd'); break;
-        case -1: putChar(result, 'e'); break;
+        // whole register load/store
+        putD(result, info->nf+1);
+        putChar(result, 'r');
+
+    } else {
+
+        // emit number of fields if required
+        if(info->nf) {
+            putString(result, "seg");
+            putD(result, info->nf+1);
+        }
+
+        // emit size modifier if required
+        switch(info->memBits) {
+            case 8:  putChar(result, 'b'); break;
+            case 16: putChar(result, 'h'); break;
+            case 32: putChar(result, 'w'); break;
+            case 64: putChar(result, 'd'); break;
+            case -1: putChar(result, 'e'); break;
+        }
     }
 
     // emit unsigned modifier if required
@@ -374,30 +383,43 @@ static void putOpcode(char **result, riscvP riscv, riscvInstrInfoP info) {
         putString(result, "ff");
     }
 
+    // type describing suffix actions
+    typedef struct viDescInfoS {
+        const char *suffix;     // initial suffix
+        Bool        addMaskM;   // add m if mask is specified
+    } viDescInfo;
+
     // vector suffixes
-    static const char *viDescs[] = {
-        [RV_VIT_NA]  = "",
-        [RV_VIT_V]   = ".v",
-        [RV_VIT_VV]  = ".vv",
-        [RV_VIT_VI]  = ".vi",
-        [RV_VIT_VX]  = ".vx",
-        [RV_VIT_WV]  = ".wv",
-        [RV_VIT_WX]  = ".wx",
-        [RV_VIT_VF]  = ".vf",
-        [RV_VIT_WF]  = ".wf",
-        [RV_VIT_VS]  = ".vs",
-        [RV_VIT_M]   = ".m",
-        [RV_VIT_MM]  = ".mm",
-        [RV_VIT_VM]  = ".vm",
-        [RV_VIT_VVM] = ".vvm",
-        [RV_VIT_VXM] = ".vxm",
-        [RV_VIT_VIM] = ".vim",
-        [RV_VIT_VFM] = ".vfm",
+    static const viDescInfo viDescs[RV_VIT_LAST] = {
+        [RV_VIT_NA]  = {"",    0},
+        [RV_VIT_V]   = {".v",  0},
+        [RV_VIT_W]   = {".w",  0},
+        [RV_VIT_VV]  = {".vv", 0},
+        [RV_VIT_VI]  = {".vi", 0},
+        [RV_VIT_VX]  = {".vx", 0},
+        [RV_VIT_WV]  = {".wv", 0},
+        [RV_VIT_WI]  = {".wi", 0},
+        [RV_VIT_WX]  = {".wx", 0},
+        [RV_VIT_VF]  = {".vf", 0},
+        [RV_VIT_WF]  = {".wf", 0},
+        [RV_VIT_VS]  = {".vs", 0},
+        [RV_VIT_M]   = {".m",  0},
+        [RV_VIT_MM]  = {".mm", 0},
+        [RV_VIT_VM]  = {".vm", 0},
+        [RV_VIT_VVM] = {".vv", 1},
+        [RV_VIT_VXM] = {".vx", 1},
+        [RV_VIT_VIM] = {".vi", 1},
+        [RV_VIT_VFM] = {".vf", 1}
     };
 
     // emit vector suffix
     VMI_ASSERT(info->VIType<NUM_MEMBERS(viDescs), "bad VIType (%u)", info->VIType);
-    putString(result, viDescs[info->VIType]);
+    putString(result, viDescs[info->VIType].suffix);
+
+    // add additional 'm' if mask is specified
+    if(viDescs[info->VIType].addMaskM && info->mask) {
+        putChar(result, 'm');
+    }
 
     // acquire/release modifier suffixes
     static const char *aqrlDescs[] = {

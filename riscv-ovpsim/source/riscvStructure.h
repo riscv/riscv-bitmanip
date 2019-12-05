@@ -61,9 +61,7 @@
 //
 // Number of temporaries
 //
-#define NUM_TEMPS_WIDE  3
-#define NUM_TEMPS_BASIC 4
-#define NUM_TEMPS       (NUM_TEMPS_WIDE+NUM_TEMPS_BASIC)
+#define NUM_TEMPS 6
 
 //
 // Container for net values
@@ -180,6 +178,9 @@ typedef struct riscvS {
     Uns16              pmKey;           // polymorphic key
     Uns8               fpFlagsMT;       // flags set by JIT instructions
     Uns8               fpFlagsCSR;      // flags set by CSR write
+    Uns8               SFMT;            // SF set by JIT instructions
+    Uns8               SFCSR;           // SF set by CSR write
+    Uns8               SF;              // operation saturation flag
     Uns32              flags;           // model control flags
     Uns32              flagsRestore;    // saved flags during restore
     riscvConfig        configInfo;      // model configuration
