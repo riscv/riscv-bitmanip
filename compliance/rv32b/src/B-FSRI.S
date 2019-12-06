@@ -42,11 +42,14 @@ RV_COMPLIANCE_CODE_BEGIN
     li s8, 0xba4e154b
     fsri a2,t0,s8,31
     sw a2,32(a1)
+    sw zero,36(a1)
+    sw zero,40(a1)
+    sw zero,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 9,4,-1
+.fill 12,4,-1
 RV_COMPLIANCE_DATA_END

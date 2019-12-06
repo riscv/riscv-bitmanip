@@ -170,11 +170,14 @@ RV_COMPLIANCE_CODE_BEGIN
     li s10, 0xf08b494d
     bfp s2,a7,s10
     sw s2,160(a1)
+    sw zero,164(a1)
+    sw zero,168(a1)
+    sw zero,172(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 41,4,-1
+.fill 44,4,-1
 RV_COMPLIANCE_DATA_END

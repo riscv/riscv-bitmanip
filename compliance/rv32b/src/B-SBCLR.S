@@ -126,11 +126,13 @@ RV_COMPLIANCE_CODE_BEGIN
     li s1, 0x6d39aa61
     sbclr s3,a5,s1
     sw s3,116(a1)
+    sw zero,120(a1)
+    sw zero,124(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 30,4,-1
+.fill 32,4,-1
 RV_COMPLIANCE_DATA_END

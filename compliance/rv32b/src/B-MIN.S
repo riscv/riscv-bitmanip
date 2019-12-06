@@ -138,11 +138,14 @@ RV_COMPLIANCE_CODE_BEGIN
     li t4, 0xffe2dcb0
     min s8,t2,t4
     sw s8,128(a1)
+    sw zero,132(a1)
+    sw zero,136(a1)
+    sw zero,140(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 33,4,-1
+.fill 36,4,-1
 RV_COMPLIANCE_DATA_END

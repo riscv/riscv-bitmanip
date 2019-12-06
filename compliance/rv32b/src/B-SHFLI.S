@@ -24,11 +24,13 @@ RV_COMPLIANCE_CODE_BEGIN
     li t4, 0x9543c51a
     shfli s6,t4,13
     sw s6,20(a1)
+    sw zero,24(a1)
+    sw zero,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 6,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

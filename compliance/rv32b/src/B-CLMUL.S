@@ -34,11 +34,12 @@ RV_COMPLIANCE_CODE_BEGIN
     li t0, 0xc0000040
     clmul a7,s4,t0
     sw a7,24(a1)
+    sw zero,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 7,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

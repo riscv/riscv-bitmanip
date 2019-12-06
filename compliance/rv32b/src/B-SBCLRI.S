@@ -36,11 +36,13 @@ RV_COMPLIANCE_CODE_BEGIN
     li a4, 0xfebefbcc
     sbclri s10,a4,22
     sw s10,36(a1)
+    sw zero,40(a1)
+    sw zero,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 10,4,-1
+.fill 12,4,-1
 RV_COMPLIANCE_DATA_END

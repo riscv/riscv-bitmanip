@@ -432,6 +432,20 @@ int main()
 		}
 
 #ifdef RV32
+		while (testdata[op].size() % 4 != 0) {
+			testcode[op].push_back(stringf("    sw zero,%d(a1)", 4*testdata[op].size()));
+			testdata[op].push_back(0);
+		}
+#endif
+
+#ifdef RV64
+		while (testdata[op].size() % 2 != 0) {
+			testcode[op].push_back(stringf("    sd zero,%d(a1)", 8*testdata[op].size()));
+			testdata[op].push_back(0);
+		}
+#endif
+
+#ifdef RV32
 		string filename = stringf("rv32b/references/%s.reference_output", testname.c_str());
 		FILE *f = fopen(filename.c_str(), "w");
 		for (auto v : testdata[op])

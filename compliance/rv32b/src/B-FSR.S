@@ -121,11 +121,12 @@ RV_COMPLIANCE_CODE_BEGIN
     li s9, 0x7b84fc1d
     fsr a5,a2,s7,s9
     sw a5,88(a1)
+    sw zero,92(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 23,4,-1
+.fill 24,4,-1
 RV_COMPLIANCE_DATA_END

@@ -101,11 +101,12 @@ RV_COMPLIANCE_CODE_BEGIN
     li s1, 0x6308beaf
     cmov a6,t6,t2,s1
     sw a6,72(a1)
+    sw zero,76(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 19,4,-1
+.fill 20,4,-1
 RV_COMPLIANCE_DATA_END

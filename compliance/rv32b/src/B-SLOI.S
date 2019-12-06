@@ -27,11 +27,12 @@ RV_COMPLIANCE_CODE_BEGIN
     li s9, 0xc8680132
     sloi t6,s9,29
     sw t6,24(a1)
+    sw zero,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 7,4,-1
+.fill 8,4,-1
 RV_COMPLIANCE_DATA_END

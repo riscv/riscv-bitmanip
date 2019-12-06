@@ -50,11 +50,12 @@ RV_COMPLIANCE_CODE_BEGIN
     li s6, 0xc7ef0f0e
     slo t6,a4,s6
     sw t6,40(a1)
+    sw zero,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 11,4,-1
+.fill 12,4,-1
 RV_COMPLIANCE_DATA_END

@@ -72,11 +72,13 @@ RV_COMPLIANCE_CODE_BEGIN
     li a3, 0xffffebff
     pcnt t3,a3
     sw t3,84(a1)
+    sw zero,88(a1)
+    sw zero,92(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 
 .data
 RV_COMPLIANCE_DATA_BEGIN
 test_results:
-.fill 22,4,-1
+.fill 24,4,-1
 RV_COMPLIANCE_DATA_END
