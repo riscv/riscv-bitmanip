@@ -30,114 +30,114 @@ RV_COMPLIANCE_CODE_BEGIN
     li t3, 0xde163e74
     minu a0,s4,t3
     sw a0,20(a1)
-    li t2, 0x00000040
-    li t0, 0x00020000
-    minu t6,t2,t0
-    sw t6,24(a1)
-    li s2, 0x00100000
-    li s5, 0x00000000
-    minu a6,s2,s5
-    sw a6,28(a1)
-    li t5, 0x001815fa
-    li s8, 0x001815db
-    minu t0,t5,s8
-    sw t0,32(a1)
-    li s10, 0x0263faf0
-    li t3, 0x006af6f4
-    minu a0,s10,t3
-    sw a0,36(a1)
-    li a6, 0x1051ac9a
-    li a0, 0x1051a9d8
-    minu a7,a6,a0
-    sw a7,40(a1)
-    li a3, 0x16070000
-    li s0, 0x15020090
-    minu s7,a3,s0
-    sw s7,44(a1)
-    li s8, 0x17d47fc4
+    li a7, 0x00000040
+    li s5, 0x00020000
+    minu a3,a7,s5
+    sw a3,24(a1)
+    li s9, 0x00100000
+    li t6, 0x00000000
+    minu s6,s9,t6
+    sw s6,28(a1)
+    li s3, 0x001815fa
+    li s6, 0x001815db
+    minu s1,s3,s6
+    sw s1,32(a1)
+    li s0, 0x0263faf0
+    li a4, 0x006af6f4
+    minu t2,s0,a4
+    sw t2,36(a1)
+    li s1, 0x1051ac9a
+    li t6, 0x1051a9d8
+    minu t4,s1,t6
+    sw t4,40(a1)
+    li s8, 0x16070000
+    li s1, 0x15020090
+    minu t0,s8,s1
+    sw t0,44(a1)
+    li a0, 0x17d47fc4
     li a4, 0x17d47fc6
-    minu s9,s8,a4
-    sw s9,48(a1)
-    li s5, 0x382e991b
-    li s1, 0x382e999b
-    minu a0,s5,s1
-    sw a0,52(a1)
-    li a4, 0x3f025f9f
-    li t3, 0x3f025f9e
-    minu t5,a4,t3
-    sw t5,56(a1)
-    li s2, 0x40000000
+    minu t4,a0,a4
+    sw t4,48(a1)
+    li t3, 0x382e991b
+    li s4, 0x382e999b
+    minu a6,t3,s4
+    sw a6,52(a1)
+    li a3, 0x3f025f9f
+    li a6, 0x3f025f9e
+    minu s6,a3,a6
+    sw s6,56(a1)
+    li a2, 0x40000000
     li s8, 0x40000200
-    minu s1,s2,s8
-    sw s1,60(a1)
-    li s2, 0x41040098
+    minu s6,a2,s8
+    sw s6,60(a1)
+    li s6, 0x41040098
     li a3, 0x41000098
-    minu s4,s2,a3
-    sw s4,64(a1)
-    li s8, 0x5332ff01
-    li a3, 0x5332ff0c
-    minu a2,s8,a3
-    sw a2,68(a1)
-    li t1, 0x5583d725
-    li t3, 0x5513f76d
-    minu s10,t1,t3
-    sw s10,72(a1)
-    li s2, 0x8ba9ff2d
-    li s5, 0x8bf5ff1d
-    minu t0,s2,s5
-    sw t0,76(a1)
-    li a4, 0x9e7f57ab
-    li a7, 0x5ebf0000
-    minu t0,a4,a7
-    sw t0,80(a1)
-    li a3, 0xa4dbf37b
-    li s11, 0xa4dbf39b
-    minu s1,a3,s11
-    sw s1,84(a1)
-    li t4, 0xb58ff25f
-    li s11, 0xb59df27d
-    minu a3,t4,s11
-    sw a3,88(a1)
-    li t2, 0xb5a168d9
-    li s7, 0xb5a17d31
-    minu a5,t2,s7
-    sw a5,92(a1)
-    li s4, 0xbdf3d8b0
-    li s2, 0xbfe2dcb0
-    minu t5,s4,s2
-    sw t5,96(a1)
-    li a7, 0xbfecbc33
-    li a5, 0xbfe6bd33
-    minu s5,a7,a5
-    sw s5,100(a1)
-    li s10, 0xbff3d8b0
-    li s0, 0xbfe2dcb0
-    minu a6,s10,s0
-    sw a6,104(a1)
+    minu s7,s6,a3
+    sw s7,64(a1)
+    li t0, 0x5332ff01
+    li s1, 0x5332ff0c
+    minu a5,t0,s1
+    sw a5,68(a1)
+    li s4, 0x5583d725
+    li a5, 0x5513f76d
+    minu s3,s4,a5
+    sw s3,72(a1)
+    li a7, 0x8ba9ff2d
+    li t2, 0x8bf5ff1d
+    minu s3,a7,t2
+    sw s3,76(a1)
+    li a5, 0x9e7f57ab
+    li t4, 0x5ebf0000
+    minu s10,a5,t4
+    sw s10,80(a1)
+    li s1, 0xa4dbf37b
+    li s3, 0xa4dbf39b
+    minu s11,s1,s3
+    sw s11,84(a1)
+    li s9, 0xb58ff25f
+    li s7, 0xb59df27d
+    minu a4,s9,s7
+    sw a4,88(a1)
+    li a0, 0xb5a168d9
+    li t5, 0xb5a17d31
+    minu s10,a0,t5
+    sw s10,92(a1)
+    li t4, 0xbdf3d8b0
+    li s11, 0xbfe2dcb0
+    minu t6,t4,s11
+    sw t6,96(a1)
+    li t2, 0xbfecbc33
+    li s10, 0xbfe6bd33
+    minu s8,t2,s10
+    sw s8,100(a1)
+    li s6, 0xbff3d8b0
+    li a2, 0xbfe2dcb0
+    minu s2,s6,a2
+    sw s2,104(a1)
     li t2, 0xc104001f
-    li s0, 0xc104001d
-    minu a4,t2,s0
-    sw a4,108(a1)
-    li s3, 0xde7ca325
-    li s10, 0xde7ca724
-    minu s5,s3,s10
-    sw s5,112(a1)
-    li s9, 0xdef06600
-    li t0, 0xdef06400
-    minu s0,s9,t0
-    sw s0,116(a1)
-    li s6, 0xe9767dca
-    li s11, 0xfc05cdf8
-    minu t2,s6,s11
-    sw t2,120(a1)
-    li a5, 0xeffc84b1
-    li a2, 0xeffd84b1
-    minu t4,a5,a2
+    li t4, 0xc104001d
+    minu s8,t2,t4
+    sw s8,108(a1)
+    li a5, 0xde7ca325
+    li a0, 0xde7ca724
+    minu s1,a5,a0
+    sw s1,112(a1)
+    li a6, 0xdef06600
+    li a3, 0xdef06400
+    minu a4,a6,a3
+    sw a4,116(a1)
+    li a6, 0xe9767dca
+    li a3, 0xfc05cdf8
+    minu s7,a6,a3
+    sw s7,120(a1)
+    li a0, 0xeffc84b1
+    li s6, 0xeffd84b1
+    minu t4,a0,s6
     sw t4,124(a1)
-    li s3, 0xffe2f8b0
-    li s10, 0xffe2dcb0
-    minu s9,s3,s10
-    sw s9,128(a1)
+    li a4, 0xffe2f8b0
+    li s6, 0xffe2dcb0
+    minu t6,a4,s6
+    sw t6,128(a1)
     sw zero,132(a1)
     sw zero,136(a1)
     sw zero,140(a1)

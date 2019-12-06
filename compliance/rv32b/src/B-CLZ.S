@@ -30,48 +30,48 @@ RV_COMPLIANCE_CODE_BEGIN
     li s1, 0x6042e65d
     clz t5,s1
     sw t5,28(a1)
-    li t5, 0x0000000a
-    clz s10,t5
-    sw s10,32(a1)
-    li t2, 0x00000011
-    clz s1,t2
-    sw s1,36(a1)
-    li a4, 0x00500002
-    clz t1,a4
-    sw t1,40(a1)
-    li t6, 0x01000000
-    clz t2,t6
-    sw t2,44(a1)
-    li s5, 0x01960000
-    clz t1,s5
-    sw t1,48(a1)
-    li s4, 0x02d80096
-    clz s2,s4
-    sw s2,52(a1)
-    li t0, 0x05180400
+    li t0, 0x0000000a
     clz s2,t0
-    sw s2,56(a1)
-    li a4, 0x0800000a
+    sw s2,32(a1)
+    li a4, 0x00000011
     clz t1,a4
-    sw t1,60(a1)
-    li s9, 0x317ff49a
+    sw t1,36(a1)
+    li s9, 0x00500002
     clz a7,s9
-    sw a7,64(a1)
-    li s5, 0x40800429
+    sw a7,40(a1)
+    li s5, 0x01000000
     clz s10,s5
-    sw s10,68(a1)
-    li a6, 0x86400000
+    sw s10,44(a1)
+    li a6, 0x01960000
     clz s10,a6
-    sw s10,72(a1)
-    li s9, 0xc4434000
+    sw s10,48(a1)
+    li s9, 0x02d80096
     clz s10,s9
-    sw s10,76(a1)
-    li a3, 0xcbcd6a07
+    sw s10,52(a1)
+    li a3, 0x05180400
     clz t4,a3
-    sw t4,80(a1)
-    li t5, 0xffffebff
+    sw t4,56(a1)
+    li t5, 0x0800000a
     clz a3,t5
-    sw a3,84(a1)
+    sw a3,60(a1)
+    li s2, 0x317ff49a
+    clz s0,s2
+    sw s0,64(a1)
+    li t0, 0x40800429
+    clz t1,t0
+    sw t1,68(a1)
+    li t5, 0x86400000
+    clz t0,t5
+    sw t0,72(a1)
+    li a3, 0xc4434000
+    clz t4,a3
+    sw t4,76(a1)
+    li s0, 0xcbcd6a07
+    clz s4,s0
+    sw s4,80(a1)
+    li s11, 0xffffebff
+    clz s1,s11
+    sw s1,84(a1)
     sw zero,88(a1)
     sw zero,92(a1)
     RV_COMPLIANCE_HALT

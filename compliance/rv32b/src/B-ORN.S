@@ -30,30 +30,30 @@ RV_COMPLIANCE_CODE_BEGIN
     li s5, 0xde163e74
     orn t0,s6,s5
     sw t0,20(a1)
-    li a5, 0x1b17cae5
-    li s3, 0xf91bf443
-    orn a4,a5,s3
-    sw a4,24(a1)
-    li t0, 0x9d11f46b
-    li s1, 0x88a17c6f
-    orn s3,t0,s1
-    sw s3,28(a1)
-    li t4, 0xd83d7fff
-    li t3, 0x008800e2
-    orn a5,t4,t3
-    sw a5,32(a1)
-    li t0, 0x22000412
-    li s11, 0x07fffbdd
-    orn t3,t0,s11
-    sw t3,36(a1)
-    li a3, 0xf7ef0b32
-    li s6, 0xebffafa5
-    orn t0,a3,s6
-    sw t0,40(a1)
-    li a3, 0xd3610008
-    li s11, 0xd3ddcdef
-    orn s3,a3,s11
-    sw s3,44(a1)
+    li a6, 0x1b17cae5
+    li t3, 0xf91bf443
+    orn a3,a6,t3
+    sw a3,24(a1)
+    li s6, 0x9d11f46b
+    li s3, 0x88a17c6f
+    orn t3,s6,s3
+    sw t3,28(a1)
+    li s0, 0xd83d7fff
+    li s6, 0x008800e2
+    orn t1,s0,s6
+    sw t1,32(a1)
+    li a6, 0x22000412
+    li t2, 0x07fffbdd
+    orn a7,a6,t2
+    sw a7,36(a1)
+    li t2, 0xf7ef0b32
+    li s9, 0xebffafa5
+    orn s11,t2,s9
+    sw s11,40(a1)
+    li s0, 0xd3610008
+    li t2, 0xd3ddcdef
+    orn s6,s0,t2
+    sw s6,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

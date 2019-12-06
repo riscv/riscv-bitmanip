@@ -29,6 +29,13 @@ slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 43737b61 57861f11
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr f20d8a82 1ceb0c11
 slo,sro,rol,ror,shfl,unshfl,bext,bdep,clmul,clmulh,clmulr 9543c51a 9a48a02c
 
+sh1add,sh2add,sh3add 522a1063 d2d6b642
+sh1add,sh2add,sh3add 8a671b8c 5b4289cf
+sh1add,sh2add,sh3add 02eb0801 81920806
+sh1add,sh2add,sh3add 43737b61 57861f11
+sh1add,sh2add,sh3add f20d8a82 1ceb0c11
+sh1add,sh2add,sh3add 9543c51a 9a48a02c
+
 gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 522a1063 =3
 gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 8a671b8c =5
 gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 02eb0801 =17

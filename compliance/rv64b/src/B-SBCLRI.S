@@ -6,24 +6,24 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s5, 0xf0774453522a1063
-    sbclri a0,s5,3
-    sd a0,0(a1)
-    li s10, 0xedd116c18a671b8c
-    sbclri s8,s10,15
-    sd s8,8(a1)
-    li t2, 0x8130cd0d02eb0801
-    sbclri s1,t2,27
-    sd s1,16(a1)
-    li s5, 0x1f9f61e943737b61
-    sbclri t1,s5,42
-    sd t1,24(a1)
-    li a4, 0x915695b3f20d8a82
-    sbclri t1,a4,59
-    sd t1,32(a1)
-    li a6, 0x925c6cb79543c51a
-    sbclri s10,a6,62
-    sd s10,40(a1)
+    li a4, 0xf0774453522a1063
+    sbclri t1,a4,3
+    sd t1,0(a1)
+    li a6, 0xedd116c18a671b8c
+    sbclri s10,a6,15
+    sd s10,8(a1)
+    li t5, 0x8130cd0d02eb0801
+    sbclri a3,t5,27
+    sd a3,16(a1)
+    li t5, 0x1f9f61e943737b61
+    sbclri t0,t5,42
+    sd t0,24(a1)
+    li s11, 0x915695b3f20d8a82
+    sbclri s1,s11,59
+    sd s1,32(a1)
+    li t3, 0x925c6cb79543c51a
+    sbclri s11,t3,62
+    sd s11,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

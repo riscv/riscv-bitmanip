@@ -30,18 +30,18 @@ RV_COMPLIANCE_CODE_BEGIN
     li s9, 0x9a48a02c
     unshfl a3,t0,s9
     sw a3,20(a1)
-    li s3, 0x00d321db
-    li s7, 0x4ae7185c
-    unshfl t3,s3,s7
-    sw t3,24(a1)
-    li s10, 0x0f3ff336
-    li t1, 0x4b10a48e
-    unshfl s1,s10,t1
-    sw s1,28(a1)
-    li s4, 0xf807f882
-    li s11, 0xa200000e
-    unshfl a5,s4,s11
-    sw a5,32(a1)
+    li a7, 0x00d321db
+    li a2, 0x4ae7185c
+    unshfl a5,a7,a2
+    sw a5,24(a1)
+    li t4, 0x0f3ff336
+    li s3, 0x4b10a48e
+    unshfl s10,t4,s3
+    sw s10,28(a1)
+    li t4, 0xf807f882
+    li a7, 0xa200000e
+    unshfl a6,t4,a7
+    sw a6,32(a1)
     sw zero,36(a1)
     sw zero,40(a1)
     sw zero,44(a1)

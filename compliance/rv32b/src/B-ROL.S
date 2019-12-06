@@ -30,26 +30,26 @@ RV_COMPLIANCE_CODE_BEGIN
     li s11, 0x9a48a02c
     rol s3,a7,s11
     sw s3,20(a1)
-    li s4, 0x12ecc6b6
-    li t1, 0x1750a9be
-    rol a6,s4,t1
-    sw a6,24(a1)
-    li t3, 0x43f5e818
-    li s0, 0x6486f805
-    rol a2,t3,s0
-    sw a2,28(a1)
-    li t4, 0x44e417d0
-    li t6, 0x4e13941f
-    rol s5,t4,t6
-    sw s5,32(a1)
-    li a7, 0x4a48fd54
-    li t1, 0x2000023e
-    rol s6,a7,t1
-    sw s6,36(a1)
-    li a3, 0x7bf2539c
-    li s11, 0xc7ef0f0e
-    rol s10,a3,s11
-    sw s10,40(a1)
+    li s9, 0x12ecc6b6
+    li s1, 0x1750a9be
+    rol t6,s9,s1
+    sw t6,24(a1)
+    li s11, 0x43f5e818
+    li s2, 0x6486f805
+    rol t3,s11,s2
+    sw t3,28(a1)
+    li s5, 0x44e417d0
+    li a6, 0x4e13941f
+    rol s11,s5,a6
+    sw s11,32(a1)
+    li s1, 0x4a48fd54
+    li s7, 0x2000023e
+    rol a6,s1,s7
+    sw a6,36(a1)
+    li s5, 0x7bf2539c
+    li s10, 0xc7ef0f0e
+    rol s1,s5,s10
+    sw s1,40(a1)
     sw zero,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END

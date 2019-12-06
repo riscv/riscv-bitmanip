@@ -6,42 +6,42 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s0, 0x5dd79cfa
-    li s4, 0xc4ed4893
-    fsri s2,s0,s4,3
-    sw s2,0(a1)
-    li s1, 0x9c6f7aa2
-    li s0, 0xfcae8655
-    fsri s3,s1,s0,5
-    sw s3,4(a1)
-    li s6, 0xa8a22391
-    li a6, 0x1b4286dd
-    fsri a5,s6,a6,17
+    li t5, 0x5dd79cfa
+    li t3, 0xc4ed4893
+    fsri t2,t5,t3,3
+    sw t2,0(a1)
+    li a3, 0x9c6f7aa2
+    li s6, 0xfcae8655
+    fsri t0,a3,s6,5
+    sw t0,4(a1)
+    li t1, 0xa8a22391
+    li s1, 0x1b4286dd
+    fsri a5,t1,s1,17
     sw a5,8(a1)
-    li a2, 0x430b3272
-    li a3, 0x2b77485c
-    fsri a7,a2,a3,24
-    sw a7,12(a1)
-    li a2, 0xadd85909
-    li s6, 0x116023b7
-    fsri a0,a2,s6,25
-    sw a0,16(a1)
-    li t5, 0x81c0d967
-    li s6, 0x2ba53005
-    fsri a7,t5,s6,31
-    sw a7,20(a1)
-    li a6, 0x4227bfff
-    li s3, 0x5003b62a
-    fsri a4,a6,s3,25
-    sw a4,24(a1)
-    li a0, 0xe3040043
-    li a7, 0x48134b70
-    fsri t1,a0,a7,0
-    sw t1,28(a1)
-    li t0, 0xffffff07
-    li s8, 0xba4e154b
-    fsri a2,t0,s8,31
-    sw a2,32(a1)
+    li s3, 0x430b3272
+    li t1, 0x2b77485c
+    fsri s7,s3,t1,24
+    sw s7,12(a1)
+    li a3, 0xadd85909
+    li s11, 0x116023b7
+    fsri s3,a3,s11,25
+    sw s3,16(a1)
+    li t4, 0x81c0d967
+    li s5, 0x2ba53005
+    fsri t1,t4,s5,31
+    sw t1,20(a1)
+    li s7, 0x4227bfff
+    li t0, 0x5003b62a
+    fsri s9,s7,t0,25
+    sw s9,24(a1)
+    li t5, 0xe3040043
+    li s1, 0x48134b70
+    fsri a2,t5,s1,0
+    sw a2,28(a1)
+    li a5, 0xffffff07
+    li s4, 0xba4e154b
+    fsri s8,a5,s4,31
+    sw s8,32(a1)
     sw zero,36(a1)
     sw zero,40(a1)
     sw zero,44(a1)

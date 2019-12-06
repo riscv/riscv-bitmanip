@@ -30,10 +30,10 @@ RV_COMPLIANCE_CODE_BEGIN
     li s7, 0x9a48a02c
     clmulr s11,a5,s7
     sw s11,20(a1)
-    li t3, 0xfa829000
-    li t5, 0xc0000040
-    clmulr a0,t3,t5
-    sw a0,24(a1)
+    li s11, 0xfa829000
+    li s0, 0xc0000040
+    clmulr t4,s11,s0
+    sw t4,24(a1)
     sw zero,28(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END

@@ -53,6 +53,13 @@ slow,srow,rolw,rorw,shflw,unshflw,bextw,bdepw,clmulw,clmulhw,clmulrw 1f9f61e9437
 slow,srow,rolw,rorw,shflw,unshflw,bextw,bdepw,clmulw,clmulhw,clmulrw 915695b3f20d8a82 bda8a08e1ceb0c11
 slow,srow,rolw,rorw,shflw,unshflw,bextw,bdepw,clmulw,clmulhw,clmulrw 925c6cb79543c51a e79ad1779a48a02c
 
+sh1add,sh2add,sh3add,sh1addu.w,sh2addu.w,sh3addu.w f0774453522a1063 b370bd7dd2d6b642
+sh1add,sh2add,sh3add,sh1addu.w,sh2addu.w,sh3addu.w edd116c18a671b8c 6f94f8db5b4289cf
+sh1add,sh2add,sh3add,sh1addu.w,sh2addu.w,sh3addu.w 8130cd0d02eb0801 36ecfc1781920806
+sh1add,sh2add,sh3add,sh1addu.w,sh2addu.w,sh3addu.w 1f9f61e943737b61 b320deb657861f11
+sh1add,sh2add,sh3add,sh1addu.w,sh2addu.w,sh3addu.w 915695b3f20d8a82 bda8a08e1ceb0c11
+sh1add,sh2add,sh3add,sh1addu.w,sh2addu.w,sh3addu.w 925c6cb79543c51a e79ad1779a48a02c
+
 gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti f0774453522a1063 =3
 gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti edd116c18a671b8c =15
 gorci,grevi,sloi,sroi,rori,sbseti,sbclri,sbinvi,sbexti 8130cd0d02eb0801 =27

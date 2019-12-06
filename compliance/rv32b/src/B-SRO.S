@@ -30,26 +30,26 @@ RV_COMPLIANCE_CODE_BEGIN
     li s8, 0x9a48a02c
     sro t6,s3,s8
     sw t6,20(a1)
-    li s7, 0x12ecc6b6
-    li a7, 0x1750a9be
-    sro a3,s7,a7
-    sw a3,24(a1)
-    li t3, 0x43f5e818
-    li s4, 0x6486f805
-    sro t0,t3,s4
-    sw t0,28(a1)
-    li a4, 0x44e417d0
-    li a7, 0x4e13941f
-    sro s8,a4,a7
-    sw s8,32(a1)
-    li t0, 0x4a48fd54
-    li t5, 0x2000023e
-    sro s4,t0,t5
-    sw s4,36(a1)
-    li t1, 0x7bf2539c
-    li s2, 0xc7ef0f0e
-    sro a7,t1,s2
-    sw a7,40(a1)
+    li s8, 0x12ecc6b6
+    li s3, 0x1750a9be
+    sro t0,s8,s3
+    sw t0,24(a1)
+    li s6, 0x43f5e818
+    li t4, 0x6486f805
+    sro s11,s6,t4
+    sw s11,28(a1)
+    li s11, 0x44e417d0
+    li s9, 0x4e13941f
+    sro s5,s11,s9
+    sw s5,32(a1)
+    li s11, 0x4a48fd54
+    li s8, 0x2000023e
+    sro a3,s11,s8
+    sw a3,36(a1)
+    li s11, 0x7bf2539c
+    li t4, 0xc7ef0f0e
+    sro s5,s11,t4
+    sw s5,40(a1)
     sw zero,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END

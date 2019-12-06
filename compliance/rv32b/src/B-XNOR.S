@@ -30,30 +30,30 @@ RV_COMPLIANCE_CODE_BEGIN
     li a6, 0xde163e74
     xnor s4,s11,a6
     sw s4,20(a1)
-    li s2, 0x1b17cae5
-    li a6, 0xf91bf443
-    xnor t3,s2,a6
-    sw t3,24(a1)
-    li a7, 0x9d11f46b
-    li a2, 0x88a17c6f
-    xnor s8,a7,a2
-    sw s8,28(a1)
-    li a0, 0xd83d7fff
-    li s11, 0x008800e2
-    xnor t4,a0,s11
-    sw t4,32(a1)
-    li s11, 0x22000412
-    li t5, 0x07fffbdd
-    xnor s10,s11,t5
-    sw s10,36(a1)
+    li t3, 0x1b17cae5
+    li s8, 0xf91bf443
+    xnor a6,t3,s8
+    sw a6,24(a1)
+    li a3, 0x9d11f46b
+    li t3, 0x88a17c6f
+    xnor s6,a3,t3
+    sw s6,28(a1)
+    li s0, 0xd83d7fff
+    li a4, 0x008800e2
+    xnor a2,s0,a4
+    sw a2,32(a1)
+    li a6, 0x22000412
+    li t4, 0x07fffbdd
+    xnor s1,a6,t4
+    sw s1,36(a1)
     li t1, 0xf7ef0b32
-    li s1, 0xebffafa5
-    xnor a5,t1,s1
-    sw a5,40(a1)
-    li t4, 0xd3610008
-    li s5, 0xd3ddcdef
-    xnor t1,t4,s5
-    sw t1,44(a1)
+    li s10, 0xebffafa5
+    xnor a3,t1,s10
+    sw a3,40(a1)
+    li t1, 0xd3610008
+    li t5, 0xd3ddcdef
+    xnor t6,t1,t5
+    sw t6,44(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

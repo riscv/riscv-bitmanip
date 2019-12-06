@@ -30,46 +30,46 @@ RV_COMPLIANCE_CODE_BEGIN
     li s1, 0xde163e74
     grev s9,s5,s1
     sw s9,20(a1)
-    li a7, 0x00002000
-    li t6, 0x40f01f17
-    grev a0,a7,t6
-    sw a0,24(a1)
-    li s6, 0x00120210
-    li a6, 0xc6fe507a
-    grev s11,s6,a6
-    sw s11,28(a1)
-    li s9, 0x00200900
-    li t4, 0xf9fceffe
-    grev a0,s9,t4
-    sw a0,32(a1)
-    li s9, 0x002c80c0
-    li a3, 0xe2d30092
-    grev s0,s9,a3
-    sw s0,36(a1)
-    li a6, 0x04000018
-    li s7, 0x2d4792d3
-    grev s5,a6,s7
-    sw s5,40(a1)
-    li s0, 0x08c03000
-    li t2, 0x3fef8b13
-    grev s7,s0,t2
-    sw s7,44(a1)
-    li s2, 0x0e030000
-    li t2, 0x0000000b
-    grev s3,s2,t2
-    sw s3,48(a1)
-    li s7, 0x80031100
-    li t0, 0xefea7d18
-    grev s9,s7,t0
-    sw s9,52(a1)
-    li a5, 0x82200401
-    li s4, 0x821d8858
-    grev s8,a5,s4
-    sw s8,56(a1)
-    li s0, 0xc480e100
-    li s7, 0x4480874c
+    li s0, 0x00002000
+    li s7, 0x40f01f17
     grev a2,s0,s7
-    sw a2,60(a1)
+    sw a2,24(a1)
+    li s4, 0x00120210
+    li s3, 0xc6fe507a
+    grev s10,s4,s3
+    sw s10,28(a1)
+    li t6, 0x00200900
+    li s11, 0xf9fceffe
+    grev s0,t6,s11
+    sw s0,32(a1)
+    li s10, 0x002c80c0
+    li s9, 0xe2d30092
+    grev t5,s10,s9
+    sw t5,36(a1)
+    li t0, 0x04000018
+    li t5, 0x2d4792d3
+    grev s4,t0,t5
+    sw s4,40(a1)
+    li t6, 0x08c03000
+    li a3, 0x3fef8b13
+    grev s8,t6,a3
+    sw s8,44(a1)
+    li a6, 0x0e030000
+    li a0, 0x0000000b
+    grev t3,a6,a0
+    sw t3,48(a1)
+    li s2, 0x80031100
+    li s10, 0xefea7d18
+    grev a0,s2,s10
+    sw a0,52(a1)
+    li a3, 0x82200401
+    li s8, 0x821d8858
+    grev t4,a3,s8
+    sw t4,56(a1)
+    li s5, 0xc480e100
+    li s11, 0x4480874c
+    grev s9,s5,s11
+    sw s9,60(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

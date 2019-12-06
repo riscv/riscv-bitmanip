@@ -30,114 +30,114 @@ RV_COMPLIANCE_CODE_BEGIN
     li a3, 0xde163e74
     max s3,s11,a3
     sw s3,20(a1)
-    li s10, 0x00000040
-    li s9, 0x00020000
-    max t5,s10,s9
-    sw t5,24(a1)
-    li t6, 0x00100000
-    li a3, 0x00000000
-    max s8,t6,a3
-    sw s8,28(a1)
-    li s2, 0x001815fa
-    li s10, 0x001815db
-    max a0,s2,s10
-    sw a0,32(a1)
-    li s5, 0x0263faf0
-    li s11, 0x006af6f4
-    max s9,s5,s11
-    sw s9,36(a1)
+    li s2, 0x00000040
+    li t3, 0x00020000
+    max s5,s2,t3
+    sw s5,24(a1)
+    li t1, 0x00100000
+    li s6, 0x00000000
+    max t6,t1,s6
+    sw t6,28(a1)
+    li a2, 0x001815fa
+    li t0, 0x001815db
+    max s3,a2,t0
+    sw s3,32(a1)
+    li a6, 0x0263faf0
+    li a0, 0x006af6f4
+    max s8,a6,a0
+    sw s8,36(a1)
     li s4, 0x1051ac9a
-    li s7, 0x1051a9d8
-    max a5,s4,s7
-    sw a5,40(a1)
-    li s7, 0x16070000
-    li s0, 0x15020090
-    max s2,s7,s0
-    sw s2,44(a1)
-    li s8, 0x17d47fc4
-    li a0, 0x17d47fc6
-    max t3,s8,a0
-    sw t3,48(a1)
-    li t2, 0x382e991b
-    li s8, 0x382e999b
-    max s3,t2,s8
-    sw s3,52(a1)
-    li t0, 0x3f025f9f
-    li a4, 0x3f025f9e
-    max a0,t0,a4
-    sw a0,56(a1)
-    li s0, 0x40000000
-    li t5, 0x40000200
-    max t0,s0,t5
-    sw t0,60(a1)
-    li s1, 0x41040098
-    li s7, 0x41000098
-    max t1,s1,s7
-    sw t1,64(a1)
-    li t3, 0x5332ff01
-    li s2, 0x5332ff0c
-    max a0,t3,s2
-    sw a0,68(a1)
-    li s2, 0x5583d725
-    li s6, 0x5513f76d
-    max s7,s2,s6
-    sw s7,72(a1)
-    li a7, 0x8ba9ff2d
-    li t0, 0x8bf5ff1d
-    max s6,a7,t0
-    sw s6,76(a1)
-    li t3, 0x9e7f57ab
-    li a5, 0x5ebf0000
-    max s3,t3,a5
-    sw s3,80(a1)
-    li t4, 0xa4dbf37b
-    li t1, 0xa4dbf39b
-    max t3,t4,t1
-    sw t3,84(a1)
-    li t6, 0xb58ff25f
-    li s10, 0xb59df27d
-    max a6,t6,s10
-    sw a6,88(a1)
-    li s3, 0xb5a168d9
-    li a2, 0xb5a17d31
-    max a7,s3,a2
-    sw a7,92(a1)
-    li s3, 0xbdf3d8b0
-    li a2, 0xbfe2dcb0
-    max t2,s3,a2
-    sw t2,96(a1)
-    li s2, 0xbfecbc33
-    li a5, 0xbfe6bd33
-    max s11,s2,a5
-    sw s11,100(a1)
-    li t4, 0xbff3d8b0
+    li a7, 0x1051a9d8
+    max a4,s4,a7
+    sw a4,40(a1)
+    li s9, 0x16070000
+    li s5, 0x15020090
+    max s6,s9,s5
+    sw s6,44(a1)
+    li a3, 0x17d47fc4
+    li a6, 0x17d47fc6
+    max a0,a3,a6
+    sw a0,48(a1)
+    li s5, 0x382e991b
+    li s10, 0x382e999b
+    max s6,s5,s10
+    sw s6,52(a1)
+    li t1, 0x3f025f9f
+    li s10, 0x3f025f9e
+    max a3,t1,s10
+    sw a3,56(a1)
+    li a5, 0x40000000
+    li t1, 0x40000200
+    max a4,a5,t1
+    sw a4,60(a1)
+    li t2, 0x41040098
+    li s1, 0x41000098
+    max a6,t2,s1
+    sw a6,64(a1)
+    li t2, 0x5332ff01
+    li s5, 0x5332ff0c
+    max a4,t2,s5
+    sw a4,68(a1)
+    li a7, 0x5583d725
+    li a4, 0x5513f76d
+    max t5,a7,a4
+    sw t5,72(a1)
+    li a6, 0x8ba9ff2d
+    li s10, 0x8bf5ff1d
+    max s1,a6,s10
+    sw s1,76(a1)
+    li a3, 0x9e7f57ab
+    li t1, 0x5ebf0000
+    max a5,a3,t1
+    sw a5,80(a1)
+    li a4, 0xa4dbf37b
+    li t5, 0xa4dbf39b
+    max s6,a4,t5
+    sw s6,84(a1)
+    li s8, 0xb58ff25f
+    li s0, 0xb59df27d
+    max s10,s8,s0
+    sw s10,88(a1)
+    li s11, 0xb5a168d9
+    li s1, 0xb5a17d31
+    max a5,s11,s1
+    sw a5,92(a1)
+    li t5, 0xbdf3d8b0
+    li s8, 0xbfe2dcb0
+    max s3,t5,s8
+    sw s3,96(a1)
+    li a0, 0xbfecbc33
+    li t0, 0xbfe6bd33
+    max s0,a0,t0
+    sw s0,100(a1)
+    li s1, 0xbff3d8b0
     li t5, 0xbfe2dcb0
-    max a6,t4,t5
-    sw a6,104(a1)
-    li s1, 0xc104001f
-    li s0, 0xc104001d
-    max t2,s1,s0
-    sw t2,108(a1)
-    li s10, 0xde7ca325
-    li s5, 0xde7ca724
-    max s9,s10,s5
-    sw s9,112(a1)
-    li s6, 0xdef06600
-    li t0, 0xdef06400
-    max a0,s6,t0
-    sw a0,116(a1)
-    li t0, 0xe9767dca
-    li a5, 0xfc05cdf8
-    max t5,t0,a5
-    sw t5,120(a1)
-    li a3, 0xeffc84b1
-    li s6, 0xeffd84b1
-    max t6,a3,s6
-    sw t6,124(a1)
-    li s0, 0xffe2f8b0
-    li t5, 0xffe2dcb0
-    max s5,s0,t5
-    sw s5,128(a1)
+    max t3,s1,t5
+    sw t3,104(a1)
+    li s9, 0xc104001f
+    li t4, 0xc104001d
+    max a6,s9,t4
+    sw a6,108(a1)
+    li t4, 0xde7ca325
+    li t3, 0xde7ca724
+    max s5,t4,t3
+    sw s5,112(a1)
+    li t5, 0xdef06600
+    li s4, 0xdef06400
+    max t6,t5,s4
+    sw t6,116(a1)
+    li a7, 0xe9767dca
+    li s7, 0xfc05cdf8
+    max t4,a7,s7
+    sw t4,120(a1)
+    li a4, 0xeffc84b1
+    li t2, 0xeffd84b1
+    max a7,a4,t2
+    sw a7,124(a1)
+    li a3, 0xffe2f8b0
+    li t0, 0xffe2dcb0
+    max s0,a3,t0
+    sw s0,128(a1)
     sw zero,132(a1)
     sw zero,136(a1)
     sw zero,140(a1)

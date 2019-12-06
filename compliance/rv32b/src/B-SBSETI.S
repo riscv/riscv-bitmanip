@@ -6,36 +6,36 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li a7, 0x522a1063
-    sbseti t6,a7,3
-    sw t6,0(a1)
-    li t3, 0x8a671b8c
-    sbseti s2,t3,5
-    sw s2,4(a1)
-    li t2, 0x02eb0801
-    sbseti t5,t2,17
-    sw t5,8(a1)
-    li s4, 0x43737b61
-    sbseti s3,s4,24
-    sw s3,12(a1)
-    li s7, 0xf20d8a82
-    sbseti t1,s7,25
-    sw t1,16(a1)
-    li a0, 0x9543c51a
-    sbseti s6,a0,31
-    sw s6,20(a1)
-    li s4, 0x1014c66e
-    sbseti s1,s4,12
+    li t2, 0x522a1063
+    sbseti t5,t2,3
+    sw t5,0(a1)
+    li s4, 0x8a671b8c
+    sbseti s3,s4,5
+    sw s3,4(a1)
+    li s7, 0x02eb0801
+    sbseti t1,s7,17
+    sw t1,8(a1)
+    li a0, 0x43737b61
+    sbseti s6,a0,24
+    sw s6,12(a1)
+    li t6, 0xf20d8a82
+    sbseti t2,t6,25
+    sw t2,16(a1)
+    li a6, 0x9543c51a
+    sbseti s4,a6,31
+    sw s4,20(a1)
+    li s10, 0x1014c66e
+    sbseti s1,s10,12
     sw s1,24(a1)
-    li t3, 0x1a3c3257
-    sbseti s5,t3,8
-    sw s5,28(a1)
-    li a5, 0x88061100
-    sbseti t4,a5,2
-    sw t4,32(a1)
-    li a0, 0xfebefbcc
-    sbseti t0,a0,22
-    sw t0,36(a1)
+    li a2, 0x1a3c3257
+    sbseti s6,a2,8
+    sw s6,28(a1)
+    li a7, 0x88061100
+    sbseti s10,a7,2
+    sw s10,32(a1)
+    li s7, 0xfebefbcc
+    sbseti a7,s7,22
+    sw a7,36(a1)
     sw zero,40(a1)
     sw zero,44(a1)
     RV_COMPLIANCE_HALT

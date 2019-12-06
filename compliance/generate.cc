@@ -375,6 +375,14 @@ int main()
 			OP2W(clmulh)
 			OP2W(clmulr)
 
+			OP2(sh1add)
+			OP2(sh2add)
+			OP2(sh3add)
+
+			OP2F(sh1addu.w, rv64b::sh1adduw)
+			OP2F(sh2addu.w, rv64b::sh2adduw)
+			OP2F(sh3addu.w, rv64b::sh3adduw)
+
 			OP2I(gorc)
 			OP2I(grev)
 			OP2I(slo)
