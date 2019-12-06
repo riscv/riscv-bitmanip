@@ -6,24 +6,24 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li t3, 0xa7b2ca1a778bd1db
-    addiwu s8,t3,53
-    sd s8,0(a1)
-    li s1, 0x55f04ca8ffaace79
-    addiwu t1,s1,-661
-    sd t1,8(a1)
-    li s5, 0xb23279cf04bc5eac
-    addiwu t5,s5,-178
-    sd t5,16(a1)
-    li t3, 0x6b5ed10440ee4840
-    addiwu s3,t3,-1147
-    sd s3,24(a1)
-    li t6, 0x1607b7125a0d8ae2
-    addiwu s7,t6,-1882
-    sd s7,32(a1)
-    li t0, 0xd7ab5710cccb9502
-    addiwu a3,t0,-396
-    sd a3,40(a1)
+    li t5, 0xa7b2ca1a778bd1db
+    addiwu a6,t5,53
+    sd a6,0(a1)
+    li s7, 0x55f04ca8ffaace79
+    addiwu a4,s7,-661
+    sd a4,8(a1)
+    li t2, 0xb23279cf04bc5eac
+    addiwu s3,t2,-178
+    sd s3,16(a1)
+    li a5, 0x6b5ed10440ee4840
+    addiwu a7,a5,-1147
+    sd a7,24(a1)
+    li s6, 0x1607b7125a0d8ae2
+    addiwu a6,s6,-1882
+    sd a6,32(a1)
+    li s7, 0xd7ab5710cccb9502
+    addiwu a2,s7,-396
+    sd a2,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

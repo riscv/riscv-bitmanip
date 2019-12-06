@@ -18,12 +18,12 @@ clzw,ctzw,pcntw 201eccb891f3a75b
 clzw,ctzw,pcntw 5259a8e16723f89c
 clzw,ctzw,pcntw 80b445926042e65d
 
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w eadf76b9d77b6ecd
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 991e56a136a9a6d7
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 75be118b219954ae
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 201eccb891f3a75b
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 5259a8e16723f89c
-crc32.b,crc32.h,crc32.w,crc32c.b,crc32c.h,crc32c.w 80b445926042e65d
+crc32.b,crc32.h,crc32.w,crc32.d,crc32c.b,crc32c.h,crc32c.w,crc32c.d eadf76b9d77b6ecd
+crc32.b,crc32.h,crc32.w,crc32.d,crc32c.b,crc32c.h,crc32c.w,crc32c.d 991e56a136a9a6d7
+crc32.b,crc32.h,crc32.w,crc32.d,crc32c.b,crc32c.h,crc32c.w,crc32c.d 75be118b219954ae
+crc32.b,crc32.h,crc32.w,crc32.d,crc32c.b,crc32c.h,crc32c.w,crc32c.d 201eccb891f3a75b
+crc32.b,crc32.h,crc32.w,crc32.d,crc32c.b,crc32c.h,crc32c.w,crc32c.d 5259a8e16723f89c
+crc32.b,crc32.h,crc32.w,crc32.d,crc32c.b,crc32c.h,crc32c.w,crc32c.d 80b445926042e65d
 
 andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev a7b2ca1a778bd1db 935b4969def3c035
 andn,orn,xnor,pack,packh,packu,bfp,min,minu,max,maxu,sbset,sbclr,sbinv,sbext,gorc,grev 55f04ca8ffaace79 1a785a2011e15d6b

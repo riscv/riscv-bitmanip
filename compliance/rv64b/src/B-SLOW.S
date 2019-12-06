@@ -6,30 +6,30 @@ RV_COMPLIANCE_RV32M
 
 RV_COMPLIANCE_CODE_BEGIN
     la a1,test_results
-    li s7, 0xf0774453522a1063
-    li s4, 0xb370bd7dd2d6b642
-    slow s2,s7,s4
-    sd s2,0(a1)
-    li s11, 0xedd116c18a671b8c
-    li t5, 0x6f94f8db5b4289cf
-    slow s10,s11,t5
-    sd s10,8(a1)
-    li s6, 0x8130cd0d02eb0801
-    li s3, 0x36ecfc1781920806
-    slow t3,s6,s3
-    sd t3,16(a1)
-    li a3, 0x1f9f61e943737b61
-    li a7, 0xb320deb657861f11
-    slow s10,a3,a7
-    sd s10,24(a1)
-    li s2, 0x915695b3f20d8a82
-    li a7, 0xbda8a08e1ceb0c11
-    slow a4,s2,a7
-    sd a4,32(a1)
-    li t2, 0x925c6cb79543c51a
-    li a5, 0xe79ad1779a48a02c
-    slow s10,t2,a5
-    sd s10,40(a1)
+    li t5, 0xf0774453522a1063
+    li t3, 0xb370bd7dd2d6b642
+    slow t2,t5,t3
+    sd t2,0(a1)
+    li a3, 0xedd116c18a671b8c
+    li t3, 0x6f94f8db5b4289cf
+    slow s6,a3,t3
+    sd s6,8(a1)
+    li s0, 0x8130cd0d02eb0801
+    li t2, 0x36ecfc1781920806
+    slow s6,s0,t2
+    sd s6,16(a1)
+    li a5, 0x1f9f61e943737b61
+    li a2, 0xb320deb657861f11
+    slow s3,a5,a2
+    sd s3,24(a1)
+    li s9, 0x915695b3f20d8a82
+    li a0, 0xbda8a08e1ceb0c11
+    slow t2,s9,a0
+    sd t2,32(a1)
+    li a4, 0x925c6cb79543c51a
+    li t6, 0xe79ad1779a48a02c
+    slow t2,a4,t6
+    sd t2,40(a1)
     RV_COMPLIANCE_HALT
 RV_COMPLIANCE_CODE_END
 

@@ -312,6 +312,10 @@ int main()
 			OP1F(crc32c.b, crc32c_b)
 			OP1F(crc32c.h, crc32c_h)
 			OP1F(crc32c.w, crc32c_w)
+		#ifdef RV64
+			OP1F(crc32.d, crc32_d)
+			OP1F(crc32c.d, crc32c_d)
+		#endif
 
 			OP2(andn)
 			OP2(orn)
