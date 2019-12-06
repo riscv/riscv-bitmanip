@@ -69,9 +69,25 @@ module rvb_simple #(
 	//  0  1  0  0  0  0  0  1  1   ADDUW
 	//  1  1  0  0  0  0  0  1  1   SUBUW
 	// --------------------------   --------
+	//  0  0  0  0  0  1  0  1  0   SH1ADD
+	//  0  0  0  0  1  0  0  1  0   SH2ADD
+	//  0  0  0  0  1  1  0  1  0   SH3ADD
+	// --------------------------   --------
+	//  0  0  0  0  0  1  0  1  1   SH1ADDU.W
+	//  0  0  0  0  1  0  0  1  1   SH2ADDU.W
+	//  0  0  0  0  1  1  0  1  1   SH3ADDU.W
+	// --------------------------   --------
 
 	assign din_ready = dout_ready && !reset;
 	assign dout_valid = din_valid && !reset;
+
+
+	// ---- SH1ADD SH2ADD SH3ADD SH1ADDW.U SH2ADDW.U SH3ADDW.U ----
+
+	wire shadd_active = !{din_insn30, din_insn27, din_insn26, din_insn25};
+	wire [1:0] shadd_shamt = {din_insn14, din_insn13};
+	wire [XLEN-1:0] shadd_tmp = (din_insn3 ? din_rs1[31:0] : din_rs1) << shadd_shamt;
+	wire [XLEN-1:0] shadd_out = shadd_active ? shadd_tmp + din_rs2 : 0;
 
 
 	// ---- ADDIW ADDWU SUBWU ADDUW SUBUW ----
@@ -131,5 +147,5 @@ module rvb_simple #(
 
 	// ---- Output Stage ----
 
-	assign dout_rd = wuw_dout | minmax_dout | logicn_dout | pack_dout | cmixmov_dout;
+	assign dout_rd = shadd_out | wuw_dout | minmax_dout | logicn_dout | pack_dout | cmixmov_dout;
 endmodule

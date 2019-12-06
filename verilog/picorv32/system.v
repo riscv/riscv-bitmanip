@@ -17,7 +17,7 @@
 
 module system;
 	localparam MEM_DEBUG = 0;
-	localparam integer TIMEOUT = 100000;
+	localparam integer TIMEOUT = 150000;
 
 	reg clock;
 	always #5 clock = (clock === 1'b0);

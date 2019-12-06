@@ -386,6 +386,10 @@ module rvb_full_decoder #(
 			33'b 0100000_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_simple = 1;  // ORN
 			33'b 0100000_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple = 1;  // XNOR
 
+			33'b 0010000_zzzzz_zzzzz_010_zzzzz_0110011_z: insn_simple = 1;  // SH1ADD
+			33'b 0010000_zzzzz_zzzzz_100_zzzzz_0110011_z: insn_simple = 1;  // SH2ADD
+			33'b 0010000_zzzzz_zzzzz_110_zzzzz_0110011_z: insn_simple = 1;  // SH3ADD
+
 			33'b 0000000_zzzzz_zzzzz_001_zzzzz_0110011_z: insn_shifter = 1; // SLL
 			33'b 0000000_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // SRL
 			33'b 0100000_zzzzz_zzzzz_101_zzzzz_0110011_z: insn_shifter = 1; // SRA
@@ -484,6 +488,10 @@ module rvb_full_decoder #(
 			33'b 0100101_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // SUBWU
 			33'b 0000100_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // ADDUW
 			33'b 0100100_zzzzz_zzzzz_000_zzzzz_0111011_1: insn_simple  = 1; // SUBUW
+
+			33'b 0010000_zzzzz_zzzzz_010_zzzzz_0111011_1: insn_simple = 1;  // SH1ADDU.W
+			33'b 0010000_zzzzz_zzzzz_100_zzzzz_0111011_1: insn_simple = 1;  // SH2ADDU.W
+			33'b 0010000_zzzzz_zzzzz_110_zzzzz_0111011_1: insn_simple = 1;  // SH3ADDU.W
 
 			33'b 0000000_zzzzz_zzzzz_001_zzzzz_0111011_1: insn_shifter = 1; // SLLW
 			33'b 0000000_zzzzz_zzzzz_101_zzzzz_0111011_1: insn_shifter = 1; // SRLW
