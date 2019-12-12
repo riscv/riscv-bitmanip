@@ -15,6 +15,7 @@ look like exactly, but it will probably look something like this:
 \begin{tikzpicture}
  \node (clz) { \texttt{clz, ctz, pcnt} };
  \node (min) [below=0.5cm of clz.west,anchor=west] { \texttt{min[u], max[u]} };
+ \node (sext) [below=0.5cm of min.west,anchor=west] { \texttt{sext.h, sext.b} };
 
  \node (addwu) [below=1.0cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
  \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
