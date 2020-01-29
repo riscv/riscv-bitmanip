@@ -1704,7 +1704,13 @@ as {\tt and}, {\tt or}, and {\tt xor}, but with {\tt op[30]} set, mirroring the
 encoding scheme used for {\tt add} and {\tt sub}.
 
 All shift instructions use {\tt funct3=001} for left shifts and {\tt funct3=101}
-for right shifts.
+for right shifts. Just like in the RISC-V integer base ISA, the shift-immediate
+instructions have a 5 bit immediate on RV32, and a 6 bit immediate on RV64, and we
+reserve encoding space for a 7 bit immediate for RV128.
+
+The immediate for {\tt shfli}/{\tt unshufli} is one bit smaller than the immediate
+for shift instructions, that is 4 bits on RV32, 5 bits on RV64, and we reserve 6
+bits for RV128.
 
 {\tt op[26]=1} selects funnel shifts. For funnel shifts {\tt op[30:29]} is part
 if the 3rd operand and therefore unused for encoding the operation. For all other
