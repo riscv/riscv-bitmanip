@@ -1,15 +1,84 @@
 riscvOVPsim Change Log
 ===
-Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
 
 This CHANGELOG contains information for the riscvOVPsim fixed platform which includes information of the OVP Simulator and RISCV processor model
 
-NOTE: X-commit messages below refer to git commits in the following Risc-V  
-      specification document repositories:                                  
+---
+
+NOTE: X-commit messages below refer to git commits in the following 
+      Risc-V specification document repositories:                                  
   I-commit: https://github.com/riscv/riscv-isa-manual                        
   V-commit: https://github.com/riscv/riscv-v-spec                            
 
 ---
+
+Date 2020-January-21
+Release 20200120.0
+===
+
+- Fix the vector version (0.7.1-draft-20190605) selected by Vector example scripts
+  to match the cross compiler toolchain used to build the ELF files executed.
+
+- Fixed memory argument so that more than two memory regions can be added 
+
+Date 2020-January-17
+Release 20200116.0
+===
+
+- Some Vector Extension issues have been corrected:
+  - V-commit b9fd7c9: For vector versions 0.8-draft-20190906 and later, vmv.s.x
+    and vmv.x.s now sign extend their operands if required (previously, they
+    were zero extended)
+
+Date 2020-January-15
+Release 20200114.0
+===
+
+- Some Vector Extension issues have been corrected:
+  - An issue has been corrected that caused a simulator error in blocks with
+    some variants of vsetvl/vsetvli instructions.
+
+Date 2020-January-10
+Release 20200110.0
+===
+
+- Bit Manipulation Extension
+  - Added sign extension for *w insructions on 64-bit processors.
+
+- Command line argument 'memory' allows regions of memory to be defined using
+  a string of form "low:high:permission"
+  for example
+     -memory 0x0000:0xffff:7 -memory 0xffff0000:0xffffffff:7
+  or, as a comma separated list
+     -memory 0x0000:0xffff:7,0xffff0000:0xffffffff:7
+  both create two memory regions with read, write and execute permissions.
+  The permissions field is optional, the default is RWX, if defined the
+  bits signify 1:Read, 2:Write, 3:eXecute permission for the memory region. 
+ 
+- V-commit f4056da: Encodings for vwmaccsu and vwmaccus instruction variants
+  have been changed in 0.8-draft-20191004 and all subsequent versions to comply
+  with a specification change of September 17th 2019.
+
+Date 2019-December-18
+Release 20191217.0
+===
+
+- Vector version 0.8 has been added, and is now used by default. Differences
+  compared to the previous 0.8-draft-20191118 version are as follows (with the
+  associated specification V-commit identifiers):
+  - V-commit a6f94e7: vector context status in mstatus register is now
+    implemented;
+  - V-commit 49cbd95: whole register load and store operations have been
+    restricted to a single register only;
+  - V-commit 49cbd95: whole register move operations have been restricted to
+    aligned groups of 1, 2, 4 or 8 registers only.
+- The vector version master branch currently has no differences compared to
+  the previous 0.8 version, but will change as the specification evolves.
+
+Date 2019-December-09
+Release 20191206.0
+===
 
 - Some Vector Extension issues have been corrected:
   - vfmne behavior has been corrected to return 1 for unordered operands

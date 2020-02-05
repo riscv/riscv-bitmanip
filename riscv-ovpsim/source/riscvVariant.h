@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ typedef enum riscvPrivVerE {
 //
 // Tag of master version
 //
-#define RVVV_MASTER_TAG "6701109"
+#define RVVV_MASTER_TAG "9a65519"
 
 //
 // Supported Vector Architecture versions
@@ -172,9 +172,10 @@ typedef enum riscvVectVerE {
     RVVV_0_8_20191004,                  // version 0.8-draft-20191004
     RVVV_0_8_20191117,                  // version 0.8-draft-20191117
     RVVV_0_8_20191118,                  // version 0.8-draft-20191118
+    RVVV_0_8,                           // version 0.8
     RVVV_MASTER,                        // master branch
     RVVV_LAST,                          // for sizing
-    RVVV_DEFAULT = RVVV_0_8_20191004,   // default version
+    RVVV_DEFAULT = RVVV_0_8,            // default version
 } riscvVectVer;
 
 //
@@ -218,6 +219,7 @@ typedef enum riscvVFeatureE {
     RVVF_ZERO_TAIL,         // is zeroing of tail elements required?
     RVVF_STRICT_OVERLAP,    // strict source/destination overlap?
     RVVF_SEXT_IOFFSET,      // sign-extend indexed load/store offset?
+    RVVF_SEXT_VMV_X_S,      // sign-extend vmv.x.s and vmv.s.x?
     RVVF_SETVLZ_MAX,        // setvl* with rs1=zero: set vl to maximum
     RVVF_SETVLZ_PRESERVE,   // setvl* with rs1=zero: preserve vl
     RVVF_VAMO_SEW,          // use SEW AMO size (not 64-bit size)

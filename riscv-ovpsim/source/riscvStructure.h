@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,8 +202,8 @@ typedef struct riscvS {
     Uns8               SIMode    :  2;  // custom S interrupt mode
     Uns8               HIMode    :  2;  // custom H interrupt mode
     Uns8               UIMode    :  2;  // custom U interrupt mode
-    riscvAccessFault   AFErrorIn :  2;  // input access fault error subtype
-    riscvAccessFault   AFErrorOut:  2;  // latched access fault error subtype
+    riscvAccessFault   AFErrorIn :  3;  // input access fault error subtype
+    riscvAccessFault   AFErrorOut:  3;  // latched access fault error subtype
 
     // LR/SC support
     Uns64              exclusiveTag;    // tag for active exclusive access

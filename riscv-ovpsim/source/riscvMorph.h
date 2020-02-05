@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,16 +92,21 @@ vmiReg riscvGetVMIReg(riscvP riscv, riscvRegDesc r);
 vmiReg riscvGetVMIRegFS(riscvP riscv, riscvRegDesc r, vmiReg tmp);
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required)
 //
-void riscvWriteRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits);
+void riscvWriteRegSize(
+    riscvP       riscv,
+    riscvRegDesc r,
+    Uns32        srcBits,
+    Bool         signExtend
+);
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required) using the derived register size
 //
-void riscvWriteReg(riscvP riscv, riscvRegDesc r);
+void riscvWriteReg(riscvP riscv, riscvRegDesc r, Bool signExtend);
 
 
 ////////////////////////////////////////////////////////////////////////////////

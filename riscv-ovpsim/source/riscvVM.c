@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2334,7 +2334,7 @@ void riscvVMResetPMP(riscvP riscv) {
 }
 
 //
-// Update the bounds in lowPAP/highPAP and privilege to reflect the affect of
+// Update the bounds in lowPAP/highPAP and privilege to reflect the effect of
 // region i
 //
 static void refinePMPRegionRange(
@@ -2457,6 +2457,34 @@ static void mapPMP(
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// PMA UPDATE
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Refresh physical mapping attributes for the given physical address range and
+// mode
+//
+static void mapPMA(
+    riscvP    riscv,
+    riscvMode mode,
+    memPriv   requiredPriv,
+    Uns64     lowPA,
+    Uns64     highPA
+) {
+    riscvExtCBP extCB;
+
+    // call derived model transaction store functions
+    for(extCB=riscv->extCBs; extCB; extCB=extCB->next) {
+        if(extCB->PMACheck) {
+            extCB->PMACheck(
+                riscv, mode, requiredPriv, lowPA, highPA, extCB->clientData
+            );
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // TLB / PMP UPDATE
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2500,6 +2528,9 @@ static void mapTLBEntry(
 
     // update PMP mapping if required
     mapPMP(riscv, mode, requiredPriv, lowPA, highPA);
+
+    // update PMA mapping if required
+    mapPMA(riscv, mode, requiredPriv, lowPA, highPA);
 
     // indicate entry is mapped in this mode
     entry->isMapped |= getModeMask(mode);
@@ -2630,9 +2661,15 @@ Bool riscvVMMiss(
 
             } else if(dt) {
 
+                Uns64 lowPA  = address;
+                Uns64 highPA = address+bytes-1;
+
                 // update PMP mapping if required (either a physical access or
                 // a page table walk using the PMP domain directly)
-                mapPMP(riscv, mode, requiredPriv, address, address+bytes-1);
+                mapPMP(riscv, mode, requiredPriv, lowPA, highPA);
+
+                // update PMA mapping if required
+                mapPMA(riscv, mode, requiredPriv, lowPA, highPA);
             }
         }
     }

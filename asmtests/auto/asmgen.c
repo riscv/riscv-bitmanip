@@ -47,7 +47,7 @@
 #   define FMT_CONST "0x%016LX"
 
     uint_xlen_t randomV() {
-        uint_xlen_t value = (random() << 32) | random();
+        uint_xlen_t value = ((uint64_t)random() << 32) | random();
         return value;
     }
 #endif
@@ -56,45 +56,60 @@
 #include "../auto/asmgen.h"
 
 #define XLEN_W 32
-uint32_t grevw(uint64_t rs1, uint64_t rs2) {
-    return grev32(rs1, rs2);
+uint64_t grevw(uint64_t rs1, uint64_t rs2) {
+    uint32_t u32 = grev32(rs1, rs2);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-
-uint32_t slow(uint32_t rs1, uint32_t rs2) {
+uint64_t slow(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return ~(~rs1 << shamt);
+    uint32_t u32 = ~(~rs1 << shamt);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-
-uint32_t srow(uint32_t rs1, uint32_t rs2) {
+uint64_t srow(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return ~(~rs1 >> shamt);
+    uint32_t u32 = ~(~rs1 >> shamt);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-
-uint32_t rolw(uint32_t rs1, uint32_t rs2) {
+uint64_t rolw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return (rs1 << shamt) | (rs1 >> ((XLEN_W - shamt) & (XLEN_W - 1)));
+    uint32_t u32 = (rs1 << shamt) | (rs1 >> ((XLEN_W - shamt) & (XLEN_W - 1)));
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t rorw(uint32_t rs1, uint32_t rs2) {
+uint64_t rorw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return (rs1 >> shamt) | (rs1 << ((XLEN_W - shamt) & (XLEN_W - 1)));
+    uint32_t u32 = (rs1 >> shamt) | (rs1 << ((XLEN_W - shamt) & (XLEN_W - 1)));
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t sbsetw(uint32_t rs1, uint32_t rs2) {
+uint64_t sbsetw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return rs1 | (uint32_t(1) << shamt);
+    uint32_t u32 = rs1 | (uint32_t(1) << shamt);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t sbclrw(uint32_t rs1, uint32_t rs2) {
+uint64_t sbclrw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return rs1 & ~(uint32_t(1) << shamt);
+    uint32_t u32 = rs1 & ~(uint32_t(1) << shamt);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t sbinvw(uint32_t rs1, uint32_t rs2){
+uint64_t sbinvw(uint32_t rs1, uint32_t rs2){
     int shamt = rs2 & (XLEN_W - 1);
-    return rs1 ^ (uint32_t(1) << shamt);
+    uint32_t u32 = rs1 ^ (uint32_t(1) << shamt);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t sbextw(uint32_t rs1, uint32_t rs2) {
+uint64_t sbextw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
-    return 1 & (rs1 >> shamt);
+    uint32_t u32 = 1 & (rs1 >> shamt);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t fslw(uint32_t rs1, uint32_t rs2, uint32_t rs3) {
+uint64_t fslw(uint32_t rs1, uint32_t rs2, uint32_t rs3) {
     int shamt = rs2 & (2*XLEN_W - 1);
     uint32_t A = rs1, B = rs3;
     if (shamt >= XLEN_W) {
@@ -102,9 +117,11 @@ uint32_t fslw(uint32_t rs1, uint32_t rs2, uint32_t rs3) {
         A = rs3;
         B = rs1;
     }
-    return shamt ? (A << shamt) | (B >> (XLEN_W-shamt)) : A;
+    uint32_t u32 = shamt ? (A << shamt) | (B >> (XLEN_W-shamt)) : A;
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t fsrw(uint32_t rs1, uint32_t rs2, uint32_t rs3)
+uint64_t fsrw(uint32_t rs1, uint32_t rs2, uint32_t rs3)
 {
     int shamt = rs2 & (2*XLEN_W - 1);
     uint32_t A = rs1, B = rs3;
@@ -113,80 +130,97 @@ uint32_t fsrw(uint32_t rs1, uint32_t rs2, uint32_t rs3)
         A = rs3;
         B = rs1;
     }
-    return shamt ? (A >> shamt) | (B << (XLEN_W-shamt)) : A;
+    uint32_t u32 = shamt ? (A >> shamt) | (B << (XLEN_W-shamt)) : A;
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t clzw(uint32_t rs1) {
+uint64_t clzw(uint32_t rs1) {
     for (int count = 0; count < XLEN_W; count++)
         if ((rs1 << count) >> (XLEN_W - 1))
             return count;
     return XLEN_W;
 }
-uint32_t ctzw(uint32_t rs1) {
+uint64_t ctzw(uint32_t rs1) {
     for (int count = 0; count < XLEN_W; count++)
         if ((rs1 >> count) & 1)
             return count;
     return XLEN_W;
 }
-uint32_t pcntw(uint32_t rs1) {
+uint64_t pcntw(uint32_t rs1) {
     int count = 0;
     for (int index = 0; index < XLEN_W; index++)
         count += (rs1 >> index) & 1;
     return count;
 }
-uint32_t clmulw(uint32_t rs1, uint32_t rs2) {
+uint64_t clmulw(uint32_t rs1, uint32_t rs2) {
     uint32_t x = 0;
     for (int i = 0; i < XLEN_W; i++)
         if ((rs2 >> i) & 1)
             x ^= rs1 << i;
-    return x;
+    uint64_t u64 = (int64_t)(int32_t)x;
+    return u64;
 }
-uint32_t clmulhw(uint32_t rs1, uint32_t rs2) {
+uint64_t clmulhw(uint32_t rs1, uint32_t rs2) {
     uint32_t x = 0;
     for (int i = 1; i < XLEN_W; i++)
         if ((rs2 >> i) & 1)
             x ^= rs1 >> (XLEN_W-i);
-    return x;
+    uint64_t u64 = (int64_t)(int32_t)x;
+    return u64;
 }
-uint32_t clmulrw(uint32_t rs1, uint32_t rs2) {
+uint64_t clmulrw(uint32_t rs1, uint32_t rs2) {
     uint32_t x = 0;
     for (int i = 0; i < XLEN_W; i++)
         if ((rs2 >> i) & 1)
             x ^= rs1 >> (XLEN_W-i-1);
-    return x;
+    uint64_t u64 = (int64_t)(int32_t)x;
+    return u64;
 }
-uint32_t shflw(uint32_t rs1, uint32_t rs2) {
-    return shfl32(rs1, rs2);
+uint64_t shflw(uint32_t rs1, uint32_t rs2) {
+    uint32_t u32 = shfl32(rs1, rs2);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t unshflw(uint32_t rs1, uint32_t rs2) {
-    return unshfl32(rs1, rs2);
+uint64_t unshflw(uint32_t rs1, uint32_t rs2) {
+    uint32_t u32 = unshfl32(rs1, rs2);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
-uint32_t bdepw(uint32_t rs1, uint32_t rs2) {
+uint64_t bdepw(uint32_t rs1, uint32_t rs2) {
     uint32_t r = 0;
-    for (int i = 0, j = 0; i < XLEN_W; i++)
+    for (int i = 0, j = 0; i < XLEN_W; i++) {
         if ((rs2 >> i) & 1) {
             if ((rs1 >> j) & 1)
                 r |= uint32_t(1) << i;
             j++;
         }
-    return r;
+    }
+    uint64_t u64 = (int64_t)(int32_t)r;
+    return u64;
 }
-uint32_t bextw(uint32_t rs1, uint32_t rs2) {
+uint64_t bextw(uint32_t rs1, uint32_t rs2) {
     uint32_t r = 0;
-    for (int i = 0, j = 0; i < XLEN_W; i++)
+    for (int i = 0, j = 0; i < XLEN_W; i++) {
         if ((rs2 >> i) & 1) {
             if ((rs1 >> i) & 1)
                 r |= uint32_t(1) << j;
             j++;
         }
-    return r;
+    }
+    uint64_t u64 = (int64_t)(int32_t)r;
+    return u64;
 }
-uint32_t packw(uint32_t rs1, uint32_t rs2) {
+uint64_t packw(uint32_t rs1, uint32_t rs2) {
     uint32_t lower = (rs1 << XLEN_W/2) >> XLEN_W/2;
     uint32_t upper = rs2 << XLEN_W/2;
-    return upper | lower;
+
+    uint32_t u32 =  upper | lower;
+    uint64_t u64 = (int64_t)(int32_t)u32;
+
+    return u64;
 }
 
-uint32_t bfpw(uint32_t rs1, uint32_t rs2)
+uint64_t bfpw(uint32_t rs1, uint32_t rs2)
 {
     uint32_t cfg = rs2 >> (XLEN_W/2);
     if ((cfg >> 30) == 2)
@@ -196,14 +230,18 @@ uint32_t bfpw(uint32_t rs1, uint32_t rs2)
     len = len ? len : XLEN_W/2;
     uint32_t mask = slo(0, len) << off;
     uint32_t data = rs2 << off;
-    return (data & mask) | (rs1 & ~mask);
+    uint32_t u32 = (data & mask) | (rs1 & ~mask);
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
 
-uint32_t packuw(uint32_t rs1, uint32_t rs2)
+uint64_t packuw(uint32_t rs1, uint32_t rs2)
 {
     uint32_t lower = rs1 >> XLEN_W/2;
     uint32_t upper = (rs2 >> XLEN_W/2) << XLEN_W/2;
-    return lower | upper;
+    uint32_t u32 = lower | upper;
+    uint64_t u64 = (int64_t)(int32_t)u32;
+    return u64;
 }
 
 int getnum(int lo, int hi) {
@@ -786,7 +824,7 @@ void do_bmatflip(int test) {
 
 // arg1 = num instructions
 int main(int argc, char **argv) {
-    printf(".include \"extB.S.include\"\n");
+    printf("#include \"extB.S.include\"\n");
     printf("\n");
     printf("\n");
 

@@ -19,7 +19,7 @@ test32_$(1).o: riscv_test.h $(2)/references/$(3).reference_output $(2)/src/$(3).
 	echo "uint32_t reference_$(1)[] = {" >> test32_$(1).h
 	sed 's/^/0x/; s/$$$$/,/;' $(2)/references/$(3).reference_output >> test32_$(1).h
 	echo "};" >> test32_$(1).h
-	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o test32_$(1).o -march=rv32gcb -mabi=ilp32f \
+	- /opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o test32_$(1).o -march=rv32gcb -mabi=ilp32f \
 			-D 'RVTEST_SYM(_sym)=_sym##_$(1)' -I. -I../../../riscv-compliance/riscv-test-env \
 			-I ../../../riscv-compliance/riscv-target/spike $(2)/src/$(3).S
 endef
@@ -33,7 +33,7 @@ test64_$(1).o: riscv_test.h $(2)/references/$(3).reference_output $(2)/src/$(3).
 	echo "uint32_t reference_$(1)[] = {" >> test64_$(1).h
 	sed 's/^/0x/; s/$$$$/,/;' $(2)/references/$(3).reference_output >> test64_$(1).h
 	echo "};" >> test64_$(1).h
-	/opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o test64_$(1).o -march=rv64gcb \
+	- /opt/riscv64b/bin/riscv64-unknown-elf-gcc -c -o test64_$(1).o -march=rv64gcb \
 			-D 'RVTEST_SYM(_sym)=_sym##_$(1)' -I. -I../../../riscv-compliance/riscv-test-env \
 			-I ../../../riscv-compliance/riscv-target/spike $(2)/src/$(3).S
 endef

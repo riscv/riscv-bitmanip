@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_ZERO_TAIL]          = 1,
             [RVVF_STRICT_OVERLAP]     = 1,
             [RVVF_SEXT_IOFFSET]       = 1,
+            [RVVF_SEXT_VMV_X_S]       = 0,
             [RVVF_SETVLZ_MAX]         = 1,
             [RVVF_SETVLZ_PRESERVE]    = 0,
             [RVVF_VAMO_SEW]           = 0,
@@ -56,6 +57,7 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_ZERO_TAIL]          = 0,
             [RVVF_STRICT_OVERLAP]     = 0,
             [RVVF_SEXT_IOFFSET]       = 1,
+            [RVVF_SEXT_VMV_X_S]       = 1,
             [RVVF_SETVLZ_MAX]         = 1,
             [RVVF_SETVLZ_PRESERVE]    = 0,
             [RVVF_VAMO_SEW]           = 1,
@@ -65,8 +67,8 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_VXSAT_VXRM_IN_FCSR] = 0,
             [RVVF_VLENB_PRESENT]      = 0,
             [RVVF_FP_RESTRICT_WHOLE]  = 0,
-            [RVVF_UNIT_STRIDE_ONLY]   = 0, // 1,
-            [RVVF_VSTART_Z]           = 0, // 1,
+            [RVVF_UNIT_STRIDE_ONLY]   = 0,
+            [RVVF_VSTART_Z]           = 0,
         },
 
         // version 0.8-draft-20190906
@@ -75,6 +77,7 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_ZERO_TAIL]          = 0,
             [RVVF_STRICT_OVERLAP]     = 0,
             [RVVF_SEXT_IOFFSET]       = 1,
+            [RVVF_SEXT_VMV_X_S]       = 1,
             [RVVF_SETVLZ_MAX]         = 0,
             [RVVF_SETVLZ_PRESERVE]    = 1,
             [RVVF_VAMO_SEW]           = 1,
@@ -94,6 +97,7 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_ZERO_TAIL]          = 0,
             [RVVF_STRICT_OVERLAP]     = 0,
             [RVVF_SEXT_IOFFSET]       = 1,
+            [RVVF_SEXT_VMV_X_S]       = 1,
             [RVVF_SETVLZ_MAX]         = 0,
             [RVVF_SETVLZ_PRESERVE]    = 1,
             [RVVF_VAMO_SEW]           = 1,
@@ -113,6 +117,7 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_ZERO_TAIL]          = 0,
             [RVVF_STRICT_OVERLAP]     = 0,
             [RVVF_SEXT_IOFFSET]       = 0,
+            [RVVF_SEXT_VMV_X_S]       = 1,
             [RVVF_SETVLZ_MAX]         = 0,
             [RVVF_SETVLZ_PRESERVE]    = 1,
             [RVVF_VAMO_SEW]           = 1,
@@ -132,6 +137,7 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_ZERO_TAIL]          = 0,
             [RVVF_STRICT_OVERLAP]     = 0,
             [RVVF_SEXT_IOFFSET]       = 0,
+            [RVVF_SEXT_VMV_X_S]       = 1,
             [RVVF_SETVLZ_MAX]         = 0,
             [RVVF_SETVLZ_PRESERVE]    = 0,
             [RVVF_VAMO_SEW]           = 1,
@@ -145,12 +151,33 @@ Bool riscvVFSupport(riscvP riscv, riscvVFeature feature) {
             [RVVF_VSTART_Z]           = 0,
         },
 
+        // version 0.8
+        [RVVV_0_8] = {
+            [RVVF_W_SYNTAX]           = 1,
+            [RVVF_ZERO_TAIL]          = 0,
+            [RVVF_STRICT_OVERLAP]     = 0,
+            [RVVF_SEXT_IOFFSET]       = 0,
+            [RVVF_SEXT_VMV_X_S]       = 1,
+            [RVVF_SETVLZ_MAX]         = 0,
+            [RVVF_SETVLZ_PRESERVE]    = 0,
+            [RVVF_VAMO_SEW]           = 1,
+            [RVVF_ADC_SBC_MASK]       = 1,
+            [RVVF_SEXT_SLIDE1_SRC]    = 1,
+            [RVVF_FP_REQUIRES_FSNZ]   = 1,
+            [RVVF_VXSAT_VXRM_IN_FCSR] = 1,
+            [RVVF_VLENB_PRESENT]      = 1,
+            [RVVF_FP_RESTRICT_WHOLE]  = 1,
+            [RVVF_UNIT_STRIDE_ONLY]   = 0,
+            [RVVF_VSTART_Z]           = 0,
+        },
+
         // version master
         [RVVV_MASTER] = {
             [RVVF_W_SYNTAX]           = 1,
             [RVVF_ZERO_TAIL]          = 0,
             [RVVF_STRICT_OVERLAP]     = 0,
             [RVVF_SEXT_IOFFSET]       = 0,
+            [RVVF_SEXT_VMV_X_S]       = 1,
             [RVVF_SETVLZ_MAX]         = 0,
             [RVVF_SETVLZ_PRESERVE]    = 0,
             [RVVF_VAMO_SEW]           = 1,

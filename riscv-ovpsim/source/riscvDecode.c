@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1371,7 +1371,6 @@ const static decodeEntry32 decodeCommon32[] = {
     DECODE32_ENTRY(      VNMSUB_VV, "|101011|.|.....|.....|010|.....|1010111|"),
     DECODE32_ENTRY(     VWMACCU_VV, "|111100|.|.....|.....|010|.....|1010111|"),
     DECODE32_ENTRY(      VWMACC_VV, "|111101|.|.....|.....|010|.....|1010111|"),
-    DECODE32_ENTRY(    VWMACCSU_VV, "|111110|.|.....|.....|010|.....|1010111|"),
     DECODE32_ENTRY(       VDIVU_VV, "|100000|.|.....|.....|010|.....|1010111|"),
     DECODE32_ENTRY(        VDIV_VV, "|100001|.|.....|.....|010|.....|1010111|"),
     DECODE32_ENTRY(       VREMU_VV, "|100010|.|.....|.....|010|.....|1010111|"),
@@ -1532,8 +1531,6 @@ const static decodeEntry32 decodeCommon32[] = {
     DECODE32_ENTRY(       VWMUL_VX, "|111011|.|.....|.....|110|.....|1010111|"),
     DECODE32_ENTRY(     VWMACCU_VX, "|111100|.|.....|.....|110|.....|1010111|"),
     DECODE32_ENTRY(      VWMACC_VX, "|111101|.|.....|.....|110|.....|1010111|"),
-    DECODE32_ENTRY(    VWMACCSU_VX, "|111110|.|.....|.....|110|.....|1010111|"),
-    DECODE32_ENTRY(    VWMACCUS_VX, "|111111|.|.....|.....|110|.....|1010111|"),
 
     // table termination entry
     {0}
@@ -1624,14 +1621,12 @@ const static decodeEntry32 decodeVectorV071P[] = {
 //
 const static decodeEntry32 decodePost20190906[] = {
 
-    // V-extension IVX-type instructions
-    //                               |funct6|m|  vs2|  rs1|IVX|  vs3| opcode|
-    DECODE32_ENTRY(   VWSMACCSU_VX, "|111111|.|.....|.....|100|.....|1010111|"),
-    DECODE32_ENTRY(   VWSMACCUS_VX, "|111110|.|.....|.....|100|.....|1010111|"),
+    // V-extension MVV-type instructions
+    DECODE32_ENTRY(    VWMACCSU_VV, "|111111|.|.....|.....|010|.....|1010111|"),
 
-    // V-extension IVV-type instructions
-    //                               |funct6|m|  vs2|  vs1|IVV|  vs3| opcode|
-    DECODE32_ENTRY(   VWSMACCSU_VV, "|111111|.|.....|.....|000|.....|1010111|"),
+    // V-extension MVX-type instructions
+    DECODE32_ENTRY(    VWMACCSU_VX, "|111111|.|.....|.....|110|.....|1010111|"),
+    DECODE32_ENTRY(    VWMACCUS_VX, "|111110|.|.....|.....|110|.....|1010111|"),
 
     // table termination entry
     {0}
@@ -1642,14 +1637,39 @@ const static decodeEntry32 decodePost20190906[] = {
 //
 const static decodeEntry32 decodePre20190906[] = {
 
+    // V-extension IVV-type instructions
+    //                               |funct6|m|  vs2|  vs1|IVV|  vs3| opcode|
+    DECODE32_ENTRY(   VWSMACCSU_VV, "|111110|.|.....|.....|000|.....|1010111|"),
+
+    // V-extension MVV-type instructions
+    DECODE32_ENTRY(    VWMACCSU_VV, "|111110|.|.....|.....|010|.....|1010111|"),
+
     // V-extension IVX-type instructions
     //                               |funct6|m|  vs2|  rs1|IVX|  vs3| opcode|
     DECODE32_ENTRY(   VWSMACCSU_VX, "|111110|.|.....|.....|100|.....|1010111|"),
     DECODE32_ENTRY(   VWSMACCUS_VX, "|111111|.|.....|.....|100|.....|1010111|"),
 
+    // V-extension MVX-type instructions
+    DECODE32_ENTRY(    VWMACCSU_VX, "|111110|.|.....|.....|110|.....|1010111|"),
+    DECODE32_ENTRY(    VWMACCUS_VX, "|111111|.|.....|.....|110|.....|1010111|"),
+
+    // table termination entry
+    {0}
+};
+
+//
+// This specifies decodes for version 20191004 only (deleted thereafter)
+//
+const static decodeEntry32 decode20191004[] = {
+
     // V-extension IVV-type instructions
     //                               |funct6|m|  vs2|  vs1|IVV|  vs3| opcode|
-    DECODE32_ENTRY(   VWSMACCSU_VV, "|111110|.|.....|.....|000|.....|1010111|"),
+    DECODE32_ENTRY(   VWSMACCSU_VV, "|111111|.|.....|.....|000|.....|1010111|"),
+
+    // V-extension IVX-type instructions
+    //                               |funct6|m|  vs2|  rs1|IVX|  vs3| opcode|
+    DECODE32_ENTRY(   VWSMACCSU_VX, "|111111|.|.....|.....|100|.....|1010111|"),
+    DECODE32_ENTRY(   VWSMACCUS_VX, "|111110|.|.....|.....|100|.....|1010111|"),
 
     // table termination entry
     {0}
@@ -2375,12 +2395,16 @@ static vmidDecodeTableP createDecodeTable32(riscvVectVer vect_version) {
     }
 
     // insert vector-extension-dependent table entries before/after 20190906
-    if(vect_version>RVVV_0_8_20191004) {
-        // decodes for these instructions deleted
-    } else if(vect_version>RVVV_0_8_20190906) {
+    if(vect_version>RVVV_0_8_20190906) {
         insertEntries32(table, &decodePost20190906[0]);
     } else {
         insertEntries32(table, &decodePre20190906[0]);
+    }
+
+    // insert vector-extension-dependent table entries specific to release
+    // 20191004 (deleted thereafter)
+    if(vect_version==RVVV_0_8_20191004) {
+        insertEntries32(table, &decode20191004[0]);
     }
 
     // insert vector-extension-dependent table entries before/after 20191004

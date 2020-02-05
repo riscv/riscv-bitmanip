@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ typedef struct riscvConfigS {
     Bool              Zvlsseg;          // Zvlsseg implemented?
     Bool              Zvamo;            // Zvamo implemented?
     Bool              Zvediv;           // Zvediv implemented?
+    Bool              Zvqmac;           // Zvqmac implemented?
     Bool              updatePTEA;       // hardware update of PTE A bit?
     Bool              updatePTED;       // hardware update of PTE D bit?
     Bool              unaligned;        // whether unaligned accesses supported

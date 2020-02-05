@@ -1,5 +1,6 @@
-#if defined(XLEN32)
-.include "autoasm/test32.S"
-#else
-.include "autoasm/test64.S"
+#ifdef XLEN32
+#include "test32.S"
+#endif
+#ifdef XLEN64
+#include "test64.S"
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@
 
 #define CPU_PREFIX "Bit Manipulation"
 
-//#define EXTB_REVISION "extB Version(0.91) August 29 2019"
 #define EXTB_REVISION "extB Version(0.92) November 08 2019"
 
 #define RISCV_GPR_NUM  32
@@ -70,6 +69,10 @@ static const char *map[32] = {
 #define CU6(_I)   WIDTH(6,(_I)>>20)
 #define CU7(_I)   WIDTH(7,(_I)>>20)
 #define CU12(_I)  WIDTH(12,(_I)>>20)
+
+#define UBITS(_BITS, _ARG)  ((_ARG)&((1<<(_BITS))-1))
+#define SBITS(_BITS, _ARG)  (((Int32)((_ARG)<<(32-_BITS)))>>(32-_BITS))
+#define S_31_20(_I)         SBITS(12,(_I)>>20)
 
 DEFINE_S (riscv);
 
@@ -107,12 +110,12 @@ typedef struct vmiosObjectS {
     Uns64  t0;
     vmiReg reg_t0;
 
-    Uns32 cu5, cu6, cu7, cu12;
+    Uns64 cu5, cu6, cu7;
+    Uns64 cs12;
 
     Uns32 xlen;
 
     // enhanced instruction decode table
-//    vmidDecodeTableP table16;
     vmidDecodeTableP table32;
 
     struct {
@@ -464,7 +467,7 @@ DEFINE_CS(decodeEntry32);
 //    |          imm          |   rs1   |  f3 |    rd   |    opcode   |  I-type
 //    |---------------------------------------------------------------|
 
-const static decodeEntry32 decodeCommon32[] = {
+const static decodeEntry32 decodeBase32[] = {
     DECODE32_ENTRY(0, ANDN,     "|0100000|.....|.....|111|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, ORN,      "|0100000|.....|.....|110|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, XNOR,     "|0100000|.....|.....|100|.....|0110011|"),  // R-type
@@ -479,30 +482,30 @@ const static decodeEntry32 decodeCommon32[] = {
     DECODE32_ENTRY(0, SBINV,    "|0110100|.....|.....|001|.....|0110011|"),  // R-type
     DECODE32_ENTRY(0, SBEXT,    "|0100100|.....|.....|101|.....|0110011|"),  // R-type
 
-    DECODE32_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|"),  // I-type
-    DECODE32_ENTRY(0, SROI,     "|00100|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI)
-    // Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
-    // Error (DEC_DTEC1)     SROI       mask : 0xf800707f pattern : 0x20005013)
-    // Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
-    DECODE32_ENTRY(0, RORI,     "|01100|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI)
-    // Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
-    // Error (DEC_DTEC1)     RORI       mask : 0xf800707f pattern : 0x60005013)
-    // Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
-
-
-    DECODE32_ENTRY(0, SBCLRI,   "|01001|.......|.....|001|.....|0010011|"),  // I-type
-    DECODE32_ENTRY(0, SBSETI,   "|00101|.......|.....|001|.....|0010011|"),  // I-type
-    DECODE32_ENTRY(0, SBINVI,   "|01101|.......|.....|001|.....|0010011|"),  // I-type
-    DECODE32_ENTRY(0, SBEXTI,   "|01001|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI)
-    // Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
-    // Error (DEC_DTEC1)     SBEXTI     mask : 0xf800707f pattern : 0x48005013)
-    // Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+//    DECODE32_ENTRY(0, SLOI,     "|00100|.......|.....|001|.....|0010011|"),  // I-type
+//    DECODE32_ENTRY(0, SROI,     "|00100|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI)
+//    // Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+//    // Error (DEC_DTEC1)     SROI       mask : 0xf800707f pattern : 0x20005013)
+//    // Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+//    DECODE32_ENTRY(0, RORI,     "|01100|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI)
+//    // Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+//    // Error (DEC_DTEC1)     RORI       mask : 0xf800707f pattern : 0x60005013)
+//    // Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
+//
+//
+//    DECODE32_ENTRY(0, SBCLRI,   "|01001|.......|.....|001|.....|0010011|"),  // I-type
+//    DECODE32_ENTRY(0, SBSETI,   "|00101|.......|.....|001|.....|0010011|"),  // I-type
+//    DECODE32_ENTRY(0, SBINVI,   "|01101|.......|.....|001|.....|0010011|"),  // I-type
+//    DECODE32_ENTRY(0, SBEXTI,   "|01001|0......|.....|101|.....|0010011|"),  // I-type (force RV32/64 to overcome overlap with FSRI)
+//    // Error (DEC_DTEC) vmidDecode: decode table entry conflict (specify different priorities if both entries are required)
+//    // Error (DEC_DTEC1)     SBEXTI     mask : 0xf800707f pattern : 0x48005013)
+//    // Error (DEC_DTEC2)     FSRI       mask : 0x0400707f pattern : 0x04005013)
 
     DECODE32_ENTRY(0, CMIX,     "|.....11|.....|.....|001|.....|0110011|"), // R4-type
     DECODE32_ENTRY(0, CMOV,     "|.....11|.....|.....|101|.....|0110011|"), // R4-type
     DECODE32_ENTRY(0, FSL,      "|.....10|.....|.....|001|.....|0110011|"), // R4-type
     DECODE32_ENTRY(0, FSR,      "|.....10|.....|.....|101|.....|0110011|"), // R4-type
-    DECODE32_ENTRY(0, FSRI,     "|.....1.|.....|.....|101|.....|0010011|"), // R4-type
+//    DECODE32_ENTRY(0, FSRI,     "|.....1.|.....|.....|101|.....|0010011|"), // R4-type
 
     DECODE32_ENTRY(0, CLZ,      "|0110000|00000|.....|001|.....|0010011|"),  // R-type
     DECODE32_ENTRY(0, CTZ,      "|0110000|00001|.....|001|.....|0010011|"),  // R-type
@@ -577,6 +580,42 @@ const static decodeEntry32 decodeCommon32[] = {
     DECODE32_ENTRY(0, UNSHFLW,  "|0000100|.....|.....|101|.....|0111011|"),  // R-type
     DECODE32_ENTRY(0, BEXTW,    "|0000100|.....|.....|110|.....|0111011|"),  // R-type
     DECODE32_ENTRY(0, PACKW,    "|0000100|.....|.....|100|.....|0111011|"),  // R-type
+
+    // table termination entry
+    {0}
+};
+
+//0110 000..........101.....0010011
+//0110 0010 0000 1001 1101 1001 0001 0011
+//6209d913
+
+const static decodeEntry32 decodeBase32RV32[] = {
+    DECODE32_ENTRY(0, SLOI,     "|00100|00.....|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SROI,     "|00100|00.....|.....|101|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, RORI,     "|01100|00.....|.....|101|.....|0010011|"),  // I-type
+
+    DECODE32_ENTRY(0, SBCLRI,   "|01001|00.....|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SBSETI,   "|00101|00.....|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SBINVI,   "|01101|00.....|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SBEXTI,   "|01001|00.....|.....|101|.....|0010011|"),  // I-type
+
+    DECODE32_ENTRY(0, FSRI,     "|.....10|.....|.....|101|.....|0010011|"), // R4-type
+
+    // table termination entry
+    {0}
+};
+
+const static decodeEntry32 decodeBase32RV64[] = {
+    DECODE32_ENTRY(0, SLOI,     "|00100|0......|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SROI,     "|00100|0......|.....|101|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, RORI,     "|01100|0......|.....|101|.....|0010011|"),  // I-type
+
+    DECODE32_ENTRY(0, SBCLRI,   "|01001|0......|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SBSETI,   "|00101|0......|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SBINVI,   "|01101|0......|.....|001|.....|0010011|"),  // I-type
+    DECODE32_ENTRY(0, SBEXTI,   "|01001|0......|.....|101|.....|0010011|"),  // I-type
+
+    DECODE32_ENTRY(0, FSRI,     "|.....1.|.....|.....|101|.....|0010011|"), // R4-type
 
     // table termination entry
     {0}
@@ -684,7 +723,17 @@ static vmidDecodeTableP createDecodeTable32(vmiosObjectP  object) {
     vmidDecodeTableP table = vmidNewDecodeTable(32, EXTB_LAST);
 
     // insert common 32-bit decode table entries
-    insertEntries32(table, &decodeCommon32[0]);
+    insertEntries32(table, &decodeBase32[0]);
+
+    // determine the immediate values which raise exceptions
+    if (object->xlen == 32) {
+        insertEntries32(table, &decodeBase32RV32[0]);
+
+    } else if (object->xlen == 64) {
+        insertEntries32(table, &decodeBase32RV64[0]);
+
+    } else if (object->xlen == 128) {
+    }
 
     extbVer version = extbVersion(object);
 
@@ -715,7 +764,7 @@ static riscvITypeB getInstrType(
 ) {
 
     Uns16 quadrant = vmicxtFetch2Byte(processor, thisPC);
-    Bool  is16bit  = ((quadrant & 0x3) != 0x3);
+  //Bool  is16bit  = ((quadrant & 0x3) != 0x3);
     Bool  is32bit  = ((quadrant & 0x3) == 0x3);
 
     riscvITypeB type  = EXTB_LAST;
@@ -727,12 +776,6 @@ static riscvITypeB getInstrType(
         *instruction = vmicxtFetch4Byte(processor, thisPC);
         *bytes = 4;
         type = vmidDecode(object->table32, *instruction);
-
-    } else if (is16bit) {
-        *instruction = vmicxtFetch2Byte(processor, thisPC);
-        *bytes = 2;
-//        type = vmidDecode(object->table16, *instruction);
-        type = EXTB_LAST;
 
     } else {
         type = EXTB_LAST;
@@ -795,12 +838,6 @@ static VMIOS_CONSTRUCTOR_FN(constructor) {
     }
 
     // create enhanced instruction decoder
-//    object->table16 = createDecodeTable16();
-
-//    object->table32 = createDecodeTable32(object);
-//    if (object->params.version == 0) {
-//
-//    }
     object->table32 = createDecodeTable32(object);
 }
 
@@ -839,7 +876,7 @@ static void regProlog (
     object->cu5  = CU5(instruction);
     object->cu6  = CU6(instruction);
     object->cu7  = CU7(instruction);
-    object->cu12 = CU12(instruction);
+    object->cs12 = S_31_20(instruction);
 
     object->reg_rs1  = vmimtGetExtReg(processor,  &object->rs1);
     object->reg_rs2  = vmimtGetExtReg(processor,  &object->rs2);
@@ -886,7 +923,7 @@ EXTB_MORPH_FN(emitCLZ) {
 EXTB_MORPH_FN(emitCLZW) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(32, vmi_CLZ, object->reg_rd, object->reg_rs1, 0);
-    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     regEpilog(processor, object, instruction);
 }
 
@@ -898,7 +935,7 @@ EXTB_MORPH_FN(emitCTZ) {
 EXTB_MORPH_FN(emitCTZW) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(32, vmi_CTZ, object->reg_rd, object->reg_rs1, 0);
-    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     regEpilog(processor, object, instruction);
 }
 
@@ -910,7 +947,7 @@ EXTB_MORPH_FN(emitPCNT) {
 EXTB_MORPH_FN(emitPCNTW) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtUnopRR(32, vmi_CNTO, object->reg_rd, object->reg_rs1, 0);
-    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     regEpilog(processor, object, instruction);
 }
 EXTB_MORPH_FN(emitSEXTB) {
@@ -950,7 +987,7 @@ static void commonSB (
 ) {
     regProlog(processor, object, instruction, BM_RR);
 
-    Uns32 result = (word==1) ? 32 : object->xlen;
+    Uns32 result     = (word==1) ? 32 : object->xlen;
     Uns32 shift_mask = (result - 1);
 
     vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
@@ -968,7 +1005,7 @@ static void commonSB (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1034,7 +1071,7 @@ static void commonSBI (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1112,7 +1149,7 @@ static void commonFSRI (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1155,7 +1192,7 @@ EXTB_MORPH_FN(emitSUBU_W) {
 
 EXTB_MORPH_FN(emitADDIWU) {
     regProlog(processor, object, instruction, BM_RR);
-    vmimtBinopRRC(32, vmi_ADD, object->reg_rd, object->reg_rs1, object->cu12, 0);
+    vmimtBinopRRC(32, vmi_ADD, object->reg_rd, object->reg_rs1, object->cs12, 0);
     vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
     regEpilog(processor, object, instruction);
 }
@@ -1195,7 +1232,7 @@ static void commonPACK (
     vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1211,7 +1248,7 @@ static void commonPACKU (
 
     Uns32 result = (word==1) ? 32 : object->xlen;
 
-    Uns32 shift = result / 2;
+    Uns32 shift  = result / 2;
     vmimtBinopRRC(result, vmi_SHR, object->reg_tmp1, object->reg_rs1, shift, 0); // lower
 
     vmimtMoveRR(result, object->reg_tmp2, object->reg_rs2);
@@ -1222,7 +1259,7 @@ static void commonPACKU (
     vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1238,7 +1275,7 @@ static void commonPACKH (
 
     Uns32 result = (word==1) ? 32 : object->xlen;
 
-    Uns32 shift = 8;
+    Uns32 shift  = 8;
     vmimtBinopRRC(result, vmi_AND, object->reg_tmp1, object->reg_rs1, 255, 0); // lower
 
     vmimtBinopRRC(result, vmi_AND, object->reg_tmp2, object->reg_rs2, 255, 0); // upper
@@ -1247,7 +1284,7 @@ static void commonPACKH (
     vmimtBinopRRR(result, vmi_OR, object->reg_rd, object->reg_tmp1, object->reg_tmp2, 0);
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1292,7 +1329,7 @@ static void commonSxO(
     vmimtMoveRR(result, object->reg_rd, object->reg_tmp1);
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1343,7 +1380,7 @@ static void commonSxOI(
     vmimtBinopRC(result, vmi_OR, object->reg_rd, ones, 0);
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1382,7 +1419,7 @@ EXTB_MORPH_FN(emitROLW) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
     vmimtBinopRRR(32, vmi_ROL, object->reg_tmp1, object->reg_rs1, object->reg_rs2, 0);
-    vmimtMoveRR(object->xlen, object->reg_rd, object->reg_tmp1);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_tmp1, 1);
     regEpilog(processor, object, instruction);
 }
 
@@ -1396,7 +1433,7 @@ EXTB_MORPH_FN(emitRORW) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
     vmimtBinopRRR(32, vmi_ROR, object->reg_tmp1, object->reg_rs1, object->reg_rs2, 0);
-    vmimtMoveRR(object->xlen, object->reg_rd, object->reg_tmp1);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_tmp1, 1);
     regEpilog(processor, object, instruction);
 }
 
@@ -1410,7 +1447,7 @@ EXTB_MORPH_FN(emitRORIW) {
     regProlog(processor, object, instruction, BM_RR);
     vmimtMoveRC(object->xlen, object->reg_tmp1, 0);
     vmimtBinopRRC(32, vmi_ROR, object->reg_tmp1, object->reg_rs1, object->cu5, 0);
-    vmimtMoveRR(object->xlen, object->reg_rd, object->reg_tmp1);
+    vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_tmp1, 1);
     regEpilog(processor, object, instruction);
 }
 
@@ -1456,7 +1493,7 @@ static void commonGORC(
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1487,7 +1524,7 @@ static void commonGORCI(
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1542,7 +1579,7 @@ static void commonGREV(
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1574,7 +1611,7 @@ static void commonGREVI(
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1658,7 +1695,7 @@ static void commonSHFL (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1689,7 +1726,7 @@ static void commonUNSHFL (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1802,7 +1839,7 @@ static void commonBEXT (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1833,7 +1870,7 @@ static void commonBDEP (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1900,7 +1937,7 @@ static void commonFSL (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -1932,7 +1969,7 @@ static void commonFSR (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -2014,7 +2051,7 @@ static void commonCLMUL (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -2068,7 +2105,7 @@ static void commonCLMULR (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -2121,7 +2158,7 @@ static void commonCLMULH (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -2397,7 +2434,7 @@ static void commonBFP (
     }
 
     if (word) {
-        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 0);
+        vmimtMoveExtendRR(object->xlen, object->reg_rd, 32, object->reg_rd, 1);
     }
 
     regEpilog(processor, object, instruction);
@@ -2737,10 +2774,10 @@ static void diss_rd_rs1_rs3_imm6(vmiosObjectP object, Addr thisPC, char *buffer,
 static void diss_rd_rs1_imm12(vmiosObjectP object, Addr thisPC, char *buffer, const char *name, Uns32 instruction, Uns32 bytes, vmiDisassAttrs attrs) {
     Uns32 rd   = RD(instruction);
     Uns32 rs1  = RS1(instruction);
-    Uns32 cu12 = CU12(instruction);
+    Uns32 cs12 = S_31_20(instruction);
 
     print_instr(object->xlen, thisPC, &buffer, instruction, bytes, attrs);
-    sprintf(buffer, "%-7s %s,%s,%u", name, map[rd], map[rs1], cu12);
+    sprintf(buffer, "%-7s %s,%s,%u", name, map[rd], map[rs1], cs12);
 }
 #define DISS_RD_RS1_IMM12(NAME) diss_rd_rs1_imm12(object, thisPC, buffer, NAME, instruction, bytes, attrs)
 
@@ -2793,9 +2830,9 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
             DISS_RD_RS1(opcodes[type]);
         } else if (type==EXTB_PCNT   ) {
             DISS_RD_RS1(opcodes[type]);
-        } else if (type==EXTB_ANDN   ) {
-            DISS_RD_RS1(opcodes[type]);
 
+        } else if (type==EXTB_ANDN   ) {
+            DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_ORN   ) {
             DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_XNOR   ) {
@@ -2900,6 +2937,7 @@ static VMIOS_DISASSEMBLE_FN(doDisass) {
         } else if (type==EXTB_CLMUL      ) {
             DISS_RD_RS1_RS2(opcodes[type]);
         } else if (type==EXTB_CLMULR     ) {
+            DISS_RD_RS1_RS2(opcodes[type]);
 
         // Additions in version 0.90
         } else if (type==EXTB_GORCW) {

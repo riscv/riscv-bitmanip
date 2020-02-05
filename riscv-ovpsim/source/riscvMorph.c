@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -231,8 +231,15 @@ inline static Bool vectorFPRequiresFSNZ(riscvP riscv) {
 //
 // Are whole-register move and load/store instructions restricted?
 //
-static Bool vectorRestrictWhole(riscvP riscv) {
+inline static Bool vectorRestrictWhole(riscvP riscv) {
     return riscvVFSupport(riscv, RVVF_FP_RESTRICT_WHOLE);
+}
+
+//
+// Do vmv.x.s and vmv.s.x sign-extend short sources?
+//
+inline static Bool vectorSignExtVMVXS(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_SEXT_VMV_X_S);
 }
 
 
@@ -817,11 +824,15 @@ static Bool requireNaNBox(
 }
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required)
 //
-void riscvWriteRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits) {
-
+void riscvWriteRegSize(
+    riscvP       riscv,
+    riscvRegDesc r,
+    Uns32        srcBits,
+    Bool         signExtend
+) {
     vmiReg dst = getVMIReg(riscv, r);
 
     if(isXReg(r)) {
@@ -829,7 +840,7 @@ void riscvWriteRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits) {
         Uns32 dstBits = riscvGetXlenArch(riscv);
 
         // sign-extend result
-        vmimtMoveExtendRR(dstBits, dst, srcBits, dst, True);
+        vmimtMoveExtendRR(dstBits, dst, srcBits, dst, signExtend);
 
         // add to record of X registers written by this instruction
         riscv->writtenXMask |= getRegMask(r);
@@ -870,15 +881,15 @@ void riscvWriteRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits) {
 // required)
 //
 inline static void writeRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits) {
-    riscvWriteRegSize(riscv, r, srcBits);
+    riscvWriteRegSize(riscv, r, srcBits, True);
 }
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required) using the derived register size
 //
-void riscvWriteReg(riscvP riscv, riscvRegDesc r) {
-    writeRegSize(riscv, r, getRBits(r));
+void riscvWriteReg(riscvP riscv, riscvRegDesc r, Bool signExtend) {
+    riscvWriteRegSize(riscv, r, getRBits(r), signExtend);
 }
 
 //
@@ -886,7 +897,7 @@ void riscvWriteReg(riscvP riscv, riscvRegDesc r) {
 // required) using the derived register size
 //
 inline static void writeReg(riscvP riscv, riscvRegDesc r) {
-    riscvWriteReg(riscv, r);
+    riscvWriteReg(riscv, r, True);
 }
 
 
@@ -906,7 +917,7 @@ inline static Bool inTransactionMode(riscvMorphStateP state) {
         emitCheckPolymorphic();
     }
 
-    if ((riscv->pmKey & PMK_TRANSACTION)) {
+    if((riscv->pmKey & PMK_TRANSACTION)) {
 
         // Assume any instruction that checks for transaction mode could
         // result in a transaction abort that exits transaction mode, which
@@ -1707,7 +1718,7 @@ static void generateEATag(riscvMorphStateP state, vmiReg rtag, vmiReg ra) {
     Uns32 bits   = getEABits(state);
     Uns32 raBits = getModeBits(state);
 
-    vmimtMoveExtendRR(bits, rtag, raBits, ra, 0);
+    vmimtMoveExtendRR(bits, rtag, raBits, ra, False);
     vmimtBinopRC(bits, vmi_AND, rtag, state->riscv->exclusiveTagMask, 0);
 }
 
@@ -1974,7 +1985,7 @@ static RISCV_MORPH_FN(emitSFENCE_VMA) {
     // emit VA argument if required
     if(haveVADDRr) {
         vmiReg tmp = newTmp(state);
-        vmimtMoveExtendRR(64, tmp, bits, VADDRr, 0);
+        vmimtMoveExtendRR(64, tmp, bits, VADDRr, False);
         vmimtArgReg(64, tmp);
     }
 
@@ -5792,6 +5803,10 @@ static void emitVSetVLRRRCB(riscvMorphStateP state) {
     vmimtArgReg(32, rs2);
     vmimtCallResultAttrs(cb, dBits, rd, VMCA_NO_INVALIDATE);
     writeRegSize(riscv, rdA, dBits);
+
+    // terminate the block after this instruction because polymorphic state
+    // differs from initial state
+    vmimtEndBlock();
 }
 
 //
@@ -5812,6 +5827,10 @@ static void emitVSetVLRRCCB(riscvMorphStateP state) {
     vmimtArgUns32((vsew<<2)+vlmul);
     vmimtCallResultAttrs(cb, dBits, rd, VMCA_NO_INVALIDATE);
     writeRegSize(riscv, rdA, dBits);
+
+    // terminate the block after this instruction because polymorphic state
+    // differs from initial state
+    vmimtEndBlock();
 }
 
 //
@@ -5835,6 +5854,10 @@ static void emitVSetVLRRCBadSEW(riscvMorphStateP state) {
     vmimtArgUns32(0);       // vlmul (ignored)
     vmimtCallResultAttrs(cb, dBits, rd, VMCA_NO_INVALIDATE);
     writeRegSize(riscv, rdA, dBits);
+
+    // terminate the block after this instruction because polymorphic state
+    // differs from initial state
+    vmimtEndBlock();
 }
 
 //
@@ -5913,10 +5936,6 @@ static void emitVSetVLRR0SameVL(riscvMorphStateP state) {
 
         // update to different configuration
         emitVSetVLRRCCB(state);
-
-        // terminate the block after this instruction because VLClass is now
-        // unknown
-        vmimtEndBlock();
     }
 }
 
@@ -5933,10 +5952,6 @@ static RISCV_MORPH_FN(emitVSetVLRRR) {
 
     // zero vstart register on instruction completion
     setVStartZero(state);
-
-    // terminate the block after this instruction because SEW and VLMUL are
-    // now unknown
-    vmimtEndBlock();
 }
 
 //
@@ -5957,17 +5972,10 @@ static RISCV_MORPH_FN(emitVSetVLRRC) {
         // update using invalid SEW
         emitVSetVLRRCBadSEW(state);
 
-        // terminate the block after this instruction
-        vmimtEndBlock();
-
     } else if(option==SVT_SET) {
 
         // update to unknown vector length
         emitVSetVLRRCCB(state);
-
-        // terminate the block after this instruction because VLClass is now
-        // unknown
-        vmimtEndBlock();
 
     } else if(option==SVT_MAX) {
 
@@ -7752,17 +7760,18 @@ static void moveIndexedVd0Vs1(
 //
 static RISCV_MORPHV_FN(emitVEXTXV) {
 
-    riscvP       riscv  = state->riscv;
-    vmiReg       rd     = id->r[0];
-    vmiReg       rs1    = id->r[2];
-    riscvRegDesc rdA    = getRVReg(state, 0);
-    Uns32        rdBits = getRBits(rdA);
-    Uns32        eBits  = getMinBits(id, rdBits);
+    riscvP       riscv   = state->riscv;
+    vmiReg       rd      = id->r[0];
+    vmiReg       rs1     = id->r[2];
+    riscvRegDesc rdA     = getRVReg(state, 0);
+    Uns32        rdBits  = getRBits(rdA);
+    Uns32        eBits   = getMinBits(id, rdBits);
+    Bool         sExtend = vectorSignExtVMVXS(riscv);
 
     if(VMI_ISNOREG(rs1)) {
 
         // using x0 as index
-        vmimtMoveExtendRR(rdBits, rd, eBits, id->r[1], False);
+        vmimtMoveExtendRR(rdBits, rd, eBits, id->r[1], sExtend);
 
     } else {
 
@@ -7788,7 +7797,7 @@ static RISCV_MORPHV_FN(emitVEXTXV) {
         getIndexedVRegisterInt(state, id, 1, index);
 
         // get indexed value
-        vmimtMoveExtendRR(rdBits, rd, eBits, id->r[1], False);
+        vmimtMoveExtendRR(rdBits, rd, eBits, id->r[1], sExtend);
 
         // kill base registers and temporaries
         killBaseRegistersAndTemps(state, id);
@@ -7805,17 +7814,18 @@ static RISCV_MORPHV_FN(emitVEXTXV) {
 //
 static RISCV_MORPHV_FN(emitVMVSX) {
 
-    riscvP       riscv = state->riscv;
-    vmiReg       vd    = id->r[0];
-    vmiReg       rs1   = id->r[1];
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    Uns32        sBits = getMinBits(id, getRBits(rs1A));
+    riscvP       riscv   = state->riscv;
+    vmiReg       vd      = id->r[0];
+    vmiReg       rs1     = id->r[1];
+    riscvRegDesc rs1A    = getRVReg(state, 1);
+    Uns32        sBits   = getMinBits(id, getRBits(rs1A));
+    Bool         sExtend = vectorSignExtVMVXS(riscv);
 
     // zero target register
     zeroTail(riscv, id->VLEN, vd);
 
     // assign element 0 of result
-    vmimtMoveExtendRR(id->SEW, vd, sBits, rs1, False);
+    vmimtMoveExtendRR(id->SEW, vd, sBits, rs1, sExtend);
 }
 
 //
@@ -8150,6 +8160,31 @@ static RISCV_MORPHV_FN(emitVExternalCB) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
+// Operation-specific argument checks for quad-widening extension
+//
+static RISCV_CHECKV_FN(emitQMACCheckCB) {
+
+    riscvP riscv = state->riscv;
+    Bool   ok    = True;
+
+    if(!riscv->configInfo.Zvqmac) {
+
+        // VLMUL must be 1 for load/store segment instructions
+        ILLEGAL_INSTRUCTION_MESSAGE(
+            riscv, "IVQMAC", "Zvqmac extension not configured"
+        );
+        ok = False;
+    }
+
+    return ok;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// DIVIDED ELEMENT EXTENSION
+////////////////////////////////////////////////////////////////////////////////
+
+//
 // Operation-specific argument checks for divided element extension
 //
 static RISCV_CHECKV_FN(emitEDIVCheckCB) {
@@ -8159,7 +8194,7 @@ static RISCV_CHECKV_FN(emitEDIVCheckCB) {
 
     if(!riscv->configInfo.Zvediv) {
 
-        // VLMUL must be 1 for load/store segment instructions
+        // extension not configured
         ILLEGAL_INSTRUCTION_MESSAGE(
             riscv, "IVEDIV", "Zvediv extension not configured"
         );
@@ -8409,10 +8444,12 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VWMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_SS},
     [RV_IT_VWMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_SU},
     [RV_IT_VWMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_US},
-    [RV_IT_VQMACCU_VR]       = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_411_II,  argType:RVVX_UU},
-    [RV_IT_VQMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_411_II,  argType:RVVX_SS},
-    [RV_IT_VQMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_411_II,  argType:RVVX_SU},
-    [RV_IT_VQMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_411_II,  argType:RVVX_US},
+
+    // V-extension MVV/MVX-type common instructions (Zvqmac extension)
+    [RV_IT_VQMACCU_VR]       = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_UU},
+    [RV_IT_VQMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_SS},
+    [RV_IT_VQMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_SU},
+    [RV_IT_VQMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_US},
 
     // V-extension IVV-type instructions
     [RV_IT_VWREDSUMU_VS]     = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SI, argType:RVVX_UU, vstart0:RVVS_ZERO},
