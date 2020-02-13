@@ -483,13 +483,38 @@ static char getAccessChar(memPriv requiredPriv) {
 
     switch(requiredPriv) {
         case MEM_PRIV_R:
-            result = 'R' ;
+            result = 'R';
             break;
         case MEM_PRIV_W:
-            result = 'W' ;
+            result = 'W';
             break;
         case MEM_PRIV_X:
-            result = 'X' ;
+            result = 'X';
+            break;
+        default:
+            VMI_ABORT("Invalid privilege %u", requiredPriv); // LCOV_EXCL_LINE
+            break;
+    }
+
+    return result;
+}
+
+//
+// Return fault type based on the original access on a page table walk
+//
+static riscvException originalAccessFault(memPriv requiredPriv) {
+
+    riscvException result = 0;
+
+    switch(requiredPriv) {
+        case MEM_PRIV_R:
+            result = riscv_E_LoadAccessFault;
+            break;
+        case MEM_PRIV_W:
+            result = riscv_E_StoreAMOAccessFault;
+            break;
+        case MEM_PRIV_X:
+            result = riscv_E_InstructionAccessFault;
             break;
         default:
             VMI_ABORT("Invalid privilege %u", requiredPriv); // LCOV_EXCL_LINE
@@ -565,9 +590,9 @@ static riscvException handlePTWException(
 
     // return appropriate exception
     if(desc->exception==PTX_LOAD_ACCESS) {
-        return riscv_E_LoadAccessFault;
+        return originalAccessFault(requiredPriv);
     } else if(desc->exception==PTX_STORE_ACCESS) {
-        return riscv_E_StoreAMOAccessFault;
+        return originalAccessFault(requiredPriv);
     } else if(requiredPriv==MEM_PRIV_R) {
         return riscv_E_LoadPageFault;
     } else if(requiredPriv==MEM_PRIV_W) {

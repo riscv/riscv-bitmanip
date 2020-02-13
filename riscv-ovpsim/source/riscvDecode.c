@@ -1693,7 +1693,7 @@ const static decodeEntry32 decodePost20191004[] = {
     DECODE32_ENTRY(       VMSBC_VV, "|010011|.|.....|.....|000|.....|1010111|"),
     DECODE32_ENTRY(     VQMACCU_VV, "|111100|.|.....|.....|000|.....|1010111|"),
     DECODE32_ENTRY(      VQMACC_VV, "|111101|.|.....|.....|000|.....|1010111|"),
-    DECODE32_ENTRY(    VQMACCSU_VV, "|111110|.|.....|.....|000|.....|1010111|"),
+    DECODE32_ENTRY(    VQMACCSU_VV, "|111111|.|.....|.....|000|.....|1010111|"),
 
     // V-extension MVV-type instructions
     //                               |funct6|m|  vs2|  vs1|MVV|  vs3| opcode|
@@ -1716,8 +1716,8 @@ const static decodeEntry32 decodePost20191004[] = {
     DECODE32_ENTRY(       VMSBC_VX, "|010011|.|.....|.....|100|.....|1010111|"),
     DECODE32_ENTRY(     VQMACCU_VX, "|111100|.|.....|.....|100|.....|1010111|"),
     DECODE32_ENTRY(      VQMACC_VX, "|111101|.|.....|.....|100|.....|1010111|"),
-    DECODE32_ENTRY(    VQMACCSU_VX, "|111110|.|.....|.....|100|.....|1010111|"),
-    DECODE32_ENTRY(    VQMACCUS_VX, "|111111|.|.....|.....|100|.....|1010111|"),
+    DECODE32_ENTRY(    VQMACCUS_VX, "|111110|.|.....|.....|100|.....|1010111|"),
+    DECODE32_ENTRY(    VQMACCSU_VX, "|111111|.|.....|.....|100|.....|1010111|"),
 
     // V-extension MVX-type instructions
     //                               |funct6|m|  vs2|  rs1|MVX|  vs3| opcode|

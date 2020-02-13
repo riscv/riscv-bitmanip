@@ -13,6 +13,45 @@ NOTE: X-commit messages below refer to git commits in the following
 
 ---
 
+- Some details of CSR access behavior have been corrected:
+  - For Vector Extension version 0.8, access to vxsat and vxrm now requires both
+    mstatus.FS and mstatus.VS to be non-zero; previously, only non-zero
+    mstatus.FS was required. Note that from Vector Extension version 0.9
+    onwards, only mstatus.VS is required because these two fields are now
+    aliased in the new vcsr CSR instead of the fcsr CSR.
+- An issue has been fixed in which an incorrect exception was raised on an
+  access error during a page table walk.
+- Some Vector Extension issues have been corrected:
+  - Behavior of vpopc.m and vfirst.m has been corrected when vl==0.
+  - Executing vsetvl/vsetvli instructions now sets vector state to dirty.
+  - Behavior of whole-register operations when vstart!=0 has been corrected.
+  - Vector indexed segment load instructions now raise an Illegal Instruction
+    if the destination vector register overlaps either source or mask.
+  - Decodes for vqmaccus and vqmaccsu instructions have been exchanged to match
+    the specification
+  - Implementations of vmv.s.x, vfmv.f.s and vfmv.s.f have been corrected to
+    prevent Illegal Instruction exceptions being reported for odd-numbered
+    vector registers for non-zero LMUL. These instructions should ignore LMUL.
+  - Instruction vfmv.s.f has been corrected to validate that the argument is
+    NaN-boxed when required.
+- The vector version master branch currently has these differences compared to
+  the previous 0.8 version:
+  - V-commit bdb8b55: mstatus.VS and sstatus.VS fields have moved to bits 10:9;
+  - V-commit b25b643: new CSR vcsr has been added and fields VXSAT and VXRM
+    fields relocated there from CSR fcsr
+
+Date 2020-February-06
+Release 20200206.0
+===
+
+- Bit Manipulation Extension
+  - Corrected sign extension for addwu, subwu, addiwu and slliu.w that were 
+    incorrectly changed in the last fix.
+
+- Command line argument 'memory' is modified so that permissions argument is required
+  and uses the characters rR, wW and xX for read, write and execute.
+
+
 Date 2020-January-21
 Release 20200120.0
 ===
@@ -44,7 +83,7 @@ Release 20200110.0
 ===
 
 - Bit Manipulation Extension
-  - Added sign extension for *w insructions on 64-bit processors.
+  - Added sign extension for *w instructions on 64-bit processors.
 
 - Command line argument 'memory' allows regions of memory to be defined using
   a string of form "low:high:permission"

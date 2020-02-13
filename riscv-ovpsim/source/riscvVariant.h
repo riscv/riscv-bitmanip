@@ -53,29 +53,30 @@ typedef enum riscvArchitectureE {
     ISA_RM_INVALID = RISCV_FEATURE_BIT(RM_INVALID_CHAR),
 
     // MSTATUS FIELDS
-    ISA_FS    = RISCV_FEATURE_BIT(MSTATUS_FS_CHAR),
+    ISA_FS     = RISCV_FEATURE_BIT(MSTATUS_FS_CHAR),
 
     // FEATURES A AND B
-    ISA_and   = RISCV_FEATURE_BIT(RISCV_FAND_CHAR),
+    ISA_and    = RISCV_FEATURE_BIT(RISCV_FAND_CHAR),
 
     // BASE ISA FEATURES
-    ISA_A     = RISCV_FEATURE_BIT('A'), // atomic instructions
-    ISA_C     = RISCV_FEATURE_BIT('C'), // compressed instructions
-    ISA_E     = RISCV_FEATURE_BIT('E'), // embedded instructions
-    ISA_D     = RISCV_FEATURE_BIT('D'), // double-precision floating point
-    ISA_F     = RISCV_FEATURE_BIT('F'), // single-precision floating point
-    ISA_I     = RISCV_FEATURE_BIT('I'), // RV32I/64I/128I base ISA
-    ISA_M     = RISCV_FEATURE_BIT('M'), // integer multiply/divide instructions
-    ISA_N     = RISCV_FEATURE_BIT('N'), // user-mode interrupts
-    ISA_S     = RISCV_FEATURE_BIT('S'), // supervisor mode implemented
-    ISA_U     = RISCV_FEATURE_BIT('U'), // user mode implemented
-    ISA_V     = RISCV_FEATURE_BIT('V'), // vector extension implemented
-    ISA_X     = RISCV_FEATURE_BIT('X'), // non-standard extensions present
-    ISA_DF    = (ISA_D|ISA_F),          // either single or double precision
-    ISA_DFV   = (ISA_D|ISA_F|ISA_V),    // either floating point or vector
-    ISA_SorU  = (ISA_S|ISA_U),          // either supervisor or user mode
-    ISA_SorN  = (ISA_S|ISA_N),          // either supervisor or user interrupts
-    ISA_SandN = (ISA_S|ISA_N|ISA_and),  // both supervisor and user interrupts
+    ISA_A      = RISCV_FEATURE_BIT('A'),    // atomic instructions
+    ISA_C      = RISCV_FEATURE_BIT('C'),    // compressed instructions
+    ISA_E      = RISCV_FEATURE_BIT('E'),    // embedded instructions
+    ISA_D      = RISCV_FEATURE_BIT('D'),    // double-precision floating point
+    ISA_F      = RISCV_FEATURE_BIT('F'),    // single-precision floating point
+    ISA_I      = RISCV_FEATURE_BIT('I'),    // RV32I/64I/128I base ISA
+    ISA_M      = RISCV_FEATURE_BIT('M'),    // integer multiply/divide instructions
+    ISA_N      = RISCV_FEATURE_BIT('N'),    // user-mode interrupts
+    ISA_S      = RISCV_FEATURE_BIT('S'),    // supervisor mode implemented
+    ISA_U      = RISCV_FEATURE_BIT('U'),    // user mode implemented
+    ISA_V      = RISCV_FEATURE_BIT('V'),    // vector extension implemented
+    ISA_X      = RISCV_FEATURE_BIT('X'),    // non-standard extensions present
+    ISA_DF     = (ISA_D|ISA_F),             // either single or double precision
+    ISA_DFV    = (ISA_D|ISA_F|ISA_V),       // either floating point or vector
+    ISA_SorU   = (ISA_S|ISA_U),             // either supervisor or user mode
+    ISA_SorN   = (ISA_S|ISA_N),             // either supervisor or user interrupts
+    ISA_SandN  = (ISA_S|ISA_N|ISA_and),     // both supervisor and user interrupts
+    ISA_FSandV = (ISA_FS|ISA_V|ISA_and),    // both FS and vector extension
 
     RV32     = ISA_XLEN_32,
     RV32I    = ISA_XLEN_32  | ISA_I,
@@ -160,7 +161,7 @@ typedef enum riscvPrivVerE {
 //
 // Tag of master version
 //
-#define RVVV_MASTER_TAG "9a65519"
+#define RVVV_MASTER_TAG "f92ae2c"
 
 //
 // Supported Vector Architecture versions
@@ -226,8 +227,10 @@ typedef enum riscvVFeatureE {
     RVVF_ADC_SBC_MASK,      // vadc/vmadc/vsbc/vmsbc use standard mask bit
     RVVF_SEXT_SLIDE1_SRC,   // sign-extend slide1* ssource value?
     RVVF_FP_REQUIRES_FSNZ,  // VFP instructions require mstatus.FS!=0?
-    RVVF_VXSAT_VXRM_IN_FCSR,// vxsat/vxrm treated as members of fcsr?
     RVVF_VLENB_PRESENT,     // is vlenb register present?
+    RVVF_VCSR_PRESENT,      // is vcsr register present?
+    RVVF_VS_STATUS_8,       // is [ms]status.VS field in version 0.8 location?
+    RVVF_VS_STATUS_9,       // is [ms]status.VS field in version 0.9 location?
     RVVF_FP_RESTRICT_WHOLE, // whole register load/store/move restricted?
     RVVF_UNIT_STRIDE_ONLY,  // only unit-stride load/store supported?
     RVVF_VSTART_Z,          // is vstart forced to zero?

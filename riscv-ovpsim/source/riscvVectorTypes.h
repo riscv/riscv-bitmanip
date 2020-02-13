@@ -33,15 +33,17 @@ typedef enum riscvVShapeE {
 
                     // INTEGER ARGUMENTS
     RVVW_111_II,    // SEW
+    RVVW_111_IIXSM, // SEW, no overlap if segmented
     RVVW_111_IIS,   // SEW, saturating result
     RVVW_111_IIX,   // SEW, uses vxrm
     RVVW_BBB_II,    // SEW8
-    RVVW_EXT_II,    // SEW, VEXT.X.V
-    RVVW_111_PI,    // SEW, Vd is predicate
+    RVVW_111_IS,    // SEW, src1 is scalar
     RVVW_111_SI,    // SEW, Vd is scalar
+    RVVW_111_PI,    // SEW, Vd is predicate
+    RVVW_111_SIS,   // SEW, Vd and src2 are scalar
     RVVW_CIN_II,    // SEW, mask is carry-in (VADC etc)
     RVVW_CIN_PI,    // SEW, Vd is predicate, mask is carry-in (VMADC etc)
-    RVVW_212_SI,    // 2*SEW = SEW   op 2*SEW, Vd is scalar
+    RVVW_212_SIS,   // 2*SEW = SEW   op 2*SEW, Vd and src2 are scalar
     RVVW_121_II,    // SEW   = 2*SEW op SEW
     RVVW_121_IIS,   // SEW   = 2*SEW op SEW, saturating result
     RVVW_211_IIQ,   // 2*SEW = SEW   op SEW, implicit widening
@@ -53,8 +55,8 @@ typedef enum riscvVShapeE {
                     // FLOATING POINT ARGUMENTS
     RVVW_111_FF,    // SEW
     RVVW_111_PF,    // SEW, Vd is predicate
-    RVVW_111_SF,    // SEW, Vd is scalar
-    RVVW_212_SF,    // 2*SEW = SEW   op 2*SEW, Vd is scalar
+    RVVW_111_SFS,   // SEW, Vd and src2 are scalar
+    RVVW_212_SFS,   // 2*SEW = SEW   op 2*SEW, Vd and src2 are scalar
     RVVW_121_FFQ,   // SEW   = 2*SEW op SEW, implicit widening
     RVVW_211_FFQ,   // 2*SEW = SEW   op SEW, implicit widening
     RVVW_211_FF,    // 2*SEW = SEW   op SEW

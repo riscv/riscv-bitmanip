@@ -1073,8 +1073,17 @@ void riscvDoc(riscvP rootProcessor) {
 
             vmidocAddText(
                 Version,
-                "Unstable master version as of 14 December 2019 (commit "
-                RVVV_MASTER_TAG"), currently identical to version 0.8."
+                "Unstable master version as of 8 February 2020 (commit "
+                RVVV_MASTER_TAG"), with these changes compared to version 0.8:"
+            );
+            vmidocAddText(
+                Version,
+                "- mstatus.VS and sstatus.VS fields have moved to bits 10:9;"
+            );
+            vmidocAddText(
+                Version,
+                "- new CSR vcsr has been added and fields VXSAT and VXRM "
+                "fields relocated there from CSR fcsr."
             );
         }
     }

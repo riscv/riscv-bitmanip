@@ -65,9 +65,9 @@ void riscvEmitIllegalInstructionMessageDesc(riscvP riscv, illegalDescP desc);
 Bool riscvRequireArchPresentMT(riscvP riscv, riscvArchitecture feature);
 
 //
-// Validate that the given required feature is absent
+// Emit blockMask check for the given feature set
 //
-Bool riscvRequireArchAbsentMT(riscvP riscv, riscvArchitecture feature);
+void riscvEmitBlockMask(riscvP riscv, riscvArchitecture features);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,12 +119,19 @@ void riscvWriteReg(riscvP riscv, riscvRegDesc r, Bool signExtend);
 void riscvConfigureFPU(riscvP riscv);
 
 //
-// Adjust JIT code generator state after write of floating point register
+// Adjust JIT code generator state after write of floating point CSR
 //
 void riscvWFS(riscvMorphStateP state, Bool useRS1);
 
 //
-// Adjust JIT code generator state after write of vector register that affects
+// Adjust JIT code generator state after write of vcsr CSR, which will set
+// vector state dirty and floating point state dirty (if floating point is
+// enabled)
+//
+void riscvWVCSR(riscvMorphStateP state, Bool useRS1);
+
+//
+// Adjust JIT code generator state after write of vector CSR that affects
 // floating point state (behavior clearly defined only after version 20191118)
 //
 void riscvWFSVS(riscvMorphStateP state, Bool useRS1);

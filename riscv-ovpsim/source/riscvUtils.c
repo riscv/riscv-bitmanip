@@ -65,10 +65,20 @@ void riscvSetCurrentArch(riscvP riscv) {
     }
 
     // mstatus.VS=0 disables vector extensions (if implemented)
-    if(!RD_CSR_MASK_FIELD(riscv, mstatus, VS)) {
-        // mstatus.VS not implemented
-    } else if(!RD_CSR_FIELD(riscv, mstatus, VS)) {
-        arch &= ~ISA_V;
+    if(arch & ISA_V) {
+
+        Uns32 WM_mstatus_VS = 0;
+
+        // get mask of dirty bits for mstatus.VS in either 0.8 or 0.9 location
+        if(riscvVFSupport(riscv, RVVF_VS_STATUS_8)) {
+            WM_mstatus_VS = WM_mstatus_VS_8;
+        } else if(riscvVFSupport(riscv, RVVF_VS_STATUS_9)) {
+            WM_mstatus_VS = WM_mstatus_VS_9;
+        }
+
+        if(WM_mstatus_VS && !(RD_CSR(riscv, mstatus) & WM_mstatus_VS)) {
+            arch &= ~ISA_V;
+        }
     }
 
     if(riscv->currentArch != arch) {
