@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,23 +138,25 @@ typedef RISCV_GET_VMI_REG_FN((*riscvGetVMIRegFn));
 typedef RISCV_GET_VMI_REG_FS_FN((*riscvGetVMIRegFSFn));
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required)
 //
 #define RISCV_WRITE_REG_SIZE_FN(_NAME) void _NAME( \
     riscvP       riscv,     \
     riscvRegDesc r,         \
-    Uns32        srcBits    \
+    Uns32        srcBits,   \
+    Bool         signExtend \
 )
 typedef RISCV_WRITE_REG_SIZE_FN((*riscvWriteRegSizeFn));
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required) using the derived register size
 //
 #define RISCV_WRITE_REG_FN(_NAME) void _NAME( \
     riscvP       riscv,     \
-    riscvRegDesc r          \
+    riscvRegDesc r,         \
+    Bool         signExtend \
 )
 typedef RISCV_WRITE_REG_FN((*riscvWriteRegFn));
 
@@ -266,6 +268,19 @@ typedef RISCV_TLOAD_FN((*riscvTLoadFn));
 typedef RISCV_TSTORE_FN((*riscvTStoreFn));
 
 //
+// Implement PMA check for the given address range
+//
+#define RISCV_PMA_CHECK_FN(_NAME) void _NAME( \
+    riscvP    riscv,            \
+    riscvMode mode,             \
+    memPriv   requiredPriv,     \
+    Uns64     lowPA,            \
+    Uns64     highPA,           \
+    void     *clientData        \
+)
+typedef RISCV_PMA_CHECK_FN((*riscvPMACheckFn));
+
+//
 // Container structure for all callbacks implemented by the base model
 //
 typedef struct riscvModelCBS {
@@ -327,6 +342,9 @@ typedef struct riscvExtCBS {
     riscvIASSwitchFn          switchCB;
     riscvTLoadFn              tLoad;
     riscvTStoreFn             tStore;
+
+    // PMA check actions
+    riscvPMACheckFn           PMACheck;
 
 } riscvExtCB;
 

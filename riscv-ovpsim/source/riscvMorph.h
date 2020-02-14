@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,9 @@ void riscvEmitIllegalInstructionMessageDesc(riscvP riscv, illegalDescP desc);
 Bool riscvRequireArchPresentMT(riscvP riscv, riscvArchitecture feature);
 
 //
-// Validate that the given required feature is absent
+// Emit blockMask check for the given feature set
 //
-Bool riscvRequireArchAbsentMT(riscvP riscv, riscvArchitecture feature);
+void riscvEmitBlockMask(riscvP riscv, riscvArchitecture features);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,16 +92,21 @@ vmiReg riscvGetVMIReg(riscvP riscv, riscvRegDesc r);
 vmiReg riscvGetVMIRegFS(riscvP riscv, riscvRegDesc r, vmiReg tmp);
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required)
 //
-void riscvWriteRegSize(riscvP riscv, riscvRegDesc r, Uns32 srcBits);
+void riscvWriteRegSize(
+    riscvP       riscv,
+    riscvRegDesc r,
+    Uns32        srcBits,
+    Bool         signExtend
+);
 
 //
-// Do actions when a register is written (sign extending or NaN boxing, if
+// Do actions when a register is written (extending or NaN boxing, if
 // required) using the derived register size
 //
-void riscvWriteReg(riscvP riscv, riscvRegDesc r);
+void riscvWriteReg(riscvP riscv, riscvRegDesc r, Bool signExtend);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,12 +119,19 @@ void riscvWriteReg(riscvP riscv, riscvRegDesc r);
 void riscvConfigureFPU(riscvP riscv);
 
 //
-// Adjust JIT code generator state after write of floating point register
+// Adjust JIT code generator state after write of floating point CSR
 //
 void riscvWFS(riscvMorphStateP state, Bool useRS1);
 
 //
-// Adjust JIT code generator state after write of vector register that affects
+// Adjust JIT code generator state after write of vcsr CSR, which will set
+// vector state dirty and floating point state dirty (if floating point is
+// enabled)
+//
+void riscvWVCSR(riscvMorphStateP state, Bool useRS1);
+
+//
+// Adjust JIT code generator state after write of vector CSR that affects
 // floating point state (behavior clearly defined only after version 20191118)
 //
 void riscvWFSVS(riscvMorphStateP state, Bool useRS1);

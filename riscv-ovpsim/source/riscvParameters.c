@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,6 +142,11 @@ static vmiEnumParameter vectorVariants[] = {
         .name        = "0.8-draft-20191118",
         .value       = RVVV_0_8_20191118,
         .description = "Vector Architecture Version 0.8-draft-20191118",
+    },
+    [RVVV_0_8] = {
+        .name        = "0.8",
+        .value       = RVVV_0_8,
+        .description = "Vector Architecture Version 0.8",
     },
     [RVVV_MASTER] = {
         .name        = "master",
@@ -435,6 +440,7 @@ static RISCV_PDEFAULT_FN(default_VLEN) {
 static RISCV_BOOL_PDEFAULT_CFG_FN(Zvlsseg);
 static RISCV_BOOL_PDEFAULT_CFG_FN(Zvamo);
 static RISCV_BOOL_PDEFAULT_CFG_FN(Zvediv);
+static RISCV_BOOL_PDEFAULT_CFG_FN(Zvqmac);
 
 //
 // Table of formal parameter specifications
@@ -448,7 +454,7 @@ static riscvParameter parameters[] = {
     {  RVPV_V,       default_vect_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, vector_version,       vectorVariants,            "Specify required Vector Architecture version")},
     {  RVPV_FPV,     default_fp16_version,         VMI_ENUM_PARAM_SPEC  (riscvParamValues, fp16_version,         fp16Variants,              "Specify required 16-bit floating point format")},
     {  RVPV_FP,      default_mstatus_fs_mode,      VMI_ENUM_PARAM_SPEC  (riscvParamValues, mstatus_fs_mode,      FSModes,                   "Specify conditions causing update of mstatus.FS to dirty")},
-    {  RVPV_ALL,     0,                            VMI_BOOL_PARAM_SPEC  (riscvParamValues, verbose,              True,                      "Specify verbose output messages")},
+    {  RVPV_ALL,     0,                            VMI_BOOL_PARAM_SPEC  (riscvParamValues, verbose,              False,                     "Specify verbose output messages")},
     {  RVPV_MPCORE,  default_numHarts,             VMI_UNS32_PARAM_SPEC (riscvParamValues, numHarts,             0, 0,          32,         "Specify the number of hart contexts in a multiprocessor")},
     {  RVPV_S,       default_updatePTEA,           VMI_BOOL_PARAM_SPEC  (riscvParamValues, updatePTEA,           False,                     "Specify whether hardware update of PTE A bit is supported")},
     {  RVPV_S,       default_updatePTED,           VMI_BOOL_PARAM_SPEC  (riscvParamValues, updatePTED,           False,                     "Specify whether hardware update of PTE D bit is supported")},
@@ -499,6 +505,7 @@ static riscvParameter parameters[] = {
     {  RVPV_V,       default_Zvlsseg,              VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvlsseg,              False,                     "Specify that Zvlsseg is implemented (vector extension)")},
     {  RVPV_V,       default_Zvamo,                VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvamo,                False,                     "Specify that Zvamo is implemented (vector extension)")},
     {  RVPV_V,       default_Zvediv,               VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvediv,               False,                     "Specify that Zvediv is implemented (vector extension)")},
+    {  RVPV_V,       default_Zvqmac,               VMI_BOOL_PARAM_SPEC  (riscvParamValues, Zvqmac,               False,                     "Specify that Zvqmac is implemented (vector extension)")},
 
     // KEEP LAST
     {  RVPV_ALL,     0,                            VMI_END_PARAM}

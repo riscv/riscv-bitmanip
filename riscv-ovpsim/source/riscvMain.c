@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2019 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,6 +267,9 @@ static void applyParamsSMP(riscvP riscv, riscvParamValuesP params) {
     cfg->Zvlsseg           = params->Zvlsseg;
     cfg->Zvamo             = params->Zvamo;
     cfg->Zvediv            = params->Zvediv;
+
+    // Zvqmac extension is only available after version RVVV_0_8_20191004
+    cfg->Zvqmac = params->Zvqmac && (params->vector_version>RVVV_0_8_20191004);
 
     // force VLEN >= ELEN
     if(cfg->VLEN<cfg->ELEN) {
