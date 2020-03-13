@@ -84,7 +84,7 @@ module rvb_simple #(
 
 	// ---- SH1ADD SH2ADD SH3ADD SH1ADDW.U SH2ADDW.U SH3ADDW.U ----
 
-	wire shadd_active = !{din_insn30, din_insn27, din_insn26, din_insn25};
+	wire shadd_active = !{din_insn30, din_insn27, din_insn26, din_insn25} && din_insn5;
 	wire [1:0] shadd_shamt = {din_insn14, din_insn13};
 	wire [XLEN-1:0] shadd_tmp = (din_insn3 ? din_rs1[31:0] : din_rs1) << shadd_shamt;
 	wire [XLEN-1:0] shadd_out = shadd_active ? shadd_tmp + din_rs2 : 0;
@@ -92,7 +92,7 @@ module rvb_simple #(
 
 	// ---- ADDIW ADDWU SUBWU ADDUW SUBUW ----
 
-	wire wuw_active = (XLEN == 64) && (!din_insn5 || (din_insn3 && !din_insn14));
+	wire wuw_active = (XLEN == 64) && (!din_insn5 || (din_insn3 && !din_insn14 && din_insn27));
 
 	wire wuw_sub = din_insn30 && din_insn5;
 	wire wuw_wu = !din_insn5 || din_insn25;
