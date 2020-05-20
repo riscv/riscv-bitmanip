@@ -188,6 +188,19 @@ uint_xlen_t packu(uint_xlen_t rs1, uint_xlen_t rs2)
 }
 // --REF-END--
 
+// --REF-BEGIN-- lut4
+uint_xlen_t lut4(uint_xlen_t rs1, uint_xlen_t rs2)
+{
+	uint_xlen_t r = 0;
+	for (int i = 0; i < XLEN; i += 4) {
+		int pos = 4 * ((rs2 >> i) & 15);
+		if (pos < XLEN)
+			r |= ((rs1 >> pos) & 15) << i;
+	}
+	return r;
+}
+// --REF-END--
+
 // --REF-BEGIN-- bext
 uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
 {
