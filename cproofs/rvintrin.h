@@ -948,6 +948,7 @@ static inline long _rv_xperm_n  (long rs1, long rs2) { return _rv64_xperm_n  (rs
 static inline long _rv_xperm_b  (long rs1, long rs2) { return _rv64_xperm_b  (rs1, rs2); }
 static inline long _rv_xperm_h  (long rs1, long rs2) { return _rv64_xperm_h  (rs1, rs2); }
 static inline long _rv_xperm_w  (long rs1, long rs2) { return _rv64_xperm_w  (rs1, rs2); }
+static inline long _rv_xpermx_n (long rs1, long rs2) { return 0; }
 static inline long _rv_xpermx_b (long rs1, long rs2) { return _rv64_xpermx_b (rs1, rs2); }
 static inline long _rv_xpermx_h (long rs1, long rs2) { return _rv64_xpermx_h (rs1, rs2); }
 static inline long _rv_xpermx_w (long rs1, long rs2) { return _rv64_xpermx_w (rs1, rs2); }
