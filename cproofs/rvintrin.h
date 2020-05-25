@@ -199,10 +199,6 @@ static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2) { int64_t rd; __asm
 static inline int32_t _rv32_xperm_n(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xperm.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int32_t _rv32_xperm_b(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xperm.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int32_t _rv32_xperm_h(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xperm.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
-static inline int32_t _rv32_xpermx_n(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermx.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_xpermx_b(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermx.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_xpermx_h(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermx.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
 #ifdef RVINTRIN_RV64
@@ -210,18 +206,10 @@ static inline int32_t _rv32_xperm_n(int32_t rs1, int32_t rs2) { int32_t rd; __as
 static inline int32_t _rv32_xperm_b(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermw.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int32_t _rv32_xperm_h(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermw.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 
-static inline int32_t _rv32_xpermx_n(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermxw.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_xpermx_b(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermxw.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int32_t _rv32_xpermx_h(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermxw.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
 static inline int64_t _rv64_xperm_n(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int64_t _rv64_xperm_b(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int64_t _rv64_xperm_h(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 static inline int64_t _rv64_xperm_w(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.w %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-
-static inline int64_t _rv64_xpermx_b(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xpermx.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_xpermx_h(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xpermx.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
-static inline int64_t _rv64_xpermx_w(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xpermx.w %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
 static inline long _rv_crc32_b (long rs1) { long rd; __asm__ ("crc32.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
@@ -671,52 +659,40 @@ static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2)
 	return x;
 }
 
-static inline uint32_t _rvintrin_xperm32(uint32_t rs1, uint32_t rs2, int sz_log2, int xpermx)
+static inline uint32_t _rvintrin_xperm32(uint32_t rs1, uint32_t rs2, int sz_log2)
 {
 	uint32_t r = 0;
 	uint32_t sz = 1LL << sz_log2;
 	uint32_t mask = (1LL << sz) - 1;
 	for (int i = 0; i < 32; i += sz) {
 		uint32_t pos = ((rs2 >> i) & mask) << sz_log2;
-		if (xpermx)
-			pos ^= (32/sz) << sz_log2;
 		if (pos < 32)
 			r |= ((rs1 >> pos) & mask) << i;
 	}
 	return r;
 }
 
-static inline int32_t _rv32_xperm_n (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 2, 0); }
-static inline int32_t _rv32_xperm_b (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 3, 0); }
-static inline int32_t _rv32_xperm_h (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 4, 0); }
+static inline int32_t _rv32_xperm_n (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 2); }
+static inline int32_t _rv32_xperm_b (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 3); }
+static inline int32_t _rv32_xperm_h (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 4); }
 
-static inline int32_t _rv32_xpermx_n(int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 2, 1); }
-static inline int32_t _rv32_xpermx_b(int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 3, 1); }
-static inline int32_t _rv32_xpermx_h(int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 4, 1); }
-
-static inline uint64_t _rvintrin_xperm64(uint64_t rs1, uint64_t rs2, int sz_log2, int xpermx)
+static inline uint64_t _rvintrin_xperm64(uint64_t rs1, uint64_t rs2, int sz_log2)
 {
 	uint64_t r = 0;
 	uint64_t sz = 1LL << sz_log2;
 	uint64_t mask = (1LL << sz) - 1;
 	for (int i = 0; i < 64; i += sz) {
 		uint64_t pos = ((rs2 >> i) & mask) << sz_log2;
-		if (xpermx)
-			pos ^= (64/sz) << sz_log2;
 		if (pos < 64)
 			r |= ((rs1 >> pos) & mask) << i;
 	}
 	return r;
 }
 
-static inline int64_t _rv64_xperm_n (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 2, 0); }
-static inline int64_t _rv64_xperm_b (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 3, 0); }
-static inline int64_t _rv64_xperm_h (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 4, 0); }
-static inline int64_t _rv64_xperm_w (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 5, 0); }
-
-static inline int64_t _rv64_xpermx_b(int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 3, 1); }
-static inline int64_t _rv64_xpermx_h(int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 4, 1); }
-static inline int64_t _rv64_xpermx_w(int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 5, 1); }
+static inline int64_t _rv64_xperm_n (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 2); }
+static inline int64_t _rv64_xperm_b (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 3); }
+static inline int64_t _rv64_xperm_h (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 4); }
+static inline int64_t _rv64_xperm_w (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 5); }
 
 static inline long _rvintrin_crc32(unsigned long x, int nbits)
 {
@@ -900,9 +876,6 @@ static inline long _rv_clmulr   (long rs1, long rs2) { return _rv32_clmulr   (rs
 static inline long _rv_xperm_n  (long rs1, long rs2) { return _rv32_xperm_n  (rs1, rs2); }
 static inline long _rv_xperm_b  (long rs1, long rs2) { return _rv32_xperm_b  (rs1, rs2); }
 static inline long _rv_xperm_h  (long rs1, long rs2) { return _rv32_xperm_h  (rs1, rs2); }
-static inline long _rv_xpermx_n (long rs1, long rs2) { return _rv32_xpermx_n (rs1, rs2); }
-static inline long _rv_xpermx_b (long rs1, long rs2) { return _rv32_xpermx_b (rs1, rs2); }
-static inline long _rv_xpermx_h (long rs1, long rs2) { return _rv32_xpermx_h (rs1, rs2); }
 
 static inline long _rv_fsl(long rs1, long rs3, long rs2) { return _rv32_fsl(rs1, rs3, rs2); }
 static inline long _rv_fsr(long rs1, long rs3, long rs2) { return _rv32_fsr(rs1, rs3, rs2); }
@@ -948,10 +921,6 @@ static inline long _rv_xperm_n  (long rs1, long rs2) { return _rv64_xperm_n  (rs
 static inline long _rv_xperm_b  (long rs1, long rs2) { return _rv64_xperm_b  (rs1, rs2); }
 static inline long _rv_xperm_h  (long rs1, long rs2) { return _rv64_xperm_h  (rs1, rs2); }
 static inline long _rv_xperm_w  (long rs1, long rs2) { return _rv64_xperm_w  (rs1, rs2); }
-static inline long _rv_xpermx_n (long rs1, long rs2) { return 0; }
-static inline long _rv_xpermx_b (long rs1, long rs2) { return _rv64_xpermx_b (rs1, rs2); }
-static inline long _rv_xpermx_h (long rs1, long rs2) { return _rv64_xpermx_h (rs1, rs2); }
-static inline long _rv_xpermx_w (long rs1, long rs2) { return _rv64_xpermx_w (rs1, rs2); }
 static inline long _rv_bmator   (long rs1, long rs2) { return _rv64_bmator   (rs1, rs2); }
 static inline long _rv_bmatxor  (long rs1, long rs2) { return _rv64_bmatxor  (rs1, rs2); }
 

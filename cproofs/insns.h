@@ -189,30 +189,23 @@ uint_xlen_t packu(uint_xlen_t rs1, uint_xlen_t rs2)
 // --REF-END--
 
 // --REF-BEGIN-- xperm
-uint_xlen_t xperm(uint_xlen_t rs1, uint_xlen_t rs2, int sz_log2, bool xpermx)
+uint_xlen_t xperm(uint_xlen_t rs1, uint_xlen_t rs2, int sz_log2)
 {
 	uint_xlen_t r = 0;
 	uint_xlen_t sz = 1LL << sz_log2;
 	uint_xlen_t mask = (1LL << sz) - 1;
 	for (int i = 0; i < XLEN; i += sz) {
 		uint_xlen_t pos = ((rs2 >> i) & mask) << sz_log2;
-		if (xpermx)
-			pos ^= (XLEN/sz) << sz_log2;
 		if (pos < XLEN)
 			r |= ((rs1 >> pos) & mask) << i;
 	}
 	return r;
 }
 
-uint_xlen_t xperm_n (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 2, false); }
-uint_xlen_t xperm_b (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 3, false); }
-uint_xlen_t xperm_h (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 4, false); }
-uint_xlen_t xperm_w (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 5, false); }
-
-uint_xlen_t xpermx_n(uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 2, true); }
-uint_xlen_t xpermx_b(uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 3, true); }
-uint_xlen_t xpermx_h(uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 4, true); }
-uint_xlen_t xpermx_w(uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 5, true); }
+uint_xlen_t xperm_n (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 2); }
+uint_xlen_t xperm_b (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 3); }
+uint_xlen_t xperm_h (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 4); }
+uint_xlen_t xperm_w (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 5); }
 // --REF-END--
 
 // --REF-BEGIN-- bext
