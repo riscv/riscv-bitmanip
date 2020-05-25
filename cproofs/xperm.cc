@@ -42,8 +42,8 @@ extern "C" void check_lut1(uint64_t x, uint64_t y)
 uint64_t lut2(uint64_t d, uint64_t s)
 {
 	d = rv64b::gorc(rv64b::shfl(d & 0xff, -2), -16);   // 3 instructions  (+3)
-	d |= rv64b::xperm_n(d, 0x3333222211110000) << 2;   // 5 instructions  (+2)
-	return rv64b::xperm_n(d, s);                       // 6 instructions  (+1)
+	d |= rv64b::xperm_n(d, 0x3333222211110000) << 2;   // 6 instructions  (+3)
+	return rv64b::xperm_n(d, s);                       // 7 instructions  (+1)
 }
 
 extern "C" void check_lut2(uint64_t x, uint64_t y)
