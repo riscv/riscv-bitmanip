@@ -37,7 +37,7 @@
     typedef  int32_t  int_xlen_t;
 #   define FMT_CONST "0x%08X"
 
-#   define MAX_IMM 32
+#   define MAX_IMM 31
     uint_xlen_t randomV() {
         uint_xlen_t value =random();
         return value;
@@ -46,7 +46,7 @@
     typedef uint64_t uint_xlen_t;
     typedef  int64_t  int_xlen_t;
 #   define FMT_CONST "0x%016LX"
-#   define MAX_IMM 64
+#   define MAX_IMM 63
 
     uint_xlen_t randomV() {
         uint_xlen_t value = ((uint64_t)random() << 32) | random();
