@@ -87,9 +87,39 @@ void riscvSRET(riscvP riscv);
 void riscvURET(riscvP riscv);
 
 //
+// Return from Debug mode
+//
+void riscvDRET(riscvP riscv);
+
+//
+// Enter or leave debug mode
+//
+void riscvSetDM(riscvP riscv, Bool DM);
+
+//
+// Update debug mode stall indication
+//
+void riscvSetDMStall(riscvP riscv, Bool DMStall);
+
+//
+// Set step breakpoint if required
+//
+void riscvSetStepBreakpoint(riscvP riscv);
+
+//
 // Halt the processor in WFI state if required
 //
 void riscvWFI(riscvP riscv);
+
+//
+// Does the processor implement the exception or interrupt?
+//
+Bool riscvHasException(riscvP riscv, riscvException code);
+
+//
+// Return total number of interrupts (including 0 to 15)
+//
+Uns32 riscvGetIntNum(riscvP riscv);
 
 //
 // Return mask of implemented local interrupts
@@ -113,6 +143,11 @@ void riscvExceptFree(riscvP riscv);
 void riscvUpdatePending(riscvP riscv);
 
 //
+// Refresh pending-and-enabled interrupt state
+//
+void riscvRefreshPendingAndEnabled(riscvP riscv);
+
+//
 // Check for pending interrupts
 //
 void riscvTestInterrupt(riscvP riscv);
@@ -126,6 +161,16 @@ void riscvNewNetPorts(riscvP riscv);
 // Free ports
 //
 void riscvFreeNetPorts(riscvP riscv);
+
+//
+// Allocate timers
+//
+void riscvNewTimers(riscvP riscv);
+
+//
+// Free timers
+//
+void riscvFreeTimers(riscvP riscv);
 
 //
 // Save net state not covered by register read/write API
@@ -144,3 +189,22 @@ void riscvNetRestore(
     vmiRestoreContextP  cxt,
     vmiSaveRestorePhase phase
 );
+
+//
+// Save timer state not covered by register read/write API
+//
+void riscvTimerSave(
+    riscvP              riscv,
+    vmiSaveContextP     cxt,
+    vmiSaveRestorePhase phase
+);
+
+//
+// Restore timer state not covered by register read/write API
+//
+void riscvTimerRestore(
+    riscvP              riscv,
+    vmiRestoreContextP  cxt,
+    vmiSaveRestorePhase phase
+);
+

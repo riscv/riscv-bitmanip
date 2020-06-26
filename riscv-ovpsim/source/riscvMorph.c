@@ -17,12 +17,16 @@
  *
  */
 
+// Imperas header files
+#include "hostapi/impAlloc.h"
+
 // VMI header files
 #include "vmi/vmiMessage.h"
 #include "vmi/vmiMt.h"
 #include "vmi/vmiRt.h"
 
 // model header files
+#include "riscvBExtension.h"
 #include "riscvBlockState.h"
 #include "riscvCSRTypes.h"
 #include "riscvDecode.h"
@@ -30,6 +34,7 @@
 #include "riscvExceptions.h"
 #include "riscvFunctions.h"
 #include "riscvMessage.h"
+#include "riscvModelCallbackTypes.h"
 #include "riscvMorph.h"
 #include "riscvRegisters.h"
 #include "riscvStructure.h"
@@ -129,7 +134,8 @@ typedef struct riscvMorphAttrS {
     riscvMorphVFn         opFCB;            // element operation when mask=0
     riscvMorphVFn         endCB;            // called at end of vector operation
     octiaInstructionClass iClass;           // supplemental instruction class
-    vmiBinop              unop       : 8;   // integer unary operation
+    riscvBExtOp           bExtOp;           // B-extension operation
+    vmiUnop               unop       : 8;   // integer unary operation
     vmiBinop              binop      : 8;   // integer binary operation
     vmiFUnop              fpUnop     : 8;   // floating-point unary operation
     vmiFBinop             fpBinop    : 8;   // floating-point binary operation
@@ -173,10 +179,17 @@ inline static Uns64 getPC(riscvP riscv) {
 }
 
 //
-// Return endian for data accesses
+// Return endian for data accesses in the current mode
 //
-inline static memEndian getDataEndian(riscvP riscv) {
-    return riscv->dendian;
+memEndian riscvGetCurrentDataEndianMT(riscvP riscv) {
+
+    // validate endianness blockMask if required
+    if(riscv->checkEndian) {
+        vmimtValidateBlockMask(ISA_BE);
+    }
+
+    // return current data endianness
+    return riscvGetCurrentDataEndian(riscv);
 }
 
 //
@@ -211,7 +224,7 @@ inline static void emitCheckPolymorphic(void) {
 // Are only unit stride load/store instructions supported?
 //
 inline static Bool unitStrideOnly(riscvP riscv) {
-    return riscvVFSupport(riscv, RVVF_UNIT_STRIDE_ONLY);
+    return riscv->configInfo.unitStrideOnly;
 }
 
 //
@@ -249,6 +262,41 @@ inline static Bool vectorSignExtVMVXS(riscvP riscv) {
     return riscvVFSupport(riscv, RVVF_SEXT_VMV_X_S);
 }
 
+//
+// Is fractional LMUL supported?
+//
+inline static Bool vectorFractLMUL(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_FRACT_LMUL);
+}
+
+//
+// Are agnostic mask and tail supported?
+//
+inline static Bool vectorAgnostic(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_AGNOSTIC);
+}
+
+//
+// is MLEN always 1?
+//
+inline static Bool vectorMLEN1(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_MLEN1);
+}
+
+//
+// are relaxed EEW overlap rules used?
+//
+inline static Bool vectorEEWOverlap(riscvP riscv) {
+    return riscvVFSupport(riscv, RVVF_EEW_OVERLAP);
+}
+
+//
+// Are fault-only-first instructions absent?
+//
+inline static Bool vectorNoFaultOnlyFirst(riscvP riscv) {
+    return riscv->configInfo.noFaultOnlyFirst;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ILLEGAL INSTRUCTION HANDLING (REQUIRING PROCESSOR ONLY)
@@ -260,6 +308,33 @@ inline static Bool vectorSignExtVMVXS(riscvP riscv) {
 static void emitIllegalInstruction(void) {
     vmimtArgProcessor();
     vmimtCallAttrs((vmiCallFn)riscvIllegalInstruction, VMCA_EXCEPTION);
+}
+
+//
+// Emit Illegal Instruction description message
+//
+static void illegalInstructionMessage(riscvP riscv, const char *reason) {
+    vmiMessage("W", CPU_PREFIX "_ILL",
+        SRCREF_FMT "%s",
+        SRCREF_ARGS(riscv, getPC(riscv)),
+        reason
+    );
+}
+
+//
+// Emit code to take an Illegal Instruction exception for the given reason
+//
+void riscvEmitIllegalInstructionMessage(riscvP riscv, const char *reason) {
+
+    // emit message in verbose mode
+    if(riscv->verbose) {
+        vmimtArgProcessor();
+        vmimtArgNatAddress(reason);
+        vmimtCall((vmiCallFn)illegalInstructionMessage);
+    }
+
+    // take Illegal Instruction exception
+    emitIllegalInstruction();
 }
 
 //
@@ -290,6 +365,42 @@ void riscvEmitIllegalInstructionMessageDesc(riscvP riscv, illegalDescP desc) {
 }
 
 //
+// Emit Illegal Instruction description message
+//
+static void illegalOperandMessageDesc(
+    riscvP       riscv,
+    illegalDescP desc,
+    Uns32        operand
+) {
+    vmiMessage("W", desc->id,
+        SRCREF_FMT "Operand %u %s",
+        SRCREF_ARGS(riscv, getPC(riscv)),
+        operand,
+        desc->detail
+    );
+}
+
+//
+// Emit Illegal Operand message and take Illegal Instruction exception
+//
+void riscvEmitIllegalOperandMessageDesc(
+    riscvP       riscv,
+    illegalDescP desc,
+    Uns32        operand
+) {
+    // emit message in verbose mode
+    if(riscv->verbose) {
+        vmimtArgProcessor();
+        vmimtArgNatAddress(desc);
+        vmimtArgUns32(operand+1);
+        vmimtCall((vmiCallFn)illegalOperandMessageDesc);
+    }
+
+    // take Illegal Instruction exception
+    emitIllegalInstruction();
+}
+
+//
 // Get description for the first feature identified by the given feature id
 //
 static const char *getFeatureDesc(riscvArchitecture feature) {
@@ -305,6 +416,23 @@ static const char *getFeatureDesc(riscvArchitecture feature) {
     );
 
     return description;
+}
+
+//
+// Take Illegal Instruction exception irrespective of feature presence
+//
+static void illegalInstruction(riscvP riscv) {
+
+    // report FS state
+    if(riscv->verbose) {
+        vmiMessage("W", CPU_PREFIX "_ILL",
+            SRCREF_FMT "Illegal instruction",
+            SRCREF_ARGS(riscv, getPC(riscv))
+        );
+    }
+
+    // take Illegal Instruction exception
+    riscvIllegalInstruction(riscv);
 }
 
 //
@@ -352,7 +480,9 @@ static void emitIllegalInstructionAbsentArch(riscvArchitecture missing) {
 
     vmimtArgProcessor();
 
-    if(missing==ISA_FS) {
+    if(!missing) {
+        vmimtCallAttrs((vmiCallFn)illegalInstruction, VMCA_EXCEPTION);
+    } else if(missing==ISA_FS) {
         vmimtCallAttrs((vmiCallFn)illegalInstructionFS0, VMCA_EXCEPTION);
     } else {
         vmimtArgUns32(missing);
@@ -762,6 +892,17 @@ inline static riscvRegDesc getRVReg(riscvMorphStateP state, Uns32 argNum) {
 }
 
 //
+// Update riscvRegDesc for the indexed register
+//
+inline static void setRVReg(
+    riscvMorphStateP state,
+    Uns32            argNum,
+    riscvRegDesc     rA
+) {
+    state->info.r[argNum] = rA;
+}
+
+//
 // Get mask for the register in a 32-bit word
 //
 inline static Uns32 getRegMask(riscvRegDesc r) {
@@ -944,1256 +1085,20 @@ inline static void writeReg(riscvP riscv, riscvRegDesc r) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// TRANSACTIONAL LOAD/STORE UTILITIES
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// Return a Boolean indicating if transaction mode is enabled
-//
-inline static Bool inTransactionMode(riscvMorphStateP state) {
-
-    riscvP riscv = state->riscv;
-
-    // validate transaction mode state if required
-    if(riscv->useTMode) {
-        emitCheckPolymorphic();
-    }
-
-    if((riscv->pmKey & PMK_TRANSACTION)) {
-
-        // Assume any instruction that checks for transaction mode could
-        // result in a transaction abort that exits transaction mode, which
-        // changes the PMK_TRANSACTION polymorphic key, which requires an
-        // end block be issued. So emit it here.
-        vmimtEndBlock();
-        return True;
-
-    } else {
-
-        // Not in transaction mode
-        return False;
-    }
-}
-
-//
-// Do transaction load of up to 8 bytes
-//
-static Uns64 doLoadTMode(riscvP riscv, Uns64 VA, Uns32 bytes) {
-
-    Uns64       result = 0;
-    riscvExtCBP extCB;
-
-    // call derived model transaction load functions
-    for(extCB=riscv->extCBs; extCB; extCB=extCB->next) {
-        if(extCB->tLoad) {
-            extCB->tLoad(riscv, &result, VA, bytes, extCB->clientData);
-        }
-    }
-
-    return result;
-}
-
-//
-// Do transaction store of up to 8 bytes
-//
-static void doStoreTMode(riscvP riscv, Uns64 VA, Uns64 value, Uns32 bytes) {
-
-    riscvExtCBP extCB;
-
-    // call derived model transaction store functions
-    for(extCB=riscv->extCBs; extCB; extCB=extCB->next) {
-        if(extCB->tStore) {
-            extCB->tStore(riscv, &value, VA, bytes, extCB->clientData);
-        }
-    }
-}
-
-//
-// Create address for transaction load or store
-//
-static vmiReg emitTransactionVA(
-    riscvMorphStateP state,
-    vmiReg           ra,
-    Addr             offset
-) {
-    vmiReg raTmp    = newTmp(state);
-    Uns32  raBits   = riscvGetXlenMode(state->riscv);
-    Uns32  addrBits = 64;
-
-    // include offset
-    vmimtBinopRRC(raBits, vmi_ADD, raTmp, ra, offset, 0);
-
-    // extend address to 64 bits if required
-    if(raBits<addrBits) {
-        vmimtMoveExtendRR(addrBits, raTmp, raBits, raTmp, False);
-    }
-
-    return raTmp;
-}
-
-//
-// Transaction load value from memory for explicit memBits and offset
-//
-static void emitLoadTModeMBO(
-    riscvMorphStateP state,
-    Uns32            rdBits,
-    Uns32            memBits,
-    Addr             offset,
-    vmiReg           rd,
-    vmiReg           ra,
-    memConstraint    constraint
-) {
-    Bool      sExtend = !state->info.unsExt;
-    memEndian endian  = getDataEndian(state->riscv);
-    vmiCallFn cb      = (vmiCallFn)doLoadTMode;
-
-    // extend address to 64 bits if required
-    ra = emitTransactionVA(state, ra, offset);
-
-    // emit code to perform transaction load
-    vmimtArgProcessor();
-    vmimtArgReg(64, ra);
-    vmimtArgUns32(memBits/8);
-    vmimtCallResultAttrs(cb, memBits, rd, VMCA_FP_RESTORE);
-
-    // byte swap result if required (here for completeness, but not expected
-    // to be executed)
-    if(endian==MEM_ENDIAN_BIG) {                        // LCOV_EXCL_LINE
-        vmimtUnopR(memBits, vmi_SWP, rd, 0);            // LCOV_EXCL_LINE
-    }                                                   // LCOV_EXCL_LINE
-
-    // extend result if required
-    vmimtMoveExtendRR(rdBits, rd, memBits, rd, sExtend);
-}
-
-//
-// Transaction store value to memory for explicit memBits and offset
-//
-static void emitStoreTModeMBO(
-    riscvMorphStateP state,
-    Uns32            memBits,
-    Addr             offset,
-    vmiReg           ra,
-    vmiReg           rs,
-    memConstraint    constraint
-) {
-    memEndian endian = getDataEndian(state->riscv);
-    vmiCallFn cb     = (vmiCallFn)doStoreTMode;
-
-    // extend address to 64 bits if required
-    ra = emitTransactionVA(state, ra, offset);
-
-    // byte swap source if required (here for completeness, but not expected
-    // to be executed)
-    if(endian==MEM_ENDIAN_BIG) {                        // LCOV_EXCL_LINE
-        vmiReg rsTmp = newTmp(state);                   // LCOV_EXCL_LINE
-        vmimtUnopRR(memBits, vmi_SWP, rsTmp, rs, 0);    // LCOV_EXCL_LINE
-        rs = rsTmp;                                     // LCOV_EXCL_LINE
-    }                                                   // LCOV_EXCL_LINE
-
-    // emit code to perform transaction store
-    vmimtArgProcessor();
-    vmimtArgReg(64, ra);
-    vmimtArgReg(64, rs);
-    vmimtArgUns32(memBits/8);
-    vmimtCallAttrs(cb, VMCA_FP_RESTORE);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// LOAD/STORE UTILITIES
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// Normal load value from memory for explicit memBits and offset
-//
-static void emitLoadNormalMBO(
-    riscvMorphStateP state,
-    Uns32            rdBits,
-    Uns32            memBits,
-    Addr             offset,
-    vmiReg           rd,
-    vmiReg           ra,
-    memConstraint    constraint
-) {
-    Bool      sExtend = !state->info.unsExt;
-    memEndian endian  = getDataEndian(state->riscv);
-
-    vmimtLoadRRO(rdBits, memBits, offset, rd, ra, endian, sExtend, constraint);
-}
-
-//
-// Normal store value to memory for explicit memBits and offset
-//
-static void emitStoreNormalMBO(
-    riscvMorphStateP state,
-    Uns32            memBits,
-    Addr             offset,
-    vmiReg           ra,
-    vmiReg           rs,
-    memConstraint    constraint
-) {
-    memEndian endian = getDataEndian(state->riscv);
-
-    vmimtStoreRRO(memBits, offset, ra, rs, endian, constraint);
-}
-
-//
-// Load value from memory for explicit memBits and offset
-//
-static void emitLoadCommonMBO(
-    riscvMorphStateP state,
-    vmiReg           rd,
-    Uns32            rdBits,
-    vmiReg           ra,
-    Uns32            memBits,
-    Uns64            offset,
-    memConstraint    constraint
-) {
-    if(inTransactionMode(state)) {
-        emitLoadTModeMBO(state, rdBits, memBits, offset, rd, ra, constraint);
-    } else {
-        emitLoadNormalMBO(state, rdBits, memBits, offset, rd, ra, constraint);
-    }
-}
-
-//
-// Store value to memory for explicit memBits and offset
-//
-static void emitStoreCommonMBO(
-    riscvMorphStateP state,
-    vmiReg           rs,
-    vmiReg           ra,
-    Uns32            memBits,
-    Uns64            offset,
-    memConstraint    constraint
-) {
-    if(inTransactionMode(state)) {
-        emitStoreTModeMBO(state, memBits, offset, ra, rs, constraint);
-    } else {
-        emitStoreNormalMBO(state, memBits, offset, ra, rs, constraint);
-    }
-}
-
-//
-// Load value from memory
-//
-static void emitLoadCommon(
-    riscvMorphStateP state,
-    vmiReg           rd,
-    Uns32            rdBits,
-    vmiReg           ra,
-    memConstraint    constraint
-) {
-    Uns32 memBits = state->info.memBits;
-    Uns64 offset  = state->info.c;
-
-    emitLoadCommonMBO(state, rd, rdBits, ra, memBits, offset, constraint);
-}
-
-//
-// Store value to memory
-//
-static void emitStoreCommon(
-    riscvMorphStateP state,
-    vmiReg           rs,
-    vmiReg           ra,
-    memConstraint    constraint
-) {
-    Uns32 memBits = state->info.memBits;
-    Uns64 offset  = state->info.c;
-
-    emitStoreCommonMBO(state, rs, ra, memBits, offset, constraint);
-}
-
-//
-// Try-store value
-//
-static void emitTryStoreCommon(
-    riscvMorphStateP state,
-    vmiReg           ra,
-    memConstraint    constraint
-) {
-    Uns32 memBits = state->info.memBits;
-    Uns64 offset  = state->info.c;
-
-    // generate Store/AMO exception in preference to Load exception
-    vmimtTryStoreRC(memBits, offset, ra, constraint);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// BASE INSTRUCTION CALLBACKS
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// No operation
-//
-static RISCV_MORPH_FN(emitNOP) {
-    // no action
-}
-
-//
-// Move value (two registers)
-//
-static RISCV_MORPH_FN(emitMoveRR) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rsA   = getRVReg(state, 1);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs    = getVMIReg(riscv, rsA);
-    Uns32        bits  = getRBits(rdA);
-
-    vmimtMoveRR(bits, rd, rs);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Move value (one register and constant)
-//
-static RISCV_MORPH_FN(emitMoveRC) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    Uns32        bits  = getRBits(rdA);
-    Uns64        c     = state->info.c;
-
-    vmimtMoveRC(bits, rd, c);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Move PC-relative constant
-//
-static RISCV_MORPH_FN(emitMoveRPC) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    Uns32        bits  = getRBits(rdA);
-    Uns64        c     = state->info.c;
-
-    // when in a delayed instruction context, base on that address
-    if(state->inDelaySlot) {
-        vmimtMoveRR(bits, rd, RISCV_JUMP_BASE);
-    } else {
-        vmimtMoveRSimPC(bits, rd);
-    }
-
-    vmimtBinopRC(bits, state->attrs->binop, rd, c, 0);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Implement generic Binop (three registers)
-//
-static RISCV_MORPH_FN(emitBinopRRR) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    riscvRegDesc rs2A  = getRVReg(state, 2);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    vmiReg       rs2   = getVMIReg(riscv, rs2A);
-    Uns32        bits  = getRBits(rdA);
-
-    vmimtBinopRRR(bits, state->attrs->binop, rd, rs1, rs2, 0);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Implement generic Mulop (three registers, selecting result upper half)
-//
-static RISCV_MORPH_FN(emitMulopHRRR) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    riscvRegDesc rs2A  = getRVReg(state, 2);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    vmiReg       rs2   = getVMIReg(riscv, rs2A);
-    Uns32        bits  = getRBits(rdA);
-
-    vmimtMulopRRR(bits, state->attrs->binop, rd, VMI_NOREG, rs1, rs2, 0);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Implement generic Cmpop (three registers)
-//
-static RISCV_MORPH_FN(emitCmpopRRR) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    riscvRegDesc rs2A  = getRVReg(state, 2);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    vmiReg       rs2   = getVMIReg(riscv, rs2A);
-    Uns32        bits  = getRBits(rdA);
-
-    vmimtCompareRR(bits, state->attrs->cond, rs1, rs2, rd);
-
-    writeRegSize(riscv, rdA, 8);
-}
-
-//
-// Implement generic Binop (two registers and constant)
-//
-static RISCV_MORPH_FN(emitBinopRRC) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    Uns32        bits  = getRBits(rdA);
-    Uns64        c     = state->info.c;
-
-    vmimtBinopRRC(bits, state->attrs->binop, rd, rs1, c, 0);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Implement generic Cmpop (two registers and constant)
-//
-static RISCV_MORPH_FN(emitCmpopRRC) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    Uns32        bits  = getRBits(rdA);
-    Uns64        c     = state->info.c;
-
-    vmimtCompareRC(bits, state->attrs->cond, rs1, c, rd);
-
-    writeRegSize(riscv, rdA, 8);
-}
-
-//
-// Get alignment constraint for load/store operations
-//
-static memConstraint getLoadStoreConstraint(riscvMorphStateP state) {
-
-    riscvP riscv     = state->riscv;
-    Bool   unaligned = riscv->configInfo.unaligned;
-
-    return unaligned ? MEM_CONSTRAINT_NONE : MEM_CONSTRAINT_ALIGNED;
-}
-
-//
-// Get alignment constraint for atomic operations (must be aligned prior to
-// version 2.3)
-//
-static memConstraint getLoadStoreConstraintAMO(riscvMorphStateP state) {
-
-    riscvP riscv        = state->riscv;
-    Bool   unaligned    = riscv->configInfo.unaligned;
-    Bool   unalignedAMO = riscv->configInfo.unalignedAMO && unaligned;
-
-    return unalignedAMO ? MEM_CONSTRAINT_NONE : MEM_CONSTRAINT_ALIGNED;
-}
-
-//
-// Get alignment constraint for LR/SC operations (always aligned)
-//
-static memConstraint getLoadStoreConstraintLR(riscvMorphStateP state) {
-
-    return MEM_CONSTRAINT_ALIGNED;
-}
-
-//
-// Load value from memory
-//
-static RISCV_MORPH_FN(emitLoad) {
-
-    riscvP        riscv      = state->riscv;
-    riscvRegDesc  rdA        = getRVReg(state, 0);
-    riscvRegDesc  raA        = getRVReg(state, 1);
-    vmiReg        rd         = getVMIReg(riscv, rdA);
-    vmiReg        ra         = getVMIReg(riscv, raA);
-    Uns32         rdBits     = getRBits(rdA);
-    memConstraint constraint = getLoadStoreConstraint(state);
-
-    // call common code to perform load
-    emitLoadCommon(state, rd, rdBits, ra, constraint);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Store value to memory
-//
-static RISCV_MORPH_FN(emitStore) {
-
-    riscvP        riscv      = state->riscv;
-    riscvRegDesc  rsA        = getRVReg(state, 0);
-    riscvRegDesc  raA        = getRVReg(state, 1);
-    vmiReg        rs         = getVMIReg(riscv, rsA);
-    vmiReg        ra         = getVMIReg(riscv, raA);
-    memConstraint constraint = getLoadStoreConstraint(state);
-
-    // call common code to perform store
-    emitStoreCommon(state, rs, ra, constraint);
-}
-
-//
-// Is constant target address aligned?
-//
-static Bool isTargetAddressAlignedC(riscvP riscv, Uns64 tgt) {
-
-    if(!(tgt&0x2)) {
-
-        // address is aligned
-        return True;
-
-    } else if(isFeaturePresentMT(riscv, ISA_C)) {
-
-        // compressed instructions enabled
-        return True;
-
-    } else {
-
-        // address is not aligned
-        return False;
-    }
-}
-
-//
-// Take Instruction Address Misaligned exception
-//
-static void emitTargetAddressUnalignedC(riscvP riscv, Uns64 tgt) {
-
-    vmiCallFn exceptCB = (vmiCallFn)riscvInstructionAddressMisaligned;
-
-    // emit call generating Instruction Address Misaligned exception
-    vmimtArgProcessor();
-    vmimtArgUns64(tgt);
-    vmimtCallAttrs(exceptCB, VMCA_EXCEPTION);
-}
-
-//
-// Validate target address in register is aligned and take exception if not
-//
-static void checkTargetAddressAlignedR(
-    riscvMorphStateP state,
-    Uns32            bits,
-    vmiReg           ra
-) {
-    riscvP riscv = state->riscv;
-
-    if(!isFeaturePresentMT(riscv, ISA_C)) {
-
-        vmiLabelP ok       = vmimtNewLabel();
-        vmiCallFn exceptCB = (vmiCallFn)riscvInstructionAddressMisaligned;
-
-        // skip misaligned instruction exception if bit[1] is clear
-        vmimtTestRCJumpLabel(bits, vmi_COND_Z, ra, 0x2, ok);
-
-        // extend target address to 64 bits
-        vmiReg tmp = newTmp(state);
-        vmimtMoveExtendRR(64, tmp, bits, ra, False);
-
-        // emit call generating Illegal Instruction exception
-        vmimtArgProcessor();
-        vmimtArgReg(64, tmp);
-        vmimtCallAttrs(exceptCB, VMCA_EXCEPTION);
-
-        // free temporary address
-        freeTmp(state);
-
-        // here if access is legal
-        vmimtInsertLabel(ok);
-    }
-}
-
-//
-// Branch based on register comparison
-//
-static RISCV_MORPH_FN(emitBranchRR) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rs1A  = getRVReg(state, 0);
-    riscvRegDesc rs2A  = getRVReg(state, 1);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    vmiReg       rs2   = getVMIReg(riscv, rs2A);
-    Uns32        bits  = getRBits(rs1A);
-    Uns64        tgt   = state->info.c;
-    vmiReg       tmp   = newTmp(state);
-
-    // do comparison
-    vmimtCompareRR(bits, state->attrs->cond, rs1, rs2, tmp);
-
-    // validate target address alignment
-    if(!isTargetAddressAlignedC(riscv, tgt)) {
-
-        vmiLabelP noBranch = vmimtNewLabel();
-
-        // skip alignment test if condition is False
-        vmimtCondJumpLabel(tmp, False, noBranch);
-
-        // take Instruction Address Misaligned exception
-        emitTargetAddressUnalignedC(riscv, tgt);
-
-        // here if address is aligned
-        vmimtInsertLabel(noBranch);
-    }
-
-    // do branch
-    vmimtCondJump(tmp, True, 0, tgt, VMI_NOREG, vmi_JH_RELATIVE);
-}
-
-//
-// Return link address if the current instruction requires it
-//
-static Uns64 getLinkPC(riscvMorphStateP state, vmiReg *lrP) {
-
-    Uns64 linkPC = state->info.thisPC + state->info.bytes;
-
-    if(state->inDelaySlot) {
-
-        vmimtGetDelaySlotNextPC(*lrP, True);
-
-        *lrP   = VMI_NOREG;
-        linkPC = 0;
-    }
-
-    return linkPC;
-}
-
-//
-// Jump to constant target address
-//
-static RISCV_MORPH_FN(emitJAL) {
-
-    riscvP       riscv  = state->riscv;
-    riscvRegDesc lrA    = getRVReg(state, 0);
-    vmiReg       lr     = getVMIReg(riscv, lrA);
-    Uns64        tgt    = state->info.c;
-    vmiJumpHint  hint   = isLR(lr) ? vmi_JH_CALL : vmi_JH_NONE;
-
-    // validate target address alignment
-    if(!isTargetAddressAlignedC(riscv, tgt)) {
-        emitTargetAddressUnalignedC(riscv, tgt);
-    }
-
-    // emit call using calculated linkPC and adjusted lr
-    Uns64 linkPC = getLinkPC(state, &lr);
-    vmimtUncondJump(linkPC, tgt, lr, hint|vmi_JH_RELATIVE);
-}
-
-//
-// Jump to register target address
-//
-static RISCV_MORPH_FN(emitJALR) {
-
-    riscvP       riscv  = state->riscv;
-    riscvRegDesc lrA    = getRVReg(state, 0);
-    riscvRegDesc raA    = getRVReg(state, 1);
-    vmiReg       lr     = getVMIReg(riscv, lrA);
-    vmiReg       ra     = getVMIReg(riscv, raA);
-    Uns32        bits   = getRBits(lrA);
-    Uns64        offset = state->info.c;
-    vmiJumpHint  hint;
-
-    // calculate target address if required
-    if(offset) {
-        vmiReg tmp = newTmp(state);
-        vmimtBinopRRC(bits, vmi_ADD, tmp, ra, offset, 0);
-        ra = tmp;
-    }
-
-    // validate target address alignment
-    checkTargetAddressAlignedR(state, bits, ra);
-
-    // derive jump hint
-    if(isLR(ra)) {
-        hint = vmi_JH_RETURN;
-    } else if(isLR(lr)) {
-        hint = vmi_JH_CALL;
-    } else {
-        hint = vmi_JH_NONE;
-    }
-
-    // emit call using calculated linkPC and adjusted lr
-    Uns64 linkPC = getLinkPC(state, &lr);
-    vmimtUncondJumpReg(linkPC, ra, lr, hint|vmi_JH_RELATIVE);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ATOMIC MEMORY OPERATIONS
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// Function type implement generic AMO operation
-//
-#define AMO_FN(_NAME) void _NAME( \
-    riscvMorphStateP state, \
-    Uns32            bits,  \
-    vmiReg           rd,    \
-    vmiReg           ra,    \
-    vmiReg           rb     \
-)
-typedef AMO_FN((*amoCB));
-
-//
-// Atomic memory operation (internal interface)
-//
-static void emitAMOCommonInt(
-    riscvMorphStateP state,
-    amoCB            opCB,
-    vmiReg           rd,
-    vmiReg           rs,
-    vmiReg           ra,
-    Uns32            bits
-) {
-    memConstraint constraint = getLoadStoreConstraintAMO(state);
-    vmiReg        tmp1       = newTmp(state);
-    vmiReg        tmp2       = newTmp(state);
-
-    // for this instruction, memBits is bits if unspecified or SEW
-    if(!state->info.memBits || (state->info.memBits==-1)) {
-        state->info.memBits = bits;
-    }
-
-    // this is an atomic operation
-    vmimtAtomic();
-
-    // generate Store/AMO exception in preference to Load exception
-    emitTryStoreCommon(state, ra, constraint);
-
-    // generate results using tmp1 and tmp2
-    emitLoadCommon(state, tmp1, bits, ra, constraint);
-    opCB(state, bits, tmp2, tmp1, rs);
-    emitStoreCommon(state, tmp2, ra, constraint);
-    vmimtMoveRR(bits, rd, tmp1);
-
-    // free temporaries
-    freeTmp(state);
-    freeTmp(state);
-}
-
-//
-// Atomic memory operation (GPR arguments)
-//
-static void emitAMOCommonRRR(riscvMorphStateP state, amoCB opCB) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rsA   = getRVReg(state, 1);
-    riscvRegDesc raA   = getRVReg(state, 2);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs    = getVMIReg(riscv, rsA);
-    vmiReg       ra    = getVMIReg(riscv, raA);
-    Uns32        bits  = getRBits(rdA);
-
-    emitAMOCommonInt(state, opCB, rd, rs, ra, bits);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// AMO binop callback
-//
-static AMO_FN(emitAMOBinopRRRCB) {
-    vmimtBinopRRR(bits, state->attrs->binop, rd, ra, rb, 0);
-}
-
-//
-// AMO swap callback
-//
-static AMO_FN(emitAMOSwapRRRCB) {
-    vmimtMoveRR(bits, rd, rb);
-}
-
-//
-// Atomic memory operation using defined VMI binop
-//
-static RISCV_MORPH_FN(emitAMOBinopRRR) {
-    emitAMOCommonRRR(state, emitAMOBinopRRRCB);
-}
-
-//
-// Atomic memory operation using swap
-//
-static RISCV_MORPH_FN(emitAMOSwapRRR) {
-    emitAMOCommonRRR(state, emitAMOSwapRRRCB);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// LR/SC INSTRUCTIONS
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// This defines exclusive tag bits
-//
-inline static Uns32 getEABits(riscvMorphStateP state) {
-    return riscvGetXlenArch(state->riscv);
-}
-
-//
-// This defines exclusive tag bits
-//
-inline static Uns32 getModeBits(riscvMorphStateP state) {
-    return riscvGetXlenMode(state->riscv);
-}
-
-//
-// Generate exclusive access tag address ra in register rtag
-//
-static void generateEATag(riscvMorphStateP state, vmiReg rtag, vmiReg ra) {
-
-    Uns32 bits   = getEABits(state);
-    Uns32 raBits = getModeBits(state);
-
-    vmimtMoveExtendRR(bits, rtag, raBits, ra, False);
-    vmimtBinopRC(bits, vmi_AND, rtag, state->riscv->exclusiveTagMask, 0);
-}
-
-//
-// Emit code to start exclusive access to address ra
-//
-static void startEA(riscvMorphStateP state, vmiReg ra) {
-
-    // instruction must execute atomically but should not be classed as atomic
-    // by instruction attributes (it is OCL_IC_EXCLUSIVE)
-    vmimtAtomic();
-    vmimtInstructionClassSub(OCL_IC_ATOMIC);
-
-    // generate exclusive access tag for this address
-    generateEATag(state, RISCV_EA_TAG, ra);
-}
-
-//
-// Validate the exclusive access and jump to label 'done' if it is invalid,
-// setting rd to 1
-//
-static vmiLabelP validateEA(
-    riscvMorphStateP state,
-    vmiReg           ra,
-    vmiReg           rd,
-    Uns32            rdBits
-) {
-    vmiLabelP done = vmimtNewLabel();
-    vmiLabelP ok   = vmimtNewLabel();
-    vmiReg    t    = newTmp(state);
-
-    // generate exclusive access tag for this address
-    generateEATag(state, t, ra);
-
-    // do load and store tags match?
-    vmimtCompareRR(getEABits(state), vmi_COND_EQ, RISCV_EA_TAG, t, t);
-
-    // commit store if tags match
-    vmimtCondJumpLabel(t, True, ok);
-
-    // indicate store failed
-    vmimtMoveRC(rdBits, rd, 1);
-
-    // jump to instruction end
-    vmimtUncondJumpLabel(done);
-
-    // here to commit store
-    vmimtInsertLabel(ok);
-
-    return done;
-}
-
-//
-// Do actions required to terminate exclusive access
-//
-static void clearEA(riscvMorphStateP state) {
-
-    // exclusiveTag becomes RISCV_NO_TAG to indicate no active access
-    vmimtMoveRC(getEABits(state), RISCV_EA_TAG, RISCV_NO_TAG);
-}
-
-//
-// Do actions required to complete exclusive access
-//
-static void endEA(
-    riscvMorphStateP state,
-    vmiReg           rd,
-    Uns32            rdBits,
-    vmiLabelP        done
-) {
-    // indicate store succeeded
-    vmimtMoveRC(rdBits, rd, 0);
-
-    // insert target label for aborted stores
-    vmimtInsertLabel(done);
-
-    // terminate exclusive access
-    clearEA(state);
-}
-
-//
-// Emit code for LR
-//
-static RISCV_MORPH_FN(emitLR) {
-
-    riscvP        riscv      = state->riscv;
-    riscvRegDesc  rdA        = getRVReg(state, 0);
-    riscvRegDesc  raA        = getRVReg(state, 1);
-    vmiReg        rd         = getVMIReg(riscv, rdA);
-    vmiReg        ra         = getVMIReg(riscv, raA);
-    Uns32         rdBits     = getRBits(rdA);
-    memConstraint constraint = getLoadStoreConstraintLR(state);
-
-    // for this instruction, memBits is rdBits
-    state->info.memBits = rdBits;
-
-    // indicate LR is now active at address ra
-    startEA(state, ra);
-
-    // call common code to perform load
-    emitLoadCommon(state, rd, rdBits, ra, constraint);
-
-    writeReg(riscv, rdA);
-}
-
-//
-// Emit code for SC
-//
-static RISCV_MORPH_FN(emitSC) {
-
-    riscvP        riscv      = state->riscv;
-    riscvRegDesc  rdA        = getRVReg(state, 0);
-    riscvRegDesc  rsA        = getRVReg(state, 1);
-    riscvRegDesc  raA        = getRVReg(state, 2);
-    vmiReg        rd         = getVMIReg(riscv, rdA);
-    vmiReg        rs         = getVMIReg(riscv, rsA);
-    vmiReg        ra         = getVMIReg(riscv, raA);
-    Uns32         rdBits     = getRBits(rdA);
-    memConstraint constraint = getLoadStoreConstraintLR(state);
-
-    // for this instruction, memBits is rsBits
-    state->info.memBits = getRBits(rsA);
-
-    // validate SC attempt at address ra
-    vmiLabelP done = validateEA(state, ra, rd, rdBits);
-
-    // call common code to perform store
-    emitStoreCommon(state, rs, ra, constraint);
-
-    // complete SC attempt
-    endEA(state, rd, rdBits, done);
-
-    writeReg(riscv, rdA);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// SYSTEM INSTRUCTIONS
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// This defines the type of a non-returning exception callback
-//
-#define EXCEPTION_FN(_NAME) void _NAME(riscvP riscv)
-typedef EXCEPTION_FN((*exceptionFn));
-
-//
-// Emit code to an embedded exception function
-//
-static void emitException(exceptionFn cb) {
-    vmimtArgProcessor();
-    vmimtCallAttrs((vmiCallFn)cb, VMCA_EXCEPTION);
-}
-
-//
-// Implement ECALL instruction
-//
-static RISCV_MORPH_FN(emitECALL) {
-    emitException(riscvECALL);
-}
-
-//
-// Implement EBREAK instruction
-//
-static RISCV_MORPH_FN(emitEBREAK) {
-    emitException(riscvEBREAK);
-}
-
-//
-// Implement MRET instruction
-//
-static RISCV_MORPH_FN(emitMRET) {
-
-    riscvP riscv = state->riscv;
-
-    // this instruction must be executed in Machine mode
-    requireModeMT(riscv, RISCV_MODE_MACHINE);
-
-    emitException(riscvMRET);
-}
-
-//
-// Implement SRET instruction
-//
-static RISCV_MORPH_FN(emitSRET) {
-
-    riscvP riscv = state->riscv;
-
-    // this instruction requires Supervisor mode to be implemented
-    checkHaveSModeMT(riscv);
-
-    // this instruction must be executed in Machine mode or Supervisor mode
-    requireModeMT(riscv, RISCV_MODE_SUPERVISOR);
-
-    // instruction is trapped if mstatus.TSR=1
-    EMIT_TRAP_MASK_FIELD(riscv, mstatus, TSR, 1);
-
-    emitException(riscvSRET);
-}
-
-//
-// Implement URET instruction
-//
-static RISCV_MORPH_FN(emitURET) {
-
-    riscvP riscv = state->riscv;
-
-    // this instruction requires User mode to be implemented
-    checkHaveUModeMT(riscv);
-
-    emitException(riscvURET);
-}
-
-//
-// Implement WFI instruction
-//
-static RISCV_MORPH_FN(emitWFI) {
-
-    riscvP            riscv = state->riscv;
-    riscvArchitecture arch  = getCurrentArch(riscv);
-
-    // this instruction must be executed in Machine mode or Supervisor mode
-    // unless User mode interrupts are implemented
-    if(!(arch&ISA_N)) {
-        requireModeMT(riscv, RISCV_MODE_SUPERVISOR);
-    }
-
-    // instruction is trapped if mstatus.TW=1
-    EMIT_TRAP_MASK_FIELD(riscv, mstatus, TW, 1);
-
-    // wait for interrupt (unless this is treated as a NOP)
-    if(!riscv->configInfo.wfi_is_nop) {
-        vmimtArgProcessor();
-        vmimtCall((vmiCallFn)riscvWFI);
-    }
-}
-
-//
-// Implement SFENCE.VMA instruction
-//
-static RISCV_MORPH_FN(emitSFENCE_VMA) {
-
-    riscvP       riscv      = state->riscv;
-    riscvRegDesc VADDRrA    = getRVReg(state, 0);
-    riscvRegDesc ASIDrA     = getRVReg(state, 1);
-    vmiReg       VADDRr     = getVMIReg(riscv, VADDRrA);
-    vmiReg       ASIDr      = getVMIReg(riscv, ASIDrA);
-    Uns32        bits       = getRBits(VADDRrA);
-    Bool         haveVADDRr = !VMI_ISNOREG(VADDRr);
-    Bool         haveASIDr  = !VMI_ISNOREG(ASIDr);
-
-    // this instruction requires Supervisor mode to be implemented
-    checkHaveSModeMT(riscv);
-
-    // this instruction must be executed in Machine mode or Supervisor mode
-    requireModeMT(riscv, RISCV_MODE_SUPERVISOR);
-
-    // instruction is trapped if mstatus.TVM=1
-    EMIT_TRAP_MASK_FIELD(riscv, mstatus, TVM, 1);
-
-    // emit processor argument
-    vmimtArgProcessor();
-
-    // emit VA argument if required
-    if(haveVADDRr) {
-        vmiReg tmp = newTmp(state);
-        vmimtMoveExtendRR(64, tmp, bits, VADDRr, False);
-        vmimtArgReg(64, tmp);
-    }
-
-    // emit ASID argument if required
-    if(haveASIDr) {
-        vmimtArgReg(32, ASIDr);
-    }
-
-    // emit call
-    if(!haveVADDRr && !haveASIDr) {
-        vmimtCall((vmiCallFn)riscvVMInvalidateAll);
-    } else if(!haveVADDRr) {
-        vmimtCall((vmiCallFn)riscvVMInvalidateAllASID);
-    } else if(!haveASIDr) {
-        vmimtCall((vmiCallFn)riscvVMInvalidateVA);
-    } else {
-        vmimtCall((vmiCallFn)riscvVMInvalidateVAASID);
-    }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// CSR ACCESS INSTRUCTIONS
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// Indicate whether CSR must be read
-//
-static Bool doCSRRead(riscvMorphStateP state, vmiReg rd) {
-    return (!VMI_ISNOREG(rd) || (state->info.csrUpdate!=RV_CSR_RW));
-}
-
-//
-// Indicate whether CSR must be written (depending on whether rs1 is zero)
-//
-static Bool doCSRWriteRS1(riscvMorphStateP state, vmiReg rs1) {
-    return (!VMI_ISNOREG(rs1) || (state->info.csrUpdate==RV_CSR_RW));
-}
-
-//
-// Indicate whether CSR must be written (depending on whether imm is zero)
-//
-static Bool doCSRWriteImm(riscvMorphStateP state, Uns64 imm) {
-    return (imm || (state->info.csrUpdate==RV_CSR_RW));
-}
-
-//
-// Implement CSR access, either with two GPRs or GPR and immediate
-//
-static void emitCSRRCommon(riscvMorphStateP state, vmiReg rs1, Bool write) {
-
-    riscvP          riscv = state->riscv;
-    Uns32           csr   = state->info.csr;
-    riscvRegDesc    rdA   = getRVReg(state, 0);
-    vmiReg          rd    = getVMIReg(riscv, rdA);
-    Uns32           bits  = getRBits(rdA);
-    Bool            read  = doCSRRead(state, rd);
-    riscvCSRAttrsCP attrs = riscvValidateCSRAccess(riscv, csr, read, write);
-
-    // action only required for valid access
-    if(attrs) {
-
-        vmiReg rdTmp = read ? newTmp(state) : VMI_NOREG;
-
-        // handle traps if mstatus.TVM=1 (e.g. satp register)
-        if(attrs->TVMT) {
-            EMIT_TRAP_MASK_FIELD(riscv, mstatus, TVM, 1);
-        }
-
-        // emit code to read the CSR if required
-        if(read) {
-            riscvEmitCSRRead(attrs, riscv, rdTmp, write);
-        }
-
-        // emit code to write the CSR if required
-        if(write) {
-
-            vmiReg rs1Tmp = write ? newTmp(state) : VMI_NOREG;
-            vmiReg cbTmp  = newTmp(state);
-            Bool   useRS1 = !VMI_ISNOREG(rs1);
-            Uns64  c      = state->info.c;
-
-            switch(state->info.csrUpdate) {
-
-                case RV_CSR_RW:
-                    if(useRS1) {
-                        rs1Tmp = rs1;
-                    } else {
-                        vmimtMoveRC(bits, rs1Tmp, c);
-                    }
-                    break;
-
-                case RV_CSR_RS:
-                    if(useRS1) {
-                        vmimtBinopRRR(bits, vmi_OR, rs1Tmp, rdTmp, rs1, 0);
-                    } else {
-                        vmimtBinopRRC(bits, vmi_OR, rs1Tmp, rdTmp, c, 0);
-                    }
-                    break;
-
-                case RV_CSR_RC:
-                    if(useRS1) {
-                        vmimtBinopRRR(bits, vmi_ANDN, rs1Tmp, rdTmp, rs1, 0);
-                    } else {
-                        vmimtBinopRRC(bits, vmi_ANDN, rs1Tmp, rdTmp, c, 0);
-                    }
-                    break;
-
-                default:
-                    VMI_ABORT("unimplemented case"); // LCOV_EXCL_LINE
-            }
-
-            // do the write
-            riscvEmitCSRWrite(attrs, riscv, rs1Tmp, cbTmp);
-
-            // adjust code generator state after CSR write if required
-            if(attrs->wstateCB) {
-                attrs->wstateCB(state, useRS1);
-            }
-        }
-
-        // commit read value
-        vmimtMoveRR(bits, rd, rdTmp);
-        writeReg(riscv, rdA);
-    }
-}
-
-//
-// Implement CSR access (two GPRs)
-//
-static RISCV_MORPH_FN(emitCSRR) {
-
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
-    Bool         write = doCSRWriteRS1(state, rs1);
-
-    emitCSRRCommon(state, rs1, write);
-}
-
-//
-// Implement CSR access (GPR and immediate)
-//
-static RISCV_MORPH_FN(emitCSRRI) {
-
-    Bool write = doCSRWriteImm(state, state->info.c);
-
-    emitCSRRCommon(state, VMI_NOREG, write);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // FLOATING POINT SUPPORT MACROS
 ////////////////////////////////////////////////////////////////////////////////
 
 //
 // Int8 macros
 //
-#define INT8_MIN           	0x80
-#define INT8_MAX           	0x7f
+#define INT8_MIN            0x80
+#define INT8_MAX            0x7f
 
 //
 // Uns8 macros
 //
-#define UNS8_MIN           	0x00
-#define UNS8_MAX           	0xff
+#define UNS8_MIN            0x00
+#define UNS8_MAX            0xff
 
 //
 // Int16 macros
@@ -2302,6 +1207,1590 @@ static RISCV_MORPH_FN(emitCSRRI) {
 
 #define FP64_DEFAULT_QNAN   0x7ff8000000000000ULL
 #define FP64_QNAN_MASK      0x0008000000000000ULL
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FLOATING POINT REGISTER UTILITIES
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Return VMI register for the given abstract register which may require a NaN
+// box test if it is floating point (internal routine)
+//
+static vmiReg getVMIRegFSInt(
+    riscvMorphStateP state,
+    riscvP           riscv,
+    riscvRegDesc     r,
+    vmiReg           tmp
+) {
+    vmiReg result = getVMIReg(riscv, r);
+
+    if(isFReg(r)) {
+
+        Uns32 bits     = getRBits(r);
+        Uns32 archBits = riscvGetFlenArch(riscv);
+
+        // handle possible switch to QNaN-valued temporary if the source
+        // register is smaller than the architectural register size and not
+        // known to be NaN-boxed
+        if(requireNaNBox(riscv, r, archBits, bits)) {
+
+            // select default QNaN value
+            Uns32 QNaN  = (bits==16) ? FP16_DEFAULT_QNAN : FP32_DEFAULT_QNAN;
+            Uns64 upper = -1ULL << bits;
+
+            // allocate temporary if required
+            if(VMI_ISNOREG(tmp)) {
+                tmp = newTmp(state);
+            }
+
+            // is the upper half all ones?
+            vmimtCompareRC(archBits, vmi_COND_NB, result, upper, tmp);
+
+            // seed the apparent value, depending on whether the source is
+            // correctly NaN-boxed
+            vmimtCondMoveRRC(bits, tmp, True, tmp, result, QNaN);
+
+            // use the temporary as a source
+            result = tmp;
+        }
+    }
+
+    return result;
+}
+
+//
+// Return VMI register for the given abstract register which may require a NaN
+// box test if it is floating point (public interface)
+//
+vmiReg riscvGetVMIRegFS(riscvP riscv, riscvRegDesc r, vmiReg tmp) {
+    return getVMIRegFSInt(0, riscv, r, tmp);
+}
+
+//
+// Return VMI register for the given abstract register which may require a NaN
+// box test if it is floating point (local interface)
+//
+inline static vmiReg getVMIRegFS(riscvMorphStateP state, riscvRegDesc r) {
+    return getVMIRegFSInt(state, state->riscv, r, VMI_NOREG);
+}
+
+//
+// Adjust JIT code generator state after write of floating point CSR
+//
+void riscvWFS(riscvMorphStateP state, Bool useRS1) {
+
+    riscvP riscv = state->riscv;
+
+    updateFS(riscv);
+}
+
+//
+// Adjust JIT code generator state after write of vcsr CSR, which will set
+// vector state dirty and floating point state dirty (if floating point is
+// enabled)
+//
+void riscvWVCSR(riscvMorphStateP state, Bool useRS1) {
+
+    riscvP riscv = state->riscv;
+
+    updateVS(riscv);
+
+    if(isFeaturePresentMT(riscv, ISA_FS)) {
+        updateFS(riscv);
+    }
+}
+
+//
+// Adjust JIT code generator state after write of vector CSR that affects
+// floating point state or vector extension state (behavior clearly defined only
+// after version 20191118)
+//
+void riscvWFSVS(riscvMorphStateP state, Bool useRS1) {
+
+    riscvP riscv = state->riscv;
+
+    if(isVCSRPresent(riscv)) {
+        updateVS(riscv);
+    } else if(vxSatRMSetFSDirty(riscv)) {
+        updateFS(riscv);
+    }
+}
+
+//
+// Reset JIT code generator state after possible write of mstatus.FS/mstatus.VS
+//
+void riscvRstFS(riscvMorphStateP state, Bool useRS1) {
+    resetFSVS(state->riscv);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// UNPACKED REGISTERS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// This defines an unpacked register
+//
+typedef struct unpackedRegS {
+    riscvMorphStateP state; // context
+    riscvRegDesc     rA;    // abstract register
+    Uns32            bits;  // register size
+    vmiFType         ftype; // floating point type
+    vmiReg           r;     // corresponding VMI register
+} unpackedReg;
+
+//
+// Return unpacked GPR description
+//
+inline static unpackedReg unpackRX(riscvMorphStateP state, Uns32 argNum) {
+
+    unpackedReg result;
+
+    result.state = state;
+    result.rA    = getRVReg(state, argNum);
+    result.r     = getVMIReg(state->riscv, result.rA);
+    result.bits  = getRBits(result.rA);
+    result.ftype = 0;
+
+    return result;
+}
+
+//
+// Return unpacked destination FPR description
+//
+inline static unpackedReg unpackFD(riscvMorphStateP state, Uns32 argNum) {
+
+    unpackedReg result;
+
+    result.state = state;
+    result.rA    = getRVReg(state, argNum);
+    result.r     = getVMIReg(state->riscv, result.rA);
+    result.bits  = getRBits(result.rA);
+    result.ftype = getRegFType(result.rA);
+
+    return result;
+}
+
+//
+// Return unpacked source FPR description
+//
+static unpackedReg unpackFS(riscvMorphStateP state, Uns32 argNum) {
+
+    unpackedReg result;
+
+    result.state = state;
+    result.rA    = getRVReg(state, argNum);
+    result.r     = getVMIRegFS(state, result.rA);
+    result.bits  = getRBits(result.rA);
+    result.ftype = getRegFType(result.rA);
+
+    return result;
+}
+
+//
+// Do actions when an unpacked register is written (sign extending or NaN
+// boxing, if required) using the derived register size
+//
+inline static void writeUnpacked(unpackedReg rd) {
+    writeReg(rd.state->riscv, rd.rA);
+}
+
+//
+// Do actions when a an unpacked register is written with the given size (sign
+// extending or NaN boxing, if required)
+//
+inline static void writeUnpackedSize(unpackedReg rd, Uns32 srcBits) {
+    writeRegSize(rd.state->riscv, rd.rA, srcBits);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// TRANSACTIONAL LOAD/STORE UTILITIES
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Return a Boolean indicating if transaction mode is enabled
+//
+inline static Bool inTransactionMode(riscvMorphStateP state) {
+
+    riscvP riscv = state->riscv;
+
+    // validate transaction mode state if required
+    if(riscv->useTMode) {
+        emitCheckPolymorphic();
+    }
+
+    if((riscv->pmKey & PMK_TRANSACTION)) {
+
+        // Assume any instruction that checks for transaction mode could
+        // result in a transaction abort that exits transaction mode, which
+        // changes the PMK_TRANSACTION polymorphic key, which requires an
+        // end block be issued. So emit it here.
+        vmimtEndBlock();
+        return True;
+
+    } else {
+
+        // Not in transaction mode
+        return False;
+    }
+}
+
+//
+// Do transaction load of up to 8 bytes
+//
+static Uns64 doLoadTMode(riscvP riscv, Uns64 VA, Uns32 bytes) {
+
+    Uns64       result = 0;
+    riscvExtCBP extCB;
+
+    // call derived model transaction load functions
+    for(extCB=riscv->extCBs; extCB; extCB=extCB->next) {
+        if(extCB->tLoad) {
+            extCB->tLoad(riscv, &result, VA, bytes, extCB->clientData);
+        }
+    }
+
+    return result;
+}
+
+//
+// Do transaction store of up to 8 bytes
+//
+static void doStoreTMode(riscvP riscv, Uns64 VA, Uns64 value, Uns32 bytes) {
+
+    riscvExtCBP extCB;
+
+    // call derived model transaction store functions
+    for(extCB=riscv->extCBs; extCB; extCB=extCB->next) {
+        if(extCB->tStore) {
+            extCB->tStore(riscv, &value, VA, bytes, extCB->clientData);
+        }
+    }
+}
+
+//
+// Create address for transaction load or store
+//
+static vmiReg emitTransactionVA(
+    riscvMorphStateP state,
+    vmiReg           ra,
+    Addr             offset
+) {
+    vmiReg raTmp    = newTmp(state);
+    Uns32  raBits   = riscvGetXlenMode(state->riscv);
+    Uns32  addrBits = 64;
+
+    // include offset
+    vmimtBinopRRC(raBits, vmi_ADD, raTmp, ra, offset, 0);
+
+    // extend address to 64 bits if required
+    if(raBits<addrBits) {
+        vmimtMoveExtendRR(addrBits, raTmp, raBits, raTmp, False);
+    }
+
+    return raTmp;
+}
+
+//
+// Transaction load value from memory for explicit memBits and offset
+//
+static void emitLoadTModeMBO(
+    riscvMorphStateP state,
+    Uns32            rdBits,
+    Uns32            memBits,
+    Addr             offset,
+    vmiReg           rd,
+    vmiReg           ra,
+    memConstraint    constraint
+) {
+    Bool      sExtend = !state->info.unsExt;
+    memEndian endian  = riscvGetCurrentDataEndianMT(state->riscv);
+    vmiCallFn cb      = (vmiCallFn)doLoadTMode;
+
+    // extend address to 64 bits if required
+    ra = emitTransactionVA(state, ra, offset);
+
+    // emit code to perform transaction load
+    vmimtArgProcessor();
+    vmimtArgReg(64, ra);
+    vmimtArgUns32(memBits/8);
+    vmimtCallResultAttrs(cb, memBits, rd, VMCA_FP_RESTORE);
+
+    // byte swap result if required (here for completeness, but not expected
+    // to be executed)
+    if(endian==MEM_ENDIAN_BIG) {                        // LCOV_EXCL_LINE
+        vmimtUnopR(memBits, vmi_SWP, rd, 0);            // LCOV_EXCL_LINE
+    }                                                   // LCOV_EXCL_LINE
+
+    // extend result if required
+    vmimtMoveExtendRR(rdBits, rd, memBits, rd, sExtend);
+}
+
+//
+// Transaction store value to memory for explicit memBits and offset
+//
+static void emitStoreTModeMBO(
+    riscvMorphStateP state,
+    Uns32            memBits,
+    Addr             offset,
+    vmiReg           ra,
+    vmiReg           rs,
+    memConstraint    constraint
+) {
+    memEndian endian = riscvGetCurrentDataEndianMT(state->riscv);
+    vmiCallFn cb     = (vmiCallFn)doStoreTMode;
+
+    // extend address to 64 bits if required
+    ra = emitTransactionVA(state, ra, offset);
+
+    // byte swap source if required (here for completeness, but not expected
+    // to be executed)
+    if(endian==MEM_ENDIAN_BIG) {                        // LCOV_EXCL_LINE
+        vmiReg rsTmp = newTmp(state);                   // LCOV_EXCL_LINE
+        vmimtUnopRR(memBits, vmi_SWP, rsTmp, rs, 0);    // LCOV_EXCL_LINE
+        rs = rsTmp;                                     // LCOV_EXCL_LINE
+    }                                                   // LCOV_EXCL_LINE
+
+    // emit code to perform transaction store
+    vmimtArgProcessor();
+    vmimtArgReg(64, ra);
+    vmimtArgReg(64, rs);
+    vmimtArgUns32(memBits/8);
+    vmimtCallAttrs(cb, VMCA_FP_RESTORE);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// LOAD/STORE UTILITIES
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Normal load value from memory for explicit memBits and offset
+//
+static void emitLoadNormalMBO(
+    riscvMorphStateP state,
+    Uns32            rdBits,
+    Uns32            memBits,
+    Addr             offset,
+    vmiReg           rd,
+    vmiReg           ra,
+    memConstraint    constraint
+) {
+    Bool      sExtend = !state->info.unsExt;
+    memEndian endian  = riscvGetCurrentDataEndianMT(state->riscv);
+
+    vmimtLoadRRO(rdBits, memBits, offset, rd, ra, endian, sExtend, constraint);
+}
+
+//
+// Normal store value to memory for explicit memBits and offset
+//
+static void emitStoreNormalMBO(
+    riscvMorphStateP state,
+    Uns32            memBits,
+    Addr             offset,
+    vmiReg           ra,
+    vmiReg           rs,
+    memConstraint    constraint
+) {
+    memEndian endian = riscvGetCurrentDataEndianMT(state->riscv);
+
+    vmimtStoreRRO(memBits, offset, ra, rs, endian, constraint);
+}
+
+//
+// Load value from memory for explicit memBits and offset
+//
+static void emitLoadCommonMBO(
+    riscvMorphStateP state,
+    vmiReg           rd,
+    Uns32            rdBits,
+    vmiReg           ra,
+    Uns32            memBits,
+    Uns64            offset,
+    memConstraint    constraint
+) {
+    if(inTransactionMode(state)) {
+        emitLoadTModeMBO(state, rdBits, memBits, offset, rd, ra, constraint);
+    } else {
+        emitLoadNormalMBO(state, rdBits, memBits, offset, rd, ra, constraint);
+    }
+}
+
+//
+// Store value to memory for explicit memBits and offset
+//
+static void emitStoreCommonMBO(
+    riscvMorphStateP state,
+    vmiReg           rs,
+    vmiReg           ra,
+    Uns32            memBits,
+    Uns64            offset,
+    memConstraint    constraint
+) {
+    if(inTransactionMode(state)) {
+        emitStoreTModeMBO(state, memBits, offset, ra, rs, constraint);
+    } else {
+        emitStoreNormalMBO(state, memBits, offset, ra, rs, constraint);
+    }
+}
+
+//
+// Load value from memory
+//
+static void emitLoadCommon(
+    riscvMorphStateP state,
+    vmiReg           rd,
+    Uns32            rdBits,
+    vmiReg           ra,
+    memConstraint    constraint
+) {
+    Uns32 memBits = state->info.memBits;
+    Uns64 offset  = state->info.c;
+
+    emitLoadCommonMBO(state, rd, rdBits, ra, memBits, offset, constraint);
+}
+
+//
+// Store value to memory
+//
+static void emitStoreCommon(
+    riscvMorphStateP state,
+    vmiReg           rs,
+    vmiReg           ra,
+    memConstraint    constraint
+) {
+    Uns32 memBits = state->info.memBits;
+    Uns64 offset  = state->info.c;
+
+    emitStoreCommonMBO(state, rs, ra, memBits, offset, constraint);
+}
+
+//
+// Try-store value
+//
+static void emitTryStoreCommon(
+    riscvMorphStateP state,
+    vmiReg           ra,
+    memConstraint    constraint
+) {
+    Uns32 memBits = state->info.memBits;
+    Uns64 offset  = state->info.c;
+
+    // generate Store/AMO exception in preference to Load exception
+    vmimtTryStoreRC(memBits, offset, ra, constraint);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// BASE INSTRUCTION CALLBACKS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// No operation
+//
+static RISCV_MORPH_FN(emitNOP) {
+    // no action
+}
+
+//
+// Move value (two registers)
+//
+static RISCV_MORPH_FN(emitMoveRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs   = unpackRX(state, 1);
+    Uns32       bits = rd.bits;
+
+    vmimtMoveRR(bits, rd.r, rs.r);
+
+    writeUnpacked(rd);
+}
+
+//
+// Move value (one register and constant)
+//
+static RISCV_MORPH_FN(emitMoveRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+
+    vmimtMoveRC(bits, rd.r, c);
+
+    writeUnpacked(rd);
+}
+
+//
+// Move PC-relative constant
+//
+static RISCV_MORPH_FN(emitMoveRPC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+
+    // when in a delayed instruction context, base on that address
+    if(state->inDelaySlot) {
+        vmimtMoveRR(bits, rd.r, RISCV_JUMP_BASE);
+    } else {
+        vmimtMoveRSimPC(bits, rd.r);
+    }
+
+    vmimtBinopRC(bits, state->attrs->binop, rd.r, c, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Unop (two registers)
+//
+static RISCV_MORPH_FN(emitUnopRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns32       bits = rd.bits;
+
+    vmimtUnopRR(bits, state->attrs->unop, rd.r, rs1.r, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Binop (three registers)
+//
+static RISCV_MORPH_FN(emitBinopRRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+
+    vmimtBinopRRR(bits, state->attrs->binop, rd.r, rs1.r, rs2.r, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Mulop (three registers, selecting result upper half)
+//
+static RISCV_MORPH_FN(emitMulopHRRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+
+    vmimtMulopRRR(bits, state->attrs->binop, rd.r, VMI_NOREG, rs1.r, rs2.r, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Cmpop (three registers)
+//
+static RISCV_MORPH_FN(emitCmpopRRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+
+    vmimtCompareRR(bits, state->attrs->cond, rs1.r, rs2.r, rd.r);
+
+    writeUnpackedSize(rd, 8);
+}
+
+//
+// Implement generic Binop (two registers and constant)
+//
+static RISCV_MORPH_FN(emitBinopRRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+
+    vmimtBinopRRC(bits, state->attrs->binop, rd.r, rs1.r, c, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Cmpop (two registers and constant)
+//
+static RISCV_MORPH_FN(emitCmpopRRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+
+    vmimtCompareRC(bits, state->attrs->cond, rs1.r, c, rd.r);
+
+    writeUnpackedSize(rd, 8);
+}
+
+//
+// Get alignment constraint
+//
+inline static memConstraint doAligned(Bool unaligned) {
+    return unaligned ? MEM_CONSTRAINT_NONE : MEM_CONSTRAINT_ALIGNED;
+}
+
+//
+// Mark memory access constraint as atomic
+//
+inline static memConstraint markAtomic(memConstraint constraint) {
+    return constraint | MEM_CONSTRAINT_USER1;
+}
+
+//
+// Get alignment constraint for load/store operations
+//
+static memConstraint getLoadStoreConstraint(riscvMorphStateP state) {
+
+    riscvP riscv     = state->riscv;
+    Bool   unaligned = riscv->configInfo.unaligned;
+
+    return doAligned(unaligned);
+}
+
+//
+// Get alignment constraint for atomic operations (must be aligned prior to
+// version 2.3, marked as atomics using MEM_CONSTRAINT_USER1)
+//
+static memConstraint getLoadStoreConstraintAMO(riscvMorphStateP state) {
+
+    riscvP riscv        = state->riscv;
+    Bool   unaligned    = riscv->configInfo.unaligned;
+    Bool   unalignedAMO = riscv->configInfo.unalignedAMO && unaligned;
+
+    return markAtomic(doAligned(unalignedAMO));
+}
+
+//
+// Get alignment constraint for LR/SC operations (always aligned)
+//
+static memConstraint getLoadStoreConstraintLR(riscvMorphStateP state) {
+
+    return markAtomic(MEM_CONSTRAINT_ALIGNED);
+}
+
+//
+// Load value from memory
+//
+static RISCV_MORPH_FN(emitLoad) {
+
+    unpackedReg   rd         = unpackRX(state, 0);
+    unpackedReg   ra         = unpackRX(state, 1);
+    Uns32         rdBits     = rd.bits;
+    memConstraint constraint = getLoadStoreConstraint(state);
+
+    // call common code to perform load
+    emitLoadCommon(state, rd.r, rdBits, ra.r, constraint);
+
+    writeUnpacked(rd);
+}
+
+//
+// Store value to memory
+//
+static RISCV_MORPH_FN(emitStore) {
+
+    unpackedReg   rs         = unpackRX(state, 0);
+    unpackedReg   ra         = unpackRX(state, 1);
+    memConstraint constraint = getLoadStoreConstraint(state);
+
+    // call common code to perform store
+    emitStoreCommon(state, rs.r, ra.r, constraint);
+}
+
+//
+// Is constant target address aligned?
+//
+static Bool isTargetAddressAlignedC(riscvP riscv, Uns64 tgt) {
+
+    if(!(tgt&0x2)) {
+
+        // address is aligned
+        return True;
+
+    } else if(isFeaturePresentMT(riscv, ISA_C)) {
+
+        // compressed instructions enabled
+        return True;
+
+    } else {
+
+        // address is not aligned
+        return False;
+    }
+}
+
+//
+// Take Instruction Address Misaligned exception
+//
+static void emitTargetAddressUnalignedC(riscvP riscv, Uns64 tgt) {
+
+    vmiCallFn exceptCB = (vmiCallFn)riscvInstructionAddressMisaligned;
+
+    // emit call generating Instruction Address Misaligned exception
+    vmimtArgProcessor();
+    vmimtArgUns64(tgt);
+    vmimtCallAttrs(exceptCB, VMCA_EXCEPTION);
+}
+
+//
+// Validate target address in register is aligned and take exception if not
+//
+static void checkTargetAddressAlignedR(
+    riscvMorphStateP state,
+    Uns32            bits,
+    vmiReg           ra
+) {
+    riscvP riscv = state->riscv;
+
+    if(!isFeaturePresentMT(riscv, ISA_C)) {
+
+        vmiLabelP ok       = vmimtNewLabel();
+        vmiCallFn exceptCB = (vmiCallFn)riscvInstructionAddressMisaligned;
+
+        // skip misaligned instruction exception if bit[1] is clear
+        vmimtTestRCJumpLabel(bits, vmi_COND_Z, ra, 0x2, ok);
+
+        // extend target address to 64 bits
+        vmiReg tmp = newTmp(state);
+        vmimtMoveExtendRR(64, tmp, bits, ra, False);
+
+        // emit call generating Illegal Instruction exception
+        vmimtArgProcessor();
+        vmimtArgReg(64, tmp);
+        vmimtCallAttrs(exceptCB, VMCA_EXCEPTION);
+
+        // free temporary address
+        freeTmp(state);
+
+        // here if access is legal
+        vmimtInsertLabel(ok);
+    }
+}
+
+//
+// Branch based on register comparison
+//
+static RISCV_MORPH_FN(emitBranchRR) {
+
+    riscvP      riscv = state->riscv;
+    unpackedReg rs1   = unpackRX(state, 0);
+    unpackedReg rs2   = unpackRX(state, 1);
+    Uns64       tgt   = state->info.c;
+    Uns32       bits  = rs1.bits;
+    vmiReg      tmp   = newTmp(state);
+
+    // do comparison
+    vmimtCompareRR(bits, state->attrs->cond, rs1.r, rs2.r, tmp);
+
+    // validate target address alignment
+    if(!isTargetAddressAlignedC(riscv, tgt)) {
+
+        vmiLabelP noBranch = vmimtNewLabel();
+
+        // skip alignment test if condition is False
+        vmimtCondJumpLabel(tmp, False, noBranch);
+
+        // take Instruction Address Misaligned exception
+        emitTargetAddressUnalignedC(riscv, tgt);
+
+        // here if address is aligned
+        vmimtInsertLabel(noBranch);
+    }
+
+    // do branch
+    vmimtCondJump(tmp, True, 0, tgt, VMI_NOREG, vmi_JH_RELATIVE);
+}
+
+//
+// Return link address if the current instruction requires it
+//
+static Uns64 getLinkPC(riscvMorphStateP state, vmiReg *lrP) {
+
+    Uns64 linkPC = state->info.thisPC + state->info.bytes;
+
+    if(state->inDelaySlot) {
+
+        vmimtGetDelaySlotNextPC(*lrP, True);
+
+        *lrP   = VMI_NOREG;
+        linkPC = 0;
+    }
+
+    return linkPC;
+}
+
+//
+// Jump to constant target address
+//
+static RISCV_MORPH_FN(emitJAL) {
+
+    riscvP       riscv  = state->riscv;
+    unpackedReg  lr     = unpackRX(state, 0);
+    Uns64        tgt    = state->info.c;
+    vmiJumpHint  hint   = isLR(lr.r) ? vmi_JH_CALL : vmi_JH_NONE;
+
+    // validate target address alignment
+    if(!isTargetAddressAlignedC(riscv, tgt)) {
+        emitTargetAddressUnalignedC(riscv, tgt);
+    }
+
+    // emit call using calculated linkPC and adjusted lr
+    Uns64 linkPC = getLinkPC(state, &lr.r);
+    vmimtUncondJump(linkPC, tgt, lr.r, hint|vmi_JH_RELATIVE);
+}
+
+//
+// Jump to register target address
+//
+static RISCV_MORPH_FN(emitJALR) {
+
+    unpackedReg  lr     = unpackRX(state, 0);
+    unpackedReg  ra     = unpackRX(state, 1);
+    Uns64        offset = state->info.c;
+    Uns32        bits   = lr.bits;
+    vmiJumpHint  hint;
+
+    // calculate target address if required
+    if(offset) {
+        vmiReg tmp = newTmp(state);
+        vmimtBinopRRC(bits, vmi_ADD, tmp, ra.r, offset, 0);
+        ra.r = tmp;
+    }
+
+    // validate target address alignment
+    checkTargetAddressAlignedR(state, bits, ra.r);
+
+    // derive jump hint
+    if(isLR(ra.r)) {
+        hint = vmi_JH_RETURN;
+    } else if(isLR(lr.r)) {
+        hint = vmi_JH_CALL;
+    } else {
+        hint = vmi_JH_NONE;
+    }
+
+    // emit call using calculated linkPC and adjusted lr
+    Uns64 linkPC = getLinkPC(state, &lr.r);
+    vmimtUncondJumpReg(linkPC, ra.r, lr.r, hint|vmi_JH_RELATIVE);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ATOMIC MEMORY OPERATIONS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Code indicating active atomic memory operation
+//
+typedef enum atomicCodeE {
+    ACODE_NONE,
+    ACODE_MIN,
+    ACODE_MAX,
+    ACODE_MINU,
+    ACODE_MAXU,
+    ACODE_ADD,
+    ACODE_XOR,
+    ACODE_OR,
+    ACODE_AND,
+    ACODE_SWAP,
+    ACODE_LR,
+    ACODE_SC,
+} atomicCode;
+
+//
+// Get atomic operation code for current binop
+//
+static atomicCode getBinopAtomicCode(riscvMorphStateP state) {
+
+    static const atomicCode map[] = {
+        [vmi_IMIN] = ACODE_MIN,
+        [vmi_IMAX] = ACODE_MAX,
+        [vmi_MIN]  = ACODE_MINU,
+        [vmi_MAX]  = ACODE_MAXU,
+        [vmi_ADD]  = ACODE_ADD,
+        [vmi_XOR]  = ACODE_XOR,
+        [vmi_OR]   = ACODE_OR,
+        [vmi_AND]  = ACODE_AND,
+    };
+
+    return map[state->attrs->binop];
+}
+
+//
+// Emit atomic code operation if required
+//
+static void emitAtomicCode(riscvMorphStateP state, atomicCode code) {
+
+    riscvP riscv  = state->riscv;
+    Uns32  handle = riscv->AMOActiveHandle;
+
+    if(handle) {
+        vmimtArgProcessor();
+        vmimtArgUns32(handle);
+        vmimtArgUns32(code);
+        vmimtCallAttrs((vmiCallFn)vmirtWriteNetPort, VMCA_NO_INVALIDATE);
+    }
+}
+
+//
+// Function type implement generic AMO operation
+//
+#define AMO_FN(_NAME) void _NAME( \
+    riscvMorphStateP state, \
+    Uns32            bits,  \
+    vmiReg           rd,    \
+    vmiReg           ra,    \
+    vmiReg           rb     \
+)
+typedef AMO_FN((*amoCB));
+
+//
+// Atomic memory operation (internal interface)
+//
+static void emitAMOCommonInt(
+    riscvMorphStateP state,
+    amoCB            opCB,
+    vmiReg           rd,
+    vmiReg           rs,
+    vmiReg           ra,
+    Uns32            bits,
+    atomicCode       code
+) {
+    memConstraint constraint = getLoadStoreConstraintAMO(state);
+    vmiReg        tmp1       = newTmp(state);
+    vmiReg        tmp2       = newTmp(state);
+
+    // emit operation atomic code
+    emitAtomicCode(state, code);
+
+    // for this instruction, memBits is bits if unspecified or SEW
+    if(!state->info.memBits || (state->info.memBits==-1)) {
+        state->info.memBits = bits;
+    }
+
+    // this is an atomic operation
+    vmimtAtomic();
+
+    // generate Store/AMO exception in preference to Load exception
+    emitTryStoreCommon(state, ra, constraint);
+
+    // generate results using tmp1 and tmp2
+    emitLoadCommon(state, tmp1, bits, ra, constraint);
+    opCB(state, bits, tmp2, tmp1, rs);
+    emitStoreCommon(state, tmp2, ra, constraint);
+    vmimtMoveRR(bits, rd, tmp1);
+
+    // free temporaries
+    freeTmp(state);
+    freeTmp(state);
+
+    // indicate end of atomic operation
+    emitAtomicCode(state, ACODE_NONE);
+}
+
+//
+// Atomic memory operation (GPR arguments)
+//
+static void emitAMOCommonRRR(
+    riscvMorphStateP state,
+    amoCB            opCB,
+    atomicCode       code
+) {
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs   = unpackRX(state, 1);
+    unpackedReg ra   = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+
+    emitAMOCommonInt(state, opCB, rd.r, rs.r, ra.r, bits, code);
+
+    writeUnpacked(rd);
+}
+
+//
+// AMO binop callback
+//
+static AMO_FN(emitAMOBinopRRRCB) {
+    vmimtBinopRRR(bits, state->attrs->binop, rd, ra, rb, 0);
+}
+
+//
+// AMO swap callback
+//
+static AMO_FN(emitAMOSwapRRRCB) {
+    vmimtMoveRR(bits, rd, rb);
+}
+
+//
+// Atomic memory operation using defined VMI binop
+//
+static RISCV_MORPH_FN(emitAMOBinopRRR) {
+    emitAMOCommonRRR(state, emitAMOBinopRRRCB, getBinopAtomicCode(state));
+}
+
+//
+// Atomic memory operation using swap
+//
+static RISCV_MORPH_FN(emitAMOSwapRRR) {
+    emitAMOCommonRRR(state, emitAMOSwapRRRCB, ACODE_SWAP);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// LR/SC INSTRUCTIONS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Check function for externally-implemented LR/SC
+//
+#define RV_LR_SC_FN(_NAME) void _NAME(riscvP riscv, Uns64 address)
+typedef RV_LR_SC_FN((*riscvLRSCFn));
+
+//
+// This defines exclusive tag bits
+//
+inline static Uns32 getEABits(riscvMorphStateP state) {
+    return riscvGetXlenArch(state->riscv);
+}
+
+//
+// This defines exclusive tag bits
+//
+inline static Uns32 getModeBits(riscvMorphStateP state) {
+    return riscvGetXlenMode(state->riscv);
+}
+
+//
+// Is LR/SC locking implemented externally?
+//
+static Bool isLockExternal(riscvMorphStateP state) {
+    return state->riscv->LRAddressHandle && state->riscv->SCAddressHandle;
+}
+
+//
+// Write exclusive address to the given port
+//
+static void writeNetPortExclusive(riscvP riscv, Uns32 port, Uns64 address) {
+
+    Uns32 bits = riscvGetXlenMode(riscv);
+    Uns64 mask = (bits==64) ? -1 : ((1ULL<<bits)-1);
+
+    vmirtWriteNetPort((vmiProcessorP)riscv, port, address & mask);
+}
+
+//
+// Callback to initiate externally-managed lock for LR instruction
+//
+static void externalLR(riscvP riscv, Uns64 address) {
+    writeNetPortExclusive(riscv, riscv->LRAddressHandle, address);
+}
+
+//
+// Callback to complete externally-managed lock for SC instruction
+//
+static void externalSC(riscvP riscv, Uns64 address) {
+    writeNetPortExclusive(riscv, riscv->SCAddressHandle, address);
+}
+
+//
+// Generate exclusive access tag address ra in register rtag
+//
+static void generateEATag(
+    riscvMorphStateP state,
+    vmiReg           rtag,
+    vmiReg           ra,
+    riscvLRSCFn      checkCB
+) {
+    Uns32 bits   = getEABits(state);
+    Uns32 raBits = getModeBits(state);
+
+    // generate tag
+    vmimtMoveExtendRR(bits, rtag, raBits, ra, False);
+    vmimtBinopRC(bits, vmi_AND, rtag, state->riscv->exclusiveTagMask, 0);
+
+    // emit call to external check function if required
+    if(isLockExternal(state)) {
+        vmimtArgProcessor();
+        vmimtArgReg(64, ra);
+        vmimtCallAttrs((vmiCallFn)checkCB, VMCA_NO_INVALIDATE);
+    }
+}
+
+//
+// Emit code to start exclusive access to address ra
+//
+static void startEA(riscvMorphStateP state, vmiReg ra) {
+
+    // instruction must execute atomically but should not be classed as atomic
+    // by instruction attributes (it is OCL_IC_EXCLUSIVE)
+    vmimtAtomic();
+    vmimtInstructionClassSub(OCL_IC_ATOMIC);
+
+    // generate exclusive access tag for this address
+    generateEATag(state, RISCV_EA_TAG, ra, externalLR);
+}
+
+//
+// Handle misaligned SC address
+//
+static void invalidSCAlign(riscvP riscv, Uns64 address) {
+    riscvTakeMemoryException(riscv, riscv_E_StoreAMOAddressMisaligned, address);
+}
+
+//
+// Emit code to check SC address alignment
+//
+static void emitValidateSCAlign(
+    riscvMorphStateP state,
+    vmiReg           t,
+    vmiReg           ra,
+    Uns32            rdBits
+) {
+    if(getLoadStoreConstraintLR(state) & MEM_CONSTRAINT_ALIGNED) {
+
+        vmiLabelP aligned = vmimtNewLabel();
+        Uns32     raBits  = getModeBits(state);
+        Uns32     mask    = (rdBits/8)-1;
+
+        // check address alignment
+        vmimtTestRCJumpLabel(raBits, vmi_COND_Z, ra, mask, aligned);
+
+        // take misaligned address exception if required
+        vmimtMoveExtendRR(64, t, raBits, ra, False);
+        vmimtArgProcessor();
+        vmimtArgReg(64, t);
+        vmimtCallAttrs((vmiCallFn)invalidSCAlign, VMCA_EXCEPTION);
+
+        // here if alignment is ok
+        vmimtInsertLabel(aligned);
+    }
+}
+
+//
+// Validate the exclusive access and jump to label 'done' if it is invalid,
+// setting rd to 1
+//
+static vmiLabelP validateEA(
+    riscvMorphStateP state,
+    vmiReg           ra,
+    vmiReg           rd,
+    Uns32            rdBits
+) {
+    vmiLabelP done = vmimtNewLabel();
+    vmiLabelP ok   = vmimtNewLabel();
+    vmiReg    t    = newTmp(state);
+
+    // validate address alignment
+    emitValidateSCAlign(state, t, ra, rdBits);
+
+    // generate exclusive access tag for this address
+    generateEATag(state, t, ra, externalSC);
+
+    // do load and store tags match?
+    vmimtCompareRR(getEABits(state), vmi_COND_EQ, RISCV_EA_TAG, t, t);
+
+    // commit store if tags match
+    vmimtCondJumpLabel(t, True, ok);
+
+    // indicate store failed
+    vmimtMoveRC(rdBits, rd, 1);
+
+    // jump to instruction end
+    vmimtUncondJumpLabel(done);
+
+    // here to commit store
+    vmimtInsertLabel(ok);
+
+    return done;
+}
+
+//
+// Do actions required to terminate exclusive access
+//
+static void clearEA(riscvMorphStateP state) {
+
+    // exclusiveTag becomes RISCV_NO_TAG to indicate no active access
+    vmimtMoveRC(getEABits(state), RISCV_EA_TAG, RISCV_NO_TAG);
+}
+
+//
+// Do actions required to complete exclusive access
+//
+static void endEA(
+    riscvMorphStateP state,
+    vmiReg           rd,
+    Uns32            rdBits,
+    vmiLabelP        done
+) {
+    // indicate store succeeded
+    vmimtMoveRC(rdBits, rd, 0);
+
+    // insert target label for aborted stores
+    vmimtInsertLabel(done);
+
+    // terminate exclusive access
+    clearEA(state);
+}
+
+//
+// Emit code for LR
+//
+static RISCV_MORPH_FN(emitLR) {
+
+    unpackedReg   rd         = unpackRX(state, 0);
+    unpackedReg   ra         = unpackRX(state, 1);
+    Uns32         rdBits     = rd.bits;
+    memConstraint constraint = getLoadStoreConstraintLR(state);
+
+    // emit operation atomic code
+    emitAtomicCode(state, ACODE_LR);
+
+    // for this instruction, memBits is rdBits
+    state->info.memBits = rdBits;
+
+    // indicate LR is now active at address ra
+    startEA(state, ra.r);
+
+    // call common code to perform load
+    emitLoadCommon(state, rd.r, rdBits, ra.r, constraint);
+
+    writeUnpacked(rd);
+
+    // indicate end of atomic operation
+    emitAtomicCode(state, ACODE_NONE);
+}
+
+//
+// Emit code for SC
+//
+static RISCV_MORPH_FN(emitSC) {
+
+    unpackedReg   rd         = unpackRX(state, 0);
+    unpackedReg   rs         = unpackRX(state, 1);
+    unpackedReg   ra         = unpackRX(state, 2);
+    Uns32         rdBits     = rd.bits;
+    memConstraint constraint = getLoadStoreConstraint(state);
+
+    // emit operation atomic code
+    emitAtomicCode(state, ACODE_SC);
+
+    // for this instruction, memBits is rsBits
+    state->info.memBits = rs.bits;
+
+    // validate SC attempt at address ra
+    vmiLabelP done = validateEA(state, ra.r, rd.r, rdBits);
+
+    // call common code to perform store
+    emitStoreCommon(state, rs.r, ra.r, constraint);
+
+    // complete SC attempt
+    endEA(state, rd.r, rdBits, done);
+
+    writeUnpacked(rd);
+
+    // indicate end of atomic operation
+    emitAtomicCode(state, ACODE_NONE);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SYSTEM INSTRUCTIONS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// This defines the type of a non-returning exception callback
+//
+#define EXCEPTION_FN(_NAME) void _NAME(riscvP riscv)
+typedef EXCEPTION_FN((*exceptionFn));
+
+//
+// Emit code to an embedded exception function
+//
+static void emitException(exceptionFn cb) {
+    vmimtArgProcessor();
+    vmimtCallAttrs((vmiCallFn)cb, VMCA_EXCEPTION);
+}
+
+//
+// Implement ECALL instruction
+//
+static RISCV_MORPH_FN(emitECALL) {
+    emitException(riscvECALL);
+}
+
+//
+// Implement EBREAK instruction
+//
+static RISCV_MORPH_FN(emitEBREAK) {
+    emitException(riscvEBREAK);
+}
+
+//
+// Implement MRET instruction
+//
+static RISCV_MORPH_FN(emitMRET) {
+
+    riscvP riscv = state->riscv;
+
+    // this instruction must be executed in Machine mode
+    requireModeMT(riscv, RISCV_MODE_MACHINE);
+
+    emitException(riscvMRET);
+}
+
+//
+// Implement DRET instruction
+//
+static RISCV_MORPH_FN(emitDRET) {
+
+    riscvP riscv = state->riscv;
+
+    // this instruction must be executed in Machine mode
+    requireModeMT(riscv, RISCV_MODE_MACHINE);
+
+    emitException(riscvDRET);
+}
+
+//
+// Implement SRET instruction
+//
+static RISCV_MORPH_FN(emitSRET) {
+
+    riscvP riscv = state->riscv;
+
+    // this instruction requires Supervisor mode to be implemented
+    checkHaveSModeMT(riscv);
+
+    // this instruction must be executed in Machine mode or Supervisor mode
+    requireModeMT(riscv, RISCV_MODE_SUPERVISOR);
+
+    // instruction is trapped if mstatus.TSR=1
+    EMIT_TRAP_MASK_FIELD(riscv, mstatus, TSR, 1);
+
+    emitException(riscvSRET);
+}
+
+//
+// Implement URET instruction
+//
+static RISCV_MORPH_FN(emitURET) {
+
+    riscvP riscv = state->riscv;
+
+    // this instruction requires User mode to be implemented
+    checkHaveUModeMT(riscv);
+
+    emitException(riscvURET);
+}
+
+//
+// Implement WFI instruction
+//
+static RISCV_MORPH_FN(emitWFI) {
+
+    riscvP            riscv = state->riscv;
+    riscvArchitecture arch  = getCurrentArch(riscv);
+
+    // this instruction must be executed in Machine mode or Supervisor mode
+    // unless User mode interrupts are implemented
+    if(!(arch&ISA_N)) {
+        requireModeMT(riscv, RISCV_MODE_SUPERVISOR);
+    }
+
+    // instruction is trapped if mstatus.TW=1
+    EMIT_TRAP_MASK_FIELD(riscv, mstatus, TW, 1);
+
+    // wait for interrupt (unless this is treated as a NOP)
+    if(!riscv->configInfo.wfi_is_nop) {
+        vmimtArgProcessor();
+        vmimtCall((vmiCallFn)riscvWFI);
+    }
+}
+
+//
+// Implement SFENCE.VMA instruction
+//
+static RISCV_MORPH_FN(emitSFENCE_VMA) {
+
+    riscvP       riscv      = state->riscv;
+    unpackedReg  VADDRr     = unpackRX(state, 0);
+    unpackedReg  ASIDr      = unpackRX(state, 1);
+    Uns32        bits       = VADDRr.bits;
+    Bool         haveVADDRr = !VMI_ISNOREG(VADDRr.r);
+    Bool         haveASIDr  = !VMI_ISNOREG(ASIDr.r);
+
+    // this instruction requires Supervisor mode to be implemented
+    checkHaveSModeMT(riscv);
+
+    // this instruction must be executed in Machine mode or Supervisor mode
+    requireModeMT(riscv, RISCV_MODE_SUPERVISOR);
+
+    // instruction is trapped if mstatus.TVM=1
+    EMIT_TRAP_MASK_FIELD(riscv, mstatus, TVM, 1);
+
+    // emit processor argument
+    vmimtArgProcessor();
+
+    // emit VA argument if required
+    if(haveVADDRr) {
+        vmiReg tmp = newTmp(state);
+        vmimtMoveExtendRR(64, tmp, bits, VADDRr.r, False);
+        vmimtArgReg(64, tmp);
+    }
+
+    // emit ASID argument if required
+    if(haveASIDr) {
+        vmimtArgReg(32, ASIDr.r);
+    }
+
+    // emit call
+    if(!haveVADDRr && !haveASIDr) {
+        vmimtCall((vmiCallFn)riscvVMInvalidateAll);
+    } else if(!haveVADDRr) {
+        vmimtCall((vmiCallFn)riscvVMInvalidateAllASID);
+    } else if(!haveASIDr) {
+        vmimtCall((vmiCallFn)riscvVMInvalidateVA);
+    } else {
+        vmimtCall((vmiCallFn)riscvVMInvalidateVAASID);
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// CSR ACCESS INSTRUCTIONS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Indicate whether CSR must be read
+//
+static Bool doCSRRead(riscvMorphStateP state, vmiReg rd) {
+    return (!VMI_ISNOREG(rd) || (state->info.csrUpdate!=RV_CSR_RW));
+}
+
+//
+// Indicate whether CSR must be written (depending on whether rs1 is zero)
+//
+static Bool doCSRWriteRS1(riscvMorphStateP state, vmiReg rs1) {
+    return (!VMI_ISNOREG(rs1) || (state->info.csrUpdate==RV_CSR_RW));
+}
+
+//
+// Indicate whether CSR must be written (depending on whether imm is zero)
+//
+static Bool doCSRWriteImm(riscvMorphStateP state, Uns64 imm) {
+    return (imm || (state->info.csrUpdate==RV_CSR_RW));
+}
+
+//
+// Implement CSR access, either with two GPRs or GPR and immediate
+//
+static void emitCSRRCommon(riscvMorphStateP state, vmiReg rs1, Bool write) {
+
+    riscvP          riscv = state->riscv;
+    Uns32           csr   = state->info.csr;
+    unpackedReg     rd    = unpackRX(state, 0);
+    Uns32           bits  = rd.bits;
+    Bool            read  = doCSRRead(state, rd.r);
+    riscvCSRAttrsCP attrs = riscvValidateCSRAccess(riscv, csr, read, write);
+
+    // action only required for valid access
+    if(attrs) {
+
+        vmiReg rdTmp = read ? newTmp(state) : VMI_NOREG;
+
+        // handle traps if mstatus.TVM=1 (e.g. satp register)
+        if(attrs->TVMT) {
+            EMIT_TRAP_MASK_FIELD(riscv, mstatus, TVM, 1);
+        }
+
+        // emit code to read the CSR if required
+        if(read) {
+            riscvEmitCSRRead(attrs, riscv, rdTmp, write);
+        }
+
+        // emit code to write the CSR if required
+        if(write) {
+
+            vmiReg rs1Tmp = newTmp(state);
+            vmiReg cbTmp  = newTmp(state);
+            Bool   useRS1 = !VMI_ISNOREG(rs1);
+            Uns64  c      = state->info.c;
+
+            switch(state->info.csrUpdate) {
+
+                case RV_CSR_RW:
+                    if(useRS1) {
+                        rs1Tmp = rs1;
+                    } else {
+                        vmimtMoveRC(bits, rs1Tmp, c);
+                    }
+                    break;
+
+                case RV_CSR_RS:
+                    if(useRS1) {
+                        vmimtBinopRRR(bits, vmi_OR, rs1Tmp, rdTmp, rs1, 0);
+                    } else {
+                        vmimtBinopRRC(bits, vmi_OR, rs1Tmp, rdTmp, c, 0);
+                    }
+                    break;
+
+                case RV_CSR_RC:
+                    if(useRS1) {
+                        vmimtBinopRRR(bits, vmi_ANDN, rs1Tmp, rdTmp, rs1, 0);
+                    } else {
+                        vmimtBinopRRC(bits, vmi_ANDN, rs1Tmp, rdTmp, c, 0);
+                    }
+                    break;
+
+                default:
+                    VMI_ABORT("unimplemented case"); // LCOV_EXCL_LINE
+            }
+
+            // do the write
+            riscvEmitCSRWrite(attrs, riscv, rdTmp, rs1Tmp, cbTmp);
+
+            // adjust code generator state after CSR write if required
+            if(attrs->wstateCB) {
+                attrs->wstateCB(state, useRS1);
+            }
+        }
+
+        // commit read value
+        vmimtMoveRR(bits, rd.r, rdTmp);
+        writeUnpacked(rd);
+    }
+}
+
+//
+// Implement CSR access (two GPRs)
+//
+static RISCV_MORPH_FN(emitCSRR) {
+
+    unpackedReg rs1   = unpackRX(state, 1);
+    Bool        write = doCSRWriteRS1(state, rs1.r);
+
+    emitCSRRCommon(state, rs1.r, write);
+}
+
+//
+// Implement CSR access (GPR and immediate)
+//
+static RISCV_MORPH_FN(emitCSRRI) {
+
+    Bool write = doCSRWriteImm(state, state->info.c);
+
+    emitCSRRCommon(state, VMI_NOREG, write);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2463,122 +2952,6 @@ inline static Bool isQNaN64(Uns64 value) {
 //
 inline static Bool isSNaN64(Uns64 value) {
     return isNaN64(value) && !(value & FP64_QNAN_MASK);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// FLOATING POINT REGISTER UTILITIES
-////////////////////////////////////////////////////////////////////////////////
-
-//
-// Return VMI register for the given abstract register which may require a NaN
-// box test if it is floating point (internal routine)
-//
-static vmiReg getVMIRegFSInt(
-    riscvMorphStateP state,
-    riscvP           riscv,
-    riscvRegDesc     r,
-    vmiReg           tmp
-) {
-    vmiReg result = getVMIReg(riscv, r);
-
-    if(isFReg(r)) {
-
-        Uns32 bits     = getRBits(r);
-        Uns32 archBits = riscvGetFlenArch(riscv);
-
-        // handle possible switch to QNaN-valued temporary if the source
-        // register is smaller than the architectural register size and not
-        // known to be NaN-boxed
-        if(requireNaNBox(riscv, r, archBits, bits)) {
-
-            // select default QNaN value
-            Uns32 QNaN  = (bits==16) ? FP16_DEFAULT_QNAN : FP32_DEFAULT_QNAN;
-            Uns64 upper = -1ULL << bits;
-
-            // allocate temporary if required
-            if(VMI_ISNOREG(tmp)) {
-                tmp = newTmp(state);
-            }
-
-            // is the upper half all ones?
-            vmimtCompareRC(archBits, vmi_COND_NB, result, upper, tmp);
-
-            // seed the apparent value, depending on whether the source is
-            // correctly NaN-boxed
-            vmimtCondMoveRRC(bits, tmp, True, tmp, result, QNaN);
-
-            // use the temporary as a source
-            result = tmp;
-        }
-    }
-
-    return result;
-}
-
-//
-// Return VMI register for the given abstract register which may require a NaN
-// box test if it is floating point (public interface)
-//
-vmiReg riscvGetVMIRegFS(riscvP riscv, riscvRegDesc r, vmiReg tmp) {
-    return getVMIRegFSInt(0, riscv, r, tmp);
-}
-
-//
-// Return VMI register for the given abstract register which may require a NaN
-// box test if it is floating point (local interface)
-//
-inline static vmiReg getVMIRegFS(riscvMorphStateP state, riscvRegDesc r) {
-    return getVMIRegFSInt(state, state->riscv, r, VMI_NOREG);
-}
-
-//
-// Adjust JIT code generator state after write of floating point CSR
-//
-void riscvWFS(riscvMorphStateP state, Bool useRS1) {
-
-    riscvP riscv = state->riscv;
-
-    updateFS(riscv);
-}
-
-//
-// Adjust JIT code generator state after write of vcsr CSR, which will set
-// vector state dirty and floating point state dirty (if floating point is
-// enabled)
-//
-void riscvWVCSR(riscvMorphStateP state, Bool useRS1) {
-
-    riscvP riscv = state->riscv;
-
-    updateVS(riscv);
-
-    if(isFeaturePresentMT(riscv, ISA_FS)) {
-        updateFS(riscv);
-    }
-}
-
-//
-// Adjust JIT code generator state after write of vector CSR that affects
-// floating point state or vector extension state (behavior clearly defined only
-// after version 20191118)
-//
-void riscvWFSVS(riscvMorphStateP state, Bool useRS1) {
-
-    riscvP riscv = state->riscv;
-
-    if(isVCSRPresent(riscv)) {
-        updateVS(riscv);
-    } else if(vxSatRMSetFSDirty(riscv)) {
-        updateFS(riscv);
-    }
-}
-
-//
-// Reset JIT code generator state after possible write of mstatus.FS/mstatus.VS
-//
-void riscvRstFS(riscvMorphStateP state, Bool useRS1) {
-    resetFSVS(state->riscv);
 }
 
 
@@ -3208,16 +3581,13 @@ static vmiFPConfigCP getFPControl(riscvMorphStateP state) {
 //
 static RISCV_MORPH_FN(emitFMoveRR) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc fdA   = getRVReg(state, 0);
-    riscvRegDesc fs1A  = getRVReg(state, 1);
-    vmiReg       fd    = getVMIReg(riscv, fdA);
-    vmiReg       fs1   = getVMIRegFS(state, fs1A);
-    Uns32        bits  = getRBits(fdA);
+    unpackedReg fd   = unpackFD(state, 0);
+    unpackedReg fs1  = unpackFS(state, 1);
+    Uns32       bits = fd.bits;
 
-    vmimtMoveRR(bits, fd, fs1);
+    vmimtMoveRR(bits, fd.r, fs1.r);
 
-    writeReg(riscv, fdA);
+    writeUnpacked(fd);
 }
 
 //
@@ -3225,19 +3595,16 @@ static RISCV_MORPH_FN(emitFMoveRR) {
 //
 static RISCV_MORPH_FN(emitFUnop) {
 
-    riscvP        riscv = state->riscv;
-    riscvRegDesc  fdA   = getRVReg(state, 0);
-    riscvRegDesc  fs1A  = getRVReg(state, 1);
-    vmiReg        fd    = getVMIReg(riscv, fdA);
-    vmiReg        fs1   = getVMIRegFS(state, fs1A);
-    vmiFType      type  = getRegFType(fdA);
-    vmiFUnop      op    = state->attrs->fpUnop;
-    vmiFPConfigCP ctrl  = getFPControl(state);
+    unpackedReg   fd   = unpackFD(state, 0);
+    unpackedReg   fs1  = unpackFS(state, 1);
+    vmiFType      type = fd.ftype;
+    vmiFUnop      op   = state->attrs->fpUnop;
+    vmiFPConfigCP ctrl = getFPControl(state);
 
     if(emitSetOperationRM(state)) {
-        vmiReg flags = riscvGetFPFlagsMT(riscv);
-        vmimtFUnopRR(type, op, fd, fs1, flags, ctrl);
-        writeReg(riscv, fdA);
+        vmiReg flags = riscvGetFPFlagsMT(state->riscv);
+        vmimtFUnopRR(type, op, fd.r, fs1.r, flags, ctrl);
+        writeUnpacked(fd);
     }
 }
 
@@ -3246,21 +3613,17 @@ static RISCV_MORPH_FN(emitFUnop) {
 //
 static RISCV_MORPH_FN(emitFBinop) {
 
-    riscvP        riscv = state->riscv;
-    riscvRegDesc  fdA   = getRVReg(state, 0);
-    riscvRegDesc  fs1A  = getRVReg(state, 1);
-    riscvRegDesc  fs2A  = getRVReg(state, 2);
-    vmiReg        fd    = getVMIReg(riscv, fdA);
-    vmiReg        fs1   = getVMIRegFS(state, fs1A);
-    vmiReg        fs2   = getVMIRegFS(state, fs2A);
-    vmiFType      type  = getRegFType(fdA);
-    vmiFBinop     op    = state->attrs->fpBinop;
-    vmiFPConfigCP ctrl  = getFPControl(state);
+    unpackedReg   fd   = unpackFD(state, 0);
+    unpackedReg   fs1  = unpackFS(state, 1);
+    unpackedReg   fs2  = unpackFS(state, 2);
+    vmiFType      type = fd.ftype;
+    vmiFBinop     op   = state->attrs->fpBinop;
+    vmiFPConfigCP ctrl = getFPControl(state);
 
     if(emitSetOperationRM(state)) {
-        vmiReg flags = riscvGetFPFlagsMT(riscv);
-        vmimtFBinopRRR(type, op, fd, fs1, fs2, flags, ctrl);
-        writeReg(riscv, fdA);
+        vmiReg flags = riscvGetFPFlagsMT(state->riscv);
+        vmimtFBinopRRR(type, op, fd.r, fs1.r, fs2.r, flags, ctrl);
+        writeUnpacked(fd);
     }
 }
 
@@ -3269,23 +3632,18 @@ static RISCV_MORPH_FN(emitFBinop) {
 //
 static RISCV_MORPH_FN(emitFTernop) {
 
-    riscvP        riscv = state->riscv;
-    riscvRegDesc  fdA   = getRVReg(state, 0);
-    riscvRegDesc  fs1A  = getRVReg(state, 1);
-    riscvRegDesc  fs2A  = getRVReg(state, 2);
-    riscvRegDesc  fs3A  = getRVReg(state, 3);
-    vmiReg        fd    = getVMIReg(riscv, fdA);
-    vmiReg        fs1   = getVMIRegFS(state, fs1A);
-    vmiReg        fs2   = getVMIRegFS(state, fs2A);
-    vmiReg        fs3   = getVMIRegFS(state, fs3A);
-    vmiFType      type  = getRegFType(fdA);
-    vmiFTernop    op    = state->attrs->fpTernop;
-    vmiFPConfigCP ctrl  = getFPControl(state);
+    unpackedReg   fd   = unpackFD(state, 0);
+    unpackedReg   fs1  = unpackFS(state, 1);
+    unpackedReg   fs2  = unpackFS(state, 2);
+    unpackedReg   fs3  = unpackFS(state, 3);
+    vmiFType      type = fd.ftype;
+    vmiFTernop    op   = state->attrs->fpTernop;
+    vmiFPConfigCP ctrl = getFPControl(state);
 
     if(emitSetOperationRM(state)) {
-        vmiReg flags = riscvGetFPFlagsMT(riscv);
-        vmimtFTernopRRRR(type, op, fd, fs1, fs2, fs3, flags, False, ctrl);
-        writeReg(riscv, fdA);
+        vmiReg flags = riscvGetFPFlagsMT(state->riscv);
+        vmimtFTernopRRRR(type, op, fd.r, fs1.r, fs2.r, fs3.r, flags, False, ctrl);
+        writeUnpacked(fd);
     }
 }
 
@@ -3294,20 +3652,17 @@ static RISCV_MORPH_FN(emitFTernop) {
 //
 static RISCV_MORPH_FN(emitFConvert) {
 
-    riscvP        riscv = state->riscv;
-    riscvRegDesc  fdA   = getRVReg(state, 0);
-    riscvRegDesc  fsA   = getRVReg(state, 1);
-    vmiReg        fd    = getVMIReg(riscv, fdA);
-    vmiReg        fs    = getVMIRegFS(state, fsA);
-    vmiFType      typeD = getRegFType(fdA);
-    vmiFType      typeS = getRegFType(fsA);
+    unpackedReg   fd   = unpackFD(state, 0);
+    unpackedReg   fs   = unpackFS(state, 1);
+    vmiFType      typeD = fd.ftype;
+    vmiFType      typeS = fs.ftype;
     vmiFPRC       rc    = mapRMDescToRC(state->info.rm);
     vmiFPConfigCP ctrl  = getFPControl(state);
 
-    if(riscvEmitCheckLegalRM(riscv, state->info.rm)) {
-        vmiReg flags = riscvGetFPFlagsMT(riscv);
-        vmimtFConvertRR(typeD, fd, typeS, fs, rc, flags, ctrl);
-        writeReg(riscv, fdA);
+    if(riscvEmitCheckLegalRM(state->riscv, state->info.rm)) {
+        vmiReg flags = riscvGetFPFlagsMT(state->riscv);
+        vmimtFConvertRR(typeD, fd.r, typeS, fs.r, rc, flags, ctrl);
+        writeUnpacked(fd);
     }
 }
 
@@ -3338,18 +3693,14 @@ static void emitFCompareInt(
 //
 static RISCV_MORPH_FN(emitFCompare) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc fs1A  = getRVReg(state, 1);
-    riscvRegDesc fs2A  = getRVReg(state, 2);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       fs1   = getVMIRegFS(state, fs1A);
-    vmiReg       fs2   = getVMIRegFS(state, fs2A);
-    vmiFType     typeS = getRegFType(fs1A);
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg fs1   = unpackFS(state, 1);
+    unpackedReg fs2   = unpackFS(state, 2);
+    vmiFType    typeS = fs1.ftype;
 
-    emitFCompareInt(state, rd, fs1, fs2, typeS);
+    emitFCompareInt(state, rd.r, fs1.r, fs2.r, typeS);
 
-    writeRegSize(riscv, rdA, 8);
+    writeUnpackedSize(rd, 8);
 }
 
 //
@@ -3392,18 +3743,14 @@ static void emitFSgnInt(
 //
 static RISCV_MORPH_FN(emitFSgn) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc fdA   = getRVReg(state, 0);
-    riscvRegDesc fs1A  = getRVReg(state, 1);
-    riscvRegDesc fs2A  = getRVReg(state, 2);
-    vmiReg       fd    = getVMIReg(riscv, fdA);
-    vmiReg       fs1   = getVMIRegFS(state, fs1A);
-    vmiReg       fs2   = getVMIRegFS(state, fs2A);
-    Uns32        bits  = getRBits(fdA);
+    unpackedReg fd   = unpackFD(state, 0);
+    unpackedReg fs1  = unpackFS(state, 1);
+    unpackedReg fs2  = unpackFS(state, 2);
+    Uns32       bits = fd.bits;
 
-    emitFSgnInt(state, fd, fs1, fs2, bits);
+    emitFSgnInt(state, fd.r, fs1.r, fs2.r, bits);
 
-    writeReg(riscv, fdA);
+    writeUnpacked(fd);
 }
 
 //
@@ -3542,17 +3889,508 @@ static void emitFClassInt(
 //
 static RISCV_MORPH_FN(emitFClass) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc fs1A  = getRVReg(state, 1);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       fs1   = getVMIRegFS(state, fs1A);
-    Uns32        bitsD = 32;
-    Uns32        bitsS = getRBits(fs1A);
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg fs1   = unpackFS(state, 1);
+    Uns32       bitsD = 32;
+    Uns32       bitsS = fs1.bits;
 
-    emitFClassInt(riscv, rd, fs1, bitsS, bitsD);
+    emitFClassInt(state->riscv, rd.r, fs1.r, bitsS, bitsD);
 
-    writeRegSize(riscv, rdA, bitsD);
+    writeUnpackedSize(rd, bitsD);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// BIT MANIPULATION EXTENSION CALLBACK FUNCTION EMISSION
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Get B-extension implementation callback
+//
+inline static vmiCallFn getBOpCB(riscvMorphStateP state, Uns32 bits) {
+    return riscvGetBOpCB(state->riscv, state->attrs->bExtOp, bits);
+}
+
+//
+// Emit operation using 32/64 bit callback (two registers)
+//
+static RISCV_MORPH_FN(emit3264RR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs   = unpackRX(state, 1);
+    Uns32       bits = rd.bits;
+    vmiCallFn   cb   = getBOpCB(state, bits);
+
+    vmimtArgReg(bits, rs.r);
+    vmimtCallResultAttrs(cb, bits, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+//
+// Emit operation using 32/64 bit callback (three registers)
+//
+static RISCV_MORPH_FN(emit3264RRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+    vmiCallFn   cb   = getBOpCB(state, bits);
+
+    vmimtArgReg(bits, rs1.r);
+    vmimtArgReg(bits, rs2.r);
+    vmimtCallResultAttrs(cb, bits, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+//
+// Emit operation using 32/64 bit callback (three registers, third is shift)
+//
+static RISCV_MORPH_FN(emit3264RRS) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+    vmiCallFn   cb   = getBOpCB(state, bits);
+
+    vmimtArgReg(bits, rs1.r);
+    vmimtArgReg(32,   rs2.r);
+    vmimtCallResultAttrs(cb, bits, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+//
+// Emit operation using 32/64 bit callback (two registers and constant)
+//
+static RISCV_MORPH_FN(emit3264RRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+    vmiCallFn   cb   = getBOpCB(state, bits);
+
+    vmimtArgReg(bits, rs1.r);
+    vmimtArgUns32(c);
+    vmimtCallResultAttrs(cb, bits, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+//
+// Emit operation using 32/64 bit callback (four registers, third is shift)
+//
+static RISCV_MORPH_FN(emit3264RRSR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    unpackedReg rs3  = unpackRX(state, 3);
+    Uns32       bits = rd.bits;
+    vmiCallFn   cb   = getBOpCB(state, bits);
+
+    vmimtArgReg(bits, rs1.r);
+    vmimtArgReg(32,   rs2.r);
+    vmimtArgReg(bits, rs3.r);
+    vmimtCallResultAttrs(cb, bits, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+//
+// Emit operation using 32/64 bit callback (three registers and constant)
+//
+static RISCV_MORPH_FN(emit3264RRCR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+    vmiCallFn   cb   = getBOpCB(state, bits);
+
+    vmimtArgReg(bits, rs1.r);
+    vmimtArgUns32(c);
+    vmimtArgReg(bits, rs2.r);
+    vmimtCallResultAttrs(cb, bits, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// BIT MANIPULATION EXTENSION INSTRUCTIONS
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Move value with extension (two registers)
+//
+static RISCV_MORPH_FN(emitMoveExtendRR) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs    = unpackRX(state, 1);
+    Uns32       bitsS = rs.bits;
+    Uns32       bitsD = rd.bits;
+
+    vmimtMoveExtendRR(bitsD, rd.r, bitsS, rs.r, !state->info.unsExt);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Binop widening half-width result (three registers)
+//
+static RISCV_MORPH_FN(emitBinopRRRW) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    unpackedReg rs2   = unpackRX(state, 2);
+    Uns32       bitsS = rs1.bits;
+    Uns32       bitsD = bitsS*2;
+
+    vmimtBinopRRR(bitsS, state->attrs->binop, rd.r, rs1.r, rs2.r, 0);
+    vmimtMoveExtendRR(bitsD, rd.r, bitsS, rd.r, !state->info.unsExt);
+
+    writeUnpackedSize(rd, bitsD);
+}
+
+//
+// Implement generic Binop widening half-width result (two registers and
+// constant)
+//
+static RISCV_MORPH_FN(emitBinopRRCW) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    Uns64       c     = state->info.c;
+    Uns32       bitsS = rs1.bits;
+    Uns32       bitsD = bitsS*2;
+
+    vmimtBinopRRC(bitsS, state->attrs->binop, rd.r, rs1.r, c, 0);
+    vmimtMoveExtendRR(bitsD, rd.r, bitsS, rd.r, !state->info.unsExt);
+
+    writeUnpackedSize(rd, bitsD);
+}
+
+//
+// Implement generic Binop widening half-width operand (three registers)
+//
+static RISCV_MORPH_FN(emitBinopWRRR) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    unpackedReg rs2   = unpackRX(state, 2);
+    Uns32       bitsS = rs1.bits;
+    Uns32       bitsD = bitsS*2;
+    vmiReg      tmp   = newTmp(state);
+
+    vmimtMoveExtendRR(bitsD, tmp, bitsS, rs2.r, False);
+    vmimtBinopRRR(bitsD, state->attrs->binop, rd.r, rs1.r, tmp, 0);
+
+    writeUnpackedSize(rd, bitsD);
+}
+
+//
+// Implement generic Binop widening half-width operand (two registers and
+// constant)
+//
+static RISCV_MORPH_FN(emitBinopWRRC) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    Uns64       c     = state->info.c;
+    Uns32       bitsS = rs1.bits;
+    Uns32       bitsD = bitsS*2;
+    vmiReg      tmp   = newTmp(state);
+
+    vmimtMoveExtendRR(bitsD, tmp, bitsS, rs1.r, False);
+    vmimtBinopRRC(bitsD, state->attrs->binop, rd.r, tmp, c, 0);
+
+    writeUnpackedSize(rd, bitsD);
+}
+
+//
+// Implement generic Shiftop filling with ones (three registers)
+//
+static RISCV_MORPH_FN(emitShiftORRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+    vmiReg      tmp  = newTmp(state);
+
+    vmimtUnopRR(bits, vmi_NOT, tmp, rs1.r, 0);
+    vmimtBinopRR(bits, state->attrs->binop, tmp, rs2.r, 0);
+    vmimtUnopRR(bits, vmi_NOT, rd.r, tmp, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic Shiftop filling with ones (two registers and constant)
+//
+static RISCV_MORPH_FN(emitShiftORRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+    vmiReg      tmp  = newTmp(state);
+
+    vmimtUnopRR(bits, vmi_NOT, tmp, rs1.r, 0);
+    vmimtBinopRC(bits, state->attrs->binop, tmp, c, 0);
+    vmimtUnopRR(bits, vmi_NOT, rd.r, tmp, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic set-bit operation (three registers)
+//
+static RISCV_MORPH_FN(emitSBitopRRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+    vmiReg      tmp  = newTmp(state);
+
+    vmimtBinopRCR(bits, vmi_SHL, tmp, 1, rs2.r, 0);
+    vmimtBinopRRR(bits, state->attrs->binop, rd.r, rs1.r, tmp, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement generic set-bit operation (two registers and constant)
+//
+static RISCV_MORPH_FN(emitSBitopRRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+    vmiReg      tmp  = newTmp(state);
+
+    vmimtBinopRCC(bits, vmi_SHL, tmp, 1, c, 0);
+    vmimtBinopRRR(bits, state->attrs->binop, rd.r, rs1.r, tmp, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement extract-bit operation (three registers)
+//
+static RISCV_MORPH_FN(emitEBitopRRR) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+
+    vmimtBinopRRR(bits, vmi_SHR, rd.r, rs1.r, rs2.r, 0);
+    vmimtBinopRC(bits, vmi_AND, rd.r, 1, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement extract-bit operation (two registers and constant)
+//
+static RISCV_MORPH_FN(emitEBitopRRC) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    Uns64       c    = state->info.c;
+    Uns32       bits = rd.bits;
+
+    vmimtBinopRRC(bits, vmi_SHR, rd.r, rs1.r, c, 0);
+    vmimtBinopRC(bits, vmi_AND, rd.r, 1, 0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement pack operation (three registers)
+//
+static void emitPACKLU(riscvMorphStateP state, Bool upper) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    unpackedReg rs2   = unpackRX(state, 2);
+    Uns32       bits  = rd.bits;
+    Uns32       bytes = bits/8;
+    vmiReg      tmpL  = newTmp(state);
+    vmiReg      tmpH  = VMI_REG_DELTA(tmpL, bytes/2);
+
+    vmimtMoveRR(bits/2, tmpL, VMI_REG_DELTA(rs1.r, upper*(bytes/2)));
+    vmimtMoveRR(bits/2, tmpH, VMI_REG_DELTA(rs2.r, upper*(bytes/2)));
+    vmimtMoveRR(bits, rd.r, tmpL);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement PACK operation (three registers)
+//
+static RISCV_MORPH_FN(emitPACK) {
+    emitPACKLU(state, False);
+}
+
+//
+// Implement PACKU operation (three registers)
+//
+static RISCV_MORPH_FN(emitPACKU) {
+    emitPACKLU(state, True);
+}
+
+//
+// Implement PACKH operation (three registers)
+//
+static RISCV_MORPH_FN(emitPACKH) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    unpackedReg rs2   = unpackRX(state, 2);
+    Uns32       bits  = rd.bits;
+    vmiReg      tmpL  = newTmp(state);
+    vmiReg      tmpH  = VMI_REG_DELTA(tmpL, 1);
+
+    vmimtMoveRR(8, tmpL, rs1.r);
+    vmimtMoveRR(8, tmpH, rs2.r);
+    vmimtMoveExtendRR(bits, rd.r, 16, tmpL, False);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement CLMULR/CLMULH (three registers)
+//
+static void emitCLMULRH(riscvMorphStateP state, vmiReg rdl) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    Uns32       bits = rd.bits;
+
+    vmimtMulopRRR(bits, state->attrs->binop, rd.r, rdl, rs1.r, rs2.r, 0);
+
+    if(!VMI_ISNOREG(rdl)) {
+        vmimtBinopRC(bits, vmi_SHL, rd.r, 1,      0);
+        vmimtBinopRC(bits, vmi_SHR, rdl,  bits-1, 0);
+        vmimtBinopRR(bits, vmi_OR,  rd.r, rdl,    0);
+    }
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement CLMULR (three registers)
+//
+static RISCV_MORPH_FN(emitCLMULR) {
+    emitCLMULRH(state, newTmp(state));
+}
+
+//
+// Implement CLMULH (three registers)
+//
+static RISCV_MORPH_FN(emitCLMULH) {
+    emitCLMULRH(state, VMI_NOREG);
+}
+
+//
+// Implement generic CRC operation using the given constant
+//
+static void emitCRC32Int(riscvMorphStateP state, Uns32 constant) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs    = unpackRX(state, 1);
+    Uns32       bitsS = rs.bits;
+    Uns32       bitsD = rd.bits;
+    vmiCallFn   cb    = getBOpCB(state, bitsD);
+
+    vmimtArgReg(bitsD, rs.r);
+    vmimtArgUns32(constant);
+    vmimtArgUns32(bitsS);
+    vmimtCallResultAttrs(cb, bitsD, rd.r, VMCA_PURE);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement CRC32 (three registers)
+//
+static RISCV_MORPH_FN(emitCRC32) {
+    emitCRC32Int(state, 0xEDB88320);
+}
+
+//
+// Implement CRC32C (three registers)
+//
+static RISCV_MORPH_FN(emitCRC32C) {
+    emitCRC32Int(state, 0x82F63B78);
+}
+
+//
+// Implement CMIX (four registers)
+//
+static RISCV_MORPH_FN(emitCMIX) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    unpackedReg rs3  = unpackRX(state, 3);
+    Uns32       bits = rd.bits;
+    vmiReg      tmp1 = newTmp(state);
+    vmiReg      tmp2 = newTmp(state);
+
+    vmimtBinopRRR(bits, vmi_AND,  tmp1, rs1.r, rs2.r, 0);
+    vmimtBinopRRR(bits, vmi_ANDN, tmp2, rs3.r, rs2.r, 0);
+    vmimtBinopRRR(bits, vmi_OR,   rd.r, tmp1,  tmp2,  0);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement CMOV (four registers)
+//
+static RISCV_MORPH_FN(emitCMOV) {
+
+    unpackedReg rd   = unpackRX(state, 0);
+    unpackedReg rs1  = unpackRX(state, 1);
+    unpackedReg rs2  = unpackRX(state, 2);
+    unpackedReg rs3  = unpackRX(state, 3);
+    Uns32       bits = rd.bits;
+    vmiReg      tmp  = newTmp(state);
+
+    vmimtCompareRC(bits, vmi_COND_NE, rs2.r, 0, tmp);
+    vmimtCondMoveRRR(bits, tmp, True, rd.r, rs1.r, rs3.r);
+
+    writeUnpacked(rd);
+}
+
+//
+// Implement SHADD (three registers)
+//
+static RISCV_MORPH_FN(emitSHADD) {
+
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs1   = unpackRX(state, 1);
+    unpackedReg rs2   = unpackRX(state, 2);
+    Uns32       bitsS = rs1.bits;
+    Uns32       bitsD = getModeBits(state);
+    vmiReg      tmp   = newTmp(state);
+
+    vmimtMoveExtendRR(bitsD, tmp, bitsS, rs1.r, False);
+    vmimtBinopRC(bitsD, vmi_SHL, tmp, state->info.shN, 0);
+    vmimtBinopRRR(bitsD, state->attrs->binop, rd.r, tmp, rs2.r, 0);
+
+    writeUnpackedSize(rd, bitsD);
 }
 
 
@@ -3565,85 +4403,22 @@ static RISCV_MORPH_FN(emitFClass) {
 //
 void riscvConfigureVector(riscvP riscv) {
 
+    Uns32 vRegBytes = riscv->configInfo.VLEN/8;
+
+    // allocate vector registers if required
     if(riscv->configInfo.arch & ISA_V) {
+        riscv->v = STYPE_CALLOC_N(Uns32, (vRegBytes/4)*VREG_NUM);
+    }
+}
 
-        Uns32 vRegBytes   = riscv->configInfo.VLEN/8;
-        Uns32 stripeBytes = riscv->configInfo.SLEN/8;
-        Uns32 stripes     = vRegBytes/stripeBytes;
-        Uns32 stripe;
-        Uns32 byte;
-        Uns32 i;
+//
+// Free vector extension data structures
+//
+void riscvFreeVector(riscvP riscv) {
 
-        // iterate over stripes
-        for(stripe=0; stripe<stripes; stripe++) {
-
-            // iterate over stripe bytes
-            for(byte=0; byte<stripeBytes; byte++) {
-
-                // initialize LMULx2 index table
-                for(i=0; i<2; i++) {
-
-                    Uns32 index = byte + (stripeBytes*i) + (stripe*stripeBytes*2);
-                    Uns32 value = byte + (vRegBytes*i) + (stripe*stripeBytes);
-
-                    riscv->offsetsLMULx2[index] = value;
-                }
-
-                // initialize LMULx4 index table
-                for(i=0; i<4; i++) {
-
-                    Uns32 index = byte + (stripeBytes*i) + (stripe*stripeBytes*4);
-                    Uns32 value = byte + (vRegBytes*i) + (stripe*stripeBytes);
-
-                    riscv->offsetsLMULx4[index] = value;
-                }
-
-                // initialize LMULx8 index table
-                for(i=0; i<8; i++) {
-
-                    Uns32 index = byte + (stripeBytes*i) + (stripe*stripeBytes*8);
-                    Uns32 value = byte + (vRegBytes*i) + (stripe*stripeBytes);
-
-                    riscv->offsetsLMULx8[index] = value;
-                }
-            }
-        }
-
-        // show derived vector indices if required
-        if(RISCV_DEBUG_VECTIDX(riscv)) {
-
-            vmiPrintf(
-                "\nVLEN=%u SLEN=%u\n",
-                riscv->configInfo.VLEN,
-                riscv->configInfo.SLEN
-            );
-
-            vmiPrintf("\nLMULx2 TABLE\n");
-            for(i=0; i<2; i++) {
-                for(byte=0; byte<vRegBytes; byte++) {
-                    vmiPrintf("%3u ", riscv->offsetsLMULx2[i*vRegBytes+byte]);
-                }
-                vmiPrintf("\n");
-            }
-
-            vmiPrintf("\nLMULx4 TABLE\n");
-            for(i=0; i<4; i++) {
-                for(byte=0; byte<vRegBytes; byte++) {
-                    vmiPrintf("%3u ", riscv->offsetsLMULx4[i*vRegBytes+byte]);
-                }
-                vmiPrintf("\n");
-            }
-
-            vmiPrintf("\nLMULx8 TABLE\n");
-            for(i=0; i<8; i++) {
-                for(byte=0; byte<vRegBytes; byte++) {
-                    vmiPrintf("%3u ", riscv->offsetsLMULx8[i*vRegBytes+byte]);
-                }
-                vmiPrintf("\n");
-            }
-
-            vmiPrintf("\n");
-        }
+    // free vector registers if required
+    if(riscv->v) {
+    	STYPE_FREE(riscv->v);
     }
 }
 
@@ -3653,33 +4428,57 @@ void riscvConfigureVector(riscvP riscv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
+// This indicates the type of a vector register
+//
+typedef enum vrTypeE {
+    VRT_NONE,                           // no register
+    VRT_XF,                             // X or F register
+    VRT_MASK,                           // mask register
+    VRT_SCALAR,                         // scalar register
+    VRT_VECTOR,                         // vector register
+} vrType;
+
+//
+// This type holds information about a single vector register
+//
+typedef struct vrDescS {
+    vrType         type;                // register type
+    riscvVLMULx8Mt EMULx8;              // effective EMULx8
+    riscvSEWMt     EEW;                 // effective EEW
+    Uns32          EMUL;                // effective VLMUL (1 if fractional)
+    Bool           forceEEW;            // force EEW for this operand
+} vrDesc, *vrDescP;
+
+//
 // This type describes a base register of a given size
 //
 typedef struct baseDescS {
-    vmiReg reg;         // base register
-    vmiReg index;       // index register
-    Uns32  elemBits;    // element size in bits
-    Bool   striped;     // whether a striped base
+    vmiReg         reg;                 // base register
+    vmiReg         index;               // index register
+    riscvVLMULx8Mt EMULx8;              // effective EMULx8
+    Uns32          EBITS;               // element size in bits
+    Bool           striped;             // whether a striped base
 } baseDesc, *baseDescP;
 
 //
 // Context for generic vector operation
 //
 typedef struct iterDescS {
-    riscvVLMULMt VLMUL;                 // effective VLMUL
-    riscvSEWMt   SEW;                   // effective SEW
-    Uns32        MLEN;                  // effective MLEN
-    Uns32        SLEN;                  // effective SLEN
-    Uns32        VLEN;                  // effective VLEN
-    Uns32        nf;                    // effective number of fields
-    riscvRegDesc PdA;                   // predicate abstract target register
-    vmiReg       mask;                  // mask register
-    vmiReg       rdNarrow;              // narrow destination register
-    vmiReg       r[RV_MAX_AREGS];       // argument registers
-    baseDesc     base[NUM_BASE_REGS];   // base registers
-    Uns32        vBytesMax;             // vector size (including padding)
-    vmiLabelP    maskF;                 // target if mask=0
-    vmiLabelP    skip;                  // target if body is skipped
+    riscvVLMULx8Mt VLMULx8;             // effective VLMULx8
+    riscvSEWMt     SEW;                 // effective SEW
+    Uns32          MLEN;                // effective MLEN
+    Uns32          SLEN;                // effective SLEN
+    Uns32          VLEN;                // effective VLEN
+    Uns32          nf;                  // effective number of fields
+    riscvRegDesc   PdA;                 // predicate abstract target register
+    vmiReg         mask;                // mask register
+    vmiReg         rdNarrow;            // narrow destination register
+    vrDesc         vr[RV_MAX_AREGS];    // vector register descriptions
+    vmiReg         r[RV_MAX_AREGS];     // argument registers
+    baseDesc       base[NUM_BASE_REGS]; // base registers
+    Uns32          vBytesMax;           // vector size (including padding)
+    vmiLabelP      maskF;               // target if mask=0
+    vmiLabelP      skip;                // target if body is skipped
 } iterDesc;
 
 //
@@ -3723,6 +4522,68 @@ static Uns32 getMaskBaseShift(iterDescP id) {
 }
 
 //
+// Given source index of size allBits, create result in which subfield of size
+// loBits+hiBits at offset fieldLSB is rotated right by loBits
+//
+static vmiReg rotateSubfield(
+    riscvMorphStateP state,
+    vmiReg           offset,
+    vmiReg           index,
+    Uns32            allBits,
+    Uns32            fieldLSB,
+    Uns32            loBits,
+    Uns32            hiBits
+) {
+    if(!loBits || !hiBits) {
+
+        // no rotation - use given index as offset
+        offset = index;
+
+    } else {
+
+        // rotation required
+        Uns32  loMask  = ((1<<loBits)-1) << fieldLSB;
+        Uns32  hiMask   = ((1<<hiBits)-1) << (fieldLSB+loBits);
+        Bool   preserve = (allBits!=(loBits+hiBits));
+        vmiReg loTmp    = newTmp(state);
+        vmiReg hiTmp    = preserve ? VMI_REG_DELTA(loTmp, 4) : offset;
+
+        // copy index to offset
+        vmimtMoveRR(32, offset, index);
+
+        // extract lo field from offset to temporary
+        vmimtBinopRRC(32, vmi_AND, loTmp, offset, loMask, 0);
+
+        // extract hi field and preserve other bits in offset if required
+        if(preserve) {
+            vmimtBinopRRC(32, vmi_AND, hiTmp, offset, hiMask, 0);
+            vmimtBinopRR(32, vmi_XOR, offset, loTmp, 0);
+            vmimtBinopRR(32, vmi_XOR, offset, hiTmp, 0);
+        }
+
+        // rotate temporaries
+        vmimtBinopRC(32, vmi_SHL, loTmp, hiBits, 0);
+        vmimtBinopRC(32, vmi_SHR, hiTmp, loBits, 0);
+
+        // insert lo field into result
+        vmimtBinopRR(32, vmi_OR, offset, loTmp, 0);
+
+        // insert hi field into result if required
+        if(preserve) {
+            vmimtBinopRR(32, vmi_OR, offset, hiTmp, 0);
+        }
+
+        // extend result to pointer size
+        vmimtMoveExtendRR(IMPERAS_POINTER_BITS, offset, 32, offset, False);
+
+        // free 32-bit temporary
+        freeTmp(state);
+    }
+
+    return offset;
+}
+
+//
 // Return vmiReg structure holding the rotate amount for field mask alignment
 //
 static vmiReg fillFieldMaskRotate(
@@ -3731,11 +4592,19 @@ static vmiReg fillFieldMaskRotate(
     vmiReg           count,
     vmiReg           tRotate
 ) {
-    vmiReg result = count;
-    Uns32  shift  = mulToShiftP2(id->MLEN);
+    vmiReg result    = count;
+    Uns32  shiftMLEN = mulToShiftP2(id->MLEN);
+    Uns32  shiftSLEN = mulToShiftP2(id->VLEN/id->SLEN);
 
-    if(shift) {
-        vmimtBinopRRC(8, vmi_SHL, tRotate, result, shift, 0);
+    // mask bits are striped when fractional LMUL is implemented
+    if(shiftSLEN && vectorFractLMUL(state->riscv)) {
+        vmimtBinopRRC(32, vmi_SHR, tRotate, result, shiftSLEN, 0);
+        result = tRotate;
+    }
+
+    // multiply by MLEN
+    if(shiftMLEN) {
+        vmimtBinopRRC(8, vmi_SHL, tRotate, result, shiftMLEN, 0);
         result = tRotate;
     }
 
@@ -3805,20 +4674,6 @@ inline static void dispatchVector(
 }
 
 //
-// Convert vsew field to riscvSEWMt type
-//
-inline static riscvSEWMt vsewToSEW(Uns32 vsew) {
-    return 8<<vsew;
-}
-
-//
-// Convert vlmul field to riscvVLMULMt type
-//
-inline static riscvVLMULMt vlmulToVLMUL(Uns32 vlmul) {
-    return 1<<vlmul;
-}
-
-//
 // Is zeroing of tail elements required?
 // NOTE: after version 0.7.1, top parts are preserved, not zeroed
 //
@@ -3850,33 +4705,70 @@ static void getIndexedRegisterInt(vmiReg *r, vmiReg *base, Uns32 bytes) {
 }
 
 //
-// Return offset index table register for the current operation
+// Construct index to access field of a vector register, given the number of
+// registers, stripes and elements per stripe
 //
-static vmiReg getOffsetIndexTable(
-    iterDescP id,
-    vmiReg   *offsetBaseP,
-    Uns32     eBytes
+static vmiReg getStripedIndex(
+    riscvMorphStateP state,
+    vmiReg           offset,
+    vmiReg           index,
+    Uns32            regNum,
+    Uns32            stripeNum,
+    Uns32            elemNum
 ) {
-    Uns32        eScale     = eBytes*8/id->SEW;
-    riscvVLMULMt VLMUL      = id->VLMUL*eScale;
-    vmiReg       offsetIdx  = VMI_NOREG;
-    Uns32        tableBytes = id->vBytesMax*eScale * sizeof(riscvStrideOffset);
+    // get bits required to represent register, stripe and field
+    Uns32 regBits    = mulToShiftP2(regNum);
+    Uns32 stripeBits = mulToShiftP2(stripeNum);
+    Uns32 elemBits   = mulToShiftP2(elemNum);
+    Uns32 allBits    = regBits+stripeBits+elemBits;
 
-    // get table for the given VLMUL
-    if(VLMUL==VLMULMT_2) {
-        offsetIdx = RISCV_OFFSETS_LMULx2;
-    } else if(VLMUL==VLMULMT_4) {
-        offsetIdx = RISCV_OFFSETS_LMULx4;
-    } else if(VLMUL==VLMULMT_8) {
-        offsetIdx = RISCV_OFFSETS_LMULx8;
+    if(vectorFractLMUL(state->riscv)) {
+
+        // convert index from register-field-stripe to register-stripe-field
+        offset = rotateSubfield(
+            state, offset, index, allBits, 0, stripeBits, elemBits
+        );
+
     } else {
-        VMI_ABORT("Unexpected VLMUL %u", VLMUL); // LCOV_EXCL_LINE
+
+        // convert index from stripe-register-field to register-stripe-field
+        offset = rotateSubfield(
+            state, offset, index, allBits, elemBits, regBits, stripeBits
+        );
     }
 
-    // convert to indexed register
-    getIndexedRegisterInt(&offsetIdx, offsetBaseP, tableBytes);
+    return offset;
+}
 
-    return offsetIdx;
+//
+// Construct index to access field of a mask register if required (only when
+// fractional LMUL is implemented)
+//
+static vmiReg getStripedIndexM(
+    riscvMorphStateP state,
+    iterDescP        id,
+    vmiReg           offset,
+    vmiReg           index
+) {
+    if(vectorFractLMUL(state->riscv)) {
+
+        // get number of registers, stripes and elements per stripe
+        Uns32 regNum    = 1;
+        Uns32 stripeNum = id->VLEN/id->SLEN;
+        Uns32 elemNum   = id->SLEN/id->MLEN;
+
+        // convert index to format register-stripe-field
+        offset = getStripedIndex(
+            state, offset, index, regNum, stripeNum, elemNum
+        );
+
+    } else {
+
+        // use given index as offset
+        offset = index;
+    }
+
+    return offset;
 }
 
 //
@@ -3892,44 +4784,12 @@ static void initializeBase(
     Uns32  offsetBits = IMPERAS_POINTER_BITS;
     vmiReg offset     = newTmp(state);
     vmiReg index      = base->index;
-    Uns32  elemBytes  = base->elemBits/8;
+    Uns32  elemBytes  = base->EBITS/8;
 
-    if(base->striped) {
+    if(!elemBytes) {
 
-        // striped base register
-        Uns32  lutEBytes  = sizeof(riscvStrideOffset);
-        Uns32  lutEBits   = lutEBytes * 8;
-        vmiReg offsetBase = base->reg;
-        Uns32  scale      = elemBytes*lutEBytes;
-        Uns32  eScale     = elemBytes*8/id->SEW;
-        Uns32  lutBytes   = VBYTES_MAX * lutEBytes * id->VLMUL * eScale;
-
-        // handle table offset scale > 8
-        if(scale>8) {
-            Uns32 shift = mulToShiftP2(scale);
-            vmimtBinopRRC(offsetBits, vmi_SHL, offset, index, shift, 0);
-            index = offset;
-            scale = 1;
-        }
-
-        // adjust table base using scaled index
-        vmiReg offsetIdx = getOffsetIndexTable(id, &offsetBase, elemBytes);
-        vmimtAddBaseR(offsetBase, index, scale, lutBytes, False, False);
-
-        // get offset from table
-        vmimtMoveExtendRR(offsetBits, offset, lutEBits, offsetIdx, False);
-
-        // initialize base register
-        getIndexedRegisterInt(rP, &base->reg, vecBytes);
-        vmimtAddBaseR(base->reg, offset, 1, vecBytes, False, False);
-
-    } else if(elemBytes) {
-
-        // initialize base register
-        getIndexedRegisterInt(rP, &base->reg, vecBytes);
-        vmimtAddBaseR(base->reg, index, elemBytes, vecBytes, False, False);
-
-    } else {
+        // sub-byte reference - handle mask register striping if required
+        index = getStripedIndexM(state, id, offset, index);
 
         // sub-byte reference
         Uns32 baseShift = getMaskBaseShift(id);
@@ -3937,10 +4797,38 @@ static void initializeBase(
         // calculate byte offset
         vmimtBinopRRC(offsetBits, vmi_SHR, offset, index, baseShift, 0);
 
-        // initialize base register
-        getIndexedRegisterInt(rP, &base->reg, vecBytes);
-        vmimtAddBaseR(base->reg, offset, 1, vecBytes, False, False);
+        // use byte-sized offset
+        elemBytes = 1;
+
+    } else if(base->striped) {
+
+        // striped base register - calculate effective VLMULx8 for this element
+        Uns32 SLEN = id->SLEN;
+
+        // if SEW>SLEN, the packing operates as if SLEN was increased to SEW
+        if(SLEN<base->EBITS) {
+            SLEN = base->EBITS;
+        }
+
+        // get number of registers, stripes and elements per stripe
+        Uns32 regNum    = base->EMULx8/VLMULx8MT_1 ? : 1;
+        Uns32 stripeNum = id->VLEN/SLEN;
+        Uns32 elemNum   = SLEN/base->EBITS;
+
+        // convert index to format register-stripe-field
+        offset = getStripedIndex(
+            state, offset, index, regNum, stripeNum, elemNum
+        );
+
+    } else {
+
+        // use index as offset
+        offset = index;
     }
+
+    // initialize base register
+    getIndexedRegisterInt(rP, &base->reg, vecBytes);
+    vmimtAddBaseR(base->reg, offset, elemBytes, vecBytes, False, False);
 
     // free temporary offset
     freeTmp(state);
@@ -3954,7 +4842,8 @@ static void getIndexedRegister(
     iterDescP        id,
     vmiReg          *rP,
     vmiReg           index,
-    Uns32            elemBits,
+    riscvVLMULx8Mt   EMULx8,
+    Uns32            EBITS,
     Uns32            vecBytes,
     Bool             striped
 ) {
@@ -3970,11 +4859,12 @@ static void getIndexedRegister(
             base = &id->base[i];
 
             found = (
-                !base->elemBits ||
+                !base->EBITS ||
                 (
                     (base->striped==striped) &&
-                    VMI_REG_EQUAL(base->index, index) &&
-                    (base->elemBits==elemBits)
+                    (base->EMULx8==EMULx8)   &&
+                    (base->EBITS==EBITS)     &&
+                    VMI_REG_EQUAL(base->index, index)
                 )
             );
         }
@@ -3982,7 +4872,7 @@ static void getIndexedRegister(
         // expect either to find a match or a free descriptor
         VMI_ASSERT(found, "too many base registers");
 
-        if(base->elemBits) {
+        if(base->EBITS) {
 
             // reuse a previously-initialized base
             getIndexedRegisterInt(rP, &base->reg, vecBytes);
@@ -3993,10 +4883,11 @@ static void getIndexedRegister(
             Uns32 baseIndex = base - id->base;
 
             // create a new base
-            base->reg      = RISCV_CPU_VBASE(baseIndex);
-            base->index    = index;
-            base->elemBits = elemBits;
-            base->striped  = striped;
+            base->reg     = RISCV_CPU_VBASE(baseIndex);
+            base->index   = index;
+            base->EMULx8  = EMULx8;
+            base->EBITS   = EBITS;
+            base->striped = striped;
 
             // initialize the base
             initializeBase(state, id, rP, base, vecBytes);
@@ -4043,7 +4934,9 @@ typedef enum overlapTypeE {
 // This structure gives information for each vector operation shape
 //
 typedef struct shapeInfoS {
+    Bool        r0IsDst;        // is register 0 a destination?
     Uns8        argMul   [3];   // width multipliers (result, arg0, argN)
+    Bool        argDiv   [3];   // divided-width operand (result, arg0, argN)
     Bool        isFloat  [3];   // are operands floating point?
     Bool        isMask   [3];   // are operands masks?
     Bool        isScalar [3];   // are operands scalar?
@@ -4055,6 +4948,7 @@ typedef struct shapeInfoS {
     Bool        usesVXRM;       // does operation use vxrm?
     Bool        isMaskCIn;      // is apparent mask a carry-in?
     Bool        SEW8;           // use fixed SEW=8?
+    Bool        noVStartCheck;  // skip vstart<vl check?
     overlapType ot;             // overlap constraints
 } shapeInfo;
 
@@ -4062,46 +4956,74 @@ typedef struct shapeInfoS {
 // Information for each vector operation shape
 //
 static const shapeInfo shapeDetails[RVVW_LAST] = {
-    [RVVW_111_II]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_IIXSM] = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT_XSM },
-    [RVVW_111_IIS]   = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 1, 1, 0, 0, OT___  },
-    [RVVW_111_IIX]   = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 1, 0, 0, OT___  },
-    [RVVW_BBB_II]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 1, OT___  },
-    [RVVW_111_IS]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,1,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_SI]    = {{1,1,1}, {0,0,0}, {0,0,0}, {1,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_PI]    = {{1,1,1}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_SIS]   = {{1,1,1}, {0,0,0}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_CIN_II]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 1, 0, OT___  },
-    [RVVW_CIN_PI]    = {{1,1,1}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 1, 0, OT___  },
-    [RVVW_212_SIS]   = {{2,1,2}, {0,0,0}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_121_II]    = {{1,2,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 1, 0, 0, 0, 0, OT___  },
-    [RVVW_121_IIS]   = {{1,2,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 1, 1, 1, 0, 0, OT___  },
-    [RVVW_211_IIQ]   = {{2,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_211_II]    = {{2,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_211_IIS]   = {{2,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 1, 1, 0, 0, OT___  },
-    [RVVW_411_II]    = {{4,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_221_II]    = {{2,2,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_FF]    = {{1,1,1}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_PF]    = {{1,1,1}, {1,1,1}, {1,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_SFS]   = {{1,1,1}, {1,1,1}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_212_SFS]   = {{2,1,2}, {1,1,1}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_121_FFQ]   = {{1,2,1}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_211_FFQ]   = {{2,1,1}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_211_FF]    = {{2,1,1}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_221_FF]    = {{2,2,1}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_FI]    = {{1,1,1}, {1,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_IF]    = {{1,1,1}, {0,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_21_FIQ]    = {{2,1,0}, {1,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_21_IFQ]    = {{2,1,0}, {0,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_12_FIQ]    = {{1,2,0}, {1,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_12_IFQ]    = {{1,2,0}, {0,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_PP]    = {{1,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT___  },
-    [RVVW_111_IP]    = {{1,1,1}, {0,0,0}, {0,1,1}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, OT_SM  },
-    [RVVW_111_GR]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, 0, 0, 0, 0, 0, 0, 0, OT_SM  },
-    [RVVW_111_UP]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, 0, 0, 0, 0, 0, 0, 0, OT_SM71},
-    [RVVW_111_DN]    = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, 0, 0, 0, 0, 0, 0, 0, OT__M71},
-    [RVVW_111_CMP]   = {{1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {1,0,0}, 0, 0, 0, 0, 0, 0, 0, OT_SM  },
+
+    // INTEGER ARGUMENTS
+    [RVVW_V1I_V1I_V1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V1I_V1I_LD]   = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT_XSM },
+    [RVVW_V1I_V1I_V1I_ST]   = {0, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V1I_V1I_SAT]  = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 1, 1, 0, 0, 0, OT___  },
+    [RVVW_V1I_V1I_V1I_VXRM] = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 1, 0, 0, 0, OT___  },
+    [RVVW_V1I_V1I_V1I_SEW8] = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 1, 0, OT___  },
+    [RVVW_V1I_S1I_V1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 1, OT___  },
+    [RVVW_S1I_V1I_V1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {1,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_P1I_V1I_V1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_S1I_V1I_S1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V1I_V1I_CIN]  = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 1, 0, 0, OT___  },
+    [RVVW_P1I_V1I_V1I_CIN]  = {1, {1,1,1}, {0,0,0}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 1, 0, 0, OT___  },
+    [RVVW_S2I_V1I_S2I]      = {1, {2,1,2}, {0,0,0}, {0,0,0}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V2I_V1I]      = {1, {1,2,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 1, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V2I_V1I_SAT]  = {1, {1,2,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 1, 1, 1, 0, 0, 0, OT___  },
+    [RVVW_V2I_V1I_V1I_IW]   = {1, {2,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2I_V1I_V1I]      = {1, {2,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2I_V1I_V1I_SAT]  = {1, {2,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 1, 1, 0, 0, 0, OT___  },
+    [RVVW_V4I_V1I_V1I]      = {1, {4,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2I_V2I_V1I]      = {1, {2,2,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V2I_FN]       = {1, {1,1,1}, {0,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+
+    // FLOATING POINT ARGUMENTS
+    [RVVW_V1F_V1F_V1F]      = {1, {1,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1F_S1F_V1F]      = {1, {1,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,1,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 1, OT___  },
+    [RVVW_S1F_V1I_V1I]      = {1, {1,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {1,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_P1I_V1F_V1F]      = {1, {1,1,1}, {0,0,0}, {0,1,1}, {1,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_S1F_V1F_S1F]      = {1, {1,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_S2F_V1F_S2F]      = {1, {2,1,2}, {0,0,0}, {1,1,1}, {0,0,0}, {1,0,1}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1F_V2F_V1F_IW]   = {1, {1,2,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2F_V1F_V1F_IW]   = {1, {2,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2F_V1F_V1F]      = {1, {2,1,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2F_V2F_V1F]      = {1, {2,2,1}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+
+    // CONVERSIONS
+    [RVVW_V1F_V1I]          = {1, {1,1,1}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V1F]          = {1, {1,1,1}, {0,0,0}, {0,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2F_V1I]          = {1, {2,1,0}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V2I_V1F]          = {1, {2,1,0}, {0,0,0}, {0,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1F_V2I_IW]       = {1, {1,2,0}, {0,0,0}, {1,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_V2F_IW]       = {1, {1,2,0}, {0,0,0}, {0,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, 0, 1, 0, 0, 0, 0, 0, 0, OT___  },
+
+    // MASK ARGUMENTS
+    [RVVW_P1I_P1I_P1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {1,1,1}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT___  },
+    [RVVW_V1I_P1I_P1I]      = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,1,1}, {0,0,0}, {0,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT_SM  },
+
+    // SLIDING ARGUMENTS
+    [RVVW_V1I_V1I_V1I_GR]   = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT_SM  },
+    [RVVW_V1I_V1I_V1I_UP]   = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT_SM71},
+    [RVVW_V1I_V1I_V1I_DN]   = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,1,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT__M71},
+    [RVVW_V1I_V1I_V1I_CMP]  = {1, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {1,0,0}, 0, 0, 0, 0, 0, 0, 0, 0, OT_SM  },
 };
+
+//
+// Clamp argument index to maximum
+//
+inline static Uns32 clampArgIndex(Uns32 argIndex) {
+    return (argIndex>2) ? 2 : argIndex;
+}
+
+//
+// Return width multiplier for operation Nth vector argument
+//
+inline static Uns32 getWidthMultiplierN(riscvVShape vShape, Uns32 argIndex) {
+    return shapeDetails[vShape].argMul[clampArgIndex(argIndex)];
+}
 
 //
 // Return width multiplier for a vector operation
@@ -4113,7 +5035,7 @@ static Uns32 getWidthMultiplier(riscvVShape vShape) {
 
     for(i=0; i<sizeof(shapeDetails[vShape].argMul); i++) {
 
-        Uns32 mul = shapeDetails[vShape].argMul[i];
+        Uns32 mul = getWidthMultiplierN(vShape, i);
 
         if(result<mul) {
             result = mul;
@@ -4124,10 +5046,17 @@ static Uns32 getWidthMultiplier(riscvVShape vShape) {
 }
 
 //
-// Clamp argument index to maximum
+// Is the first register argument a destination?
 //
-inline static Uns32 clampArgIndex(Uns32 argIndex) {
-    return (argIndex>2) ? 2 : argIndex;
+inline static Bool isR0Dst(riscvVShape vShape) {
+    return shapeDetails[vShape].r0IsDst;
+}
+
+//
+// Does the operation Nth vector argument have divided width?
+//
+inline static Bool isDividedN(riscvVShape vShape, Uns32 argIndex) {
+    return shapeDetails[vShape].argDiv[clampArgIndex(argIndex)];
 }
 
 //
@@ -4156,13 +5085,6 @@ inline static Bool isMaskN(riscvVShape vShape, Uns32 argIndex) {
 //
 inline static Bool isUnindexedN(riscvVShape vShape, Uns32 argIndex) {
     return shapeDetails[vShape].unindexed[clampArgIndex(argIndex)];
-}
-
-//
-// Return width multiplier for operation Nth vector argument
-//
-inline static Uns32 getWidthMultiplierN(riscvVShape vShape, Uns32 argIndex) {
-    return shapeDetails[vShape].argMul[clampArgIndex(argIndex)];
 }
 
 //
@@ -4208,6 +5130,13 @@ inline static Bool isSEW8(riscvVShape vShape) {
 }
 
 //
+// Should this operation skip and vstart<vl check?
+//
+inline static Bool noVStartCheck(riscvVShape vShape) {
+    return shapeDetails[vShape].noVStartCheck;
+}
+
+//
 // Return overlap constraints for the operation
 //
 inline static overlapType getOverlapType(riscvVShape vShape) {
@@ -4219,13 +5148,6 @@ inline static overlapType getOverlapType(riscvVShape vShape) {
 //
 inline static Uns32 getSEWMultiplier(riscvVShape vShape) {
     return isWideningImplicit(vShape) ? 1 : getWidthMultiplier(vShape);
-}
-
-//
-// Is the indexed argument potentially a group member?
-//
-static Bool argIsGroup(riscvVShape vShape, Uns32 argIndex) {
-    return !(isMaskN(vShape, argIndex) || isScalarN(vShape, argIndex));
 }
 
 //
@@ -4253,20 +5175,21 @@ static Bool isFloat(riscvVShape vShape) {
 //
 // Get effective vector length multiplier
 //
-static riscvVLMULMt getVLMULMt(riscvMorphStateP state) {
+static riscvVLMULx8Mt getVLMULMt(riscvMorphStateP state) {
 
     riscvP           riscv      = state->riscv;
     riscvBlockStateP blockState = riscv->blockState;
-    riscvVLMULMt     VLMUL      = blockState->VLMULMt;
+    riscvVLMULx8Mt   VLMULx8    = blockState->VLMULx8Mt;
 
-    if(VLMUL==VLMULMT_UNKNOWN) {
+    if(VLMULx8==VLMULx8MT_UNKNOWN) {
 
         emitCheckPolymorphic();
 
-        blockState->VLMULMt = VLMUL = vlmulToVLMUL(RD_CSR_FIELD(riscv, vtype, vlmul));
+        VLMULx8 = svlmulToVLMULx8(getSVLMUL(riscv));
+        blockState->VLMULx8Mt = VLMULx8;
     }
 
-    return VLMUL;
+    return VLMULx8;
 }
 
 //
@@ -4299,10 +5222,10 @@ static riscvVLClassMt getVLClassMt(riscvMorphStateP state, iterDescP id) {
 
     if(vlClass==VLCLASSMT_UNKNOWN) {
 
-        riscvSEWMt   SEW   = id->SEW;
-        riscvVLMULMt VLMUL = id->VLMUL;
-        Uns32        vl    = RD_CSR(riscv, vl);
-        Uns32        vlMax = id->VLEN*VLMUL/SEW;
+        riscvSEWMt     SEW     = id->SEW;
+        riscvVLMULx8Mt VLMULx8 = id->VLMULx8;
+        Uns32          vl      = RD_CSR(riscv, vl);
+        Uns32          vlMax   = id->VLEN*VLMULx8/(SEW*8);
 
         emitCheckPolymorphic();
 
@@ -4324,88 +5247,67 @@ static riscvVLClassMt getVLClassMt(riscvMorphStateP state, iterDescP id) {
 // Get effective maximum vector length for this operation
 //
 inline static Uns32 getVLMAXOp(iterDescP id) {
-    return id->VLEN*id->VLMUL/id->SEW;
+    return id->VLEN * id->VLMULx8 / (id->SEW*8);
 }
 
 //
-// Return effective VLMUL for operation Nth vector argument
+// Return type for operation Nth vector argument
 //
-static Uns32 getVLMULMtN(riscvMorphStateP state, iterDescP id, Uns32 argIndex) {
-
-    riscvVShape vShape = state->attrs->vShape;
-
-    return argIsGroup(vShape, argIndex) ? id->VLMUL : 1;
+inline static vrType getEType(iterDescP id, Uns32 argIndex) {
+    return id->vr[argIndex].type;
 }
 
 //
-// Return number of vector registers accessed by operation Nth vector argument
+// Return EEW for operation Nth vector argument
 //
-static riscvVLMULMt getVRegNumN(
-    riscvMorphStateP state,
-    iterDescP        id,
-    Uns32            argIndex
-) {
-    riscvVShape  vShape = state->attrs->vShape;
-    riscvVLMULMt result = 1;
-
-    if(argIsGroup(vShape, argIndex)) {
-        result = id->VLMUL * getWidthMultiplierN(vShape, argIndex);
-    }
-
-    return result;
+inline static riscvSEWMt getEEW(iterDescP id, Uns32 argIndex) {
+    return id->vr[argIndex].EEW;
 }
 
 //
-// Return the maximum number of vector registers targeted by any vector
-// argument
+// Is EEW forced for operation Nth vector argument?
 //
-static riscvVLMULMt getVRegNumMax(
-    riscvMorphStateP state,
-    iterDescP        id,
-    riscvVShape      vShape
-) {
-    riscvVLMULMt result = 0;
-    Uns32        i;
-
-    for(i=0; i<RV_MAX_AREGS; i++) {
-
-        riscvRegDesc rA = getRVReg(state, i);
-
-        if(isVReg(rA)) {
-
-            riscvVLMULMt argVRegNum = getVRegNumN(state, id, i);
-
-            if(result<argVRegNum) {
-                result = argVRegNum;
-            }
-        }
-    }
-
-    return result;
+inline static Bool forceEEW(iterDescP id, Uns32 argIndex) {
+    return id->vr[argIndex].forceEEW;
 }
 
 //
-// Return the number of vector registers affected by a vector operation
+// Return EMUL for operation Nth vector argument
 //
-static Uns32 getVRegNum(riscvMorphStateP state, iterDescP id) {
-
-    Uns32        fieldNum = state->info.nf+1;
-    riscvVLMULMt VLMUL    = id->VLMUL;
-
-    return VLMUL*fieldNum;
+inline static Uns32 getEMUL(iterDescP id, Uns32 argIndex) {
+    return id->vr[argIndex].EMUL;
 }
 
 //
-// Is the load/store vector register index legal (register numbers must not
+// Return EMULx8 for operation Nth vector argument
+//
+inline static riscvVLMULx8Mt getEMULx8(iterDescP id, Uns32 argIndex) {
+    return id->vr[argIndex].EMULx8;
+}
+
+//
+// Return EMULxNF for operation Nth vector argument
+//
+static Uns32 getEMULxNF(riscvMorphStateP state, iterDescP id, Uns32 index) {
+
+    Uns32          fieldNum = state->info.nf+1;
+    riscvVLMULx8Mt EMULx8   = getEMULx8(id, index);
+    Uns32          result   = EMULx8*fieldNum/8;
+
+    return result ? : 1;
+}
+
+//
+// Is EMULxNF valid for the indexed vector register (register numbers must not
 // increment past the last-supported vector register)
 //
-static Bool legalVRegIndex(
+static Bool legalEMULxNFIndex(
     riscvMorphStateP state,
     iterDescP        id,
     Uns32            index
 ) {
     riscvRegDesc rv      = getRVReg(state, index);
-    Uns32        numRegs = getVRegNum(state, id);
+    Uns32        numRegs = getEMULxNF(state, id, index);
     Uns32        last    = getRIndex(rv)+numRegs-1;
 
     return last<VREG_NUM;
@@ -4441,20 +5343,59 @@ static vmiFType getSEWFType(riscvMorphStateP state, Uns32 SEW) {
 }
 
 //
+// Is checking of register overlap required?
+//
+static Bool legalOverlap(riscvMorphStateP state, iterDescP id, Uns32 srcNum) {
+
+    riscvSEWMt dstEEW = getEEW(id, 0);
+    riscvSEWMt srcEEW = getEEW(id, srcNum);
+    Bool       ok     = False;
+
+    if(dstEEW==srcEEW) {
+
+        // legal overlap EEW matches
+        ok = True;
+
+    } else if(vectorEEWOverlap(state->riscv)) {
+
+        // mismatched EEW is not legal until after version 0.9
+        riscvRegDesc rD       = getRVReg(state, 0);
+        riscvRegDesc rS       = getRVReg(state, srcNum);
+        Uns32        dstIndex = getRIndex(rD);
+        Uns32        srcIndex = getRIndex(rS);
+
+        if(dstEEW<srcEEW) {
+
+            // legal if overlap in lowest-numbered part of destination
+            ok = (dstIndex==srcIndex);
+
+        } else if(getEMULx8(id, srcNum)>=VLMULx8MT_1) {
+
+            // legal if overlap in highest-numbered part of destination
+            Uns32 dstEMUL = getEMUL(id, 0);
+            Uns32 srcEMUL = getEMUL(id, srcNum);
+
+            ok = ((dstIndex+dstEMUL)==(srcIndex+srcEMUL));
+        }
+    }
+
+    return ok;
+}
+
+//
 // Validate destination does not overlap sources or mask if required
 //
 static Bool validateNoOverlap(riscvMorphStateP state, iterDescP id) {
 
     riscvVShape  vShape = state->attrs->vShape;
     riscvRegDesc rD     = getRVReg(state, 0);
-    Bool         ok     = True;
 
-    if(isVReg(rD) && !isScalarN(vShape, 0)) {
+    if(isR0Dst(vShape) && isVReg(rD) && !isScalarN(vShape, 0)) {
 
         riscvP       riscv     = state->riscv;
         riscvRegDesc mask      = state->info.mask;
         Uns32        index     = getRIndex(rD);
-        riscvVLMULMt dstRegNum = getVRegNumN(state, id, 0);
+        Uns32        dstRegNum = getEMULxNF(state, id, 0);
         overlapType  ot        = getOverlapType(vShape);
         Uns32        badMask   = 0;
         Uns32        i;
@@ -4482,12 +5423,15 @@ static Bool validateNoOverlap(riscvMorphStateP state, iterDescP id) {
         }
 
         // validate overlap with mask if required
-        if(mask && ((ot&OT_M) || (dstRegNum!=VLMULMT_1))) {
+        if(mask && ((ot&OT_M) || (id->MLEN!=getEEW(id, 0)))) {
 
             Uns32 index = getRIndex(mask);
 
-            if(mask && indexInMask(index, badMask)) {
-                ok = False;
+            if(indexInMask(index, badMask)) {
+                ILLEGAL_INSTRUCTION_MESSAGE(
+                    riscv, "IOVP", "Illegal overlap of Vd and mask"
+                );
+                return False;
             }
         }
 
@@ -4498,30 +5442,29 @@ static Bool validateNoOverlap(riscvMorphStateP state, iterDescP id) {
 
             if(isVReg(rA)) {
 
-                Uns32        index     = getRIndex(rA);
-                riscvVLMULMt srcRegNum = getVRegNumN(state, id, srcNum);
+                Uns32 srcRegNum = getEMUL(id, srcNum);
 
-                if((ot&OT_S) || (dstRegNum!=srcRegNum)) {
+                if((ot&OT_S) || !legalOverlap(state, id, srcNum)) {
+
+                    Uns32 index = getRIndex(rA);
 
                     for(i=0; i<srcRegNum; i++) {
 
                         Uns32 part = i+index;
 
                         if((part<VREG_NUM) && indexInMask(part, badMask)) {
-                            ok = False;
+                            ILLEGAL_OPERAND_MESSAGE(
+                                riscv, "IOVP", "illegal overlap of Vd", srcNum
+                            );
+                            return False;
                         }
                     }
                 }
             }
         }
-
-        // error if illegal overlap found
-        if(!ok) {
-            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IOVP", "Illegal register overlap");
-        }
     }
 
-    return ok;
+    return True;
 }
 
 //
@@ -4554,36 +5497,52 @@ static Bool validateVArgWidths(riscvMorphStateP state, iterDescP id) {
 
     riscvP      riscv  = state->riscv;
     riscvVShape vShape = state->attrs->vShape;
-    Uns32       mul    = getWidthMultiplier(vShape);
-    riscvSEWMt  SEW    = id->SEW;
     Bool        ok     = validateNoOverlap(state, id);
     Uns32       i;
 
-    // validate widening/narrowing constraints
-    if(ok && (mul!=1)) {
+    for(i=0; ok && (i<RV_MAX_AREGS); i++) {
 
-        // validate supported general argument widths
-        riscvSEWMt   SEWxN   = mul * SEW;
-        riscvVLMULMt VLMULxN = getVRegNumMax(state, id, vShape);
+        vrType type = getEType(id, i);
 
-        if(SEWxN>riscv->configInfo.ELEN) {
-            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "ISEW", "Illegal widened SEW");
-            ok = False;
-        } else if(VLMULxN>VLMULMT_8) {
-            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVLMUL", "Illegal widened VLMUL");
-            ok = False;
-        }
-    }
+        if(type) {
 
-    // validate supported floating point argument widths
-    for(i=0; ok && (i<=2); i++) {
+            riscvSEWMt     EEW    = getEEW(id, i);
+            riscvVLMULx8Mt EMULx8 = getEMULx8(id, i);
 
-        if(isFloatN(vShape, i)) {
+            if(EEW>riscv->configInfo.ELEN) {
 
-            Uns32      mulN  = getWidthMultiplierN(vShape, i);
-            riscvSEWMt SEWxN = mulN * SEW;
+                ILLEGAL_OPERAND_MESSAGE(riscv, "IEEW", "EEW>ELEN", i);
 
-            ok = validateFPArgWidth(riscv, SEWxN);
+                ok = False;
+
+            } else if((EEW<riscv->configInfo.SEW_min) && (type!=VRT_MASK)) {
+
+                if(riscv->configInfo.SEW_min==8) {
+                    ILLEGAL_OPERAND_MESSAGE(riscv, "IEEW", "EEW<8", i);
+                } else {
+                    ILLEGAL_OPERAND_MESSAGE(riscv, "IEEW", "EEW<SEW_min", i);
+                }
+
+                ok = False;
+
+            } else if(!EMULx8) {
+
+                // LCOV_EXCL_START
+                ILLEGAL_OPERAND_MESSAGE(riscv, "IEMUL", "EMUL<1/8", i);
+
+                ok = False;
+                // LCOV_EXCL_STOP
+
+            } else if(EMULx8>VLMULx8MT_8) {
+
+                ILLEGAL_OPERAND_MESSAGE(riscv, "IEMUL", "EMUL>8", i);
+
+                ok = False;
+
+            } else if(isFloatN(vShape, i)) {
+
+                ok = validateFPArgWidth(riscv, EEW);
+            }
         }
     }
 
@@ -4617,25 +5576,18 @@ static void widenOperands(riscvMorphStateP state, iterDescP id) {
         id->rdNarrow = id->r[0];
         id->r[0] = newTmp(state);
 
-    } else if(isWideningImplicit(vShape)) {
-
-        // arguments implicitly widened
-
     } else {
 
-        Uns32 mul = getWidthMultiplier(vShape);
         Uns32 i;
 
         for(i=1; i<RV_MAX_AREGS; i++) {
 
-            Uns32 mulA = getWidthMultiplierN(vShape, i);
+            riscvSEWMt EEW = getEEW(id, i);
 
             // detect arguments requiring extension
-            if(mulA!=mul) {
+            if((EEW<id->SEW) && !(forceEEW(id, i) || isMaskN(vShape, i))) {
 
-                riscvSEWMt srcSEW = id->SEW;
-                riscvSEWMt dstSEW = srcSEW * mul;
-                vmiReg     tmpA   = newTmp(state);
+                vmiReg tmpA = newTmp(state);
 
                 if(!isFloatN(vShape, i)) {
 
@@ -4643,14 +5595,14 @@ static void widenOperands(riscvMorphStateP state, iterDescP id) {
                     Bool sExtend = isVArgSigned(state, i);
 
                     // extend to temporary
-                    vmimtMoveExtendRR(dstSEW, tmpA, srcSEW, id->r[i], sExtend);
+                    vmimtMoveExtendRR(id->SEW, tmpA, EEW, id->r[i], sExtend);
 
                 } else {
 
                     // floating point argument
                     vmiReg        flags = riscvGetFPFlagsMT(state->riscv);
-                    vmiFType      typeD = getSEWFType(state, dstSEW);
-                    vmiFType      typeS = getSEWFType(state, srcSEW);
+                    vmiFType      typeD = getSEWFType(state, id->SEW);
+                    vmiFType      typeS = getSEWFType(state, EEW);
                     vmiFPRC       rc    = vmi_FPR_NEAREST;
                     vmiFPConfigCP ctrl  = getFPControl(state);
 
@@ -4742,15 +5694,23 @@ static vmiReg getVMIRegV(
     riscvRegDesc     r,
     Uns32            i
 ) {
-    riscvP       riscv  = state->riscv;
-    riscvVShape  vShape = state->attrs->vShape;
-    Uns32        mulE   = getWidthMultiplierN(vShape, i);
-    riscvVLMULMt VLMUL  = getVLMULMtN(state, id, i)*mulE;
-    Uns32        index  = getRIndex(r);
+    riscvP         riscv  = state->riscv;
+    riscvVLMULx8Mt EMULx8 = getEMULx8(id, i);
+    Uns32          index  = getRIndex(r);
 
-    // validate register index is a multiple of the current VLMUL
-    if(index & (VLMUL-1)) {
-        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVI", "Illegal vector register index");
+    // validate register index is a multiple of the current EMUL, ignoring
+    // the case when EMULx8 is zero or greater than 8 (for which a better
+    // message is emitted later)
+    if(!EMULx8) {
+        // no action
+    } else if(!((index*8) & (EMULx8-1))) {
+        // no action
+    } else if(EMULx8==VLMULx8MT_2) {
+        ILLEGAL_OPERAND_MESSAGE(riscv, "IVI", "register index must be multiple of 2", i);
+    } else if(EMULx8==VLMULx8MT_4) {
+        ILLEGAL_OPERAND_MESSAGE(riscv, "IVI", "register index must be multiple of 4", i);
+    } else if(EMULx8==VLMULx8MT_8) {
+        ILLEGAL_OPERAND_MESSAGE(riscv, "IVI", "register index must be multiple of 8", i);
     }
 
     return getVMIReg(riscv, r);
@@ -4809,9 +5769,15 @@ static Bool requireTopZero(
 // point argument is sometimes not encoded in the instruction itself but instead
 // depends on the current SEW, so this needs to be filled when SEW is known
 //
-static riscvRegDesc setSEWBits(iterDescP id, riscvRegDesc rA) {
+static riscvRegDesc setSEWBits(
+    riscvMorphStateP state,
+    iterDescP        id,
+    Uns32            argNum,
+    riscvRegDesc     rA
+) {
     if(isFReg(rA) && !getRBits(rA)) {
         rA = setRBits(rA, id->SEW);
+        setRVReg(state, argNum, rA);
     }
 
     return rA;
@@ -4834,16 +5800,63 @@ static void getVectorOpRegisters(riscvMorphStateP state, iterDescP id) {
 
         riscvRegDesc rA = getRVReg(state, i);
         vmiReg       r  = VMI_NOREG;
+        vrDescP      vr = &id->vr[i];
 
+        // determine vector argument type
         if(!rA) {
             // no action
         } else if(!isVReg(rA)) {
-            r = getVMIRegFS(state, setSEWBits(id, rA));
+            vr->type = VRT_XF;
         } else if(isScalarN(vShape, i)) {
-            r = getVMIReg(riscv, rA);
+            vr->type = VRT_SCALAR;
         } else if(!isMaskN(vShape, i)) {
-            r = getVMIRegV(state, id, rA, i);
+            vr->type = VRT_VECTOR;
         } else {
+            vr->type = VRT_MASK;
+        }
+
+        // seed operand EEW and EMULx8
+        vr->EEW    = (vr->type==VRT_MASK)   ? id->MLEN    : id->SEW;
+        vr->EMULx8 = (vr->type==VRT_VECTOR) ? id->VLMULx8 : VLMULx8MT_1;
+
+        // refine operand SEW and EMULx8
+        if((vr->type==VRT_SCALAR) || (vr->type==VRT_VECTOR)) {
+
+            riscvVLMULx8Mt mulNx8 = getWidthMultiplierN(vShape, i)*VLMULx8MT_1;
+            riscvSEWMt     eew    = state->info.eew;
+
+            // take into account EEW encoded in the instruction
+            if(eew && ((i==2) || (state->info.memBits!=-1))) {
+                vr->forceEEW = True;
+                mulNx8 = (mulNx8*eew)/vr->EEW;
+            }
+
+            // take into account EEW divisor encoded in the instruction
+            if(isDividedN(vShape, i)) {
+                mulNx8 /= state->info.eewDiv;
+            }
+
+            // adjust EMULx8
+            if(vr->type==VRT_VECTOR) {
+                vr->EMULx8 = (vr->EMULx8*mulNx8)/VLMULx8MT_1;
+            }
+
+            // adjust EEW
+            vr->EEW = (vr->EEW*mulNx8)/VLMULx8MT_1;
+        }
+
+        // determine EMUL (1 if fractional)
+        vr->EMUL = (vr->EMULx8/VLMULx8MT_1) ? : 1;
+
+        // get VMI register for the operand
+        if(vr->type==VRT_XF) {
+            r = getVMIRegFS(state, setSEWBits(state, id, i, rA));
+        } else if(vr->type==VRT_SCALAR) {
+            r = getVMIReg(riscv, rA);
+        } else if(vr->type==VRT_VECTOR) {
+            vr->type = VRT_VECTOR;
+            r = getVMIRegV(state, id, rA, i);
+        } else if(vr->type==VRT_MASK) {
             r = getVMIReg(riscv, rA);
             if(!i) {id->PdA = rA;}
         }
@@ -4855,18 +5868,13 @@ static void getVectorOpRegisters(riscvMorphStateP state, iterDescP id) {
 //
 // Is the indexed vector register striped?
 //
-static Bool isIndexedVRegisterStriped(
-    riscvMorphStateP state,
-    iterDescP        id,
-    Uns32            i
-) {
-    riscvVShape  vShape = state->attrs->vShape;
-    Uns32        mulE   = getWidthMultiplierN(vShape, i);
-    Uns32        VLEN   = id->VLEN;
-    riscvVLMULMt VLMUL  = id->VLMUL*mulE;
-    Uns32        SLEN   = id->SLEN;
+static Bool isIndexedVRegisterStriped(iterDescP id, Uns32 i) {
 
-    return (VLMUL>1) && (VLEN>SLEN);
+    Uns32          VLEN   = id->VLEN;
+    Uns32          SLEN   = id->SLEN;
+    riscvVLMULx8Mt EMULx8 = getEMULx8(id, i);
+
+    return (EMULx8>VLMULx8MT_1) && (VLEN>SLEN);
 }
 
 //
@@ -4878,17 +5886,23 @@ static void getIndexedVRegisterInt(
     Uns32            i,
     vmiReg           index
 ) {
-    riscvVShape  vShape   = state->attrs->vShape;
-    Uns32        mulE     = getWidthMultiplierN(vShape, i);
-    riscvVLMULMt VLMUL    = getVLMULMtN(state, id, i)*mulE;
-    Uns32        VLEN     = id->VLEN;
-    Uns32        SLEN     = id->SLEN;
-    riscvSEWMt   SEW      = id->SEW*mulE;
-    Bool         striped  = (VLMUL>1) && (VLEN>SLEN);
-    Uns32        fieldNum = id->nf+1;
-    Uns32        vecBytes = VLEN/8*VLMUL*fieldNum;
+    Uns32          VLEN     = id->VLEN;
+    Uns32          SLEN     = id->SLEN;
+    riscvVLMULx8Mt EMULx8   = getEMULx8(id, i);
+    riscvSEWMt     EEW      = getEEW(id, i);
+    Bool           striped  = (VLEN>SLEN);
+    Uns32          fieldNum = id->nf+1;
+    Uns32          vecBytes = VLEN*EMULx8*fieldNum/64;
 
-    getIndexedRegister(state, id, &id->r[i], index, SEW, vecBytes, striped);
+    // if fractional LMUL is not implemented, only registers accessed with
+    // EMUL>1 are striped
+    if(!vectorFractLMUL(state->riscv)) {
+        striped &= (EMULx8>VLMULx8MT_1);
+    }
+
+    getIndexedRegister(
+        state, id, &id->r[i], index, EMULx8, EEW, vecBytes, striped
+    );
 }
 
 //
@@ -4897,10 +5911,19 @@ static void getIndexedVRegisterInt(
 static void getIndexedMVMIReg(riscvMorphStateP state, iterDescP id, vmiReg *rP) {
 
     Uns32  VLEN     = id->VLEN;
+    Uns32  SLEN     = id->SLEN;
     Uns32  vecBytes = VLEN/8;
     vmiReg index    = CSR_REG_MT(vstart);
+    Bool   striped  = (VLEN>SLEN);
 
-    getIndexedRegister(state, id, rP, index, id->MLEN, vecBytes, False);
+    // if fractional LMUL is not implemented, mask registers are not striped
+    if(!vectorFractLMUL(state->riscv)) {
+        striped = False;
+    }
+
+    getIndexedRegister(
+        state, id, rP, index, VLMULx8MT_1, id->MLEN, vecBytes, striped
+    );
 }
 
 //
@@ -4945,7 +5968,7 @@ static void getIndexedVRegisters(riscvMorphStateP state, iterDescP id) {
 // vector register
 //
 static Uns32 getSegmentRegisterIndex(iterDescP id, riscvRegDesc rv, Uns32 i) {
-    return (getRIndex(rv) + (i*id->VLMUL)) % VREG_NUM;
+    return (getRIndex(rv) + (i*getEMUL(id, 0))) % VREG_NUM;
 }
 
 //
@@ -5021,6 +6044,20 @@ static void validateVStart(
 }
 
 //
+// Clamp vstart CSR if required
+//
+static void clampVStart(riscvMorphStateP state, iterDescP id) {
+
+    vmiReg vstart = CSR_REG_MT(vstart);
+
+    if(state->info.isWhole) {
+        vmimtMoveRC(64, vstart, getVLMAXOp(id));
+    } else {
+        vmimtMoveExtendRR(64, vstart, 32, CSR_REG_MT(vl), False);
+    }
+}
+
+//
 // Handle non-zero vstart
 //
 static vmiLabelP handleNonZeroVStart(
@@ -5034,10 +6071,13 @@ static vmiLabelP handleNonZeroVStart(
 
     if(!blockState->VStartZeroMt) {
 
-        vmiReg vstart = CSR_REG_MT(vstart);
+        vmiReg      vstart = CSR_REG_MT(vstart);
+        riscvVShape vShape = state->attrs->vShape;
 
-        if(state->info.isWhole) {
+        if((state->info.isWhole==RV_WD_MV) || noVStartCheck(vShape)) {
 
+            // whole-register operations and some scalar operations do not
+            // require vstart<vl check
             vmimtMoveRC(64, vstart, 0);
 
         } else {
@@ -5058,7 +6098,7 @@ static vmiLabelP handleNonZeroVStart(
                 validateVStart(state, id, vmi_COND_L, doOp);
 
                 // clamp vstart to vl if it is used as an iteration index
-                vmimtMoveExtendRR(64, vstart, 32, CSR_REG_MT(vl), False);
+                clampVStart(state, id);
 
                 // go to zero extension operation
                 vmimtUncondJumpLabel(skip);
@@ -5079,13 +6119,28 @@ static vmiLabelP handleNonZeroVStart(
 }
 
 //
+// If the instruction is a vector floating point instruction, validate that the
+// current rounding mode is valid. Note that this test is performed whether or
+// not the instruction actually uses the current rounding mode (unlike the
+// scalar floating point extension)
+//
+static Bool validVFPRM(riscvMorphStateP state) {
+    return (
+        // ok if not a floating point instruction
+        (!(state->info.arch&(ISA_FS|ISA_DF))) ||
+        // ok if current rounding mode is valid
+        riscvEmitCheckLegalRM(state->riscv, RV_RM_CURRENT)
+    );
+}
+
+//
 // Do argument checks at the start of a vector operation
 //
 static Bool checkVectorOp(riscvMorphStateP state, iterDescP id) {
 
     // call operation-specific argument check if required
     riscvCheckVFn checkCB = state->attrs->checkCB;
-    return !checkCB || checkCB(state, id);
+    return validVFPRM(state) && (!checkCB || checkCB(state, id));
 }
 
 //
@@ -5145,19 +6200,24 @@ static void skipIfMask0(riscvMorphStateP state, iterDescP id) {
     } else {
 
         // mask stride is not a byte multiple: bit test and jump
-        Uns32  VLEN   = id->VLEN;
-        vmiReg vstart = CSR_REG_MT(vstart);
-        vmiReg mbit   = vstart;
-        Uns32  shift  = mulToShiftP2(id->MLEN);
+        vmiReg mbit      = CSR_REG_MT(vstart);
+        vmiReg t         = newTmp(state);
+        Uns32  shiftMLEN = mulToShiftP2(id->MLEN);
+
+        // handle mask register striping if required
+        mbit = getStripedIndexM(state, id, t, mbit);
 
         // scale bit index if required
-        if(shift) {
-            mbit = newTmp(state);
-            vmimtBinopRRC(32, vmi_SHL, mbit, vstart, shift, 0);
+        if(shiftMLEN) {
+            vmimtBinopRRC(32, vmi_SHL, t, mbit, shiftMLEN, 0);
+            mbit = t;
         }
 
         // go if mask bit not set
-        vmimtTestBitVRJumpLabel(VLEN, 32, False, id->mask, mbit, id->maskF);
+        vmimtTestBitVRJumpLabel(id->VLEN, 32, False, id->mask, mbit, id->maskF);
+
+        // free allocated temporary
+        freeTmp(state);
     }
 }
 
@@ -5326,7 +6386,7 @@ static void zeroVdPdTopBLT(
 
     if(zeroVd) {
 
-        Uns32 VLENxN = VLEN*id->VLMUL;
+        Uns32 VLENxN = VLEN*getEMUL(id,0);
         Uns32 i;
 
         // get indexed vector register target
@@ -5370,7 +6430,7 @@ static vmiLabelP zeroVdPdTop(riscvMorphStateP state, iterDescP id) {
     if((VdA!=PdA) && isVReg(VdA)) {
         for(i=0; i<=id->nf; i++) {
             riscvRegDesc sr = getSegmentRegister(id, VdA, i);
-            if(requireTopZero(state, id, sr, id->VLMUL)) {
+            if(requireTopZero(state, id, sr, getEMUL(id,0))) {
                 zeroVd |= getTopZeroVdMask(i);
             }
         }
@@ -5392,7 +6452,7 @@ static vmiLabelP zeroVdPdTop(riscvMorphStateP state, iterDescP id) {
         // determine whether per-element or block-transfer algorithm is needed
         if(
             (zeroPd && (id->MLEN<8)) ||
-            (zeroVd && isIndexedVRegisterStriped(state, id, 0))
+            (zeroVd && isIndexedVRegisterStriped(id, 0))
         ) {
             zeroVdPdTopPE(state, id, zeroPd, zeroVd);
         } else {
@@ -5427,6 +6487,8 @@ static void endVectorOp(
         // no top zero state change
     } else if(!requireZeroTail(state->riscv)) {
         // after version 0.7.1, top parts are preserved, not zeroed
+    } else if(!isR0Dst(state->attrs->vShape)) {
+        // first register is not a destination
     } else if(isScalarN(state->attrs->vShape, 0)) {
         updateScalarTopZero(state, id);
     } else {
@@ -5487,12 +6549,12 @@ static void doPerElementOp(riscvMorphStateP state, iterDescP id) {
 }
 
 //
-// Return a Boolean indicating if vector instruction can be executed because
-// vtype.vill=0
+// Return a Boolean indicating if vector instruction cannot be executed because
+// vtype.vill=1 (does not apply to whole-register instructions)
 //
 static Bool emitCheckVILL(riscvMorphStateP state) {
 
-    Bool vill = RD_CSR_FIELD(state->riscv, vtype, vill);
+    Bool vill = RD_CSR_FIELD(state->riscv, vtype, vill) && !state->info.isWhole;
 
     // indicate this is a vector instruction
     vmimtInstructionClassAdd(OCL_IC_VECTOR);
@@ -5516,19 +6578,19 @@ static riscvVLClassMt fillVectorOperationData(
 
     // configure either for normal or whole-register operations
     if(state->info.isWhole) {
-        id->VLMUL = 1;
-        id->VLEN  = riscv->configInfo.VLEN * (state->info.nf+1);
-        id->SEW   = SEWMT_8;
-        id->SLEN  = id->VLEN;
-        id->nf    = 0;
-        vlClass   = VLCLASSMT_MAX;
+        id->VLMULx8 = VLMULx8MT_1;
+        id->VLEN    = riscv->configInfo.VLEN * (state->info.nf+1);
+        id->SEW     = riscv->configInfo.SEW_min;
+        id->SLEN    = vectorFractLMUL(riscv) ? riscv->configInfo.SLEN : id->VLEN;
+        id->nf      = 0;
+        vlClass     = VLCLASSMT_MAX;
     } else {
-        id->VLMUL = getVLMULMt(state);
-        id->VLEN  = riscv->configInfo.VLEN;
-        id->SEW   = getSEWMt(state);
-        id->SLEN  = riscv->configInfo.SLEN;
-        id->nf    = state->info.nf;
-        vlClass   = getVLClassMt(state, id);
+        id->VLMULx8 = getVLMULMt(state);
+        id->VLEN    = riscv->configInfo.VLEN;
+        id->SEW     = getSEWMt(state);
+        id->SLEN    = riscv->configInfo.SLEN;
+        id->nf      = state->info.nf;
+        vlClass     = getVLClassMt(state, id);
     }
 
     // do actions required when SEW is forced to 8
@@ -5544,8 +6606,9 @@ static riscvVLClassMt fillVectorOperationData(
     }
 
     // set derived fields
-    id->MLEN      = id->SEW  / id->VLMUL;
-    id->vBytesMax = id->VLEN * id->VLMUL / 8;
+    Uns32 VLMUL   = (id->VLMULx8/VLMULx8MT_1) ? : 1;
+    id->MLEN      = vectorMLEN1(riscv) ? 1 : (id->SEW / VLMUL);
+    id->vBytesMax = id->VLEN * id->VLMULx8 / 64;
 
     // return effective class for this operation
     return vlClass;
@@ -5595,11 +6658,9 @@ static RISCV_MORPH_FN(emitVectorOp) {
             // update base registers for this iteration
             getIndexedVRegisters(state, &id);
 
-            // widen source operands if required
-            widenOperands(state, &id);
-
             // do operation on one element, scaling the SEW if required
             id.SEW *= SEWMul;
+            widenOperands(state, &id);
             doPerElementOp(state, &id);
             id.SEW /= SEWMul;
 
@@ -5685,11 +6746,10 @@ typedef enum setVLOptionE {
 //
 static setVLOption getSetVLOption(riscvMorphStateP state) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rs1A  = getRVReg(state, 1);
-    vmiReg       rs1   = getVMIReg(riscv, rs1A);
+    riscvP      riscv = state->riscv;
+    unpackedReg rs1   = unpackRX(state, 1);
 
-    if(!VMI_ISNOREG(rs1)) {
+    if(!VMI_ISNOREG(rs1.r)) {
 
         // set vl to rs1 if rs1!=zero
         return SVT_SET;
@@ -5707,10 +6767,9 @@ static setVLOption getSetVLOption(riscvMorphStateP state) {
     } else {
 
         // new behavior: set vl to maximum if rd!=zero, otherwise preserve it
-        riscvRegDesc rdA = getRVReg(state, 0);
-        vmiReg       rd  = getVMIReg(riscv, rdA);
+        unpackedReg rd = unpackRX(state, 0);
 
-        return VMI_ISNOREG(rd) ? SVT_PRESERVE : SVT_MAX;
+        return VMI_ISNOREG(rd.r) ? SVT_PRESERVE : SVT_MAX;
     }
 }
 
@@ -5739,29 +6798,61 @@ void riscvWVStart(riscvMorphStateP state, Bool useRS1) {
 }
 
 //
-// Is the specified SEW valid?
+// Return maximum vector length for the given vector type settings
 //
-riscvSEWMt riscvValidSEW(riscvP riscv, Uns8 vsew) {
+Uns32 riscvGetMaxVL(riscvP riscv, riscvVType vtype) {
 
-    Uns32 SEW = vsewToSEW(vsew);
+    Uns32          VLEN    = riscv->configInfo.VLEN;
+    riscvSEWMt     SEW     = vsewToSEW(vtype.vsew);
+    riscvVLMULx8Mt VLMULx8 = vtypeToVLMULx8(vtype);
 
-    return (SEW<=riscv->configInfo.ELEN) ? SEW : SEWMT_UNKNOWN;
+    return (VLMULx8*VLEN)/(SEW*8);
 }
 
 //
-// Update VL, SEW and VLMUL
+// If the specified vtype is valid, return the SEW, otherwise return
+// SEWMT_UNKNOWN
 //
-static Uns32 setVLSEWLMULInt(riscvP riscv, Uns64 vl, Uns32 vsew, Uns32 vlmul) {
+riscvSEWMt riscvValidVType(riscvP riscv, riscvVType vtype) {
 
-    Bool vill = !riscvValidSEW(riscv, vsew);
+    riscvSEWMt     SEW_min = riscv->configInfo.SEW_min;
+    riscvSEWMt     ELEN    = riscv->configInfo.ELEN;
+    riscvSEWMt     SEW     = vsewToSEW(vtype.vsew);
+    riscvVLMULx8Mt VLMULx8 = vtypeToVLMULx8(vtype);
+
+    if(
+        // validate fields that must be zero
+        vtype._u1 ||
+        // validate vlmulf setting
+        (vtype.vlmulf && !vectorFractLMUL(riscv)) ||
+        // validate agnostic settings
+        ((vtype.vta||vtype.vma) && !vectorAgnostic(riscv)) ||
+        // validate SEW is supported
+        (SEW<SEW_min) || (SEW>ELEN) ||
+        // validate LMUL>=(SEW/ELEN)
+        !(VLMULx8>=((SEW*8)/ELEN))
+    ) {
+        SEW = SEWMT_UNKNOWN;
+    }
+
+    return SEW;
+}
+
+//
+// Update VL, and VTYPE
+//
+static Uns32 setVLSEWLMUL(riscvP riscv, Uns64 vl, Uns32 vtypeBits) {
+
+    riscvVType vtype = {vtypeBits};
+    Bool       vill  = !riscvValidVType(riscv, vtype);
 
     // handle illegal vtype setting
     if(vill) {
-        vl = vsew = vlmul = 0;
+        vtype.u32 = 0;
     }
 
     // update vtype CSR
-    riscvSetVType(riscv, vill, vsew, vlmul);
+    riscvSetVType(riscv, vill, vtype);
 
     // update vl CSR
     riscvSetVL(riscv, vl);
@@ -5773,35 +6864,16 @@ static Uns32 setVLSEWLMULInt(riscvP riscv, Uns64 vl, Uns32 vsew, Uns32 vlmul) {
 }
 
 //
-// VSetVL to specified size
-//
-static Uns32 setVLSEWLMUL(riscvP riscv, Uns64 vl, Uns32 vtypeBits) {
-
-    CSR_REG_DECL(vtype) = {u32 : {bits:vtypeBits}};
-
-    Uns32 vsew  = vtype.u32.fields.vsew;
-    Uns32 vlmul = vtype.u32.fields.vlmul;
-
-    return setVLSEWLMULInt(riscv, vl, vsew, vlmul);
-}
-
-//
 // VSetVL to maximum supported size
 //
 static Uns32 setMaxVLSEWLMUL(riscvP riscv, Uns32 vtypeBits) {
 
-    CSR_REG_DECL(vtype) = {u32 : {bits:vtypeBits}};
-
-    Uns32 vsew  = vtype.u32.fields.vsew;
-    Uns32 vlmul = vtype.u32.fields.vlmul;
+    riscvVType vtype = {u32:vtypeBits};
 
     // compute effective VLMAX
-    Uns32        VLEN  = riscv->configInfo.VLEN;
-    riscvSEWMt   SEW   = vsewToSEW(vsew);
-    riscvVLMULMt VLMUL = vlmulToVLMUL(vlmul);
-    Uns32        VLMAX = (VLMUL*VLEN)/SEW;
+    Uns32 VLMAX = riscvGetMaxVL(riscv, vtype);
 
-    return setVLSEWLMULInt(riscv, VLMAX, vsew, vlmul);
+    return setVLSEWLMUL(riscv, VLMAX, vtypeBits);
 }
 
 //
@@ -5809,10 +6881,9 @@ static Uns32 setMaxVLSEWLMUL(riscvP riscv, Uns32 vtypeBits) {
 //
 static void emitSetVLRS1Arg(riscvMorphStateP state) {
 
-    riscvRegDesc rs1A = getRVReg(state, 1);
-    vmiReg       rs1  = getVMIReg(state->riscv, rs1A);
+    unpackedReg rs1 = unpackRX(state, 1);
 
-    vmimtArgReg(64, rs1);
+    vmimtArgReg(64, rs1.r);
 }
 
 //
@@ -5859,19 +6930,16 @@ static void emitUpdateVTypeVL(riscvMorphStateP state) {
 //
 static void emitVSetVLRRRCB(riscvMorphStateP state) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    riscvRegDesc rs2A  = getRVReg(state, 2);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    vmiReg       rs2   = getVMIReg(riscv, rs2A);
-    Uns32        dBits = 32;
+    unpackedReg rd    = unpackRX(state, 0);
+    unpackedReg rs2   = unpackRX(state, 2);
+    Uns32       dBits = 32;
 
     // call function (may cause exception for invalid SEW)
     vmimtArgProcessor();
     vmiCallFn cb = handleVSetVLArg1(state);
-    vmimtArgReg(32, rs2);
-    vmimtCallResultAttrs(cb, dBits, rd, VMCA_NO_INVALIDATE);
-    writeRegSize(riscv, rdA, dBits);
+    vmimtArgReg(32, rs2.r);
+    vmimtCallResultAttrs(cb, dBits, rd.r, VMCA_NO_INVALIDATE);
+    writeUnpackedSize(rd, dBits);
 
     // terminate the block after this instruction because polymorphic state
     // differs from initial state
@@ -5883,19 +6951,16 @@ static void emitVSetVLRRRCB(riscvMorphStateP state) {
 //
 static void emitVSetVLRRCCB(riscvMorphStateP state) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    Uns8         vsew  = state->info.vsew;
-    Uns8         vlmul = state->info.vlmul;
-    Uns32        dBits = 32;
+    unpackedReg rd    = unpackRX(state, 0);
+    riscvVType  vtype = state->info.vtype;
+    Uns32       dBits = 32;
 
     // call update function (SEW is known to be valid)
     vmimtArgProcessor();
     vmiCallFn cb = handleVSetVLArg1(state);
-    vmimtArgUns32((vsew<<2)+vlmul);
-    vmimtCallResultAttrs(cb, dBits, rd, VMCA_NO_INVALIDATE);
-    writeRegSize(riscv, rdA, dBits);
+    vmimtArgUns32(vtype.u32);
+    vmimtCallResultAttrs(cb, dBits, rd.r, VMCA_NO_INVALIDATE);
+    writeUnpackedSize(rd, dBits);
 
     // terminate the block after this instruction because polymorphic state
     // differs from initial state
@@ -5903,26 +6968,23 @@ static void emitVSetVLRRCCB(riscvMorphStateP state) {
 }
 
 //
-// Implement VSetVL <rd>, <rs1>, <rs2> operation with invalid SEW
+// Implement VSetVL <rd>, <rs1>, <rs2> operation with invalid SEW or LMUL
 //
-static void emitVSetVLRRCBadSEW(riscvMorphStateP state) {
+static void emitVSetVLRRCBadSEWLMUL(riscvMorphStateP state) {
 
-    riscvP       riscv = state->riscv;
-    riscvRegDesc rdA   = getRVReg(state, 0);
-    vmiReg       rd    = getVMIReg(riscv, rdA);
-    Uns8         vsew  = state->info.vsew;
-    Uns32        dBits = 32;
+    unpackedReg rd    = unpackRX(state, 0);
+    riscvVType  vtype = state->info.vtype;
+    Uns32       dBits = 32;
 
     // update using invalid SEW
-    vmiCallFn cb = (vmiCallFn)setVLSEWLMULInt;
+    vmiCallFn cb = (vmiCallFn)setVLSEWLMUL;
 
     // use embedded call
     vmimtArgProcessor();
-    vmimtArgUns64(0);       // vl (ignored)
-    vmimtArgUns32(vsew);    // sew
-    vmimtArgUns32(0);       // vlmul (ignored)
-    vmimtCallResultAttrs(cb, dBits, rd, VMCA_NO_INVALIDATE);
-    writeRegSize(riscv, rdA, dBits);
+    vmimtArgUns64(0);           // vl (ignored)
+    vmimtArgUns32(vtype.u32);   // vtype
+    vmimtCallResultAttrs(cb, dBits, rd.r, VMCA_NO_INVALIDATE);
+    writeUnpackedSize(rd, dBits);
 
     // terminate the block after this instruction because polymorphic state
     // differs from initial state
@@ -5936,24 +6998,22 @@ static void emitVSetVLRR0MaxVL(riscvMorphStateP state) {
 
     riscvP           riscv      = state->riscv;
     riscvBlockStateP blockState = riscv->blockState;
-    Uns8             vsew       = state->info.vsew;
-    Uns8             vlmul      = state->info.vlmul;
-    riscvSEWMt       SEW        = riscvValidSEW(riscv, vsew);
-    riscvVLMULMt     VLMUL      = vlmulToVLMUL(vlmul);
+    riscvVType       vtype      = state->info.vtype;
+    riscvSEWMt       SEW        = riscvValidVType(riscv, vtype);
+    riscvVLMULx8Mt   VLMULx8    = vtypeToVLMULx8(vtype);
 
     if(
         (blockState->SEWMt     == SEW)   &&
-        (blockState->VLMULMt   == VLMUL) &&
+        (blockState->VLMULx8Mt == VLMULx8) &&
         (blockState->VLClassMt == VLCLASSMT_MAX)
     ) {
         // no change to previous state
-        riscvRegDesc rdA  = getRVReg(state, 0);
-        vmiReg       rd   = getVMIReg(riscv, rdA);
-        Uns32        bits = 32;
+        unpackedReg rd   = unpackRX(state, 0);
+        Uns32       bits = 32;
 
         // assign result
-        vmimtMoveRR(bits, rd, CSR_REG_MT(vl));
-        writeRegSize(riscv, rdA, bits);
+        vmimtMoveRR(bits, rd.r, CSR_REG_MT(vl));
+        writeUnpackedSize(rd, bits);
 
     } else {
 
@@ -5965,7 +7025,7 @@ static void emitVSetVLRR0MaxVL(riscvMorphStateP state) {
         // maximum size
         if(
             (blockState->VLClassMt != VLCLASSMT_MAX) ||
-            (blockState->VLMULMt   != VLMUL)
+            (blockState->VLMULx8Mt != VLMULx8)
         ) {
             blockState->VZeroTopMt[VTZ_SINGLE] = 0;
             blockState->VZeroTopMt[VTZ_GROUP]  = 0;
@@ -5974,7 +7034,7 @@ static void emitVSetVLRR0MaxVL(riscvMorphStateP state) {
         // update morph-time VLClass, SEW and VLMUL, which are now known
         blockState->VLClassMt = VLCLASSMT_MAX;
         blockState->SEWMt     = SEW;
-        blockState->VLMULMt   = VLMUL;
+        blockState->VLMULx8Mt = VLMULx8;
     }
 }
 
@@ -5985,21 +7045,19 @@ static void emitVSetVLRR0SameVL(riscvMorphStateP state) {
 
     riscvP           riscv      = state->riscv;
     riscvBlockStateP blockState = riscv->blockState;
-    Uns8             vsew       = state->info.vsew;
-    Uns8             vlmul      = state->info.vlmul;
-    riscvSEWMt       SEW        = riscvValidSEW(riscv, vsew);
-    riscvVLMULMt     VLMUL      = vlmulToVLMUL(vlmul);
+    riscvVType       vtype      = state->info.vtype;
+    riscvSEWMt       SEW        = riscvValidVType(riscv, vtype);
+    riscvVLMULx8Mt   VLMULx8    = vtypeToVLMULx8(vtype);
 
-    if((blockState->SEWMt == SEW) && (blockState->VLMULMt == VLMUL)) {
+    if((blockState->SEWMt == SEW) && (blockState->VLMULx8Mt == VLMULx8)) {
 
         // no change to previous state
-        riscvRegDesc rdA  = getRVReg(state, 0);
-        vmiReg       rd   = getVMIReg(riscv, rdA);
-        Uns32        bits = 32;
+        unpackedReg rd   = unpackRX(state, 0);
+        Uns32       bits = 32;
 
         // assign result
-        vmimtMoveRR(bits, rd, CSR_REG_MT(vl));
-        writeRegSize(riscv, rdA, bits);
+        vmimtMoveRR(bits, rd.r, CSR_REG_MT(vl));
+        writeUnpackedSize(rd, bits);
 
     } else {
 
@@ -6028,18 +7086,18 @@ static RISCV_MORPH_FN(emitVSetVLRRR) {
 //
 static RISCV_MORPH_FN(emitVSetVLRRC) {
 
-    riscvP      riscv  = state->riscv;
-    Uns8        vsew   = state->info.vsew;
-    riscvSEWMt  SEW    = riscvValidSEW(riscv, vsew);
-    setVLOption option = getSetVLOption(state);
+    riscvP      riscv   = state->riscv;
+    riscvVType  vtype   = state->info.vtype;
+    riscvSEWMt  SEW     = riscvValidVType(riscv, vtype);
+    setVLOption option  = getSetVLOption(state);
 
     // this instruction updates vtype and vl
     emitUpdateVTypeVL(state);
 
     if(!SEW) {
 
-        // update using invalid SEW
-        emitVSetVLRRCBadSEW(state);
+        // update using invalid SEW or LMUL
+        emitVSetVLRRCBadSEWLMUL(state);
 
     } else if(option==SVT_SET) {
 
@@ -6067,13 +7125,20 @@ static RISCV_MORPH_FN(emitVSetVLRRC) {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
+// Is this an SEW width load/store?
+//
+inline static Bool isMemBitsSEW(Uns32 memBits) {
+    return memBits==-1;
+}
+
+//
 // Return the memory element size in bits
 //
 static Uns32 getVMemBits(riscvMorphStateP state, iterDescP id) {
 
     Uns32 memBits = state->info.memBits;
 
-    if(memBits==-1) {
+    if(isMemBitsSEW(memBits)) {
         memBits = id->SEW;
     }
 
@@ -6095,54 +7160,95 @@ static Bool legalVMVRRegNum(Uns32 regNum) {
 }
 
 //
+// Emit checks specific to segment loads/stores
+//
+static Bool emitVLdStCheckSeg(riscvMorphStateP state, iterDescP id) {
+
+    riscvP riscv = state->riscv;
+    Bool   ok    = True;
+
+    if(state->info.isWhole) {
+
+        // no action for whole register loads and stores
+
+    } else if(!riscv->configInfo.Zvlsseg) {
+
+        // Zvlsseg extension not configured
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVLSEG", "Zvlsseg extension not configured");
+        ok = False;
+    }
+
+    return ok;
+}
+
+//
+// Emit checks specific to whole register loads/stores
+//
+static Bool emitVLdStCheckWhole(riscvMorphStateP state, iterDescP id) {
+
+    riscvP riscv = state->riscv;
+    Bool   ok    = True;
+
+    if(!state->info.isWhole) {
+
+        // no action unless whole register load or  store
+
+    } else if(state->info.nf && vectorRestrictWhole(riscv)) {
+
+        // nf!=1 is not supported
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVNF", "Illegal register count (must be 1)");
+        ok = False;
+     }
+
+    return ok;
+}
+
+//
 // Operation-specific argument checks for loads and stores
 //
 static RISCV_CHECKV_FN(emitVLdStCheckCB) {
 
-    riscvP riscv   = state->riscv;
-    Uns32  memBits = getVMemBits(state, id);
-    Bool   ok      = True;
+    riscvP     riscv   = state->riscv;
+    Uns32      memBits = getVMemBits(state, id);
+    riscvSEWMt EEW     = getEEW(id, 0);
+    Bool       ok      = True;
 
-    if(!legalVMemBits(id->SEW, memBits)) {
+    if(!legalVMemBits(EEW, memBits)) {
 
-        // Illegal Instruction for invalid SEW/memBits combination
-        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IMB", "SEW < memory element bits");
+        // Illegal Instruction for invalid EEW/memBits combination
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IMB", "EEW < memory element bits");
+        ok = False;
+
+    } else if(state->info.isFF && vectorNoFaultOnlyFirst(riscv)) {
+
+        // Illegal Instruction if fault-only-first not implemented
+        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IFF", "Fault-only-first not implemented");
         ok = False;
 
     } else if(!state->info.nf) {
 
-        // not Zvlsseg extension instruction
+        // no action if only one field
 
-    } else if(!(riscv->configInfo.Zvlsseg || state->info.isWhole)) {
+    } else if(!emitVLdStCheckSeg(state, id)) {
 
-        // VLMUL must be 1 for load/store segment instructions
-        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVLSEG", "Zvlsseg extension not configured");
+        // segment loads/store check failed
         ok = False;
 
-    } else if(getVRegNum(state, id)>8) {
+    } else if(!emitVLdStCheckWhole(state, id)) {
+
+        // whole register loads/store check failed
+        ok = False;
+
+    } else if(getEMULxNF(state, id, 0)>8) {
 
         // VLMUL*NFIELDS must not exceed 8 for load/store segment instructions
         ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVLMUL", "Illegal VLMUL*NFIELDS>8");
         ok = False;
 
-    } else if(!legalVRegIndex(state, id, 0)) {
+    } else if(!legalEMULxNFIndex(state, id, 0)) {
 
         // register indices must not wrap
         ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVWRAP", "Illegal vector index wrap-around");
-        ok = False;
-
-    } else if(!state->info.isWhole) {
-
-        // not whole-register operation
-
-    } else if(!vectorRestrictWhole(riscv)) {
-
-        // registers not constrained
-
-    } else if(state->info.nf) {
-
-        // nf!=1 is not currently supported in base specification
-        ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVNF", "Illegal register count (must be 1)");
         ok = False;
     }
 
@@ -6194,16 +7300,16 @@ static RISCV_CHECKV_FN(emitVMVRCheckCB) {
     riscvRegDesc rsA    = getRVReg(state, 1);
     Uns32        dIndex = getRIndex(rdA);
     Uns32        sIndex = getRIndex(rsA);
-    Uns32        regNum = getVRegNum(state, id);
+    Uns32        regNum = getEMULxNF(state, id, 0);
     Bool         ok     = True;
 
-    if(!legalVRegIndex(state, id, 0)) {
+    if(!legalEMULxNFIndex(state, id, 0)) {
 
         // destination register indices must not wrap
         ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVWRAPD", "Illegal destination vector index wrap-around");
         ok = False;
 
-    } else if(!legalVRegIndex(state, id, 1)) {
+    } else if(!legalEMULxNFIndex(state, id, 1)) {
 
         // source register indices must not wrap
         ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IVWRAPS", "Illegal source vector index wrap-around");
@@ -6257,12 +7363,10 @@ static RISCV_MORPHV_FN(emitVLdStInitCB) {
 //
 static void emitVLdStAddBase(riscvMorphStateP state, iterDescP id, vmiReg ra) {
 
-    riscvP       riscv  = state->riscv;
-    riscvRegDesc rs1A   = getRVReg(state, 1);
-    vmiReg       rs1    = getVMIReg(riscv, rs1A);
-    Uns32        raBits = getRBits(rs1A);
+    unpackedReg rs1    = unpackRX(state, 1);
+    Uns32       raBits = rs1.bits;
 
-    vmimtBinopRR(raBits, vmi_ADD, ra, rs1, 0);
+    vmimtBinopRR(raBits, vmi_ADD, ra, rs1.r, 0);
 }
 
 //
@@ -6293,15 +7397,13 @@ static vmiReg emitVLdStUOffset(riscvMorphStateP state, iterDescP id) {
 //
 static vmiReg emitVLdStSOffset(riscvMorphStateP state, iterDescP id) {
 
-    riscvP       riscv  = state->riscv;
     riscvRegDesc rs1A   = getRVReg(state, 1);
-    riscvRegDesc rs2A   = getRVReg(state, 2);
-    vmiReg       rs2    = getVMIReg(riscv, rs2A);
-    vmiReg       ra     = newTmp(state);
     Uns32        raBits = getRBits(rs1A);
+    unpackedReg  rs2    = unpackRX(state, 2);
+    vmiReg       ra     = newTmp(state);
     vmiReg       vstart = CSR_REG_MT(vstart);
 
-    vmimtBinopRRR(raBits, vmi_MUL, ra, vstart, rs2, 0);
+    vmimtBinopRRR(raBits, vmi_MUL, ra, vstart, rs2.r, 0);
 
     return ra;
 }
@@ -6312,9 +7414,10 @@ static vmiReg emitVLdStSOffset(riscvMorphStateP state, iterDescP id) {
 static vmiReg emitVLdStIOffset(riscvMorphStateP state, iterDescP id) {
 
     riscvRegDesc rs1A    = getRVReg(state, 1);
-    vmiReg       ra      = newTmp(state);
     Uns32        raBits  = getRBits(rs1A);
-    Uns32        iBits   = (id->SEW<raBits) ? id->SEW : raBits;
+    vmiReg       ra      = newTmp(state);
+    riscvSEWMt   EEW     = getEEW(id, 2);
+    Uns32        iBits   = (EEW<raBits) ? EEW : raBits;
     Bool         sExtend = riscvVFSupport(state->riscv, RVVF_SEXT_IOFFSET);
 
     vmimtMoveExtendRR(raBits, ra, iBits, id->r[2], sExtend);
@@ -6337,14 +7440,15 @@ static void emitVLdInt(riscvMorphStateP state, iterDescP id, vmiReg ra) {
 
     for(i=0; i<=id->nf; i++) {
 
-        vmiReg vd    = getSegmentRegisterV0(state, id, i);
-        vmiReg vdTmp = skip ? newTmp(state) : vd;
+        riscvSEWMt EEW   = getEEW(id, 0);
+        vmiReg     vd    = getSegmentRegisterV0(state, id, i);
+        vmiReg     vdTmp = skip ? newTmp(state) : vd;
 
         // do load (either directly to result location or to temporary)
         emitLoadCommonMBO(
             state,
             vdTmp,
-            id->SEW,
+            EEW,
             ra,
             memBits,
             memBytes*i,
@@ -6354,7 +7458,7 @@ static void emitVLdInt(riscvMorphStateP state, iterDescP id, vmiReg ra) {
         // for a fault-only-first load, only commit the value if no fault
         if(skip) {
             vmimtCondJumpLabel(RISCV_FF, False, skip);
-            vmimtMoveRR(id->SEW, vd, vdTmp);
+            vmimtMoveRR(EEW, vd, vdTmp);
             freeTmp(state);
         }
     }
@@ -6397,54 +7501,42 @@ static void emitVStInt(riscvMorphStateP state, iterDescP id, vmiReg ra) {
 // Per-element callback for unit-stride loads
 //
 static RISCV_MORPHV_FN(emitVLdUCB) {
-    if(legalVMemBits(id->SEW, getVMemBits(state, id))) {
-        emitVLdInt(state, id, emitVLdStUOffset(state, id));
-    }
+    emitVLdInt(state, id, emitVLdStUOffset(state, id));
 }
 
 //
 // Per-element callback for unit-stride stores
 //
 static RISCV_MORPHV_FN(emitVStUCB) {
-    if(legalVMemBits(id->SEW, getVMemBits(state, id))) {
-        emitVStInt(state, id, emitVLdStUOffset(state, id));
-    }
+    emitVStInt(state, id, emitVLdStUOffset(state, id));
 }
 
 //
 // Per-element callback for strided loads
 //
 static RISCV_MORPHV_FN(emitVLdSCB) {
-    if(legalVMemBits(id->SEW, getVMemBits(state, id))) {
-        emitVLdInt(state, id, emitVLdStSOffset(state, id));
-    }
+    emitVLdInt(state, id, emitVLdStSOffset(state, id));
 }
 
 //
 // Per-element callback for strided stores
 //
 static RISCV_MORPHV_FN(emitVStSCB) {
-    if(legalVMemBits(id->SEW, getVMemBits(state, id))) {
-        emitVStInt(state, id, emitVLdStSOffset(state, id));
-    }
+    emitVStInt(state, id, emitVLdStSOffset(state, id));
 }
 
 //
 // Per-element callback for indexed loads
 //
 static RISCV_MORPHV_FN(emitVLdICB) {
-    if(legalVMemBits(id->SEW, getVMemBits(state, id))) {
-        emitVLdInt(state, id, emitVLdStIOffset(state, id));
-    }
+    emitVLdInt(state, id, emitVLdStIOffset(state, id));
 }
 
 //
 // Per-element callback for indexed stores
 //
 static RISCV_MORPHV_FN(emitVStICB) {
-    if(legalVMemBits(id->SEW, getVMemBits(state, id))) {
-        emitVStInt(state, id, emitVLdStIOffset(state, id));
-    }
+    emitVStInt(state, id, emitVLdStIOffset(state, id));
 }
 
 
@@ -6457,16 +7549,17 @@ static RISCV_MORPHV_FN(emitVStICB) {
 //
 static Bool doVAMOCheck(riscvMorphStateP state, iterDescP id, Bool verbose) {
 
-    riscvP riscv   = state->riscv;
-    Uns32  XLEN    = riscvGetXlenMode(riscv);
-    Uns32  memBits = getVMemBits(state, id);
-    Bool   ok      = True;
+    riscvP     riscv   = state->riscv;
+    Uns32      XLEN    = riscvGetXlenMode(riscv);
+    Uns32      memBits = getVMemBits(state, id);
+    riscvSEWMt EEW     = getEEW(id, 3);
+    Bool       ok      = True;
 
-    if(!legalVMemBits(id->SEW, memBits)) {
+    if(!legalVMemBits(EEW, memBits)) {
 
         // Illegal Instruction if SEW < memory element bits
         if(verbose) {
-            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IMB", "SEW < memory element bits");
+            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IMB", "EEW < memory element bits");
         }
 
         ok = False;
@@ -6480,11 +7573,11 @@ static Bool doVAMOCheck(riscvMorphStateP state, iterDescP id, Bool verbose) {
 
         ok = False;
 
-    } else if(id->SEW > XLEN) {
+    } else if(EEW > XLEN) {
 
-        // Illegal Instruction if SEW > XLEN
+        // Illegal Instruction if EEW > XLEN
         if(verbose) {
-            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IXL", "SEW > XLEN");
+            ILLEGAL_INSTRUCTION_MESSAGE(riscv, "IXL", "EEW > XLEN");
         }
 
         ok = False;
@@ -6512,15 +7605,20 @@ static RISCV_CHECKV_FN(emitVAMOCheckCB) {
 //
 // Atomic memory operation (vector arguments)
 //
-static void emitVAMOCommonRRR(riscvMorphStateP state, iterDescP id, amoCB opCB) {
-
+static void emitVAMOCommonRRR(
+    riscvMorphStateP state,
+    iterDescP        id,
+    amoCB            opCB,
+    atomicCode       code
+) {
     if(doVAMOCheck(state, id, False)) {
 
-        vmiReg ra = emitVLdStIOffset(state, id);
+        vmiReg     ra  = emitVLdStIOffset(state, id);
+        riscvSEWMt EEW = getEEW(id, 3);
 
         emitVLdStAddBase(state, id, ra);
 
-        emitAMOCommonInt(state, opCB, id->r[0], id->r[3], ra, id->SEW);
+        emitAMOCommonInt(state, opCB, id->r[0], id->r[3], ra, EEW, code);
     }
 }
 
@@ -6528,14 +7626,14 @@ static void emitVAMOCommonRRR(riscvMorphStateP state, iterDescP id, amoCB opCB) 
 // Atomic memory operation using defined VMI binop
 //
 static RISCV_MORPHV_FN(emitVAMOBinopRRR) {
-    emitVAMOCommonRRR(state, id, emitAMOBinopRRRCB);
+    emitVAMOCommonRRR(state, id, emitAMOBinopRRRCB, getBinopAtomicCode(state));
 }
 
 //
 // Atomic memory operation using swap
 //
 static RISCV_MORPHV_FN(emitVAMOSwapRRR) {
-    emitVAMOCommonRRR(state, id, emitAMOSwapRRRCB);
+    emitVAMOCommonRRR(state, id, emitAMOSwapRRRCB, ACODE_SWAP);
 }
 
 
@@ -6807,7 +7905,7 @@ static RISCV_MORPHV_FN(emitVMSOFCB) {
 // Initialization callback for VIOTA/VID
 //
 static RISCV_MORPHV_FN(initVIOTACB) {
-    vmimtMoveRC(id->SEW, RISCV_VTMP, 0);
+    vmimtMoveRR(id->SEW, RISCV_VTMP, CSR_REG_MT(vstart));
 }
 
 //
@@ -7296,7 +8394,7 @@ static void emitFixedPointRounding(
     // get rounding amount to add
     emitGetFixedPointRoundingAdjust(id, rd, discard);
 
-    // do  addition of rounding amount
+    // do addition of rounding amount
     vmimtBinopRR(id->SEW, vmi_ADD, rd, discard, 0);
 }
 
@@ -7539,10 +8637,7 @@ static RISCV_MORPHV_FN(emitVRSMAccIntCB) {
 //
 static RISCV_MORPHV_FN(initVRedCB) {
 
-    riscvVShape vShape = state->attrs->vShape;
-    Uns32       mulE   = getWidthMultiplierN(vShape, 2);
-
-    vmimtMoveRR(id->SEW*mulE, RISCV_VTMP, id->r[2]);
+    vmimtMoveRR(getEEW(id, 2), RISCV_VTMP, id->r[2]);
 }
 
 //
@@ -7550,7 +8645,7 @@ static RISCV_MORPHV_FN(initVRedCB) {
 //
 static RISCV_MORPHV_FN(emitVRedBinaryIntCB) {
 
-    vmimtBinopRR(id->SEW, state->attrs->binop, RISCV_VTMP, id->r[1], 0);
+    vmimtBinopRR(getEEW(id, 0), state->attrs->binop, RISCV_VTMP, id->r[1], 0);
 }
 
 //
@@ -7558,15 +8653,11 @@ static RISCV_MORPHV_FN(emitVRedBinaryIntCB) {
 //
 static RISCV_MORPHV_FN(endVRedCB) {
 
-    riscvP      riscv  = state->riscv;
-    riscvVShape vShape = state->attrs->vShape;
-    Uns32       mulE   = getWidthMultiplierN(vShape, 0);
-
     // zero target register
-    zeroTail(riscv, id->VLEN, id->r[0]);
+    zeroTail(state->riscv, id->VLEN, id->r[0]);
 
     // set element 0 of target register
-    vmimtMoveRR(id->SEW*mulE, id->r[0], RISCV_VTMP);
+    vmimtMoveRR(getEEW(id, 0), id->r[0], RISCV_VTMP);
 }
 
 
@@ -7714,7 +8805,6 @@ static vmiFType getVConvertType(
     Uns32            argIndex
 ) {
     riscvVShape vShape = state->attrs->vShape;
-    riscvSEWMt  SEWxN  = id->SEW * getWidthMultiplierN(vShape, argIndex);
     vmiFType    result;
 
     // get basic operand type
@@ -7726,8 +8816,8 @@ static vmiFType getVConvertType(
         result = VMI_FT_UNS;
     }
 
-    // include size
-    result |= SEWxN;
+    // include element width
+    result |= getEEW(id, argIndex);
 
     // use BFLOAT16 type if required
     if((result==vmi_FT_16_IEEE_754) && enableBFLOAT16(state->riscv)) {
@@ -7749,11 +8839,9 @@ static RISCV_MORPHV_FN(emitVRConvertFltCB) {
     vmiFType      typeS = getVConvertType(state, id, 1);
     vmiFPRC       rc    = mapRMDescToRC(state->info.rm);
     vmiFPConfigCP ctrl  = getFPControl(state);
+    vmiReg        flags = riscvGetFPFlagsMT(riscv);
 
-    if(riscvEmitCheckLegalRM(riscv, state->info.rm)) {
-        vmiReg flags = riscvGetFPFlagsMT(riscv);
-        vmimtFConvertRR(typeD, fd, typeS, fs, rc, flags, ctrl);
-    }
+    vmimtFConvertRR(typeD, fd, typeS, fs, rc, flags, ctrl);
 }
 
 
@@ -7918,6 +9006,15 @@ static RISCV_MORPHV_FN(emitVFMVFS) {
 }
 
 //
+// Handle explicit NaN-boxing of scalar floating point input register
+//
+inline static void emitVFNaNBox(iterDescP id, Uns32 sBits, vmiReg vd) {
+    if(id->SEW>sBits) {
+        vmimtMoveRC(id->SEW-sBits, VMI_REG_DELTA(vd,sBits/8), -1);
+    }
+}
+
+//
 // Per-element callback for VFMV.S.F
 //
 static RISCV_MORPHV_FN(emitVFMVSF) {
@@ -7935,9 +9032,7 @@ static RISCV_MORPHV_FN(emitVFMVSF) {
     vmimtMoveRR(sBits, vd, fs1);
 
     // handle NaN boxing if required
-    if(id->SEW>sBits) {
-        vmimtMoveRC(id->SEW-sBits, VMI_REG_DELTA(vd,sBits/8), -1);
-    }
+    emitVFNaNBox(id, sBits, vd);
 }
 
 //
@@ -7994,13 +9089,14 @@ static void emitVRSLIDEDOWNInt(
     vmiReg           index,
     Uns32            xBits
 ) {
-    vmiLabelP skip = vmimtNewLabel();
+    Uns32     vlMax = getVLMAXOp(id);
+    vmiLabelP skip  = vmimtNewLabel();
 
     // assume zero result is required
     vmimtMoveRC(id->SEW, id->r[0], 0);
 
-    // skip move from vector if index>=vl
-    vmimtCompareRRJumpLabel(xBits, vmi_COND_NB, index, CSR_REG_MT(vl), skip);
+    // skip move from vector if index>=vlmax
+    vmimtCompareRCJumpLabel(xBits, vmi_COND_NB, index, vlMax, skip);
 
     // do indexed move (if not skipped)
     moveIndexedVd0Vs1(state, id, index, skip);
@@ -8011,6 +9107,7 @@ static void emitVRSLIDEDOWNInt(
 //
 static RISCV_MORPHV_FN(emitVRSLIDEDOWNCB) {
 
+    Uns32  vlMax      = getVLMAXOp(id);
     Uns32  offsetBits = IMPERAS_POINTER_BITS;
     vmiReg offset     = id->r[2];
     vmiReg vstart     = CSR_REG_MT(vstart);
@@ -8018,9 +9115,9 @@ static RISCV_MORPHV_FN(emitVRSLIDEDOWNCB) {
     Uns32  sBits      = (xBits<offsetBits) ? xBits : offsetBits;
     vmiReg index      = newTmp(state);
 
-    // move offset clamped to vl to temporary
-    vmimtCompareRR(xBits, vmi_COND_B, offset, CSR_REG_MT(vl), index);
-    vmimtCondMoveRRR(xBits, index, True, index, offset, CSR_REG_MT(vl));
+    // move offset clamped to vlmax to temporary
+    vmimtCompareRC(xBits, vmi_COND_B, offset, vlMax, index);
+    vmimtCondMoveRRC(xBits, index, True, index, offset, vlMax);
 
     // calculate source index
     vmimtMoveExtendRR(offsetBits, index, sBits, index, False);
@@ -8048,9 +9145,25 @@ static RISCV_MORPHV_FN(emitVISLIDEDOWNCB) {
 }
 
 //
+// Initialization callback for VFSLIDE1UP.VF/VFSLIDE1DOWN.VF
+//
+static RISCV_MORPHV_FN(initVFSLIDE1CB) {
+
+    riscvRegDesc fs1A  = getRVReg(state, 2);
+    Uns32        sBits = getMinBits(id, getRBits(fs1A));
+    vmiReg       fs1   = getVMIRegFS(state, setRBits(fs1A, sBits));
+
+    // prepare unextended input
+    vmimtMoveRR(sBits, RISCV_VTMP, fs1);
+
+    // handle NaN boxing if required
+    emitVFNaNBox(id, sBits, RISCV_VTMP);
+}
+
+//
 // Initialization callback for VSLIDE1UP.VX/VSLIDE1DOWN.VX
 //
-static RISCV_MORPHV_FN(initVRSLIDE1CB) {
+static RISCV_MORPHV_FN(initVXSLIDE1CB) {
 
     riscvRegDesc rs1A    = getRVReg(state, 2);
     Uns32        sBits   = getMinBits(id, getRBits(rs1A));
@@ -8061,7 +9174,7 @@ static RISCV_MORPHV_FN(initVRSLIDE1CB) {
 }
 
 //
-// Per-element callback for VSLIDE1UP.VX
+// Per-element callback for VSLIDE1UP.VX/VFSLIDE1UP.VF
 //
 static RISCV_MORPHV_FN(emitVRSLIDE1UPCB) {
 
@@ -8084,7 +9197,7 @@ static RISCV_MORPHV_FN(emitVRSLIDE1UPCB) {
 }
 
 //
-// Per-element callback for VSLIDE1DOWN.VX
+// Per-element callback for VSLIDE1DOWN.VX/VFSLIDE1DOWN.VF
 //
 static RISCV_MORPHV_FN(emitVRSLIDE1DOWNCB) {
 
@@ -8182,12 +9295,12 @@ static RISCV_MORPHV_FN(emitVIRGATHERCB) {
 //
 static RISCV_MORPHV_FN(initVCOMPRESSCB) {
 
-    riscvP       riscv      = state->riscv;
-    Uns32        offsetBits = IMPERAS_POINTER_BITS;
-    riscvVLMULMt VLMUL      = getVLMULMtN(state, id, 0);
+    riscvP riscv      = state->riscv;
+    Uns32  offsetBits = IMPERAS_POINTER_BITS;
+    Uns32  EMUL       = getEMUL(id, 0);
 
     // zero target register
-    zeroTail(riscv, id->VLEN*VLMUL, id->r[0]);
+    zeroTail(riscv, id->VLEN*EMUL, id->r[0]);
 
     // zero target index
     vmimtMoveRC(offsetBits, RISCV_VTMP, 0);
@@ -8348,6 +9461,7 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_MRET_I]           = {morph:emitMRET,   iClass:OCL_IC_SYSTEM  },
     [RV_IT_SRET_I]           = {morph:emitSRET,   iClass:OCL_IC_SYSTEM  },
     [RV_IT_URET_I]           = {morph:emitURET,   iClass:OCL_IC_SYSTEM  },
+    [RV_IT_DRET_I]           = {morph:emitDRET,   iClass:OCL_IC_SYSTEM  },
     [RV_IT_WFI_I]            = {morph:emitWFI,    iClass:OCL_IC_SYSTEM  },
 
     // system fence I-type instruction
@@ -8412,6 +9526,78 @@ const static riscvMorphAttr dispatchTable[] = {
     // X-extension instructions
     [RV_IT_CUSTOM]           = {morph:emitCustomAbsent},
 
+    // B-extension R-type instructions
+    [RV_IT_ANDN_R]           = {morph:emitBinopRRR,  binop:vmi_ANDN, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_ORN_R]            = {morph:emitBinopRRR,  binop:vmi_ORN,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_XNOR_R]           = {morph:emitBinopRRR,  binop:vmi_XNOR, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_SLO_R]            = {morph:emitShiftORRR, binop:vmi_SHL,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_SLO_SRO },
+    [RV_IT_SRO_R]            = {morph:emitShiftORRR, binop:vmi_SHR,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_SLO_SRO },
+    [RV_IT_ROL_R]            = {morph:emitBinopRRR,  binop:vmi_ROL,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_ROR_R]            = {morph:emitBinopRRR,  binop:vmi_ROR,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_SBCLR_R]          = {morph:emitSBitopRRR, binop:vmi_ANDN, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_SBSET_R]          = {morph:emitSBitopRRR, binop:vmi_OR,   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_SBINV_R]          = {morph:emitSBitopRRR, binop:vmi_XOR,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_SBEXT_R]          = {morph:emitEBitopRRR,                 iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_GORC_R]           = {morph:emit3264RRS,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_GORC    },
+    [RV_IT_GREV_R]           = {morph:emit3264RRS,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_GREV    },
+    [RV_IT_CLZ_R]            = {morph:emitUnopRR,    unop:vmi_CLZ,   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_CTZ_R]            = {morph:emitUnopRR,    unop:vmi_CTZ,   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_PCNT_R]           = {morph:emitUnopRR,    unop:vmi_CNTO,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_SEXT_R]           = {morph:emitMoveExtendRR,              iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_CRC32_R]          = {morph:emitCRC32,                     iClass:OCL_IC_INTEGER, bExtOp:RVBOP_CRC32   },
+    [RV_IT_CRC32C_R]         = {morph:emitCRC32C,                    iClass:OCL_IC_INTEGER, bExtOp:RVBOP_CRC32   },
+    [RV_IT_CLMUL_R]          = {morph:emitBinopRRR,  binop:vmi_PMUL, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbc     },
+    [RV_IT_CLMULR_R]         = {morph:emitCLMULR,    binop:vmi_PMUL, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbc     },
+    [RV_IT_CLMULH_R]         = {morph:emitCLMULH,    binop:vmi_PMUL, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbc     },
+    [RV_IT_MIN_R]            = {morph:emitBinopRRR,  binop:vmi_IMIN, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_MAX_R]            = {morph:emitBinopRRR,  binop:vmi_IMAX, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_MINU_R]           = {morph:emitBinopRRR,  binop:vmi_MIN,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_MAXU_R]           = {morph:emitBinopRRR,  binop:vmi_MAX,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_SHFL_R]           = {morph:emit3264RRS,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_SHFL    },
+    [RV_IT_UNSHFL_R]         = {morph:emit3264RRS,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_UNSHFL  },
+    [RV_IT_BDEP_R]           = {morph:emit3264RRR,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_BDEP    },
+    [RV_IT_BEXT_R]           = {morph:emit3264RRR,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_BEXT    },
+    [RV_IT_PACK_R]           = {morph:emitPACK,                      iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_PACKU_R]          = {morph:emitPACKU,                     iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_PACKH_R]          = {morph:emitPACKH,                     iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_BMATFLIP_R]       = {morph:emit3264RR,                    iClass:OCL_IC_INTEGER, bExtOp:RVBOP_BMATFLIP},
+    [RV_IT_BMATOR_R]         = {morph:emit3264RRR,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_BMATOR  },
+    [RV_IT_BMATXOR_R]        = {morph:emit3264RRR,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_BMATXOR },
+    [RV_IT_BFP_R]            = {morph:emit3264RRR,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_BFP     },
+    [RV_IT_ADDWU_R]          = {morph:emitBinopRRRW, binop:vmi_ADD,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_SUBWU_R]          = {morph:emitBinopRRRW, binop:vmi_SUB,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_ADDU_W_R]         = {morph:emitBinopWRRR, binop:vmi_ADD,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_SUBU_W_R]         = {morph:emitBinopWRRR, binop:vmi_SUB,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_SHADD_R]          = {morph:emitSHADD,     binop:vmi_ADD,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zba     },
+
+    // B-extension I-type instructions
+    [RV_IT_SLOI_I]           = {morph:emitShiftORRC, binop:vmi_SHL,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_SLO_SRO },
+    [RV_IT_SROI_I]           = {morph:emitShiftORRC, binop:vmi_SHR,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_SLO_SRO },
+    [RV_IT_RORI_I]           = {morph:emitBinopRRC,  binop:vmi_ROR,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbbp    },
+    [RV_IT_SBCLRI_I]         = {morph:emitSBitopRRC, binop:vmi_ANDN, iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_SBSETI_I]         = {morph:emitSBitopRRC, binop:vmi_OR,   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_SBINVI_I]         = {morph:emitSBitopRRC, binop:vmi_XOR,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_SBEXTI_I]         = {morph:emitEBitopRRC,                 iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbs     },
+    [RV_IT_GORCI_I]          = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_GORC    },
+    [RV_IT_ORCB_I]           = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_ORCB    },
+    [RV_IT_ORC16_I]          = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_ORC16   },
+    [RV_IT_GREVI_I]          = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_GREV    },
+    [RV_IT_REV8_I]           = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_REV8    },
+    [RV_IT_REV_I]            = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_REV     },
+    [RV_IT_SHFLI_I]          = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_SHFL    },
+    [RV_IT_UNSHFLI_I]        = {morph:emit3264RRC,                   iClass:OCL_IC_INTEGER, bExtOp:RVBOP_UNSHFL  },
+    [RV_IT_ADDIWU_I]         = {morph:emitBinopRRCW, binop:vmi_ADD,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+    [RV_IT_SLLIU_W_I]        = {morph:emitBinopWRRC, binop:vmi_SHL,  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbb     },
+
+    // B-extension R4-type instructions
+    [RV_IT_CMIX_R4]          = {morph:emitCMIX,                      iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbt     },
+    [RV_IT_CMOV_R4]          = {morph:emitCMOV,                      iClass:OCL_IC_INTEGER, bExtOp:RVBOP_Zbt     },
+    [RV_IT_FSL_R4]           = {morph:emit3264RRSR,                  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_FSL     },
+    [RV_IT_FSR_R4]           = {morph:emit3264RRSR,                  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_FSR     },
+
+    // B-extension R3I-type instructions
+    [RV_IT_FSRI_R3I]         = {morph:emit3264RRCR,                  iClass:OCL_IC_INTEGER, bExtOp:RVBOP_FSR     },
+
     // V-extension R-type instructions
     [RV_IT_VSETVL_R]         = {morph:emitVSetVLRRR},
 
@@ -8419,12 +9605,12 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VSETVL_I]         = {morph:emitVSetVLRRC},
 
     // V-extension load/store instructions
-    [RV_IT_VL_I]             = {morph:emitVectorOp, opTCB:emitVLdUCB, checkCB:emitVLdStCheckUCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_111_II   },
-    [RV_IT_VLS_I]            = {morph:emitVectorOp, opTCB:emitVLdSCB, checkCB:emitVLdStCheckSCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_111_II   },
-    [RV_IT_VLX_I]            = {morph:emitVectorOp, opTCB:emitVLdICB, checkCB:emitVLdStCheckXCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_111_IIXSM},
-    [RV_IT_VS_I]             = {morph:emitVectorOp, opTCB:emitVStUCB, checkCB:emitVLdStCheckUCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_111_II   },
-    [RV_IT_VSS_I]            = {morph:emitVectorOp, opTCB:emitVStSCB, checkCB:emitVLdStCheckSCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_111_II   },
-    [RV_IT_VSX_I]            = {morph:emitVectorOp, opTCB:emitVStICB, checkCB:emitVLdStCheckXCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_111_II   },
+    [RV_IT_VL_I]             = {morph:emitVectorOp, opTCB:emitVLdUCB, checkCB:emitVLdStCheckUCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_V1I_V1I_V1I_LD},
+    [RV_IT_VLS_I]            = {morph:emitVectorOp, opTCB:emitVLdSCB, checkCB:emitVLdStCheckSCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_V1I_V1I_V1I_LD},
+    [RV_IT_VLX_I]            = {morph:emitVectorOp, opTCB:emitVLdICB, checkCB:emitVLdStCheckXCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_V1I_V1I_V1I_LD},
+    [RV_IT_VS_I]             = {morph:emitVectorOp, opTCB:emitVStUCB, checkCB:emitVLdStCheckUCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_V1I_V1I_V1I_ST},
+    [RV_IT_VSS_I]            = {morph:emitVectorOp, opTCB:emitVStSCB, checkCB:emitVLdStCheckSCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_V1I_V1I_V1I_ST},
+    [RV_IT_VSX_I]            = {morph:emitVectorOp, opTCB:emitVStICB, checkCB:emitVLdStCheckXCB, initCB:emitVLdStInitCB, vstart0:RVVS_ANY, vShape:RVVW_V1I_V1I_V1I_ST},
 
     // V-extension AMO operations (Zvamo)
     [RV_IT_VAMOADD_R]        = {morph:emitVectorOp, opTCB:emitVAMOBinopRRR, checkCB:emitVAMOCheckCB, binop:vmi_ADD,  vstart0:RVVS_ANY},
@@ -8449,43 +9635,43 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VAND_VR]          = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_AND },
     [RV_IT_VOR_VR]           = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_OR  },
     [RV_IT_VXOR_VR]          = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_XOR },
-    [RV_IT_VADC_VR]          = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_ADC,      vShape:RVVW_CIN_II},
-    [RV_IT_VMADC_VR]         = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_ADC,      vShape:RVVW_CIN_PI},
-    [RV_IT_VSBC_VR]          = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_SBB,      vShape:RVVW_CIN_II},
-    [RV_IT_VMSBC_VR]         = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_SBB,      vShape:RVVW_CIN_PI},
+    [RV_IT_VADC_VR]          = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_ADC,      vShape:RVVW_V1I_V1I_V1I_CIN},
+    [RV_IT_VMADC_VR]         = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_ADC,      vShape:RVVW_P1I_V1I_V1I_CIN},
+    [RV_IT_VSBC_VR]          = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_SBB,      vShape:RVVW_V1I_V1I_V1I_CIN},
+    [RV_IT_VMSBC_VR]         = {morph:emitVectorOp, opTCB:emitVRAdcIntCB,    binop:vmi_SBB,      vShape:RVVW_P1I_V1I_V1I_CIN},
     [RV_IT_VSLL_VR]          = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SHL },
     [RV_IT_VSRL_VR]          = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SHR },
     [RV_IT_VSRA_VR]          = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SAR },
-    [RV_IT_VNSRL_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SHR,      vShape:RVVW_121_II},
-    [RV_IT_VNSRA_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SAR,      vShape:RVVW_121_II},
-    [RV_IT_VSEQ_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_EQ,  vShape:RVVW_111_PI},
-    [RV_IT_VSNE_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_NE,  vShape:RVVW_111_PI},
-    [RV_IT_VSLTU_VR]         = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_B,   vShape:RVVW_111_PI},
-    [RV_IT_VSLT_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_L,   vShape:RVVW_111_PI},
-    [RV_IT_VSLEU_VR]         = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_BE,  vShape:RVVW_111_PI},
-    [RV_IT_VSLE_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_LE,  vShape:RVVW_111_PI},
-    [RV_IT_VSGTU_VR]         = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_NBE, vShape:RVVW_111_PI},
-    [RV_IT_VSGT_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_NLE, vShape:RVVW_111_PI},
-    [RV_IT_VRGATHER_VR]      = {morph:emitVectorOp, opTCB:emitVRRGATHERCB,                       vShape:RVVW_111_GR},
-    [RV_IT_VSLIDEUP_VR]      = {morph:emitVectorOp, opTCB:emitVRSLIDEUPCB,                       vShape:RVVW_111_UP},
-    [RV_IT_VSLIDEDOWN_VR]    = {morph:emitVectorOp, opTCB:emitVRSLIDEDOWNCB,                     vShape:RVVW_111_DN},
-    [RV_IT_VSADDU_VR]        = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_ADDUQ,    vShape:RVVW_111_IIS, argType:RVVX_UU},
-    [RV_IT_VSADD_VR]         = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_ADDSQ,    vShape:RVVW_111_IIS, argType:RVVX_SS},
-    [RV_IT_VSSUBU_VR]        = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_SUBUQ,    vShape:RVVW_111_IIS, argType:RVVX_UU},
-    [RV_IT_VSSUB_VR]         = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_SUBSQ,    vShape:RVVW_111_IIS, argType:RVVX_SS},
-    [RV_IT_VAADDU_VR]        = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_ADDUH,    vShape:RVVW_111_IIX, argType:RVVX_UU},
-    [RV_IT_VAADD_VR]         = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_ADDSH,    vShape:RVVW_111_IIX, argType:RVVX_SS},
-    [RV_IT_VASUBU_VR]        = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_SUBUH,    vShape:RVVW_111_IIX, argType:RVVX_UU},
-    [RV_IT_VASUB_VR]         = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_SUBSH,    vShape:RVVW_111_IIX, argType:RVVX_SS},
-    [RV_IT_VSMUL_VR]         = {morph:emitVectorOp, opTCB:emitVRSMULCB,      binop:vmi_IMUL,     vShape:RVVW_111_IIS, argType:RVVX_SS},
-    [RV_IT_VWSMACCU_VR]      = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDUQ,    vShape:RVVW_211_IIS, argType:RVVX_UU},
-    [RV_IT_VWSMACC_VR]       = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDSQ,    vShape:RVVW_211_IIS, argType:RVVX_SS},
-    [RV_IT_VWSMACCSU_VR]     = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDSQ,    vShape:RVVW_211_IIS, argType:RVVX_SU},
-    [RV_IT_VWSMACCUS_VR]     = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDSQ,    vShape:RVVW_211_IIS, argType:RVVX_US},
-    [RV_IT_VSSRL_VR]         = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SHR,      vShape:RVVW_111_IIX},
-    [RV_IT_VSSRA_VR]         = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SAR,      vShape:RVVW_111_IIX},
-    [RV_IT_VNCLIPU_VR]       = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SHR,      vShape:RVVW_121_IIS, argType:RVVX_UU},
-    [RV_IT_VNCLIP_VR]        = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SAR,      vShape:RVVW_121_IIS, argType:RVVX_SS},
+    [RV_IT_VNSRL_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SHR,      vShape:RVVW_V1I_V2I_V1I},
+    [RV_IT_VNSRA_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SAR,      vShape:RVVW_V1I_V2I_V1I},
+    [RV_IT_VSEQ_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_EQ,  vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSNE_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_NE,  vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSLTU_VR]         = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_B,   vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSLT_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_L,   vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSLEU_VR]         = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_BE,  vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSLE_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_LE,  vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSGTU_VR]         = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_NBE, vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSGT_VR]          = {morph:emitVectorOp, opTCB:emitVRCmpIntCB,    cond :vmi_COND_NLE, vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VRGATHER_VR]      = {morph:emitVectorOp, opTCB:emitVRRGATHERCB,                       vShape:RVVW_V1I_V1I_V1I_GR},
+    [RV_IT_VSLIDEUP_VR]      = {morph:emitVectorOp, opTCB:emitVRSLIDEUPCB,                       vShape:RVVW_V1I_V1I_V1I_UP},
+    [RV_IT_VSLIDEDOWN_VR]    = {morph:emitVectorOp, opTCB:emitVRSLIDEDOWNCB,                     vShape:RVVW_V1I_V1I_V1I_DN},
+    [RV_IT_VSADDU_VR]        = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_ADDUQ,    vShape:RVVW_V1I_V1I_V1I_SAT,  argType:RVVX_UU},
+    [RV_IT_VSADD_VR]         = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_ADDSQ,    vShape:RVVW_V1I_V1I_V1I_SAT,  argType:RVVX_SS},
+    [RV_IT_VSSUBU_VR]        = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_SUBUQ,    vShape:RVVW_V1I_V1I_V1I_SAT,  argType:RVVX_UU},
+    [RV_IT_VSSUB_VR]         = {morph:emitVectorOp, opTCB:emitVRSBinaryCB,   binop:vmi_SUBSQ,    vShape:RVVW_V1I_V1I_V1I_SAT,  argType:RVVX_SS},
+    [RV_IT_VAADDU_VR]        = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_ADDUH,    vShape:RVVW_V1I_V1I_V1I_VXRM, argType:RVVX_UU},
+    [RV_IT_VAADD_VR]         = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_ADDSH,    vShape:RVVW_V1I_V1I_V1I_VXRM, argType:RVVX_SS},
+    [RV_IT_VASUBU_VR]        = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_SUBUH,    vShape:RVVW_V1I_V1I_V1I_VXRM, argType:RVVX_UU},
+    [RV_IT_VASUB_VR]         = {morph:emitVectorOp, opTCB:emitVRABinaryCB,   binop:vmi_SUBSH,    vShape:RVVW_V1I_V1I_V1I_VXRM, argType:RVVX_SS},
+    [RV_IT_VSMUL_VR]         = {morph:emitVectorOp, opTCB:emitVRSMULCB,      binop:vmi_IMUL,     vShape:RVVW_V1I_V1I_V1I_SAT,  argType:RVVX_SS},
+    [RV_IT_VWSMACCU_VR]      = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDUQ,    vShape:RVVW_V2I_V1I_V1I_SAT,  argType:RVVX_UU},
+    [RV_IT_VWSMACC_VR]       = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDSQ,    vShape:RVVW_V2I_V1I_V1I_SAT,  argType:RVVX_SS},
+    [RV_IT_VWSMACCSU_VR]     = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDSQ,    vShape:RVVW_V2I_V1I_V1I_SAT,  argType:RVVX_SU},
+    [RV_IT_VWSMACCUS_VR]     = {morph:emitVectorOp, opTCB:emitVRSMAccIntCB,  binop:vmi_ADDSQ,    vShape:RVVW_V2I_V1I_V1I_SAT,  argType:RVVX_US},
+    [RV_IT_VSSRL_VR]         = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SHR,      vShape:RVVW_V1I_V1I_V1I_VXRM},
+    [RV_IT_VSSRA_VR]         = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SAR,      vShape:RVVW_V1I_V1I_V1I_VXRM},
+    [RV_IT_VNCLIPU_VR]       = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SHR,      vShape:RVVW_V1I_V2I_V1I_SAT,  argType:RVVX_UU},
+    [RV_IT_VNCLIP_VR]        = {morph:emitVectorOp, opTCB:emitVRRShiftIntCB, binop:vmi_SAR,      vShape:RVVW_V1I_V2I_V1I_SAT,  argType:RVVX_SS},
 
     // V-extension MVV/MVX-type common instructions
     [RV_IT_VDIVU_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_DIV },
@@ -8496,128 +9682,128 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VMULHU_VR]        = {morph:emitVectorOp, opTCB:emitVRMulHIntCB,   binop:vmi_MUL },
     [RV_IT_VMULHSU_VR]       = {morph:emitVectorOp, opTCB:emitVRMulHIntCB,   binop:vmi_IMULSU},
     [RV_IT_VMULH_VR]         = {morph:emitVectorOp, opTCB:emitVRMulHIntCB,   binop:vmi_IMUL},
-    [RV_IT_VWMULU_VR]        = {morph:emitVectorOp, opTCB:emitVRWMulHIntCB,  binop:vmi_MUL,      vShape:RVVW_211_IIQ, argType:RVVX_UU},
-    [RV_IT_VWMULSU_VR]       = {morph:emitVectorOp, opTCB:emitVRWMulHIntCB,  binop:vmi_IMULSU,   vShape:RVVW_211_IIQ, argType:RVVX_SU},
-    [RV_IT_VWMUL_VR]         = {morph:emitVectorOp, opTCB:emitVRWMulHIntCB,  binop:vmi_IMUL,     vShape:RVVW_211_IIQ, argType:RVVX_SS},
-    [RV_IT_VWADDU_VR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_UU},
-    [RV_IT_VWADD_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_SS},
-    [RV_IT_VWSUBU_VR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_211_II,  argType:RVVX_UU},
-    [RV_IT_VWSUB_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_211_II,  argType:RVVX_SS},
-    [RV_IT_VWADDU_WR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_221_II,  argType:RVVX_UU},
-    [RV_IT_VWADD_WR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_221_II,  argType:RVVX_SS},
-    [RV_IT_VWSUBU_WR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_221_II,  argType:RVVX_UU},
-    [RV_IT_VWSUB_WR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_221_II,  argType:RVVX_SS},
-    [RV_IT_VMADD_VR]         = {morph:emitVectorOp, opTCB:emitVRMAddIntCB,   binop:vmi_ADD,                                          },
-    [RV_IT_VNMSUB_VR]        = {morph:emitVectorOp, opTCB:emitVRMAddIntCB,   binop:vmi_SUB,                                          },
-    [RV_IT_VMACC_VR]         = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,                                          },
-    [RV_IT_VNMSAC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_SUB,                                          },
-    [RV_IT_VWMACCU_VR]       = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_UU},
-    [RV_IT_VWMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_SS},
-    [RV_IT_VWMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_SU},
-    [RV_IT_VWMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_211_II,  argType:RVVX_US},
+    [RV_IT_VWMULU_VR]        = {morph:emitVectorOp, opTCB:emitVRWMulHIntCB,  binop:vmi_MUL,      vShape:RVVW_V2I_V1I_V1I_IW, argType:RVVX_UU},
+    [RV_IT_VWMULSU_VR]       = {morph:emitVectorOp, opTCB:emitVRWMulHIntCB,  binop:vmi_IMULSU,   vShape:RVVW_V2I_V1I_V1I_IW, argType:RVVX_SU},
+    [RV_IT_VWMUL_VR]         = {morph:emitVectorOp, opTCB:emitVRWMulHIntCB,  binop:vmi_IMUL,     vShape:RVVW_V2I_V1I_V1I_IW, argType:RVVX_SS},
+    [RV_IT_VWADDU_VR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_UU},
+    [RV_IT_VWADD_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_SS},
+    [RV_IT_VWSUBU_VR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_UU},
+    [RV_IT_VWSUB_VR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_SS},
+    [RV_IT_VWADDU_WR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_V2I_V2I_V1I,    argType:RVVX_UU},
+    [RV_IT_VWADD_WR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_ADD,      vShape:RVVW_V2I_V2I_V1I,    argType:RVVX_SS},
+    [RV_IT_VWSUBU_WR]        = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_V2I_V2I_V1I,    argType:RVVX_UU},
+    [RV_IT_VWSUB_WR]         = {morph:emitVectorOp, opTCB:emitVRBinaryIntCB, binop:vmi_SUB,      vShape:RVVW_V2I_V2I_V1I,    argType:RVVX_SS},
+    [RV_IT_VMADD_VR]         = {morph:emitVectorOp, opTCB:emitVRMAddIntCB,   binop:vmi_ADD,                                                 },
+    [RV_IT_VNMSUB_VR]        = {morph:emitVectorOp, opTCB:emitVRMAddIntCB,   binop:vmi_SUB,                                                 },
+    [RV_IT_VMACC_VR]         = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,                                                 },
+    [RV_IT_VNMSAC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_SUB,                                                 },
+    [RV_IT_VWMACCU_VR]       = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_UU},
+    [RV_IT_VWMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_SS},
+    [RV_IT_VWMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_SU},
+    [RV_IT_VWMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB,   binop:vmi_ADD,      vShape:RVVW_V2I_V1I_V1I,    argType:RVVX_US},
 
     // V-extension MVV/MVX-type common instructions (Zvqmac extension)
-    [RV_IT_VQMACCU_VR]       = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_UU},
-    [RV_IT_VQMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_SS},
-    [RV_IT_VQMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_SU},
-    [RV_IT_VQMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_411_II, argType:RVVX_US},
+    [RV_IT_VQMACCU_VR]       = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_V4I_V1I_V1I, argType:RVVX_UU},
+    [RV_IT_VQMACC_VR]        = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_V4I_V1I_V1I, argType:RVVX_SS},
+    [RV_IT_VQMACCSU_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_V4I_V1I_V1I, argType:RVVX_SU},
+    [RV_IT_VQMACCUS_VR]      = {morph:emitVectorOp, opTCB:emitVRMAccIntCB, checkCB:emitQMACCheckCB, binop:vmi_ADD, vShape:RVVW_V4I_V1I_V1I, argType:RVVX_US},
 
     // V-extension IVV-type instructions
-    [RV_IT_VWREDSUMU_VS]     = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SIS, argType:RVVX_UU, vstart0:RVVS_ZERO},
-    [RV_IT_VWREDSUM_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_212_SIS, argType:RVVX_SS, vstart0:RVVS_ZERO},
+    [RV_IT_VWREDSUMU_VS]     = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_S2I_V1I_S2I, argType:RVVX_UU, vstart0:RVVS_ZERO},
+    [RV_IT_VWREDSUM_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD, vShape:RVVW_S2I_V1I_S2I, argType:RVVX_SS, vstart0:RVVS_ZERO},
     [RV_IT_VDOTU_VV]         = {morph:emitVectorOp, checkCB:emitEDIVCheckCB},
     [RV_IT_VDOT_VV]          = {morph:emitVectorOp, checkCB:emitEDIVCheckCB},
 
     // V-extension FVV/FVF-type common instructions
-    [RV_IT_VFMERGE_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMERGETCB, opFCB:emitVRMERGEFCB,    vShape:RVVW_111_FF},
-    [RV_IT_VFADD_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FADD,   vShape:RVVW_111_FF},
-    [RV_IT_VFSUB_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FSUB,   vShape:RVVW_111_FF},
-    [RV_IT_VFRSUB_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltRCB, fpBinop: vmi_FSUB,   vShape:RVVW_111_FF},
-    [RV_IT_VFMUL_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMUL,   vShape:RVVW_111_FF},
-    [RV_IT_VFDIV_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FDIV,   vShape:RVVW_111_FF},
-    [RV_IT_VFRDIV_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltRCB, fpBinop: vmi_FDIV,   vShape:RVVW_111_FF},
-    [RV_IT_VFWADD_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FADD,   vShape:RVVW_211_FF},
-    [RV_IT_VFWSUB_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FSUB,   vShape:RVVW_211_FF},
-    [RV_IT_VFWADD_WR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FADD,   vShape:RVVW_221_FF},
-    [RV_IT_VFWSUB_WR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FSUB,   vShape:RVVW_221_FF},
-    [RV_IT_VFWMUL_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMUL,   vShape:RVVW_211_FF},
-    [RV_IT_VFMADD_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FMADD,  vShape:RVVW_111_FF},
-    [RV_IT_VFNMADD_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FNMADD, vShape:RVVW_111_FF},
-    [RV_IT_VFMSUB_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FMSUB,  vShape:RVVW_111_FF},
-    [RV_IT_VFNMSUB_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FNMSUB, vShape:RVVW_111_FF},
-    [RV_IT_VFMACC_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMADD,  vShape:RVVW_111_FF},
-    [RV_IT_VFNMACC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMADD, vShape:RVVW_111_FF},
-    [RV_IT_VFMSAC_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMSUB,  vShape:RVVW_111_FF},
-    [RV_IT_VFNMSAC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMSUB, vShape:RVVW_111_FF},
-    [RV_IT_VFWMACC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMADD,  vShape:RVVW_211_FF},
-    [RV_IT_VFWNMACC_VR]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMADD, vShape:RVVW_211_FF},
-    [RV_IT_VFWMSAC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMSUB,  vShape:RVVW_211_FF},
-    [RV_IT_VFWNMSAC_VR]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMSUB, vShape:RVVW_211_FF},
-    [RV_IT_VFSQRT_V]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRUnaryFltCB,   fpUnop:  vmi_FSQRT,  vShape:RVVW_111_FF},
-    [RV_IT_VFMIN_VR]         = {fpConfig:RVFP_FMIN,   morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMIN,   vShape:RVVW_111_FF},
-    [RV_IT_VFMAX_VR]         = {fpConfig:RVFP_FMAX,   morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMAX,   vShape:RVVW_111_FF},
-    [RV_IT_VFSGNJ_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFSgnFltCB,    clearFS1:1,negFS2:0, vShape:RVVW_111_FF},
-    [RV_IT_VFSGNJN_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFSgnFltCB,    clearFS1:1,negFS2:1, vShape:RVVW_111_FF},
-    [RV_IT_VFSGNJX_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFSgnFltCB,    clearFS1:0,negFS2:0, vShape:RVVW_111_FF},
-    [RV_IT_VFORD_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_ORD,    vShape:RVVW_111_PF},
-    [RV_IT_VFEQ_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_EQ,     vShape:RVVW_111_PF},
-    [RV_IT_VFNE_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_NE,     vShape:RVVW_111_PF},
-    [RV_IT_VFLE_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_LE,     vShape:RVVW_111_PF},
-    [RV_IT_VFLT_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_LT,     vShape:RVVW_111_PF},
-    [RV_IT_VFGE_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_GE,     vShape:RVVW_111_PF},
-    [RV_IT_VFGT_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_GT,     vShape:RVVW_111_PF},
+    [RV_IT_VFMERGE_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMERGETCB, opFCB:emitVRMERGEFCB,    vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFADD_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FADD,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFSUB_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FSUB,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFRSUB_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltRCB, fpBinop: vmi_FSUB,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFMUL_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMUL,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFDIV_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FDIV,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFRDIV_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltRCB, fpBinop: vmi_FDIV,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFWADD_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FADD,   vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFWSUB_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FSUB,   vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFWADD_WR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FADD,   vShape:RVVW_V2F_V2F_V1F},
+    [RV_IT_VFWSUB_WR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FSUB,   vShape:RVVW_V2F_V2F_V1F},
+    [RV_IT_VFWMUL_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMUL,   vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFMADD_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FMADD,  vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFNMADD_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FNMADD, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFMSUB_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FMSUB,  vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFNMSUB_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAddFltCB,    fpTernop:vmi_FNMSUB, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFMACC_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMADD,  vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFNMACC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMADD, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFMSAC_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMSUB,  vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFNMSAC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMSUB, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFWMACC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMADD,  vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFWNMACC_VR]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMADD, vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFWMSAC_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FMSUB,  vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFWNMSAC_VR]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRMAccFltCB,    fpTernop:vmi_FNMSUB, vShape:RVVW_V2F_V1F_V1F},
+    [RV_IT_VFSQRT_V]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRUnaryFltCB,   fpUnop:  vmi_FSQRT,  vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFMIN_VR]         = {fpConfig:RVFP_FMIN,   morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMIN,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFMAX_VR]         = {fpConfig:RVFP_FMAX,   morph:emitVectorOp, opTCB:emitVRBinaryFltCB,  fpBinop: vmi_FMAX,   vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFSGNJ_VR]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFSgnFltCB,    clearFS1:1,negFS2:0, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFSGNJN_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFSgnFltCB,    clearFS1:1,negFS2:1, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFSGNJX_VR]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFSgnFltCB,    clearFS1:0,negFS2:0, vShape:RVVW_V1F_V1F_V1F},
+    [RV_IT_VFORD_VR]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_ORD,    vShape:RVVW_P1I_V1F_V1F},
+    [RV_IT_VFEQ_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_EQ,     vShape:RVVW_P1I_V1F_V1F},
+    [RV_IT_VFNE_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_NE,     vShape:RVVW_P1I_V1F_V1F},
+    [RV_IT_VFLE_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_LE,     vShape:RVVW_P1I_V1F_V1F},
+    [RV_IT_VFLT_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_LT,     vShape:RVVW_P1I_V1F_V1F},
+    [RV_IT_VFGE_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_GE,     vShape:RVVW_P1I_V1F_V1F},
+    [RV_IT_VFGT_VR]          = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFCmpFltCB,    fpRel:RVFCMP_GT,     vShape:RVVW_P1I_V1F_V1F},
 
     // V-extension FVV-type instructions
-    [RV_IT_VFREDSUM_VS]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_111_SFS, vstart0:RVVS_ZERO},
-    [RV_IT_VFREDOSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_111_SFS, vstart0:RVVS_ZERO},
-    [RV_IT_VFREDMIN_VS]      = {fpConfig:RVFP_FMIN,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMIN, vShape:RVVW_111_SFS, vstart0:RVVS_ZERO},
-    [RV_IT_VFREDMAX_VS]      = {fpConfig:RVFP_FMAX,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMAX, vShape:RVVW_111_SFS, vstart0:RVVS_ZERO},
-    [RV_IT_VFMV_F_S]         = {                      morph:emitScalarOp, opTCB:emitVFMVFS,         vShape:RVVW_111_IS},
-    [RV_IT_VFCVT_XUF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_111_IF, argType:RVVX_UU},
-    [RV_IT_VFCVT_XF_V]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_111_IF, argType:RVVX_SS},
-    [RV_IT_VFCVT_FXU_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_111_FI, argType:RVVX_UU},
-    [RV_IT_VFCVT_FX_V]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_111_FI, argType:RVVX_SS},
-    [RV_IT_VFWCVT_XUF_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_21_IFQ, argType:RVVX_UU},
-    [RV_IT_VFWCVT_XF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_21_IFQ, argType:RVVX_SS},
-    [RV_IT_VFWCVT_FXU_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_21_FIQ, argType:RVVX_UU},
-    [RV_IT_VFWCVT_FX_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_21_FIQ, argType:RVVX_SS},
-    [RV_IT_VFWCVT_FF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_211_FFQ                },
-    [RV_IT_VFNCVT_XUF_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_12_IFQ, argType:RVVX_UU},
-    [RV_IT_VFNCVT_XF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_12_IFQ, argType:RVVX_SS},
-    [RV_IT_VFNCVT_FXU_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_12_FIQ, argType:RVVX_UU},
-    [RV_IT_VFNCVT_FX_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_12_FIQ, argType:RVVX_SS},
-    [RV_IT_VFNCVT_FF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_121_FFQ                },
-    [RV_IT_VFCLASS_V]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFClassFltCB,  vShape:RVVW_111_FF                 },
-    [RV_IT_VFWREDSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_212_SFS, vstart0:RVVS_ZERO},
-    [RV_IT_VFWREDOSUM_VS]    = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_212_SFS, vstart0:RVVS_ZERO},
-    [RV_IT_VFDOT_VV]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, checkCB:emitEDIVCheckCB,  vShape:RVVW_111_FF                 },
+    [RV_IT_VFREDSUM_VS]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_S1F_V1F_S1F, vstart0:RVVS_ZERO},
+    [RV_IT_VFREDOSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_S1F_V1F_S1F, vstart0:RVVS_ZERO},
+    [RV_IT_VFREDMIN_VS]      = {fpConfig:RVFP_FMIN,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMIN, vShape:RVVW_S1F_V1F_S1F, vstart0:RVVS_ZERO},
+    [RV_IT_VFREDMAX_VS]      = {fpConfig:RVFP_FMAX,   morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FMAX, vShape:RVVW_S1F_V1F_S1F, vstart0:RVVS_ZERO},
+    [RV_IT_VFMV_F_S]         = {                      morph:emitScalarOp, opTCB:emitVFMVFS,         vShape:RVVW_V1F_S1F_V1F                   },
+    [RV_IT_VFCVT_XUF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1I_V1F,       argType:RVVX_UU},
+    [RV_IT_VFCVT_XF_V]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1I_V1F,       argType:RVVX_SS},
+    [RV_IT_VFCVT_FXU_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1F_V1I,       argType:RVVX_UU},
+    [RV_IT_VFCVT_FX_V]       = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1F_V1I,       argType:RVVX_SS},
+    [RV_IT_VFWCVT_XUF_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V2I_V1F,       argType:RVVX_UU},
+    [RV_IT_VFWCVT_XF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V2I_V1F,       argType:RVVX_SS},
+    [RV_IT_VFWCVT_FXU_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V2F_V1I,       argType:RVVX_UU},
+    [RV_IT_VFWCVT_FX_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V2F_V1I,       argType:RVVX_SS},
+    [RV_IT_VFWCVT_FF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V2F_V1F_V1F_IW                },
+    [RV_IT_VFNCVT_XUF_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1I_V2F_IW,    argType:RVVX_UU},
+    [RV_IT_VFNCVT_XF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1I_V2F_IW,    argType:RVVX_SS},
+    [RV_IT_VFNCVT_FXU_V]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1F_V2I_IW,    argType:RVVX_UU},
+    [RV_IT_VFNCVT_FX_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1F_V2I_IW,    argType:RVVX_SS},
+    [RV_IT_VFNCVT_FF_V]      = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRConvertFltCB, vShape:RVVW_V1F_V2F_V1F_IW                },
+    [RV_IT_VFCLASS_V]        = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRFClassFltCB,  vShape:RVVW_V1F_V1F_V1F                   },
+    [RV_IT_VFWREDSUM_VS]     = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_S2F_V1F_S2F, vstart0:RVVS_ZERO},
+    [RV_IT_VFWREDOSUM_VS]    = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, opTCB:emitVRedBinaryFltCB, initCB:initVRedCB, endCB:endVRedCB, fpBinop:vmi_FADD, vShape:RVVW_S2F_V1F_S2F, vstart0:RVVS_ZERO},
+    [RV_IT_VFDOT_VV]         = {fpConfig:RVFP_NORMAL, morph:emitVectorOp, checkCB:emitEDIVCheckCB,  vShape:RVVW_V1F_V1F_V1F                   },
 
     // V-extension MVV-type instructions
-    [RV_IT_VREDSUM_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD,  vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDAND_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_AND,  vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDOR_VS]        = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_OR,   vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDXOR_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_XOR,  vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDMINU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MIN,  vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDMIN_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMIN, vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDMAXU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MAX,  vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VREDMAX_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMAX, vShape:RVVW_111_SIS, vstart0:RVVS_ZERO},
-    [RV_IT_VEXT_X_V]         = {morph:emitScalarOp, opTCB:emitVEXTXV,                                                              vShape:RVVW_111_IS,                   },
-    [RV_IT_VPOPC_M]          = {morph:emitVectorOp, opTCB:emitVPOPCCB,                     checkCB:initVPOPCCB,                    vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
-    [RV_IT_VFIRST_M]         = {morph:emitVectorOp, opTCB:emitVFIRSTCB,                    checkCB:initVFIRSTCB,                   vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
-    [RV_IT_VMSBF_M]          = {morph:emitVectorOp, opTCB:emitVMSBFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
-    [RV_IT_VMSOF_M]          = {morph:emitVectorOp, opTCB:emitVMSOFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
-    [RV_IT_VMSIF_M]          = {morph:emitVectorOp, opTCB:emitVMSIFCB,                     initCB:initVMSFCB,                      vShape:RVVW_111_PP,  vstart0:RVVS_ZERO},
-    [RV_IT_VIOTA_M]          = {morph:emitVectorOp, opTCB:emitVIOTACB,                     initCB:initVIOTACB,                     vShape:RVVW_111_IP,  vstart0:RVVS_ZERO},
-    [RV_IT_VID_V]            = {morph:emitVectorOp, opTCB:emitVIDTCB,    opFCB:emitVIDFCB, initCB:initVIOTACB,                     vShape:RVVW_111_IP,                   },
-    [RV_IT_VCOMPRESS_VM]     = {morph:emitVectorOp, opTCB:emitVCOMPRESSCB,                 initCB:initVCOMPRESSCB,                 vShape:RVVW_111_CMP, vstart0:RVVS_ZERO, implicitTZ:1},
-    [RV_IT_VMAND_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_AND,  vShape:RVVW_111_PP},
-    [RV_IT_VMANDNOT_MM]      = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_ANDN, vShape:RVVW_111_PP},
-    [RV_IT_VMOR_MM]          = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_OR,   vShape:RVVW_111_PP},
-    [RV_IT_VMXOR_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_XOR,  vShape:RVVW_111_PP},
-    [RV_IT_VMORNOT_MM]       = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_ORN,  vShape:RVVW_111_PP},
-    [RV_IT_VMNAND_MM]        = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_NAND, vShape:RVVW_111_PP},
-    [RV_IT_VMNOR_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_NOR,  vShape:RVVW_111_PP},
-    [RV_IT_VMXNOR_MM]        = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_XNOR, vShape:RVVW_111_PP},
+    [RV_IT_VREDSUM_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_ADD,  vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDAND_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_AND,  vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDOR_VS]        = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_OR,   vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDXOR_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_XOR,  vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDMINU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MIN,  vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDMIN_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMIN, vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDMAXU_VS]      = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_MAX,  vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VREDMAX_VS]       = {morph:emitVectorOp, opTCB:emitVRedBinaryIntCB, initCB:initVRedCB, endCB:endVRedCB, binop:vmi_IMAX, vShape:RVVW_S1I_V1I_S1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VEXT_X_V]         = {morph:emitScalarOp, opTCB:emitVEXTXV,                                                              vShape:RVVW_V1I_S1I_V1I,                      },
+    [RV_IT_VPOPC_M]          = {morph:emitVectorOp, opTCB:emitVPOPCCB,                     checkCB:initVPOPCCB,                    vShape:RVVW_P1I_P1I_P1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VFIRST_M]         = {morph:emitVectorOp, opTCB:emitVFIRSTCB,                    checkCB:initVFIRSTCB,                   vShape:RVVW_P1I_P1I_P1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VMSBF_M]          = {morph:emitVectorOp, opTCB:emitVMSBFCB,                     initCB:initVMSFCB,                      vShape:RVVW_P1I_P1I_P1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VMSOF_M]          = {morph:emitVectorOp, opTCB:emitVMSOFCB,                     initCB:initVMSFCB,                      vShape:RVVW_P1I_P1I_P1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VMSIF_M]          = {morph:emitVectorOp, opTCB:emitVMSIFCB,                     initCB:initVMSFCB,                      vShape:RVVW_P1I_P1I_P1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VIOTA_M]          = {morph:emitVectorOp, opTCB:emitVIOTACB,                     initCB:initVIOTACB,                     vShape:RVVW_V1I_P1I_P1I,     vstart0:RVVS_ZERO},
+    [RV_IT_VID_V]            = {morph:emitVectorOp, opTCB:emitVIDTCB,    opFCB:emitVIDFCB, initCB:initVIOTACB,                     vShape:RVVW_V1I_P1I_P1I,                      },
+    [RV_IT_VCOMPRESS_VM]     = {morph:emitVectorOp, opTCB:emitVCOMPRESSCB,                 initCB:initVCOMPRESSCB,                 vShape:RVVW_V1I_V1I_V1I_CMP, vstart0:RVVS_ZERO, implicitTZ:1},
+    [RV_IT_VMAND_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_AND,  vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMANDNOT_MM]      = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_ANDN, vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMOR_MM]          = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_OR,   vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMXOR_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_XOR,  vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMORNOT_MM]       = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_ORN,  vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMNAND_MM]        = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_NAND, vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMNOR_MM]         = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_NOR,  vShape:RVVW_P1I_P1I_P1I},
+    [RV_IT_VMXNOR_MM]        = {morph:emitVectorOp, opTCB:emitMBinaryCB, binop:vmi_XNOR, vShape:RVVW_P1I_P1I_P1I},
 
     // V-extension IVI-type instructions
     [RV_IT_VMERGE_VI]        = {morph:emitVectorOp, opTCB:emitVIMERGETCB, opFCB:emitVRMERGEFCB},
@@ -8626,38 +9812,42 @@ const static riscvMorphAttr dispatchTable[] = {
     [RV_IT_VAND_VI]          = {morph:emitVectorOp, opTCB:emitVIBinaryIntCB, binop:vmi_AND},
     [RV_IT_VOR_VI]           = {morph:emitVectorOp, opTCB:emitVIBinaryIntCB, binop:vmi_OR },
     [RV_IT_VXOR_VI]          = {morph:emitVectorOp, opTCB:emitVIBinaryIntCB, binop:vmi_XOR},
-    [RV_IT_VRGATHER_VI]      = {morph:emitVectorOp, opTCB:emitVIRGATHERCB,   initCB:initVIRGATHERCB, vShape:RVVW_111_GR},
-    [RV_IT_VSLIDEUP_VI]      = {morph:emitVectorOp, opTCB:emitVISLIDEUPCB,                           vShape:RVVW_111_UP},
-    [RV_IT_VSLIDEDOWN_VI]    = {morph:emitVectorOp, opTCB:emitVISLIDEDOWNCB,                         vShape:RVVW_111_DN},
-    [RV_IT_VADC_VI]          = {morph:emitVectorOp, opTCB:emitVIAdcIntCB,    binop:vmi_ADC,          vShape:RVVW_CIN_II},
-    [RV_IT_VMADC_VI]         = {morph:emitVectorOp, opTCB:emitVIAdcIntCB,    binop:vmi_ADC,          vShape:RVVW_CIN_PI},
-    [RV_IT_VSEQ_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_EQ,      vShape:RVVW_111_PI},
-    [RV_IT_VSNE_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_NE,      vShape:RVVW_111_PI},
-    [RV_IT_VSLEU_VI]         = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_BE,      vShape:RVVW_111_PI},
-    [RV_IT_VSLE_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_LE,      vShape:RVVW_111_PI},
-    [RV_IT_VSGTU_VI]         = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_NBE,     vShape:RVVW_111_PI},
-    [RV_IT_VSGT_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_NLE,     vShape:RVVW_111_PI},
-    [RV_IT_VSADDU_VI]        = {morph:emitVectorOp, opTCB:emitVISBinaryCB,   binop:vmi_ADDUQ,        vShape:RVVW_111_IIS, argType:RVVX_UU},
-    [RV_IT_VSADD_VI]         = {morph:emitVectorOp, opTCB:emitVISBinaryCB,   binop:vmi_ADDSQ,        vShape:RVVW_111_IIS, argType:RVVX_SS},
-    [RV_IT_VAADD_VI]         = {morph:emitVectorOp, opTCB:emitVIABinaryCB,   binop:vmi_ADDSH,        vShape:RVVW_111_IIS, argType:RVVX_SS},
+    [RV_IT_VRGATHER_VI]      = {morph:emitVectorOp, opTCB:emitVIRGATHERCB,   initCB:initVIRGATHERCB, vShape:RVVW_V1I_V1I_V1I_GR},
+    [RV_IT_VSLIDEUP_VI]      = {morph:emitVectorOp, opTCB:emitVISLIDEUPCB,                           vShape:RVVW_V1I_V1I_V1I_UP},
+    [RV_IT_VSLIDEDOWN_VI]    = {morph:emitVectorOp, opTCB:emitVISLIDEDOWNCB,                         vShape:RVVW_V1I_V1I_V1I_DN},
+    [RV_IT_VADC_VI]          = {morph:emitVectorOp, opTCB:emitVIAdcIntCB,    binop:vmi_ADC,          vShape:RVVW_V1I_V1I_V1I_CIN},
+    [RV_IT_VMADC_VI]         = {morph:emitVectorOp, opTCB:emitVIAdcIntCB,    binop:vmi_ADC,          vShape:RVVW_P1I_V1I_V1I_CIN},
+    [RV_IT_VSEQ_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_EQ,      vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSNE_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_NE,      vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSLEU_VI]         = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_BE,      vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSLE_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_LE,      vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSGTU_VI]         = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_NBE,     vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSGT_VI]          = {morph:emitVectorOp, opTCB:emitVICmpIntCB,    cond :vmi_COND_NLE,     vShape:RVVW_P1I_V1I_V1I},
+    [RV_IT_VSADDU_VI]        = {morph:emitVectorOp, opTCB:emitVISBinaryCB,   binop:vmi_ADDUQ,        vShape:RVVW_V1I_V1I_V1I_SAT, argType:RVVX_UU},
+    [RV_IT_VSADD_VI]         = {morph:emitVectorOp, opTCB:emitVISBinaryCB,   binop:vmi_ADDSQ,        vShape:RVVW_V1I_V1I_V1I_SAT, argType:RVVX_SS},
+    [RV_IT_VAADD_VI]         = {morph:emitVectorOp, opTCB:emitVIABinaryCB,   binop:vmi_ADDSH,        vShape:RVVW_V1I_V1I_V1I_SAT, argType:RVVX_SS},
     [RV_IT_VSLL_VI]          = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SHL},
     [RV_IT_VMVR_VI]          = {morph:emitVectorOp, opTCB:emitVRUnaryIntCB,  unop :vmi_MOV, checkCB:emitVMVRCheckCB},
     [RV_IT_VSRL_VI]          = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SHR},
     [RV_IT_VSRA_VI]          = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SAR},
-    [RV_IT_VSSRL_VI]         = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SHR,          vShape:RVVW_111_IIX},
-    [RV_IT_VSSRA_VI]         = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SAR,          vShape:RVVW_111_IIX},
-    [RV_IT_VNSRL_VI]         = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SHR,          vShape:RVVW_121_II},
-    [RV_IT_VNSRA_VI]         = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SAR,          vShape:RVVW_121_II},
-    [RV_IT_VNCLIPU_VI]       = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SHR,          vShape:RVVW_121_IIS, argType:RVVX_UU},
-    [RV_IT_VNCLIP_VI]        = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SAR,          vShape:RVVW_121_IIS, argType:RVVX_SS},
+    [RV_IT_VSSRL_VI]         = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SHR,          vShape:RVVW_V1I_V1I_V1I_VXRM},
+    [RV_IT_VSSRA_VI]         = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SAR,          vShape:RVVW_V1I_V1I_V1I_VXRM},
+    [RV_IT_VNSRL_VI]         = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SHR,          vShape:RVVW_V1I_V2I_V1I},
+    [RV_IT_VNSRA_VI]         = {morph:emitVectorOp, opTCB:emitVIShiftIntCB,  binop:vmi_SAR,          vShape:RVVW_V1I_V2I_V1I},
+    [RV_IT_VNCLIPU_VI]       = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SHR,          vShape:RVVW_V1I_V2I_V1I_SAT, argType:RVVX_UU},
+    [RV_IT_VNCLIP_VI]        = {morph:emitVectorOp, opTCB:emitVIRShiftIntCB, binop:vmi_SAR,          vShape:RVVW_V1I_V2I_V1I_SAT, argType:RVVX_SS},
 
     // V-extension FVF-type instructions
-    [RV_IT_VFMV_S_F]         = {morph:emitScalarOp, opTCB:emitVFMVSF, vShape:RVVW_111_SI},
+    [RV_IT_VFMV_S_F]         = {morph:emitScalarOp, opTCB:emitVFMVSF,                                vShape:RVVW_S1F_V1I_V1I},
+    [RV_IT_VFSLIDE1UP_VF]    = {morph:emitVectorOp, opTCB:emitVRSLIDE1UPCB,   initCB:initVFSLIDE1CB, vShape:RVVW_V1I_V1I_V1I_UP},
+    [RV_IT_VFSLIDE1DOWN_VF]  = {morph:emitVectorOp, opTCB:emitVRSLIDE1DOWNCB, initCB:initVFSLIDE1CB, vShape:RVVW_V1I_V1I_V1I_DN},
 
     // V-extension MVX-type instructions
-    [RV_IT_VMV_S_X]          = {morph:emitScalarOp, opTCB:emitVMVSX,                                 vShape:RVVW_111_SI},
-    [RV_IT_VSLIDE1UP_VX]     = {morph:emitVectorOp, opTCB:emitVRSLIDE1UPCB,   initCB:initVRSLIDE1CB, vShape:RVVW_111_UP},
-    [RV_IT_VSLIDE1DOWN_VX]   = {morph:emitVectorOp, opTCB:emitVRSLIDE1DOWNCB, initCB:initVRSLIDE1CB, vShape:RVVW_111_DN},
+    [RV_IT_VMV_S_X]          = {morph:emitScalarOp, opTCB:emitVMVSX,                                 vShape:RVVW_S1I_V1I_V1I},
+    [RV_IT_VSLIDE1UP_VX]     = {morph:emitVectorOp, opTCB:emitVRSLIDE1UPCB,   initCB:initVXSLIDE1CB, vShape:RVVW_V1I_V1I_V1I_UP},
+    [RV_IT_VSLIDE1DOWN_VX]   = {morph:emitVectorOp, opTCB:emitVRSLIDE1DOWNCB, initCB:initVXSLIDE1CB, vShape:RVVW_V1I_V1I_V1I_DN},
+    [RV_IT_VZEXT_V]          = {morph:emitVectorOp, opTCB:emitVRUnaryIntCB,   unop :vmi_MOV,         vShape:RVVW_V1I_V2I_FN, argType:RVVX_UU},
+    [RV_IT_VSEXT_V]          = {morph:emitVectorOp, opTCB:emitVRUnaryIntCB,   unop :vmi_MOV,         vShape:RVVW_V1I_V2I_FN, argType:RVVX_SS},
 
     // KEEP LAST
     [RV_IT_LAST]             = {0}
@@ -8686,7 +9876,7 @@ VMI_START_END_BLOCK_FN(riscvStartBlock) {
 
     // current vector configuration is not known initially
     thisState->SEWMt                  = SEWMT_UNKNOWN;
-    thisState->VLMULMt                = VLMULMT_UNKNOWN;
+    thisState->VLMULx8Mt              = VLMULx8MT_UNKNOWN;
     thisState->VLClassMt              = VLCLASSMT_UNKNOWN;
     thisState->VZeroTopMt[VTZ_SINGLE] = 0;
     thisState->VZeroTopMt[VTZ_GROUP]  = 0;
@@ -8695,7 +9885,7 @@ VMI_START_END_BLOCK_FN(riscvStartBlock) {
     // inherit any previously-active SEW, VLMUL and VLClass
     if(prevState) {
         thisState->SEWMt     = prevState->SEWMt;
-        thisState->VLMULMt   = prevState->VLMULMt;
+        thisState->VLMULx8Mt = prevState->VLMULx8Mt;
         thisState->VLClassMt = prevState->VLClassMt;
     }
 }
@@ -8763,6 +9953,10 @@ VMI_MORPH_FN(riscvMorph) {
 
         // instruction not enabled
 
+    } else if(!riscvValidateBExtSubset(riscv, state.attrs->bExtOp)) {
+
+        // B-extension feature subset not present
+
     } else if(state.attrs->morph) {
 
         riscvExtCBP extCB;
@@ -8791,6 +9985,48 @@ VMI_MORPH_FN(riscvMorph) {
         vmiMessage("F", CPU_PREFIX "_UIMP", // LCOV_EXCL_LINE
             SRCREF_FMT "unimplemented",
             SRCREF_ARGS(riscv, thisPC)
+        );
+    }
+}
+
+//
+// Translate externally-implemented instruction
+//
+void riscvMorphExternal(
+    riscvExtMorphStateP state,
+    const char         *disableReason,
+    Bool               *opaque
+) {
+    riscvP riscv = state->riscv;
+
+    // indicate instruction is implemented here
+    *opaque = True;
+
+    if(RISCV_DISASSEMBLE(riscv)) {
+
+        // no action if in disassembly mode
+
+    } else if(!riscvInstructionEnabled(riscv, state->info.arch)) {
+
+        // instruction not enabled
+
+    } else if(disableReason) {
+
+        // instruction not enabled
+        riscvEmitIllegalInstructionMessage(riscv, disableReason);
+
+    } else if(state->attrs->morph) {
+
+        // translate the instruction
+        vmimtInstructionClassAdd(state->attrs->iClass);
+        state->attrs->morph(state);
+
+    } else {
+
+        // here if no morph callback specified
+        vmiMessage("F", CPU_PREFIX "_UIMP", // LCOV_EXCL_LINE
+            SRCREF_FMT "unimplemented",
+            SRCREF_ARGS(riscv, getPC(riscv))
         );
     }
 }

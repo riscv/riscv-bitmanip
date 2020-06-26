@@ -37,19 +37,31 @@ typedef struct riscvParamValuesS {
     VMI_ENUM_PARAM(user_version);
     VMI_ENUM_PARAM(priv_version);
     VMI_ENUM_PARAM(vector_version);
+    VMI_ENUM_PARAM(bitmanip_version);
     VMI_ENUM_PARAM(fp16_version);
     VMI_ENUM_PARAM(mstatus_fs_mode);
     VMI_BOOL_PARAM(verbose);
+    VMI_UNS32_PARAM(numHarts);
+    VMI_BOOL_PARAM(debug_mode);
+    VMI_UNS64_PARAM(debug_address);
+    VMI_UNS64_PARAM(dexc_address);
     VMI_BOOL_PARAM(updatePTEA);
     VMI_BOOL_PARAM(updatePTED);
     VMI_BOOL_PARAM(unaligned);
     VMI_BOOL_PARAM(unalignedAMO);
     VMI_BOOL_PARAM(wfi_is_nop);
     VMI_BOOL_PARAM(mtvec_is_ro);
+    VMI_UNS32_PARAM(counteren_mask);
     VMI_UNS32_PARAM(tvec_align);
     VMI_UNS64_PARAM(mtvec_mask);
     VMI_UNS64_PARAM(stvec_mask);
     VMI_UNS64_PARAM(utvec_mask);
+    VMI_UNS64_PARAM(mtvt_mask);
+    VMI_UNS64_PARAM(stvt_mask);
+    VMI_UNS64_PARAM(utvt_mask);
+    VMI_UNS64_PARAM(ecode_mask);
+    VMI_UNS64_PARAM(ecode_nmi);
+    VMI_BOOL_PARAM(tval_zero);
     VMI_BOOL_PARAM(tval_ii_code);
     VMI_BOOL_PARAM(time_undefined);
     VMI_BOOL_PARAM(cycle_undefined);
@@ -66,7 +78,10 @@ typedef struct riscvParamValuesS {
     VMI_UNS64_PARAM(reset_address);
     VMI_UNS64_PARAM(nmi_address);
     VMI_UNS32_PARAM(local_int_num);
-    VMI_UNS32_PARAM(numHarts);
+    VMI_UNS64_PARAM(unimp_int_mask);
+    VMI_UNS64_PARAM(no_ideleg);
+    VMI_UNS64_PARAM(no_edeleg);
+    VMI_BOOL_PARAM(external_int_id);
 
     // fundamental configuration
     VMI_ENDIAN_PARAM(endian);
@@ -84,13 +99,41 @@ typedef struct riscvParamValuesS {
     VMI_UNS64_PARAM(mhartid);
     VMI_UNS64_PARAM(mtvec);
     VMI_UNS32_PARAM(mstatus_FS);
+    VMI_UNS32_PARAM(mstatus_VS);
     VMI_UNS32_PARAM(ELEN);
     VMI_UNS32_PARAM(SLEN);
     VMI_UNS32_PARAM(VLEN);
+    VMI_UNS32_PARAM(SEW_min);
     VMI_BOOL_PARAM(Zvlsseg);
     VMI_BOOL_PARAM(Zvamo);
     VMI_BOOL_PARAM(Zvediv);
     VMI_BOOL_PARAM(Zvqmac);
+    VMI_BOOL_PARAM(Zba);
+    VMI_BOOL_PARAM(Zbb);
+    VMI_BOOL_PARAM(Zbc);
+    VMI_BOOL_PARAM(Zbe);
+    VMI_BOOL_PARAM(Zbf);
+    VMI_BOOL_PARAM(Zbm);
+    VMI_BOOL_PARAM(Zbp);
+    VMI_BOOL_PARAM(Zbr);
+    VMI_BOOL_PARAM(Zbs);
+    VMI_BOOL_PARAM(Zbt);
+
+    // CLIC configuration
+    VMI_UNS64_PARAM(mclicbase);
+    VMI_UNS32_PARAM(CLICLEVELS);
+    VMI_BOOL_PARAM(CLICANDBASIC);
+    VMI_UNS32_PARAM(CLICVERSION);
+    VMI_UNS32_PARAM(CLICINTCTLBITS);
+    VMI_UNS32_PARAM(CLICCFGMBITS);
+    VMI_UNS32_PARAM(CLICCFGLBITS);
+    VMI_BOOL_PARAM(CLICSELHVEC);
+    VMI_BOOL_PARAM(CLICXNXTI);
+    VMI_BOOL_PARAM(CLICXCSW);
+    VMI_BOOL_PARAM(externalCLIC);
+    VMI_BOOL_PARAM(tvt_undefined);
+    VMI_BOOL_PARAM(intthresh_undefined);
+    VMI_BOOL_PARAM(mclicbase_undefined);
 
 } riscvParamValues;
 
@@ -118,6 +161,11 @@ const char *riscvGetUserVersionDesc(riscvP riscv);
 // Return Vector Architecture description
 //
 const char *riscvGetVectorVersionDesc(riscvP riscv);
+
+//
+// Return Bit Manipulation Architecture description
+//
+const char *riscvGetBitManipVersionDesc(riscvP riscv);
 
 //
 // Return 16-bit floating point description
