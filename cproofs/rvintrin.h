@@ -195,6 +195,23 @@ static inline int64_t _rv64_clmulh(int64_t rs1, int64_t rs2) { int64_t rd; __asm
 static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("clmulr  %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
 #endif
 
+#ifdef RVINTRIN_RV32
+static inline int32_t _rv32_xperm_n(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xperm.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_xperm_b(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xperm.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_xperm_h(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xperm.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+#endif
+
+#ifdef RVINTRIN_RV64
+static inline int32_t _rv32_xperm_n(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermw.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_xperm_b(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermw.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int32_t _rv32_xperm_h(int32_t rs1, int32_t rs2) { int32_t rd; __asm__ ("xpermw.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+
+static inline int64_t _rv64_xperm_n(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.n %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_xperm_b(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.b %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_xperm_h(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.h %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+static inline int64_t _rv64_xperm_w(int64_t rs1, int64_t rs2) { int64_t rd; __asm__ ("xperm.w %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2)); return rd; }
+#endif
+
 static inline long _rv_crc32_b (long rs1) { long rd; __asm__ ("crc32.b  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
 static inline long _rv_crc32_h (long rs1) { long rd; __asm__ ("crc32.h  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
 static inline long _rv_crc32_w (long rs1) { long rd; __asm__ ("crc32.w  %0, %1" : "=r"(rd) : "r"(rs1)); return rd; }
@@ -642,6 +659,41 @@ static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2)
 	return x;
 }
 
+static inline uint32_t _rvintrin_xperm32(uint32_t rs1, uint32_t rs2, int sz_log2)
+{
+	uint32_t r = 0;
+	uint32_t sz = 1LL << sz_log2;
+	uint32_t mask = (1LL << sz) - 1;
+	for (int i = 0; i < 32; i += sz) {
+		uint32_t pos = ((rs2 >> i) & mask) << sz_log2;
+		if (pos < 32)
+			r |= ((rs1 >> pos) & mask) << i;
+	}
+	return r;
+}
+
+static inline int32_t _rv32_xperm_n (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 2); }
+static inline int32_t _rv32_xperm_b (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 3); }
+static inline int32_t _rv32_xperm_h (int32_t rs1, int32_t rs2) { return _rvintrin_xperm32(rs1, rs2, 4); }
+
+static inline uint64_t _rvintrin_xperm64(uint64_t rs1, uint64_t rs2, int sz_log2)
+{
+	uint64_t r = 0;
+	uint64_t sz = 1LL << sz_log2;
+	uint64_t mask = (1LL << sz) - 1;
+	for (int i = 0; i < 64; i += sz) {
+		uint64_t pos = ((rs2 >> i) & mask) << sz_log2;
+		if (pos < 64)
+			r |= ((rs1 >> pos) & mask) << i;
+	}
+	return r;
+}
+
+static inline int64_t _rv64_xperm_n (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 2); }
+static inline int64_t _rv64_xperm_b (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 3); }
+static inline int64_t _rv64_xperm_h (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 4); }
+static inline int64_t _rv64_xperm_w (int64_t rs1, int64_t rs2) { return _rvintrin_xperm64(rs1, rs2, 5); }
+
 static inline long _rvintrin_crc32(unsigned long x, int nbits)
 {
 	for (int i = 0; i < nbits; i++)
@@ -793,34 +845,37 @@ static inline long _rv_pcnt   (long rs1) { return _rv32_pcnt  (rs1); }
 static inline long _rv_sext_b (long rs1) { return _rv32_sext_b(rs1); }
 static inline long _rv_sext_h (long rs1) { return _rv32_sext_h(rs1); }
 
-static inline long _rv_pack   (long rs1, long rs2) { return _rv32_pack   (rs1, rs2); }
-static inline long _rv_packu  (long rs1, long rs2) { return _rv32_packu  (rs1, rs2); }
-static inline long _rv_packh  (long rs1, long rs2) { return _rv32_packh  (rs1, rs2); }
-static inline long _rv_bfp    (long rs1, long rs2) { return _rv32_bfp    (rs1, rs2); }
-static inline long _rv_min    (long rs1, long rs2) { return _rv32_min    (rs1, rs2); }
-static inline long _rv_minu   (long rs1, long rs2) { return _rv32_minu   (rs1, rs2); }
-static inline long _rv_max    (long rs1, long rs2) { return _rv32_max    (rs1, rs2); }
-static inline long _rv_maxu   (long rs1, long rs2) { return _rv32_maxu   (rs1, rs2); }
-static inline long _rv_sbset  (long rs1, long rs2) { return _rv32_sbset  (rs1, rs2); }
-static inline long _rv_sbclr  (long rs1, long rs2) { return _rv32_sbclr  (rs1, rs2); }
-static inline long _rv_sbinv  (long rs1, long rs2) { return _rv32_sbinv  (rs1, rs2); }
-static inline long _rv_sbext  (long rs1, long rs2) { return _rv32_sbext  (rs1, rs2); }
-static inline long _rv_sll    (long rs1, long rs2) { return _rv32_sll    (rs1, rs2); }
-static inline long _rv_srl    (long rs1, long rs2) { return _rv32_srl    (rs1, rs2); }
-static inline long _rv_sra    (long rs1, long rs2) { return _rv32_sra    (rs1, rs2); }
-static inline long _rv_slo    (long rs1, long rs2) { return _rv32_slo    (rs1, rs2); }
-static inline long _rv_sro    (long rs1, long rs2) { return _rv32_sro    (rs1, rs2); }
-static inline long _rv_rol    (long rs1, long rs2) { return _rv32_rol    (rs1, rs2); }
-static inline long _rv_ror    (long rs1, long rs2) { return _rv32_ror    (rs1, rs2); }
-static inline long _rv_grev   (long rs1, long rs2) { return _rv32_grev   (rs1, rs2); }
-static inline long _rv_gorc   (long rs1, long rs2) { return _rv32_gorc   (rs1, rs2); }
-static inline long _rv_shfl   (long rs1, long rs2) { return _rv32_shfl   (rs1, rs2); }
-static inline long _rv_unshfl (long rs1, long rs2) { return _rv32_unshfl (rs1, rs2); }
-static inline long _rv_bext   (long rs1, long rs2) { return _rv32_bext   (rs1, rs2); }
-static inline long _rv_bdep   (long rs1, long rs2) { return _rv32_bdep   (rs1, rs2); }
-static inline long _rv_clmul  (long rs1, long rs2) { return _rv32_clmul  (rs1, rs2); }
-static inline long _rv_clmulh (long rs1, long rs2) { return _rv32_clmulh (rs1, rs2); }
-static inline long _rv_clmulr (long rs1, long rs2) { return _rv32_clmulr (rs1, rs2); }
+static inline long _rv_pack     (long rs1, long rs2) { return _rv32_pack     (rs1, rs2); }
+static inline long _rv_packu    (long rs1, long rs2) { return _rv32_packu    (rs1, rs2); }
+static inline long _rv_packh    (long rs1, long rs2) { return _rv32_packh    (rs1, rs2); }
+static inline long _rv_bfp      (long rs1, long rs2) { return _rv32_bfp      (rs1, rs2); }
+static inline long _rv_min      (long rs1, long rs2) { return _rv32_min      (rs1, rs2); }
+static inline long _rv_minu     (long rs1, long rs2) { return _rv32_minu     (rs1, rs2); }
+static inline long _rv_max      (long rs1, long rs2) { return _rv32_max      (rs1, rs2); }
+static inline long _rv_maxu     (long rs1, long rs2) { return _rv32_maxu     (rs1, rs2); }
+static inline long _rv_sbset    (long rs1, long rs2) { return _rv32_sbset    (rs1, rs2); }
+static inline long _rv_sbclr    (long rs1, long rs2) { return _rv32_sbclr    (rs1, rs2); }
+static inline long _rv_sbinv    (long rs1, long rs2) { return _rv32_sbinv    (rs1, rs2); }
+static inline long _rv_sbext    (long rs1, long rs2) { return _rv32_sbext    (rs1, rs2); }
+static inline long _rv_sll      (long rs1, long rs2) { return _rv32_sll      (rs1, rs2); }
+static inline long _rv_srl      (long rs1, long rs2) { return _rv32_srl      (rs1, rs2); }
+static inline long _rv_sra      (long rs1, long rs2) { return _rv32_sra      (rs1, rs2); }
+static inline long _rv_slo      (long rs1, long rs2) { return _rv32_slo      (rs1, rs2); }
+static inline long _rv_sro      (long rs1, long rs2) { return _rv32_sro      (rs1, rs2); }
+static inline long _rv_rol      (long rs1, long rs2) { return _rv32_rol      (rs1, rs2); }
+static inline long _rv_ror      (long rs1, long rs2) { return _rv32_ror      (rs1, rs2); }
+static inline long _rv_grev     (long rs1, long rs2) { return _rv32_grev     (rs1, rs2); }
+static inline long _rv_gorc     (long rs1, long rs2) { return _rv32_gorc     (rs1, rs2); }
+static inline long _rv_shfl     (long rs1, long rs2) { return _rv32_shfl     (rs1, rs2); }
+static inline long _rv_unshfl   (long rs1, long rs2) { return _rv32_unshfl   (rs1, rs2); }
+static inline long _rv_bext     (long rs1, long rs2) { return _rv32_bext     (rs1, rs2); }
+static inline long _rv_bdep     (long rs1, long rs2) { return _rv32_bdep     (rs1, rs2); }
+static inline long _rv_clmul    (long rs1, long rs2) { return _rv32_clmul    (rs1, rs2); }
+static inline long _rv_clmulh   (long rs1, long rs2) { return _rv32_clmulh   (rs1, rs2); }
+static inline long _rv_clmulr   (long rs1, long rs2) { return _rv32_clmulr   (rs1, rs2); }
+static inline long _rv_xperm_n  (long rs1, long rs2) { return _rv32_xperm_n  (rs1, rs2); }
+static inline long _rv_xperm_b  (long rs1, long rs2) { return _rv32_xperm_b  (rs1, rs2); }
+static inline long _rv_xperm_h  (long rs1, long rs2) { return _rv32_xperm_h  (rs1, rs2); }
 
 static inline long _rv_fsl(long rs1, long rs3, long rs2) { return _rv32_fsl(rs1, rs3, rs2); }
 static inline long _rv_fsr(long rs1, long rs3, long rs2) { return _rv32_fsr(rs1, rs3, rs2); }
@@ -834,36 +889,40 @@ static inline long _rv_sext_b  (long rs1) { return _rv64_sext_b  (rs1); }
 static inline long _rv_sext_h  (long rs1) { return _rv64_sext_h  (rs1); }
 static inline long _rv_bmatflip(long rs1) { return _rv64_bmatflip(rs1); }
 
-static inline long _rv_pack   (long rs1, long rs2) { return _rv64_pack   (rs1, rs2); }
-static inline long _rv_packu  (long rs1, long rs2) { return _rv64_packu  (rs1, rs2); }
-static inline long _rv_packh  (long rs1, long rs2) { return _rv64_packh  (rs1, rs2); }
-static inline long _rv_bfp    (long rs1, long rs2) { return _rv64_bfp    (rs1, rs2); }
-static inline long _rv_min    (long rs1, long rs2) { return _rv64_min    (rs1, rs2); }
-static inline long _rv_minu   (long rs1, long rs2) { return _rv64_minu   (rs1, rs2); }
-static inline long _rv_max    (long rs1, long rs2) { return _rv64_max    (rs1, rs2); }
-static inline long _rv_maxu   (long rs1, long rs2) { return _rv64_maxu   (rs1, rs2); }
-static inline long _rv_sbset  (long rs1, long rs2) { return _rv64_sbset  (rs1, rs2); }
-static inline long _rv_sbclr  (long rs1, long rs2) { return _rv64_sbclr  (rs1, rs2); }
-static inline long _rv_sbinv  (long rs1, long rs2) { return _rv64_sbinv  (rs1, rs2); }
-static inline long _rv_sbext  (long rs1, long rs2) { return _rv64_sbext  (rs1, rs2); }
-static inline long _rv_sll    (long rs1, long rs2) { return _rv64_sll    (rs1, rs2); }
-static inline long _rv_srl    (long rs1, long rs2) { return _rv64_srl    (rs1, rs2); }
-static inline long _rv_sra    (long rs1, long rs2) { return _rv64_sra    (rs1, rs2); }
-static inline long _rv_slo    (long rs1, long rs2) { return _rv64_slo    (rs1, rs2); }
-static inline long _rv_sro    (long rs1, long rs2) { return _rv64_sro    (rs1, rs2); }
-static inline long _rv_rol    (long rs1, long rs2) { return _rv64_rol    (rs1, rs2); }
-static inline long _rv_ror    (long rs1, long rs2) { return _rv64_ror    (rs1, rs2); }
-static inline long _rv_grev   (long rs1, long rs2) { return _rv64_grev   (rs1, rs2); }
-static inline long _rv_gorc   (long rs1, long rs2) { return _rv64_gorc   (rs1, rs2); }
-static inline long _rv_shfl   (long rs1, long rs2) { return _rv64_shfl   (rs1, rs2); }
-static inline long _rv_unshfl (long rs1, long rs2) { return _rv64_unshfl (rs1, rs2); }
-static inline long _rv_bext   (long rs1, long rs2) { return _rv64_bext   (rs1, rs2); }
-static inline long _rv_bdep   (long rs1, long rs2) { return _rv64_bdep   (rs1, rs2); }
-static inline long _rv_clmul  (long rs1, long rs2) { return _rv64_clmul  (rs1, rs2); }
-static inline long _rv_clmulh (long rs1, long rs2) { return _rv64_clmulh (rs1, rs2); }
-static inline long _rv_clmulr (long rs1, long rs2) { return _rv64_clmulr (rs1, rs2); }
-static inline long _rv_bmator (long rs1, long rs2) { return _rv64_bmator (rs1, rs2); }
-static inline long _rv_bmatxor(long rs1, long rs2) { return _rv64_bmatxor(rs1, rs2); }
+static inline long _rv_pack     (long rs1, long rs2) { return _rv64_pack     (rs1, rs2); }
+static inline long _rv_packu    (long rs1, long rs2) { return _rv64_packu    (rs1, rs2); }
+static inline long _rv_packh    (long rs1, long rs2) { return _rv64_packh    (rs1, rs2); }
+static inline long _rv_bfp      (long rs1, long rs2) { return _rv64_bfp      (rs1, rs2); }
+static inline long _rv_min      (long rs1, long rs2) { return _rv64_min      (rs1, rs2); }
+static inline long _rv_minu     (long rs1, long rs2) { return _rv64_minu     (rs1, rs2); }
+static inline long _rv_max      (long rs1, long rs2) { return _rv64_max      (rs1, rs2); }
+static inline long _rv_maxu     (long rs1, long rs2) { return _rv64_maxu     (rs1, rs2); }
+static inline long _rv_sbset    (long rs1, long rs2) { return _rv64_sbset    (rs1, rs2); }
+static inline long _rv_sbclr    (long rs1, long rs2) { return _rv64_sbclr    (rs1, rs2); }
+static inline long _rv_sbinv    (long rs1, long rs2) { return _rv64_sbinv    (rs1, rs2); }
+static inline long _rv_sbext    (long rs1, long rs2) { return _rv64_sbext    (rs1, rs2); }
+static inline long _rv_sll      (long rs1, long rs2) { return _rv64_sll      (rs1, rs2); }
+static inline long _rv_srl      (long rs1, long rs2) { return _rv64_srl      (rs1, rs2); }
+static inline long _rv_sra      (long rs1, long rs2) { return _rv64_sra      (rs1, rs2); }
+static inline long _rv_slo      (long rs1, long rs2) { return _rv64_slo      (rs1, rs2); }
+static inline long _rv_sro      (long rs1, long rs2) { return _rv64_sro      (rs1, rs2); }
+static inline long _rv_rol      (long rs1, long rs2) { return _rv64_rol      (rs1, rs2); }
+static inline long _rv_ror      (long rs1, long rs2) { return _rv64_ror      (rs1, rs2); }
+static inline long _rv_grev     (long rs1, long rs2) { return _rv64_grev     (rs1, rs2); }
+static inline long _rv_gorc     (long rs1, long rs2) { return _rv64_gorc     (rs1, rs2); }
+static inline long _rv_shfl     (long rs1, long rs2) { return _rv64_shfl     (rs1, rs2); }
+static inline long _rv_unshfl   (long rs1, long rs2) { return _rv64_unshfl   (rs1, rs2); }
+static inline long _rv_bext     (long rs1, long rs2) { return _rv64_bext     (rs1, rs2); }
+static inline long _rv_bdep     (long rs1, long rs2) { return _rv64_bdep     (rs1, rs2); }
+static inline long _rv_clmul    (long rs1, long rs2) { return _rv64_clmul    (rs1, rs2); }
+static inline long _rv_clmulh   (long rs1, long rs2) { return _rv64_clmulh   (rs1, rs2); }
+static inline long _rv_clmulr   (long rs1, long rs2) { return _rv64_clmulr   (rs1, rs2); }
+static inline long _rv_xperm_n  (long rs1, long rs2) { return _rv64_xperm_n  (rs1, rs2); }
+static inline long _rv_xperm_b  (long rs1, long rs2) { return _rv64_xperm_b  (rs1, rs2); }
+static inline long _rv_xperm_h  (long rs1, long rs2) { return _rv64_xperm_h  (rs1, rs2); }
+static inline long _rv_xperm_w  (long rs1, long rs2) { return _rv64_xperm_w  (rs1, rs2); }
+static inline long _rv_bmator   (long rs1, long rs2) { return _rv64_bmator   (rs1, rs2); }
+static inline long _rv_bmatxor  (long rs1, long rs2) { return _rv64_bmatxor  (rs1, rs2); }
 
 static inline long _rv_fsl(long rs1, long rs3, long rs2) { return _rv64_fsl(rs1, rs3, rs2); }
 static inline long _rv_fsr(long rs1, long rs3, long rs2) { return _rv64_fsr(rs1, rs3, rs2); }

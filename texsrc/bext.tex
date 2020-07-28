@@ -34,6 +34,7 @@ look like exactly, but it will probably look something like this:
  \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
  \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
  \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b, orc16} };
+ \node (xperm) [below=0.5cm of orcb.west,anchor=west] { \texttt{xperm.[nbhw]} };
 
  \node (slo) [right=4.5cm of andn.west,anchor=west] { \texttt{slo[i]} };
  \node (sro) [right=4.5cm of xnor.west,anchor=west] { \texttt{sro[i]} };
@@ -63,7 +64,7 @@ look like exactly, but it will probably look something like this:
 
    \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
    \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (orcb.south west) + (3.5cm,0) $);
+   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (orcb.south west) + (3.5cm,0.05cm) $);
 
    \node (bs) at ($ (sbset.west) + (2.4cm,0) $) [right, text=blue] { \textbf{Zbs} };
    \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
@@ -1486,6 +1487,50 @@ The MMIX architecture has MOR and MXOR instructions with the same semantic.~\cit
 The x86 EVEX/VEX/SSE instruction GF2P8AFFINEQB is equivalent to {\tt bmatxor}.
 
 The {\tt bmm.8} instruction proposed in \cite{Hilewitz08} is also equivalent to {\tt bmatxor}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Crossbar Permutation Instructions (\texttt{xperm.[nbhw]})}
+
+\begin{rvb}
+  RV32, RV64:
+    xperm.n rd, rs1, rs2
+    xperm.b rd, rs1, rs2
+    xperm.h rd, rs1, rs2
+
+  RV64 only:
+    xperm.w rd, rs1, rs2
+\end{rvb}
+
+These instructions operate on nibbles/bytes/half-words/words. {\tt rs1} is
+a vector of data words and {\tt rs2} is a vector of indices into {\tt rs1}.
+The result of the instruction is the vector {\tt rs2} with each element replaced
+by the corresponding data word from {\tt rs1}, or zero then the index in {\tt rs2}
+is out of bounds.
+
+\input{bextcref-xperm}
+
+The \texttt{xperm.[nbhw]} instructions can be implemented with an $XLEN/4$-lane
+nibble-wide crossbar switch.
+
+The \texttt{xperm.n} instruction can be used to implement an arbitrary 64-bit
+bit permutation in 16 instructions, using 8 control words and 3 constant masks~\cite{Wolf20A}:
+
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+  uint64_t perm64_bitmanip_cmix(perm64t &p, uint64_t v)
+  {
+      uint64_t v0 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[0]) & p.mask[0], 3);   //  3 insns
+      uint64_t v1 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[1]) & p.mask[1], 3);   //  6 insns
+      uint64_t v2 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[2]) & p.mask[2], 3);   //  9 insns
+      uint64_t v3 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[3]) & p.mask[3], 3);   // 12 insns
+
+      v0 = _rv_cmix(0x1111111111111111LL, v0, v1);                            // 13 insns
+      v2 = _rv_cmix(0x4444444444444444LL, v2, v3);                            // 14 insns
+      return _rv_cmix(0x3333333333333333LL, v0, v2);                          // 15 insns
+  }
+\end{verbatim}
+\end{minipage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
