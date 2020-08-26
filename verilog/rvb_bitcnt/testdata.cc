@@ -18,6 +18,14 @@
 #include <stdio.h>
 #include "../../cproofs/common.h"
 
+bool tstflag(int &flags, int n)
+{
+	if (flags & (1 << n))
+		return false;
+	flags |= 1 << n;
+	return true;
+}
+
 int main()
 {
 	FILE *f;
@@ -30,6 +38,7 @@ int main()
 
 		bool enable_64bit = (k & 1) == 0;
 		bool enable_bmat = (k & 2) != 0;
+		int flags = 0;
 
 		for (int i = 0; i < 1000; i++)
 		{
@@ -41,28 +50,36 @@ int main()
 			{
 			case 0: // CLZ
 				if (!enable_64bit) { i--; continue; }
+				if (tstflag(flags, 0)) din_rs1 = 0;
 				din_insn = 0x60001013;
 				dout_rd = rv64b::clz(din_rs1);
 				break;
 			case 1: // CLZW
+				if (tstflag(flags, 1)) din_rs1 = 0;
 				din_insn = 0x60001013 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::clz(din_rs1));
 				break;
 			case 2: // CTZ
 				if (!enable_64bit) { i--; continue; }
+				if (tstflag(flags, 2)) din_rs1 = 0;
 				din_insn = 0x60101013;
 				dout_rd = rv64b::ctz(din_rs1);
 				break;
 			case 3: // CTZW
+				if (tstflag(flags, 3)) din_rs1 = 0;
 				din_insn = 0x60101013 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::ctz(din_rs1));
 				break;
 			case 4: // PCNT
+				if (tstflag(flags, 4)) din_rs1 = 0;
+				else if (tstflag(flags, 5)) din_rs1 = ~(uint64_t)0;
 				if (!enable_64bit) { i--; continue; }
 				din_insn = 0x60201013;
 				dout_rd = rv64b::pcnt(din_rs1);
 				break;
 			case 5: // PCNTW
+				if (tstflag(flags, 6)) din_rs1 = 0;
+				else if (tstflag(flags, 7)) din_rs1 = ~(uint64_t)0;
 				din_insn = 0x60201013 | (enable_64bit ? 8 : 0);
 				dout_rd = int32_t(rv32b::pcnt(din_rs1));
 				break;

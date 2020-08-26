@@ -67,10 +67,10 @@ module rvb_bitcnt #(
 			data[i] = (i < 32 && wmode) ? din_rs1[(64-i-1) % 32] : din_rs1[(64-i-1) % XLEN];
 		if (!revmode)
 			data = din_rs1;
-		if (wmode)
-			data = data & 32'h FFFFFFFF;
 		if (czmode)
 			data = (data-1) & ~data;
+		if (wmode)
+			data = data & 32'h FFFFFFFF;
 
 		cnt = 0;
 		for (i = 0; i < XLEN; i = i+1)
