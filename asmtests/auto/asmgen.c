@@ -37,6 +37,7 @@
     typedef  int32_t  int_xlen_t;
 #   define FMT_CONST "0x%08X"
 
+#   define MAX_IMM 31
     uint_xlen_t randomV() {
         uint_xlen_t value =random();
         return value;
@@ -45,6 +46,7 @@
     typedef uint64_t uint_xlen_t;
     typedef  int64_t  int_xlen_t;
 #   define FMT_CONST "0x%016LX"
+#   define MAX_IMM 63
 
     uint_xlen_t randomV() {
         uint_xlen_t value = ((uint64_t)random() << 32) | random();
@@ -347,7 +349,7 @@ void get_cmp(char *buf, char *rd, char *rs1, char *rs2, char *rs3) {
     uint_xlen_t rs1V, rdV; \
     int rd  = get_r(rdN); \
     int rs1 = get_r(rs1N); \
-    int imm = getnum(0,63); \
+    int imm = getnum(0,MAX_IMM); \
     get_cmp(rdRef, rdN, rs1N, rs1N, rs1N); \
     rs1V = 0; \
     rdV  = 0; \
