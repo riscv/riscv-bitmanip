@@ -33,6 +33,7 @@
 #define RM_INVALID_CHAR         ('Z'+3)
 #define RISCV_FAND_CHAR         ('Z'+4)
 #define MSTATUS_FS_CHAR         ('Z'+5)
+#define MSTATUS_BE_CHAR         ('Z'+6)
 #define RISCV_FEATURE_INDEX(_C) ((_C)-'A')
 #define RISCV_FEATURE_BIT(_C)   (1<<RISCV_FEATURE_INDEX(_C))
 #define XLEN_SHIFT              RISCV_FEATURE_INDEX(XLEN32_CHAR)
@@ -54,12 +55,14 @@ typedef enum riscvArchitectureE {
 
     // MSTATUS FIELDS
     ISA_FS     = RISCV_FEATURE_BIT(MSTATUS_FS_CHAR),
+    ISA_BE     = RISCV_FEATURE_BIT(MSTATUS_BE_CHAR),
 
     // FEATURES A AND B
     ISA_and    = RISCV_FEATURE_BIT(RISCV_FAND_CHAR),
 
     // BASE ISA FEATURES
     ISA_A      = RISCV_FEATURE_BIT('A'),    // atomic instructions
+    ISA_B      = RISCV_FEATURE_BIT('B'),    // bit manipulation instructions
     ISA_C      = RISCV_FEATURE_BIT('C'),    // compressed instructions
     ISA_E      = RISCV_FEATURE_BIT('E'),    // embedded instructions
     ISA_D      = RISCV_FEATURE_BIT('D'),    // double-precision floating point
@@ -73,7 +76,6 @@ typedef enum riscvArchitectureE {
     ISA_X      = RISCV_FEATURE_BIT('X'),    // non-standard extensions present
     ISA_DF     = (ISA_D|ISA_F),             // either single or double precision
     ISA_DFV    = (ISA_D|ISA_F|ISA_V),       // either floating point or vector
-    ISA_SorU   = (ISA_S|ISA_U),             // either supervisor or user mode
     ISA_SorN   = (ISA_S|ISA_N),             // either supervisor or user interrupts
     ISA_SandN  = (ISA_S|ISA_N|ISA_and),     // both supervisor and user interrupts
     ISA_FSandV = (ISA_FS|ISA_V|ISA_and),    // both FS and vector extension
@@ -86,12 +88,14 @@ typedef enum riscvArchitectureE {
     RV32E    = ISA_XLEN_32  |                                 ISA_E,
     RV32F    = ISA_XLEN_32  |                                         ISA_F,
     RV32D    = ISA_XLEN_32  |                                                 ISA_D,
+    RV32B    = ISA_XLEN_32  |                                                                         ISA_B,
     RV32IM   = ISA_XLEN_32  | ISA_I | ISA_M,
     RV32IMA  = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A,
     RV32IMC  = ISA_XLEN_32  | ISA_I | ISA_M |         ISA_C,
     RV32IMAC = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C,
     RV32G    = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A |                 ISA_F | ISA_D,
     RV32GC   = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D,
+    RV32GCB  = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D                 | ISA_B,
     RV32GCN  = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D | ISA_N,
     RV32GCV  = ISA_XLEN_32  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D         | ISA_V,
     RV32EC   = ISA_XLEN_32  |                         ISA_C | ISA_E,
@@ -106,12 +110,14 @@ typedef enum riscvArchitectureE {
     RV64E    = ISA_XLEN_64  |                                 ISA_E,
     RV64F    = ISA_XLEN_64  |                                         ISA_F,
     RV64D    = ISA_XLEN_64  |                                                 ISA_D,
+    RV64B    = ISA_XLEN_64  |                                                                         ISA_B,
     RV64IM   = ISA_XLEN_64  | ISA_I | ISA_M,
     RV64IMA  = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A,
     RV64IMC  = ISA_XLEN_64  | ISA_I | ISA_M |         ISA_C,
     RV64IMAC = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C,
     RV64G    = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A |                 ISA_F | ISA_D,
     RV64GC   = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D,
+    RV64GCB  = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D                 | ISA_B,
     RV64GCN  = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D | ISA_N,
     RV64GCV  = ISA_XLEN_64  | ISA_I | ISA_M | ISA_A | ISA_C |         ISA_F | ISA_D         | ISA_V,
 
@@ -125,6 +131,7 @@ typedef enum riscvArchitectureE {
     RVANYD   = ISA_XLEN_ANY |                                                 ISA_D,
     RVANYN   = ISA_XLEN_ANY |                                                         ISA_N,
     RVANYV   = ISA_XLEN_ANY |                                                                 ISA_V,
+    RVANYB   = ISA_XLEN_ANY |                                                                         ISA_B,
 
     RVANYDF  = RVANYD|RVANYF,
     RVANYCD  = RVANYC|RVANYD,
@@ -137,6 +144,9 @@ typedef enum riscvArchitectureE {
 
 // macro indicating if current XLEN is 64
 #define RISCV_XLEN_IS_64(_CPU) ((_CPU)->currentArch & ISA_XLEN_64)
+
+// macro returning XLEN in bytes
+#define RISCV_XLEN_BYTES(_CPU) (RISCV_XLEN_IS_32(_CPU) ? 4 : 8)
 
 //
 // Supported User Architecture versions
@@ -155,13 +165,16 @@ typedef enum riscvPrivVerE {
     RVPV_1_10,                          // version 1.10
     RVPV_1_11,                          // version 1.11 (legacy naming)
     RVPV_20190405,                      // version 20190405
+    RVPV_1_12,                          // version 1.12 (placeholder)
+    RVPV_MASTER  = RVPV_1_12,           // master branch
     RVPV_DEFAULT = RVPV_20190405,       // default version
 } riscvPrivVer;
 
 //
-// Tag of master version
+// Date and tag of master version
 //
-#define RVVV_MASTER_TAG "f92ae2c"
+#define RVVV_MASTER_DATE    "3 June 2020"
+#define RVVV_MASTER_TAG     "443ce5b"
 
 //
 // Supported Vector Architecture versions
@@ -174,10 +187,40 @@ typedef enum riscvVectVerE {
     RVVV_0_8_20191117,                  // version 0.8-draft-20191117
     RVVV_0_8_20191118,                  // version 0.8-draft-20191118
     RVVV_0_8,                           // version 0.8
+    RVVV_0_9,                           // version 0.9
     RVVV_MASTER,                        // master branch
     RVVV_LAST,                          // for sizing
-    RVVV_DEFAULT = RVVV_0_8,            // default version
+    RVVV_DEFAULT = RVVV_0_9,            // default version
 } riscvVectVer;
+
+//
+// Supported Bit Manipulation Architecture versions
+//
+typedef enum riscvBitManipVerE {
+    RVBV_0_90,                          // version 0.90
+    RVBV_0_91,                          // version 0.91
+    RVBV_0_92,                          // version 0.92
+    RVBV_0_93,                          // version 0.93
+    RVBV_LAST,                          // for sizing
+    RVBV_DEFAULT = RVBV_0_92,           // default version
+} riscvBitManipVer;
+
+//
+// Bit Manipulation Architecture subsets
+//
+typedef enum riscvBitManipSetE {
+    RVBS_Zba  = (1<<0),                 // address calculation
+    RVBS_Zbb  = (1<<1),                 // base set
+    RVBS_Zbc  = (1<<2),                 // carryless operations
+    RVBS_Zbe  = (1<<3),                 // bit deposit/extract
+    RVBS_Zbf  = (1<<4),                 // bit field place
+    RVBS_Zbm  = (1<<5),                 // bit matrix operations
+    RVBS_Zbp  = (1<<6),                 // permutation instructions
+    RVBS_Zbr  = (1<<7),                 // CSR32 operations
+    RVBS_Zbs  = (1<<8),                 // single bit instructions
+    RVBS_Zbt  = (1<<9),                 // ternary instructions
+    RVBS_Zbbp = RVBS_Zbb|RVBS_Zbp,      // base or permutation
+} riscvBitManipSet;
 
 //
 // Supported 16-bit floating point version
@@ -192,25 +235,47 @@ typedef enum riscvFP16VerE {
 // Supported mstatus.FS update behavior
 //
 typedef enum riscvFSModeE {
-    RVFS_WRITE_NZ,                  // dirty set if exception only (default)
-    RVFS_WRITE_ANY,                 // any fflags write sets dirty
-    RVFS_ALWAYS_DIRTY,              // mstatus.FS is always off or dirty
+    RVFS_WRITE_NZ,                      // dirty set if exception only (default)
+    RVFS_WRITE_ANY,                     // any fflags write sets dirty
+    RVFS_ALWAYS_DIRTY,                  // mstatus.FS is always off or dirty
 } riscvFSMode;
 
+//
+// Supported interrupt configuration
+//
+typedef enum riscvIntCfgE {
+    RVCP_ORIG,                          // original (CLIC absent)
+    RVCP_CLIC,                          // CLIC present
+    RVCP_BOTH                           // both originl and CLIC present
+} riscvIntCfg;
+
+//
+// Supported Debug mode implementation options
+//
+typedef enum riscvDMModeE {
+    RVDM_NONE,                          // Debug mode not implemented
+    RVDM_VECTOR,                        // Debug mode causes execution at vector
+    RVDM_INTERRUPT,                     // Debug mode implemented as interrupt
+    RVDM_HALT,                          // Debug mode implemented as halt
+} riscvDMMode;
+
 // macro returning User Architecture version
-#define RISCV_USER_VERSION(_P)  ((_P)->configInfo.user_version)
+#define RISCV_USER_VERSION(_P)      ((_P)->configInfo.user_version)
 
 // macro returning Privileged Architecture version
-#define RISCV_PRIV_VERSION(_P)  ((_P)->configInfo.priv_version)
+#define RISCV_PRIV_VERSION(_P)      ((_P)->configInfo.priv_version)
 
 // macro returning Vector Architecture version
-#define RISCV_VECT_VERSION(_P)  ((_P)->configInfo.vect_version)
+#define RISCV_VECT_VERSION(_P)      ((_P)->configInfo.vect_version)
+
+// macro returning Bit Manipulation Architecture version
+#define RISCV_BITMANIP_VERSION(_P)  ((_P)->configInfo.bitmanip_version)
 
 // macro returning 16-bit floating point version
-#define RISCV_FP16_VERSION(_P)  ((_P)->configInfo.fp16_version)
+#define RISCV_FP16_VERSION(_P)      ((_P)->configInfo.fp16_version)
 
 // macro returning 16-bit floating point version
-#define RISCV_FS_MODE(_P)       ((_P)->configInfo.mstatus_fs_mode)
+#define RISCV_FS_MODE(_P)           ((_P)->configInfo.mstatus_fs_mode)
 
 //
 // Supported version-dependent architectural features
@@ -232,8 +297,10 @@ typedef enum riscvVFeatureE {
     RVVF_VS_STATUS_8,       // is [ms]status.VS field in version 0.8 location?
     RVVF_VS_STATUS_9,       // is [ms]status.VS field in version 0.9 location?
     RVVF_FP_RESTRICT_WHOLE, // whole register load/store/move restricted?
-    RVVF_UNIT_STRIDE_ONLY,  // only unit-stride load/store supported?
-    RVVF_VSTART_Z,          // is vstart forced to zero?
+    RVVF_FRACT_LMUL,        // is fractional LMUL implemented?
+    RVVF_AGNOSTIC,          // are agnostic bits implemented?
+    RVVF_MLEN1,             // is MLEN always 1?
+    RVVF_EEW_OVERLAP,       // use relaxed EEW overlap rules?
     RVVF_LAST,              // for sizing
 } riscvVFeature;
 
