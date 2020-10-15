@@ -25,17 +25,27 @@ The [cproofs](cproofs) directory contains the reference C models and a few relat
 ----
 
 # Imperas riscvOVPsim Reference Simulation
-Included in this repository in the directory [riscv-ovpsim](riscv-ovpsim) is a version of the Imperas [riscvOVPsim](riscv-ovpsim/README.md) simulator that includes a full implementation of the RISC-V 32 & 64 Bit ISA specification and an implementation of these new bitmanip instructions. 
+**riscvOVPsim** was created by Imperas in 2018 to assist in the development of compliance tests and to provide a free, high quality, configurable reference simulator of the RISC-V specifications.
 
-To enable the new instructions, enable the B bit in the MISA register
+It is developed by Imperas and is kept up to date as the Bit Manip extensions changes and moves to standardization.
+
+It was originally provided in this repository as a convenience. It has now evolved and has been enhanced and moved to its own repository.
+
+There are now two flavors: _riscvOVPsim_ from [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) which is useful for running compliance tests and generating the required signatures, and _riscvOVPsimPlus_ from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscv-ovpsim-plus) which is used for test development and verification.
+
+Please contact info@ovpworld.org or info@imperas.com for more information.
+
+For details on riscvOVPsim look here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) and here: [riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf](https://github.com/riscv-ovpsim/imperas-riscv-tests/blob/main/riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf).
+
+To enable the new it manip extension/instructions, enable the B bit in the MISA register
 
     riscvOVPsim.exe --override riscvOVPsim/cpu/add_Extensions=B
 
 And in the log you will see it enabled, for example:
 
-    Info (Bit Manipulation) extB Version(0.92) November 08 2019
+    Info (Bit Manipulation) extB Version(0.93 Draft) 
 
-This simulation is instruction accurate, is provided as a pre-compiled binary, and the source of the new instructions in the model can be found in [extB.c](Imperas/ImperasLib/source/riscv.ovpworld.org/intercept/extB/1.0/model/extB.c). If you want to make changes to the instructions, please contact the working group chair or [Imperas](mailto:info@imperas.com).
+This simulation is instruction accurate, is provided as a pre-compiled binary, and the source of the new instructions in the model can be found in the riscvOVPsim downloads. If you want to make changes to the instructions, please contact the working group chair or [Imperas](mailto:info@imperas.com).
 
 NOTE the instruction behavior and decodes will change before they become part of the RISC-V open-standard ISA.
 
