@@ -18,7 +18,7 @@ look like exactly, but it will probably look something like this:
  \node (sext) [below=0.5cm of min.west,anchor=west] { \texttt{sext.h, sext.b} };
 
  \node (addwu) [below=1.0cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
- \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w, subu.w} };
+ \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w} };
  \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
 
  \node (sbset) [right=4.1cm of clz.west,anchor=west] { \texttt{sbset[i]} };
@@ -104,7 +104,7 @@ look like exactly, but it will probably look something like this:
 The main open questions are:
 \begin{itemize}
 \item Which of the ``Zb*'' extensions should be included in ``B''?
-\item There is some redundancy/overlap with {\tt add[i]wu}, {\tt subwu}, {\tt addu.w}, {\tt subu.w}, and {\tt slliu.w}. Which instructions should stay?
+\item There is some redundancy/overlap with {\tt add[i]wu}, {\tt subwu}, {\tt addu.w}, and {\tt slliu.w}. Which instructions should stay?
 \item Which ``Zbp'' pseudo-ops should be included in ``Zbb''?
 \end{itemize}
 
@@ -1671,20 +1671,19 @@ these instructions zero-extend instead of sign-extend the 32-bit result.
 The 12-bit immediate to {\tt addiwu} is sign-extended, exactly like the immediate
 to {\tt addiw}.
 
-\subsection{Add/sub/shift with prefix zero-extend ({\tt addu.w}, {\tt subu.w}, {\tt slliu.w})}
+\subsection{Add/shift with prefix zero-extend ({\tt addu.w}, {\tt slliu.w})}
 
 \begin{rvb}
   RV64:
     addu.w rd, rs1, rs2
-    subu.w rd, rs1, rs2
     slliu.w rd, rs1, imm
 \end{rvb}
 
 {\tt slliu.w} is identical to {\tt slli}, except that bits XLEN-1:32 of the
 {\tt rs1} argument are cleared before the shift.
 
-{\tt addu.w} and {\tt subu.w} are identical to {\tt add} and {\tt sub}, except
-that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the add/subtract.
+{\tt addu.w} is identical to {\tt add}, except
+that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the add.
 
 \input{bextcref-slliuw}
 \input{bextcref-adduw}
@@ -1797,8 +1796,7 @@ operations.
 {\tt addwu} and {\tt subwu} are encoded like {\tt addw} and {\tt subw}, except
 that {\tt op[25]=1} and {\tt op[27]=1}.
 
-{\tt addu.w} and {\tt subu.w} are encoded like {\tt addw} and {\tt subw}, except
-that {\tt op[27]=1}.
+{\tt addu.w} is encoded like {\tt addw}, except that {\tt op[27]=1}.
 
 {\tt addiwu} is encoded using {\tt funct3=100} (XOR) instead of {\tt funct3=000} in OP-32.
 
@@ -1939,7 +1937,6 @@ and are marked with a {\tt *}.
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDWU
 |  0100101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  SUBWU
 |  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDU.W
-|  0100100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  SUBU.W
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -2031,7 +2028,7 @@ Changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -10-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
-|  -10-1-0  |   SBCLR   |   SBEXT   | SUBU.W (1)|           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
+|  -10-1-0  |   SBCLR   |   SBEXT   |           |           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -00-1-1  |  CLMUL (2)|    MAX^(2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN^   |    MINU^  |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|  SUBWU (1)|           |           |           |           |           |
