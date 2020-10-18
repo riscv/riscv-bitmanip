@@ -1912,8 +1912,8 @@ and are marked with a {\tt *}.
 |  0000101    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  CLMULR
 |  0000101    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  CLMULH
 |  0000101    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  MIN
-|  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  MAX
-|  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MINU
+|  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  MINU
+|  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  MAX
 |  0000101    |   rs2   |   rs1   | 111 |    rd   |   0110011   |  MAXU
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
@@ -2033,7 +2033,7 @@ Changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
 |  -10-1-0  |   SBCLR   |   SBEXT   | SUBU.W (1)|           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-1  |  CLMUL (2)|    MAX^(2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN^   |    MINU^  |    MAXU^  |
+|  -00-1-1  |  CLMUL (2)|   MINU^(2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN^   |    MAX^   |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|  SUBWU (1)|           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-0-0  |    SLO    |    SRO    |  (SH4ADD) |   SH1ADD  |           |   SH2ADD  |   SH3ADD  |           |
