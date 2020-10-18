@@ -1679,11 +1679,8 @@ to {\tt addiw}.
     slliu.w rd, rs1, imm
 \end{rvb}
 
-{\tt slliu.w} is identical to {\tt slli}, except that bits XLEN-1:32 of the
-{\tt rs1} argument are cleared before the shift.
-
-{\tt addu.w} is identical to {\tt add}, except
-that bits XLEN-1:32 of the {\tt rs2} argument are cleared before the add.
+{\tt slliu.w} and {\tt addu.w} are identical to {\tt slli} and {\tt add}, respectively,
+except that bits XLEN-1:32 of the {\tt rs1} argument are cleared before the shift or add.
 
 \input{bextcref-slliuw}
 \input{bextcref-adduw}
