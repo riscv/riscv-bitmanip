@@ -800,31 +800,11 @@ uint_xlen_t fsr(uint_xlen_t rs1, uint_xlen_t rs2, uint_xlen_t rs3)
 }
 // --REF-END--
 
-// --REF-BEGIN-- addwu
-uint_xlen_t addwu(uint_xlen_t rs1, uint_xlen_t rs2)
-{
-	uint_xlen_t result = rs1 + rs2;
-	return (uint32_t)result;
-}
-
-uint_xlen_t subwu(uint_xlen_t rs1, uint_xlen_t rs2)
-{
-	uint_xlen_t result = rs1 - rs2;
-	return (uint32_t)result;
-}
-// --REF-END--
-
 // --REF-BEGIN-- adduw
 uint_xlen_t adduw(uint_xlen_t rs1, uint_xlen_t rs2)
 {
-	uint_xlen_t rs2u = (uint32_t)rs2;
-	return rs1 + rs2u;
-}
-
-uint_xlen_t subuw(uint_xlen_t rs1, uint_xlen_t rs2)
-{
-	uint_xlen_t rs2u = (uint32_t)rs2;
-	return rs1 - rs2u;
+	uint_xlen_t rs1u = (uint32_t)rs1;
+	return rs1u + rs2;
 }
 // --REF-END--
 
