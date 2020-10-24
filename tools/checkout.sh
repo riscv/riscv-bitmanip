@@ -30,7 +30,7 @@ if [ ! -d riscv-isa-sim ]; then
 	rm -rf riscv-isa-sim-new
 	git clone git@github.com:riscv/riscv-isa-sim.git riscv-isa-sim-new
 	cd riscv-isa-sim-new
-	git checkout riscv-bitmanip
+	# git checkout riscv-bitmanip
 	cd ..
 	mv riscv-isa-sim-new riscv-isa-sim
 fi
