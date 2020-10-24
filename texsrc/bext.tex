@@ -2038,7 +2038,21 @@ and are marked with a {\tt *}.
 \end{verbatim}
 \end{minipage}
 
-Changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+|  3                   2                   1                    |
+|1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0|
+|===============================================================|
+|  0010100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  XPERM.N
+|  0010100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  XPERM.B
+|  0010100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  XPERM.H
+|  0010100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  XPERM.W
+|---------------------------------------------------------------|
+\end{verbatim}
+\end{minipage}
+
+
+Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 {\tt -} for removal):
 
 \begin{minipage}{\linewidth}
@@ -2053,6 +2067,18 @@ Changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  + SH1ADDU.W
 |  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + SH2ADDU.W
 |  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + SH3ADDU.W
+|---------------------------------------------------------------|
+|  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  - MAX
+|  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  - MINU
+|  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + MAX
+|  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  + MINU
+|---------------------------------------------------------------|
+|  0100100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - SUBU.W
+|---------------------------------------------------------------|
+|  0010100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  + XPERM.N
+|  0010100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + XPERM.B
+|  0010100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + XPERM.H
+|  0010100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  + XPERM.W
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -2082,7 +2108,7 @@ Changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -01-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |  -11-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -01-1-0  |   SBSET   |    GORC   |           |           |           |           |           |           |
+|  -01-1-0  |   SBSET   |    GORC   |  XPERM.W  |  XPERM.N  |           |  XPERM.B  |  XPERM.H  |           |
 |  -11-1-0  |   SBINV   |    GREV   |           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-1-1  |        (2)|        (2)|           |           |           |           |           |           |
@@ -2119,6 +2145,7 @@ Notes:
 - columns reordered to show shift opcodes on the left
 (1) There is also an FSRI instruction in OP-IMM/OP-IMM-32 (except OP-IMM on RV128)
 (2) The encoding for the non-existing FSLI instruction is reserved
+(RV128 FSRI could be implemented using the reserved FSLI opcodes in OP-IMM-32/OP-IMM-64)
 \end{verbnobox}
 \end{minipage}
 \end{center}
