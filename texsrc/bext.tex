@@ -20,7 +20,6 @@ Zbb
  & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
  & {\tt min, minu, max, maxu      } & {\tt                           } \\
  & {\tt sext.h, sext.b            } & {\tt zext.h                    } \\
- & {\tt                           } & \sout{\tt add[i]wu, subwu      } \\
  & {\tt                           } & {\tt addu.w, slliu.w           } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
  & {\tt pack, \sout{packu, packh} } & \sout{\tt packw, packuw        } \\
@@ -102,7 +101,6 @@ Extension & RV32/RV64 & RV64 only \\
 The main open questions are:
 \begin{itemize}
 \item Which of the ``Zb*'' extensions should be included in ``B''?
-\item There is some redundancy/overlap with {\tt add[i]wu}, {\tt subwu}, {\tt addu.w}, and {\tt slliu.w}. Which instructions should stay?
 \item Which ``Zbp'' pseudo-ops should be included in ``Zbb''?
 \end{itemize}
 
@@ -1675,45 +1673,7 @@ An opcode for {\tt sh4add}/{\tt sh4addu.w} for RV128 and/or RVQ is reserved.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Mixed uint32/int64 arithmetic instructions}
-
-Consider RV64 C code that's using unsigned 32-bit ints as array indices. For example:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  char u32i64demo(char *p, unsigned int i) {
-    return p[i-1];
-  }
-\end{verbatim}
-\end{minipage}
-
-In such cases the expression within {\tt p[\dots]} must overflow according to
-32-bit arithmetic, then be zero-extended, and then this zero-extended result
-must be used in the address calculation.
-
-The instructions below make sure that no explicit {\tt zext.w} instruction
-is needed in such cases, to make sure there is no systematic performance
-penalty for code like shown above on RV64 compared to RV32.
-
-\subsection{Add/sub with postfix zero-extend ({\tt addwu}, {\tt subwu}, {\tt addiwu})}
-
-\begin{rvb}
-  RV64:
-    addwu rd, rs1, rs2
-    subwu rd, rs1, rs2
-    addiwu rd, rs1, imm
-\end{rvb}
-
-These instructions are identical to {\tt addw}, {\tt subw}, {\tt addiw},
-except that bits XLEN-1:32 of the result are cleared after the addition. I.e.
-these instructions zero-extend instead of sign-extend the 32-bit result.
-
-\input{bextcref-addwu}
-
-The 12-bit immediate to {\tt addiwu} is sign-extended, exactly like the immediate
-to {\tt addiw}.
-
-\subsection{Add/shift with prefix zero-extend ({\tt addu.w}, {\tt slliu.w})}
+\section{Add/shift with prefix zero-extend ({\tt addu.w}, {\tt slliu.w})}
 
 \begin{rvb}
   RV64:
@@ -1833,12 +1793,7 @@ operations.
 
 {\tt pack} occupies {\tt funct3=100} in {\tt funct7=0000100}.
 
-{\tt addwu} and {\tt subwu} are encoded like {\tt addw} and {\tt subw}, except
-that {\tt op[25]=1} and {\tt op[27]=1}.
-
 {\tt addu.w} is encoded like {\tt addw}, except that {\tt op[27]=1}.
-
-{\tt addiwu} is encoded using {\tt funct3=100} (XOR) instead of {\tt funct3=000} in OP-32.
 
 Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
@@ -1968,14 +1923,7 @@ and are marked with a {\tt *}.
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
 |===============================================================|
-|       immediate       |   rs1   | 000 |    rd   |   0011011   |  ADDIW*
-|       immediate       |   rs1   | 100 |    rd   |   0011011   |  ADDIWU
 |  00001  |     imm     |   rs1   | 001 |    rd   |   0011011   |  SLLIU.W
-|---------------------------------------------------------------|
-|  0000000    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDW*
-|  0100000    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  SUBW*
-|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDWU
-|  0100101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  SUBWU
 |  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDU.W
 |---------------------------------------------------------------|
 \end{verbatim}
@@ -2077,6 +2025,10 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  0010100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + XPERM.H
 |  0010100    |   rs2   |   rs1   | 000 |    rd   |   0110011   |  + XPERM.W
 |---------------------------------------------------------------|
+|       immediate       |   rs1   | 100 |    rd   |   0011011   |  - ADDIWU
+|  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - ADDWU
+|  0100101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - SUBWU
+|---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
 
@@ -2096,8 +2048,8 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
 |  -10-1-0  |   SBCLR   |   SBEXT   |           |           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-1  |  CLMUL (2)|   MINU^(2)|  ADDWU (1)|   CLMULR  |   CLMULH  |    MIN^   |    MAX^   |    MAXU^  |
-|  -10-1-1  |        (2)|        (2)|  SUBWU (1)|           |           |           |           |           |
+|  -00-1-1  |  CLMUL (2)|   MINU^(2)|           |   CLMULR  |   CLMULH  |    MIN^   |    MAX^   |    MAXU^  |
+|  -10-1-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-0-0  |    SLO    |    SRO    |  (SH4ADD) |   SH1ADD  |           |   SH2ADD  |   SH3ADD  |           |
 |  -11-0-0  |    ROL (3)|    ROR    |           |           |           |           |           |           |
@@ -2315,24 +2267,7 @@ lui+addi} pattern for loading a 32-bit constants:
 \end{verbatim}
 \end{minipage}
 
-For RV64 we also recommend to fuse the followings patterns for loading a 32-bit constant zero-extended
-into a 64-bit register:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  lui rd, imm
-  addiwu rd, rd, imm
-\end{verbatim}
-\end{minipage}
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  addiw rd, zero, v
-  pack rd, rd, zero
-\end{verbatim}
-\end{minipage}
-
-Further, for loading 64-bit consants in two macro-ops:
+Further, for loading 64-bit constants in two macro-ops:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
