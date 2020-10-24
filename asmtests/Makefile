@@ -24,9 +24,9 @@ ifeq ($(TRACE),1)
 endif
 
 ifeq ($(OS),Windows_NT)
-    TARGET_SIM ?= ../riscv-ovpsim/bin/Windows64/riscvOVPsim.exe
+    TARGET_SIM ?= riscvOVPsim.exe
 else
-    TARGET_SIM ?= ../riscv-ovpsim/bin/Linux64/riscvOVPsim.exe
+    TARGET_SIM ?= riscvOVPsim.exe
 endif
 
 ifeq ($(shell command -v $(TARGET_SIM) 2> /dev/null),)
