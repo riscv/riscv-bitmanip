@@ -9,98 +9,94 @@ intended to specify the desired functionality.
 The final standard will likely define a range of Z-extensions for different bit
 manipulation instructions, with the ``B'' extension itself being a mix of
 instructions from those Z-extensions. It is unclear as of yet what this will
-look like exactly, but it will probably look something like this:
+look like exactly, but it will probably look something like table~\ref{zbexts}.
 
+\begin{table}[!h]
 \begin{center}
-\begin{tikzpicture}
- \node (clz) { \texttt{clz, ctz, pcnt} };
- \node (min) [below=0.5cm of clz.west,anchor=west] { \texttt{min[u], max[u]} };
- \node (sext) [below=0.5cm of min.west,anchor=west] { \texttt{sext.h, sext.b} };
-
- \node (addwu) [below=1.0cm of min.west,anchor=west] { \texttt{add[i]wu, subwu} };
- \node (adduw) [below=0.5cm of addwu.west,anchor=west] { \texttt{addu.w} };
- \node (slliuw) [below=0.5cm of adduw.west,anchor=west] { \texttt{slliu.w} };
-
- \node (sbset) [right=4.1cm of clz.west,anchor=west] { \texttt{sbset[i]} };
- \node (sbclr) [right=4.1cm of min.west,anchor=west] { \texttt{sbclr[i]} };
- \node (sbinv) [below=0.5cm of sbclr.east,anchor=east] { \texttt{sbinv[i]} };
- \node (sbext) [right=4.1cm of addwu.west,anchor=west] { \texttt{sbext[i]} };
-
- \node (shNadd) [right=3.9cm of adduw.west,anchor=north west] { \texttt{shNadd} };
- \node (shNadduw) [right=3.9cm of slliuw.west,anchor=north west] { \texttt{shNaddu.w} };
-
- \node (andn) [below=1.0cm of slliuw.west,anchor=west] { \texttt{andn, orn} };
- \node (xnor) [below=0.5cm of andn.west,anchor=west] { \texttt{xnor, pack[hu]} };
- \node (rol) [below=0.5cm of xnor.west,anchor=west] { \texttt{rol, ror[i]} };
- \node (rev8) [below=0.5cm of rol.west,anchor=west] { \texttt{rev8, rev} };
- \node (orcb) [below=0.5cm of rev8.west,anchor=west] { \texttt{orc.b, orc16} };
- \node (xperm) [below=0.5cm of orcb.west,anchor=west] { \texttt{xperm.[nbhw]} };
-
- \node (slo) [right=4.5cm of andn.west,anchor=west] { \texttt{slo[i]} };
- \node (sro) [right=4.5cm of xnor.west,anchor=west] { \texttt{sro[i]} };
-
- \node (grev) [right=4.3cm of rev8.west,anchor=west] { \texttt{grev[i]} };
- \node (gorc) [right=4.3cm of orcb.west,anchor=west] { \texttt{gorc[i]} };
- \node (shuffle) [below=0.5cm of gorc.east,anchor=east] { \texttt{[un]shfl[i]} };
-
- \node (bext) [below=2.0cm of rev8.west,anchor=west] { \texttt{bext, bdep} };
-
- \node (clmul) [below=3.0cm of rev8.west,anchor=west] { \texttt{clmul[hr]} };
-
- \node (bfp) [right=3.5cm of bext.west,anchor=west] { \texttt{bfp} };
-
- \node (bmatxor) [below=1.0cm of clmul.west,anchor=west] { \texttt{\texttt{bmat[x]or}} };
- \node (bmatflip) [below=0.5cm of bmatxor.west,anchor=west] { \texttt{bmatflip} };
-
- \node (crc32) [right=3.5cm of clmul.west,anchor=west] { \texttt{crc32[c]} };
-
- \node (cmov) [right=3.5cm of bmatxor.west,anchor=west] { \texttt{cmov, cmix} };
- \node (fsl) [below=0.5cm of cmov.west,anchor=west] { \texttt{fsl, fsr[i]} };
-
- \begin{scope}[on background layer]
-   \node (B) at ($ (clz.north west) + (0,+0.2cm) $) [above right, text=gray] { \textbf{B$^?$} };
-   \draw [draw=black, fill=gray, opacity=0.2] ($ (clz.north west) + (0,+0.2cm) $) |- coordinate (A) ($ (bmatflip.south west) + (3.15cm,-0.2cm) $) coordinate (B)
-     |- ($ (bext.south west) + (6.0cm,-0.2cm) $) |- ($ (clz.north west) + (0,+0.2cm) $);
-
-   \node (bb) at ($ (clz.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbb$^?$} };
-   \node (bbase) [below=-0.1cm of bb.south east,anchor=north east] { (base) };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (clz.north west) + (-0.5cm,0) $) rectangle ($ (orcb.south west) + (3.5cm,0.05cm) $);
-
-   \node (bs) at ($ (sbset.west) + (2.4cm,0) $) [right, text=blue] { \textbf{Zbs} };
-   \node (bsingle) [below=-0.1cm of bs.south west,anchor=north west] { (single bit) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (sbset.north west) + (-0.2cm,0) $) rectangle ($ (sbext.south west) + (2.4cm,0) $);
-
-   \node (ba) at ($ (shNadd.west) + (2.6cm,0) $) [right, text=blue] { \textbf{Zba} };
-   \node (baddr) [below=-0.1cm of ba.south west,anchor=north west] { (addr calc) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (shNadd.north west) + (-0.0cm,0) $) rectangle ($ (shNadduw.south west) + (2.6cm,0) $);
-
-   \node (bp) at ($ (andn.west) + (6.5cm,0) $) [right, text=blue] { \textbf{Zbp} };
-   \node (bperm) [below=-0.2cm of bp.south west,anchor=north west] { (permutation) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (andn.north west) + (-0.2cm,0) $) |- ($ (shuffle.south east) + (0.5cm,0) $)
-     |- ($ (andn.north west) + (-0.2cm,0) $);
-
-   \node (be) at ($ (bext.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbe} };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (bext.north west) + (-0.5cm,0) $) rectangle ($ (bext.south west) + (3.0cm,0) $);
-
-   \node (bf) at ($ (bfp.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbf} };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (bfp.north west) + (-0.2cm,0) $) rectangle ($ (bfp.south west) + (3.0cm,0) $);
-
-   \node (bc) at ($ (clmul.west) + (-0.5cm,0) $) [left, text=red] { \textbf{Zbc} };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (clmul.north west) + (-0.5cm,0) $) rectangle ($ (clmul.south west) + (3.0cm,0) $);
-
-   \node (bm) at ($ (bmatxor.west) + (-0.5cm,0) $) [left, text=blue] { \textbf{Zbm} };
-   \node (bmatrix) [below=-0.1cm of bm.south east,anchor=north east] { (matrix) };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (bmatxor.north west) + (-0.5cm,0) $) rectangle ($ (bmatflip.south west) + (3.0cm,0) $);
-
-   \node (bt) at ($ (cmov.west) + (3.0cm,0) $) [right, text=red] { \textbf{Zbt} };
-   \node (bternary) [below=-0.1cm of bt.south west,anchor=north west] { (ternary) };
-   \draw [draw=black, fill=red, opacity=0.2] ($ (cmov.north west) + (-0.2cm,0) $) rectangle ($ (fsl.south west) + (3.0cm,0) $);
-
-   \node (br) at ($ (crc32.west) + (3.0cm,0) $) [right, text=blue] { \textbf{Zbr} };
-   \draw [draw=black, fill=blue, opacity=0.2] ($ (crc32.north west) + (-0.2cm,0) $) rectangle ($ (crc32.south west) + (3.0cm,0) $);
- \end{scope}
-\end{tikzpicture}
+\begin{tabular}{lll}
+Extension & RV32/RV64 & RV64 only \\
+\hline
+Zbb
+ & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
+ & {\tt min, minu, max, maxu      } & {\tt                           } \\
+ & \sout{\tt sext.h, sext.b       } & {\tt                           } \\
+ & {\tt                           } & \sout{\tt add[i]wu, subwu      } \\
+ & {\tt                           } & \sout{\tt addu.w, slliu.w      } \\
+ & {\tt andn, orn, xnor           } & {\tt                           } \\
+ & {\tt pack, \sout{packu, packh} } & \sout{\tt packw, packuw        } \\
+ & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
+ & {\tt rev8, \sout{rev}          } & {\tt                           } \\
+ & {\tt orc.b                     } & {\tt                           } \\
+\hline
+Zbp
+ & {\tt andn, orn, xnor           } & {\tt                           } \\
+ & {\tt pack, packu, packh        } & {\tt packw, packuw             } \\
+ & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
+ & {\tt grev, grevi               } & {\tt grevw, greviw             } \\
+ & {\tt gorc, gorci               } & {\tt gorcw, gorciw             } \\
+ & {\tt shfl, shfli               } & {\tt shflw                     } \\
+ & {\tt unshfl, unshfli           } & {\tt unshflw                   } \\
+ & {\tt xperm.h, xperm.b, xperm.h } & {\tt xperm.w                   } \\
+\hline
+Zbs
+ & {\tt sbset, sbseti             } & {\tt sbsetw, sbsetiw           } \\
+ & {\tt sbclr, sbclri             } & {\tt sbclrw, sbclriw           } \\
+ & {\tt sbinv, sbinvi             } & {\tt sbinvw, sbinviw           } \\
+ & {\tt sbext, sbexti             } & {\tt sbextw                    } \\
+\hline
+Zba
+ & {\tt sh1add                    } & {\tt sh1addu.w                 } \\
+ & {\tt sh2add                    } & {\tt sh2addu.w                 } \\
+ & {\tt sh3add                    } & {\tt sh3addu.w                 } \\
+\hline
+Zbe
+ & {\tt bext, bdep                } & {\tt bextw, bdepw              } \\
+\hline
+Zbf
+ & {\tt bfp                       } & {\tt bfpw                      } \\
+\hline
+Zbc
+ & {\tt clmul, clmulh, clmulr     } & {\tt clmulw, clmulhw, clmulrw  } \\
+\hline
+Zbm
+ & {\tt                           } & {\tt bmator, bmatxor, bmatflip } \\
+\hline
+Zbr
+ & {\tt crc32.b, crc32c.b         } & {\tt                           } \\
+ & {\tt crc32.h, crc32c.h         } & {\tt                           } \\
+ & {\tt crc32.w, crc32c.w         } & {\tt                           } \\
+ & {\tt                           } & {\tt crc32.d, crc32c.d         } \\
+\hline
+Zbt
+ & {\tt cmov, cmix                } & {\tt                           } \\
+ & {\tt fsl, fsr, fsri            } & {\tt fslw, fsrw, fsriw         } \\
+\end{tabular}
+\caption{{\tt Zb*} extensions instruction listings}
 \end{center}
+\label{zbexts}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+\begin{tabular}{lll}
+Extension & RV32/RV64 & RV64 only \\
+\hline
+\sout{Zbb}
+ & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
+ & {\tt min, minu, max, maxu      } & {\tt                           } \\
+ & {\tt sext.h, sext.b            } & {\tt                           } \\
+ & {\tt                           } & {\tt add[i]wu, subwu           } \\
+ & {\tt                           } & {\tt addu.w, slliu.w           } \\
+ & {\tt andn, orn, xnor           } & {\tt                           } \\
+ & {\tt pack, packu, packh        } & {\tt packw, packuw             } \\
+ & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
+ & {\tt rev8, rev                 } & {\tt                           } \\
+ & {\tt orc.b, orc16              } & {\tt                           } \\
+\end{tabular}
+\caption{Old {\tt Zbb} extension instruction listing. \it Just for reference during editing. Will be removed soon.}
+\end{center}
+\label{oldzbb}
+\end{table}
 
 The main open questions are:
 \begin{itemize}
