@@ -21,11 +21,15 @@ cbmc --trace --function check_sbextw  wops.cc
 
 #cbmc --trace --function check_bextw   wops.cc
 #cbmc --trace --function check_bdepw   wops.cc
-cbmc --trace --function check_bfpw    wops.cc
+#cbmc --trace --function check_bfpw    wops.cc
 
-cbmc --trace --function check_clmulw  wops.cc
-cbmc --trace --function check_clmulhw wops.cc
-cbmc --trace --function check_clmulrw wops.cc
+#cbmc --trace --function check_clmulw  wops.cc
+#cbmc --trace --function check_clmulhw wops.cc
+#cbmc --trace --function check_clmulrw wops.cc
 
 cbmc --trace --function check_fslw    wops.cc
 cbmc --trace --function check_fsrw    wops.cc
+
+gcc -Wall -o wops wops.cc
+./wops
+rm -f wops
