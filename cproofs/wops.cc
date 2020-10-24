@@ -1,3 +1,33 @@
+// RV64 replacement sequences for *W instructions
+//
+// 2 ops:
+//     PCNTW    =>  PACK+PCNT
+//     SHFLW    =>  ANDI+SHFLW
+//     UNSHFLW  =>  ANDI+UNSHFLW
+//     SBEXTW   =>  ANDI+SBEXT
+//     BDEPW    =>  BDEP+SEXT
+//     CLMULW   =>  CLMUL+SEXT
+// 3 ops:
+//     CLZW     =>  LI+PACK+CLZ
+//     CTZW     =>  LI+PACK+CTZ
+//     ROLW     =>  PACK+ROL+SEXT
+//     RORW     =>  PACK+ROR+SEXT
+//     GREVW    =>  ANDI+GREV+SEXT
+//     GORCW    =>  ANDI+GORC+SEXT
+//     SBSETW   =>  ANDI+SBSET+SEXT
+//     SBCLRW   =>  ANDI+SBCLR+SEXT
+//     SBINVW   =>  ANDI+SBINV+SEXT
+//     BEXTW    =>  PACK+BEXT+SEXT
+//     FSL      =>  PACK+ROL+SEXT
+//     FSR      =>  PACK+ROR+SEXT
+// 4 ops:
+//     PACKW    =>  SLLW+SRLW+SLLW+OR
+//     PACKUW   =>  SRLW+SRLW+SLLW+OR
+//     CLMULHW  =>  PACK+PACK+CLMUL+SRL
+//     CLMULRW  =>  PACK+PACK+CLMUL+SRL
+// 5 or more ops:
+//     BFPW     =>  over 6 instructions
+
 #ifdef __CPROVER__
 #define RVINTRIN_NOBUILTINS
 #endif
