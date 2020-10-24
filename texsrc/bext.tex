@@ -20,12 +20,11 @@ Zbb
  & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
  & {\tt min, minu, max, maxu      } & {\tt                           } \\
  & {\tt sext.h, sext.b            } & {\tt zext.h                    } \\
- & {\tt                           } & {\tt addu.w, slliu.w           } \\
+ & {\tt                           } & \sout{\tt addu.w, slliu.w      } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
  & {\tt pack, \sout{packu, packh} } & \sout{\tt packw, packuw        } \\
  & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
- & {\tt rev8, \sout{rev}          } & {\tt                           } \\
- & {\tt orc.b                     } & {\tt                           } \\
+ & {\tt rev8, \sout{rev}, orc.b   } & {\tt                           } \\
 \hline
 Zbp
  & {\tt andn, orn, xnor           } & {\tt                           } \\
@@ -51,6 +50,7 @@ Zba
 \hline
 Zbe
  & {\tt bext, bdep                } & {\tt bextw, bdepw              } \\
+ & {\tt pack, packu, packh        } & {\tt packw, packuw             } \\
 \hline
 Zbf
  & {\tt bfp                       } & {\tt bfpw                      } \\
@@ -59,7 +59,10 @@ Zbc
  & {\tt clmul, clmulh, clmulr     } & {\tt clmulw, clmulhw, clmulrw  } \\
 \hline
 Zbm
- & {\tt                           } & {\tt bmator, bmatxor, bmatflip } \\
+ & {\tt                           } & {\tt bmator, bmatxor           } \\
+ & {\tt                           } & {\tt bmatflip                  } \\
+ & {\tt                           } & {\tt unzip16, unzip8           } \\
+ & {\tt                           } & {\tt pack, packu               } \\
 \hline
 Zbr
  & {\tt crc32.b, crc32c.b         } & {\tt                           } \\
@@ -70,32 +73,13 @@ Zbr
 Zbt
  & {\tt cmov, cmix                } & {\tt                           } \\
  & {\tt fsl, fsr, fsri            } & {\tt fslw, fsrw, fsriw         } \\
+\hline
+B
+ & \multicolumn{2}{l}{All of the above except Zbr and Zbt} \\
 \end{tabular}
 \caption{{\tt Zb*} extensions instruction listings}
 \end{center}
 \label{zbexts}
-\end{table}
-
-\begin{table}[!h]
-\begin{center}
-\begin{tabular}{lll}
-Extension & RV32/RV64 & RV64 only \\
-\hline
-\sout{Zbb}
- & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
- & {\tt min, minu, max, maxu      } & {\tt                           } \\
- & {\tt sext.h, sext.b            } & {\tt                           } \\
- & {\tt                           } & {\tt add[i]wu, subwu           } \\
- & {\tt                           } & {\tt addu.w, slliu.w           } \\
- & {\tt andn, orn, xnor           } & {\tt                           } \\
- & {\tt pack, packu, packh        } & {\tt packw, packuw             } \\
- & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
- & {\tt rev8, rev                 } & {\tt                           } \\
- & {\tt orc.b, orc16              } & {\tt                           } \\
-\end{tabular}
-\caption{Old {\tt Zbb} extension instruction listing. \it Just for reference during editing. Will be removed soon.}
-\end{center}
-\label{oldzbb}
 \end{table}
 
 The main open questions are:
