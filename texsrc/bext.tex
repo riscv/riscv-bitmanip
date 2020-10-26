@@ -21,8 +21,8 @@ Zbb
  & {\tt min, minu, max, maxu      } & {\tt                           } \\
  & {\tt sext.h, sext.b            } & {\tt zext.h                    } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
- & {\tt pack, \sout{packu, packh} } & \sout{\tt packw, packuw        } \\
- & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
+ & {\tt pack, \sout{packh}        } & {\tt \sout{packw}              } \\
+ & {\tt \sout{rol}, ror, rori     } & {\tt \sout{rolw}, rorw, roriw  } \\
  & {\tt rev8, \sout{rev}, orc.b   } & {\tt                           } \\
 \hline
 Zbp
@@ -56,11 +56,10 @@ Zbf
  & {\tt pack, packh               } & {\tt packw                     } \\
 \hline
 Zbc
- & {\tt clmul, clmulh, clmulr     } & \sout{\tt clmulw, clmulhw, clmulrw  } \\
+ & {\tt clmul, clmulh, clmulr     } & {\tt                           } \\
 \hline
 Zbm
- & {\tt                           } & {\tt bmator, bmatxor           } \\
- & {\tt                           } & {\tt bmatflip                  } \\
+ & {\tt                           } & {\tt bmator, bmatxor, bmatflip } \\
  & {\tt                           } & {\tt unzip16, unzip8           } \\
  & {\tt                           } & {\tt pack, packu               } \\
 \hline
@@ -1342,11 +1341,6 @@ in~\cite{Hilewitz06} and demonstrated in~\cite{Wolf17B}.
     clmul  rd, rs1, rs2
     clmulh rd, rs1, rs2
     clmulr rd, rs1, rs2
-
-  RV64 only:
-    clmulw  rd, rs1, rs2
-    clmulhw rd, rs1, rs2
-    clmulrw rd, rs1, rs2
 \end{rvb}
 
 Calculate the carry-less product~\cite{CarryLessProduct} of the two arguments. \texttt{clmul}
@@ -1952,10 +1946,6 @@ and are marked with a {\tt *}.
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
 |  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
 |---------------------------------------------------------------|
-|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  CLMULW
-|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  CLMULRW
-|  0000101    |   rs2   |   rs1   | 011 |    rd   |   0111011   |  CLMULHW
-|---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
 |  0100100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BDEPW
@@ -2013,6 +2003,10 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  0000101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - ADDWU
 |  0100101    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - SUBWU
 |---------------------------------------------------------------|
+|  0000101    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  - CLMULW
+|  0000101    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  - CLMULRW
+|  0000101    |   rs2   |   rs1   | 011 |    rd   |   0111011   |  - CLMULHW
+|---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
 
@@ -2032,7 +2026,7 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
 |  -10-1-0  |   SBCLR   |   SBEXT   |           |           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-1  |  CLMUL (2)|   MINU^(2)|           |   CLMULR  |   CLMULH  |    MIN^   |    MAX^   |    MAXU^  |
+|  -00-1-1  |  CLMUL^(2)|   MINU^(2)|           |   CLMULR^ |   CLMULH^ |    MIN^   |    MAX^   |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-0-0  |    SLO    |    SRO    |  (SH4ADD) |   SH1ADD  |           |   SH2ADD  |   SH3ADD  |           |
