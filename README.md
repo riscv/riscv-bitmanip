@@ -31,15 +31,19 @@ It is developed by Imperas and is kept up to date as the Bit Manip extensions ch
 
 It was originally provided in this repository as a convenience. It has now evolved and has been enhanced and moved to its own repository.
 
-There are now two flavors: _riscvOVPsim_ from [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) which is useful for running compliance tests and generating the required signatures, and _riscvOVPsimPlus_ from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscv-ovpsim-plus) which is used for test development and verification.
+There are now two flavors: 
+
+_riscvOVPsim_ from [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) which supports the ratified ISA and is useful for running compliance tests and generating the required signatures, and 
+
+_riscvOVPsimPlus_ from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscvOVPsimPlus) which is a superset of _riscvOVPsim_ and supports all extensions and other features.
 
 Please contact info@ovpworld.org or info@imperas.com for more information.
 
 For details on riscvOVPsim look here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) and here: [riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf](https://github.com/riscv-ovpsim/imperas-riscv-tests/blob/main/riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf).
 
-To enable the new it manip extension/instructions, enable the B bit in the MISA register
+To enable the new bitmanip extension/instructions, enable the B bit in the MISA register
 
-    riscvOVPsim.exe --override riscvOVPsim/cpu/add_Extensions=B
+    riscvOVPsimPlus.exe --override riscvOVPsim/cpu/add_Extensions=B
 
 And in the log you will see it enabled, for example:
 
@@ -63,15 +67,17 @@ Many assembly tests are included ([asmtests](asmtests)) that provide directed an
 ## Building and Running the Instruction Assembler Tests
 To start, you need to set up the search path to include the path to a RISCV Compiler, eg:
 
-    $ export PATH=${PATH}:/home/tools/riscv-none-embed/bin
+    $ export PATH=${PATH}:/home/user/riscv-none-embed/bin
     
 Also, you need a variable to define the canonical compiler prefix, eg:
 
     $ export RISCV_PREFIX=riscv-none-embed-
-    
-And then you run the tests:
 
-    $ make runtest
+Also, you need to install riscOVPsimPlus.exe
+    
+And then you run the tests, selecting the riscvOVPsimPlus executable from the installation made:
+
+    $ make runtest TARGET_SIM=/home/user/riscv-ovpsim-plus/bin/Linux64/riscvOVPsimPlus.exe
     
 This process is self-checking, and will report a set of passing/failing tests at the end.
 

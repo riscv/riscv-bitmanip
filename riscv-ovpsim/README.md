@@ -3,11 +3,11 @@ riscvOVPsim
 A Complete, Fully Functional, Configurable RISC-V Simulator
 ===
 
-riscvOVPsim has moved to its own GitHub repository.
+riscvOVPsim has moved to its own GitHub repository and there are now two flavors: 
 
-It can now be found here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests)
+_riscvOVPsim_ from [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) which supports the ratified ISA and is useful for running compliance tests and generating the required signatures, and 
 
-For the enhanced version, please download from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscvOVPsimPlus).
+_riscvOVPsimPlus_ from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscvOVPsimPlus) which is a superset of _riscvOVPsim_ and supports both the ratified ISA extensions and the non-ratified iSA extensions.
 
 The simulators implement the full and complete functionality of the RISC-V Foundation's public User and Privilege specifications.  
 
