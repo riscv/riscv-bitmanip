@@ -338,7 +338,7 @@ static inline long _rv_xnor(long rs1, long rs2) { long rd; __asm__ ("xnor %0, %1
 #  error "<rvintrin.h> emulation mode only supports systems with sizeof(int) = 4."
 #endif
 
-#if (ULLONG_MAX == 0xffffffffLLU) || (ULLONG_MAX != 0xffffffffffffffffLLU)
+#if (ULLONG_MAX == 0xffffffffULL) || (ULLONG_MAX != 0xffffffffffffffffULL)
 #  error "<rvintrin.h> emulation mode only supports systems with sizeof(long long) = 8."
 #endif
 
