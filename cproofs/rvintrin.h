@@ -662,8 +662,8 @@ static inline int64_t _rv64_clmulr(int64_t rs1, int64_t rs2)
 static inline uint32_t _rvintrin_xperm32(uint32_t rs1, uint32_t rs2, int sz_log2)
 {
 	uint32_t r = 0;
-	uint32_t sz = 1LL << sz_log2;
-	uint32_t mask = (1LL << sz) - 1;
+	int sz = 1 << sz_log2;
+	uint32_t mask = (1U << sz) - 1;
 	for (int i = 0; i < 32; i += sz) {
 		uint32_t pos = ((rs2 >> i) & mask) << sz_log2;
 		if (pos < 32)
@@ -679,8 +679,8 @@ static inline int32_t _rv32_xperm_h (int32_t rs1, int32_t rs2) { return _rvintri
 static inline uint64_t _rvintrin_xperm64(uint64_t rs1, uint64_t rs2, int sz_log2)
 {
 	uint64_t r = 0;
-	uint64_t sz = 1LL << sz_log2;
-	uint64_t mask = (1LL << sz) - 1;
+	int sz = 1 << sz_log2;
+	uint64_t mask = (1ULL << sz) - 1;
 	for (int i = 0; i < 64; i += sz) {
 		uint64_t pos = ((rs2 >> i) & mask) << sz_log2;
 		if (pos < 64)
@@ -739,8 +739,8 @@ static inline int64_t _rv64_bmatxor(int64_t rs1, int64_t rs2)
 	uint8_t v[8]; // cols of rs2
 
 	for (int i = 0; i < 8; i++) {
-		u[i] = rs1 >> (i*8);
-		v[i] = rs2t >> (i*8);
+		u[i] = (uint8_t) (rs1 >> (i*8));
+		v[i] = (uint8_t) (rs2t >> (i*8));
 	}
 
 	uint64_t x = 0;
@@ -761,8 +761,8 @@ static inline int64_t _rv64_bmator(int64_t rs1, int64_t rs2)
 	uint8_t v[8]; // cols of rs2
 
 	for (int i = 0; i < 8; i++) {
-		u[i] = rs1 >> (i*8);
-		v[i] = rs2t >> (i*8);
+		u[i] = (uint8_t) (rs1 >> (i*8));
+		v[i] = (uint8_t) (rs2t >> (i*8));
 	}
 
 	uint64_t x = 0;
