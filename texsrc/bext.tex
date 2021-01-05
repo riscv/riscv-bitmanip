@@ -17,7 +17,7 @@ look like exactly, but it will probably look something like table~\ref{zbexts}.
 Extension & RV32/RV64 & RV64 only \\
 \hline
 Zbb (*)
- & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
+ & {\tt clz, ctz, cpop            } & {\tt clzw, ctzw, cpopw         } \\
  & {\tt min, minu, max, maxu      } & {\tt                           } \\
  & {\tt sext.b, sext.h            } & {\tt zext.h, zext.w            } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
@@ -154,14 +154,14 @@ float libraries, null suppression in data compression.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Count Bits Set (\texttt{pcnt})}
+\subsection{Count Bits Set (\texttt{cpop})}
 
 \begin{rvb}
   RV32, RV64:
-    pcnt rd, rs
+    cpop rd, rs
 
   RV64 only:
-    pcntw rd, rs
+    cpopw rd, rs
 \end{rvb}
 
 This instruction counts the number of 1 bits in a register. This operations is known as
@@ -1867,7 +1867,7 @@ and are marked with a {\tt *}.
 |===============================================================|
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
-|  0110000    |  00010  |   rs1   | 001 |    rd   |   0010011   |  PCNT
+|  0110000    |  00010  |   rs1   | 001 |    rd   |   0010011   |  CPOP
 |  0110000    |  00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
 |  0110000    |  00100  |   rs1   | 001 |    rd   |   0010011   |  SEXT.B
 |  0110000    |  00101  |   rs1   | 001 |    rd   |   0010011   |  SEXT.H
@@ -1946,7 +1946,7 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
-|  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
+|  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  CPOPW
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
@@ -2342,7 +2342,7 @@ Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} 
 \hline
 {\tt clz      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt ctz      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt pcnt     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt cpop     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
 {\tt pack     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt min      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\

@@ -202,7 +202,7 @@ Or using funnel shifts:
 The parity of a word (xor of all bits) is the LSB of the population count.
 
 \begin{verbatim}
-  pcnt a0, a0
+  cpop a0, a0
   andi a0, a0, 1
 \end{verbatim}
 
@@ -387,7 +387,7 @@ including position \texttt{a1}.
   rank:
     not a1, a1
     sll a0, a1
-    pcnt a0, a0
+    cpop a0, a0
     ret
 \end{verbatim}
 \end{minipage}
@@ -484,7 +484,7 @@ are looking for:
 \end{verbatim}
 \end{minipage}
 
-These schemes can easily be extended with {\tt ctz} and {\tt pcnt} to perform
+These schemes can easily be extended with {\tt ctz} and {\tt cpop} to perform
 operations such as counting the number of bytes of a certain value within a
 word, or finding the position of the first such byte.
 
@@ -1139,7 +1139,7 @@ mask in {\tt a1}):
   bext a2, a0, a1
   not a1, a1
   bext a0, a0, a1
-  pcnt a1, a1
+  cpop a1, a1
   ror a0, a0, a1
   or a0, a0, a2
 \end{verbatim}

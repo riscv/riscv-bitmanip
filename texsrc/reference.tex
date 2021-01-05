@@ -90,7 +90,7 @@ Module & Instructions \\
 \tt rvb\_shifter  & sll srl sra slo sro rol ror fsl fsr slli.uw bset bclr binv bext bfp           \\
 \tt rvb\_bmatxor  & bmatxor bmator                                                                \\
 \tt rvb\_simple   & min max minu maxu andn orn xnor pack cmix cmov addiwu addwu subwu adduw subuw \\
-\tt rvb\_bitcnt   & clz ctz pcnt bmatflip                                                         \\
+\tt rvb\_bitcnt   & clz ctz cpop bmatflip                                                         \\
 \tt rvb\_crc      & crc32.[bhwd] crc32c.[bhwd]                                                    \\
 \tt rvb\_full     & All of the above                                                              \\
 \end{tabular}
@@ -157,7 +157,7 @@ which requires 1 cycle for each payload byte.
 \label{fastc}
 
 GCC has intrinsics for the bit counting instructions {\tt clz}, {\tt ctz}, and
-{\tt pcnt}.  So a performance-sensitive application (such as an emulator)
+{\tt cpop}.  So a performance-sensitive application (such as an emulator)
 should probably just use those:
 
 \input{bextcref-fast-bitcnt}
