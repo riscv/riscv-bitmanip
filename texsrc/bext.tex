@@ -41,10 +41,10 @@ Zbs (*)
  & {\tt sbext, sbexti             } & {\tt sbextw                    } \\
 \hline
 Zba (*)
- & {\tt sh1add                    } & {\tt sh1addu.w                 } \\
- & {\tt sh2add                    } & {\tt sh2addu.w                 } \\
- & {\tt sh3add                    } & {\tt sh3addu.w                 } \\
- & {\tt                           } & {\tt addu.w, slliu.w           } \\
+ & {\tt sh1add                    } & {\tt sh1add.uw                 } \\
+ & {\tt sh2add                    } & {\tt sh2add.uw                 } \\
+ & {\tt sh3add                    } & {\tt sh3add.uw                 } \\
+ & {\tt                           } & {\tt add.uw, slli.uw           } \\
 \hline
 Zbe
  & {\tt bext, bdep                } & {\tt bextw, bdepw              } \\
@@ -1638,30 +1638,30 @@ On RV128 there is no {\tt fsri} instruction. But there is {\tt fsriw} and {\tt f
     sh3add rd, rs1, rs2
 
   RV64 only:
-    sh1addu.w rd, rs1, rs2
-    sh2addu.w rd, rs1, rs2
-    sh3addu.w rd, rs1, rs2
+    sh1add.uw rd, rs1, rs2
+    sh2add.uw rd, rs1, rs2
+    sh3add.uw rd, rs1, rs2
 \end{rvb}
 
 These instructions shift {\tt rs1} left by 1, 2, or 3 bits, then add the result
-to {\tt rs2}. The {\tt sh?addu.w} instructions are identical to {\tt sh?add}, except
+to {\tt rs2}. The {\tt sh?add.uw} instructions are identical to {\tt sh?add}, except
 that bits XLEN-1:32 of the {\tt rs1} argument are cleared before the shift.
 
 \input{bextcref-shadd}
 
-An opcode for {\tt sh4add}/{\tt sh4addu.w} for RV128 and/or RVQ is reserved.
+An opcode for {\tt sh4add}/{\tt sh4add.uw} for RV128 and/or RVQ is reserved.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Add/shift with prefix zero-extend ({\tt addu.w}, {\tt slliu.w})}
+\section{Add/shift with prefix zero-extend ({\tt add.uw}, {\tt slli.uw})}
 
 \begin{rvb}
   RV64:
-    addu.w rd, rs1, rs2
-    slliu.w rd, rs1, imm
+    add.uw rd, rs1, rs2
+    slli.uw rd, rs1, imm
 \end{rvb}
 
-{\tt slliu.w} and {\tt addu.w} are identical to {\tt slli} and {\tt add}, respectively,
+{\tt slli.uw} and {\tt add.uw} are identical to {\tt slli} and {\tt add}, respectively,
 except that bits XLEN-1:32 of the {\tt rs1} argument are cleared before the shift or add.
 
 \input{bextcref-slliuw}
@@ -1699,7 +1699,7 @@ shift operations {\tt op[26]=0}.
 bit, that is necessary to perform a 128 bit funnel shift on RV64, can be
 emulated by swapping rs1 and rs3.
 
-There is no {\tt shfliw} instruction. The {\tt slliu.w} instruction occupies
+There is no {\tt shfliw} instruction. The {\tt slli.uw} instruction occupies
 the encoding slot that would be occupied by {\tt shfliw}.
 
 On RV128 {\tt op[26]} contains the MSB of the immediate for the shift instructions.
@@ -1773,7 +1773,7 @@ operations.
 
 {\tt pack} occupies {\tt funct3=100} in {\tt funct7=0000100}.
 
-{\tt addu.w} is encoded like {\tt addw}, except that {\tt op[27]=1}.
+{\tt add.uw} is encoded like {\tt addw}, except that {\tt op[27]=1}.
 
 Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
@@ -1903,8 +1903,8 @@ and are marked with a {\tt *}.
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
 |===============================================================|
-|  00001  |     imm     |   rs1   | 001 |    rd   |   0011011   |  SLLIU.W
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDU.W
+|  00001  |     imm     |   rs1   | 001 |    rd   |   0011011   |  SLLI.UW
+|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADD.UW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -1919,9 +1919,9 @@ and are marked with a {\tt *}.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
 |---------------------------------------------------------------|
-|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  SH1ADDU.W
-|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADDU.W
-|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADDU.W
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  SH1ADD.UW
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADD.UW
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADD.UW
 |---------------------------------------------------------------|
 |  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBCLRW
 |  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSETW
@@ -1985,16 +1985,16 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  0010000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + SH2ADD
 |  0010000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + SH3ADD
 |---------------------------------------------------------------|
-|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  + SH1ADDU.W
-|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + SH2ADDU.W
-|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + SH3ADDU.W
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  + SH1ADD.UW
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + SH2ADD.UW
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + SH3ADD.UW
 |---------------------------------------------------------------|
 |  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  - MAX
 |  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  - MINU
 |  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + MAX
 |  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  + MINU
 |---------------------------------------------------------------|
-|  0100100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - SUBU.W
+|  0100100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  - SUB.UW
 |---------------------------------------------------------------|
 |  0010100    |   rs2   |   rs1   | 010 |    rd   |   0110011   |  + XPERM.N
 |  0010100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + XPERM.B
@@ -2025,7 +2025,7 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -00-0-1  |   MULH^(2)|   DIVU (2)|    MUL    |   MULHSU^ |   MULHU^  |    DIV    |    REM    |    REMU   |
 |  -10-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
+|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADD.UW (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
 |  -10-1-0  |   SBCLR   |   SBEXT   |           |           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -00-1-1  |  CLMUL^(2)|   MINU^(2)|           |   CLMULR^ |   CLMULH^ |    MIN^   |    MAX^   |    MAXU^  |
@@ -2050,7 +2050,7 @@ Notes:
 (1) These instructions only exist in OP-32.
 (2) No "shift-immediate" encoding for opcodes with bit 25 set.
 (3) All unary instructions use the code space for the non-existing ROLI instruction.
-(4) SLLIU.W is encoded in the code space for the non-existing SHFLIW instruction.
+(4) SLLI.UW is encoded in the code space for the non-existing SHFLIW instruction.
 ^ Instructions marked with ^ have no *W equivalent in OP-32
 \end{verbnobox}
 \end{minipage}
