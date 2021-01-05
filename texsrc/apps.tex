@@ -372,7 +372,7 @@ It can be implemented efficiently using \texttt{bdep} and \texttt{ctz}:
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   select:
-    sbset a1, zero, a1
+    bset a1, zero, a1
     bdep a0, a1, a0
     ctz a0, a0
     ret
