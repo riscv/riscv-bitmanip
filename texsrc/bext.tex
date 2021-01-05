@@ -16,14 +16,13 @@ look like exactly, but it will probably look something like table~\ref{zbexts}.
 \begin{tabular}{lll}
 Extension & RV32/RV64 & RV64 only \\
 \hline
-Zbb
+Zbb (*)
  & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
  & {\tt min, minu, max, maxu      } & {\tt                           } \\
- & {\tt sext.h, sext.b            } & {\tt zext.h                    } \\
+ & {\tt sext.b, sext.h            } & {\tt zext.h, zext.w            } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
- & {\tt pack, \sout{packh}        } & {\tt \sout{packw}              } \\
- & {\tt \sout{rol}, ror, rori     } & {\tt \sout{rolw}, rorw, roriw  } \\
- & {\tt rev8, \sout{rev}, orc.b   } & {\tt                           } \\
+ & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
+ & {\tt rev8, rev, orc.b          } & {\tt                           } \\
 \hline
 Zbp
  & {\tt andn, orn, xnor           } & {\tt                           } \\
@@ -33,15 +32,15 @@ Zbp
  & {\tt gorc, gorci               } & {\tt gorcw, gorciw             } \\
  & {\tt shfl, shfli               } & {\tt shflw                     } \\
  & {\tt unshfl, unshfli           } & {\tt unshflw                   } \\
- & {\tt xperm.h, xperm.b, xperm.h } & {\tt xperm.w                   } \\
+ & {\tt xperm.n, xperm.b, xperm.h } & {\tt xperm.w                   } \\
 \hline
-Zbs
+Zbs (*)
  & {\tt sbset, sbseti             } & {\tt sbsetw, sbsetiw           } \\
  & {\tt sbclr, sbclri             } & {\tt sbclrw, sbclriw           } \\
  & {\tt sbinv, sbinvi             } & {\tt sbinvw, sbinviw           } \\
  & {\tt sbext, sbexti             } & {\tt sbextw                    } \\
 \hline
-Zba
+Zba (*)
  & {\tt sh1add                    } & {\tt sh1addu.w                 } \\
  & {\tt sh2add                    } & {\tt sh2addu.w                 } \\
  & {\tt sh3add                    } & {\tt sh3addu.w                 } \\
@@ -55,7 +54,7 @@ Zbf
  & {\tt bfp                       } & {\tt bfpw                      } \\
  & {\tt pack, packh               } & {\tt packw                     } \\
 \hline
-Zbc
+Zbc (*)
  & {\tt clmul, clmulh, clmulr     } & {\tt                           } \\
 \hline
 Zbm
@@ -75,6 +74,9 @@ Zbt
 \hline
 B
  & \multicolumn{2}{l}{All of the above except Zbr and Zbt} \\
+\hline
+Notes:\\
+\multicolumn{3}{l}{- * means the extensions are expected to be unchanged in the official version.} \\
 \end{tabular}
 \caption{{\tt Zb*} extensions instruction listings}
 \end{center}
