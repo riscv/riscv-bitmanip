@@ -35,10 +35,10 @@ Zbp
  & {\tt xperm.n, xperm.b, xperm.h } & {\tt xperm.w                   } \\
 \hline
 Zbs
- & {\tt bset, bseti               } & {\tt bsetw, bsetiw             } \\
- & {\tt bclr, bclri               } & {\tt bclrw, bclriw             } \\
- & {\tt binv, binvi               } & {\tt binvw, binviw             } \\
- & {\tt bext, bexti               } & {\tt bextw                     } \\
+ & {\tt bset, bseti               } & {\tt                           } \\
+ & {\tt bclr, bclri               } & {\tt                           } \\
+ & {\tt binv, binvi               } & {\tt                           } \\
+ & {\tt bext, bexti               } & {\tt                           } \\
 \hline
 Zba (*)
  & {\tt sh1add                    } & {\tt sh1add.uw                 } \\
@@ -374,15 +374,6 @@ form.
     bclri rd, rs1, imm
     binvi rd, rs1, imm
     bexti rd, rs1, imm
-
-  RV64:
-    bsetw  rd, rs1, rs2
-    bclrw  rd, rs1, rs2
-    binvw  rd, rs1, rs2
-    bextw  rd, rs1, rs2
-    bsetiw rd, rs1, imm
-    bclriw rd, rs1, imm
-    binviw rd, rs1, imm
 \end{rvb}
 
 We define 4 single-bit instructions \texttt{bset} (set), \texttt{bclr} (clear),
@@ -1742,12 +1733,6 @@ The single-bit instructions are also encoded within the shift opcodes, with
 \end{verbatim}
 \end{minipage}
 
-There is no {\tt bextiw} instruction as it can be emulated trivially using
-{\tt bexti}. However, there is {\tt bsetiw}, {\tt bclriw}, and {\tt binviw}
-as changing bit 31 would change the sign extend. There are non-immediate *W
-instructions of all single-bit instructions, including {\tt bextw}, because
-the number of used bits in rs2 is different in {\tt bext} and {\tt bextw}.
-
 GORC and GREV are encoded in the two remaining slots in the single-bit
 instruction encoding space.
 
@@ -1923,10 +1908,6 @@ and are marked with a {\tt *}.
 |  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADD.UW
 |  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADD.UW
 |---------------------------------------------------------------|
-|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BCLRW
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BSETW
-|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BINVW
-|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  BEXTW
 |  0010100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GORCW
 |  0110100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GREVW
 |---------------------------------------------------------------|
@@ -1934,9 +1915,6 @@ and are marked with a {\tt *}.
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
 |---------------------------------------------------------------|
-|  0100100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BCLRIW
-|  0010100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BSETIW
-|  0110100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BINVIW
 |  0010100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GORCIW
 |  0110100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GREVIW
 |---------------------------------------------------------------|
