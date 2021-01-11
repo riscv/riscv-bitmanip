@@ -27,7 +27,7 @@
 
 \DeclareRobustCommand{\hsout}[1]{\texorpdfstring{\sout{#1}}{#1}}
 
-\newcommand{\specrev}{draft}
+\newcommand{\specrev}{0.93}
 
 \begin{document}
 
@@ -178,10 +178,12 @@ Date & Rev & Changes \\
 	   &      & Change encoding and behavior of {\tt bfp[w]} \\
 	   &      & Change encoding of {\tt bdep[w]} \\
 \hline
-????-??-?? & 0.93 & Add {\tt sh[123]add} and {\tt sh[123]addu.w} \\
+????-??-?? & 0.93 & Add {\tt sh[123]add} and {\tt sh[123]add.uw} \\
 	   &      & Move {\tt slo[i]} and {\tt sro[i]} to ``Zbp'' \\
-	   &      & Add {\tt orc16} to ``Zbb'' \\
 	   &      & Add {\tt xperm.[nbhw]} \\
+	   &      & Rename *{\tt u.w} instructions to *{\tt .uw} \\
+	   &      & Rename {\tt sb}* instructions to {\tt b}* \\
+	   &      & Rename {\tt pcnt}* instructions to {\tt cpop}* \\
 \hline
 \end{tabular}
 \end{center}

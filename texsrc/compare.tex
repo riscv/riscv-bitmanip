@@ -32,7 +32,7 @@ x86 bit manipulation instructions.
 \multirow{2}{*}{x86 Instruction} & \multicolumn{2}{c}{Bytes} & \multirow{2}{*}{RISC-V Code} \\
 & x86 & RV & \\
 \hline
-POPCNT       &   5 &  4 & {\tt pcnt a0, a0} \\
+POPCNT       &   5 &  4 & {\tt cpop a0, a0} \\
 \hline
 LZCNT / BSR  &   5 &  4 & {\tt clz a0, a0} \\
 \hline
@@ -345,7 +345,7 @@ Or using {\tt bfxpc} with $\texttt{rd} = \texttt{rs}$ (see Chapter~\ref{bfxp}):
 
 \subsubsection{RI5CY Instructions {\tt p.ff1}, {\tt p.cnt}, and {\tt p.ror}}
 
-These instructions map directly to the Bitmanip instructions {\tt ctz}, {\tt pcnt}, and {\tt ror}.
+These instructions map directly to the Bitmanip instructions {\tt ctz}, {\tt cpop}, and {\tt ror}.
 
 \subsubsection{RI5CY Instructions {\tt p.fl1}}
 
@@ -425,7 +425,7 @@ The Cray XMT {\tt BIT\_MERGE} instruction is equivalent to the XTernarybits
 
 \subsubsection{Population count}
 
-The Cray XMT {\tt BIT\_TALLY} instruction and the Bitmanip {\tt pcnt}
+The Cray XMT {\tt BIT\_TALLY} instruction and the Bitmanip {\tt cpop}
 instruction are equivalent.
 
 \subsubsection{Parity instructions}
@@ -434,7 +434,7 @@ The Cray XMT {\tt BIT\_ODD\_AND}, {\tt BIT\_ODD\_NIMP}, {\tt BIT\_ODD\_OR},
 and {\tt BIT\_ODD\_XOR} instruction perform the indicated bitwise boolean
 operation and then compute the parity of the result.
 
-With Bitmanip the parity can be calculated with {\tt pcnt dst, src} followed
+With Bitmanip the parity can be calculated with {\tt cpop dst, src} followed
 by {\tt andi dst, dst, 1}.
 
 \subsubsection{Bit pack/unpack instruction}

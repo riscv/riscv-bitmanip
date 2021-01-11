@@ -16,14 +16,13 @@ look like exactly, but it will probably look something like table~\ref{zbexts}.
 \begin{tabular}{lll}
 Extension & RV32/RV64 & RV64 only \\
 \hline
-Zbb
- & {\tt clz, ctz, pcnt            } & {\tt clzw, ctzw, pcntw         } \\
+Zbb (*)
+ & {\tt clz, ctz, cpop            } & {\tt clzw, ctzw, cpopw         } \\
  & {\tt min, minu, max, maxu      } & {\tt                           } \\
- & {\tt sext.h, sext.b            } & {\tt zext.h                    } \\
+ & {\tt sext.b, sext.h, zext.h    } & {\tt                           } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
- & {\tt pack, \sout{packh}        } & {\tt \sout{packw}              } \\
- & {\tt \sout{rol}, ror, rori     } & {\tt \sout{rolw}, rorw, roriw  } \\
- & {\tt rev8, \sout{rev}, orc.b   } & {\tt                           } \\
+ & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
+ & {\tt rev8, orc.b               } & {\tt                           } \\
 \hline
 Zbp
  & {\tt andn, orn, xnor           } & {\tt                           } \\
@@ -33,19 +32,19 @@ Zbp
  & {\tt gorc, gorci               } & {\tt gorcw, gorciw             } \\
  & {\tt shfl, shfli               } & {\tt shflw                     } \\
  & {\tt unshfl, unshfli           } & {\tt unshflw                   } \\
- & {\tt xperm.h, xperm.b, xperm.h } & {\tt xperm.w                   } \\
+ & {\tt xperm.n, xperm.b, xperm.h } & {\tt xperm.w                   } \\
 \hline
 Zbs
- & {\tt sbset, sbseti             } & {\tt sbsetw, sbsetiw           } \\
- & {\tt sbclr, sbclri             } & {\tt sbclrw, sbclriw           } \\
- & {\tt sbinv, sbinvi             } & {\tt sbinvw, sbinviw           } \\
- & {\tt sbext, sbexti             } & {\tt sbextw                    } \\
+ & {\tt bset, bseti               } & {\tt bsetw, bsetiw             } \\
+ & {\tt bclr, bclri               } & {\tt bclrw, bclriw             } \\
+ & {\tt binv, binvi               } & {\tt binvw, binviw             } \\
+ & {\tt bext, bexti               } & {\tt bextw                     } \\
 \hline
-Zba
- & {\tt sh1add                    } & {\tt sh1addu.w                 } \\
- & {\tt sh2add                    } & {\tt sh2addu.w                 } \\
- & {\tt sh3add                    } & {\tt sh3addu.w                 } \\
- & {\tt                           } & {\tt addu.w, slliu.w           } \\
+Zba (*)
+ & {\tt sh1add                    } & {\tt sh1add.uw                 } \\
+ & {\tt sh2add                    } & {\tt sh2add.uw                 } \\
+ & {\tt sh3add                    } & {\tt sh3add.uw                 } \\
+ & {\tt                           } & {\tt add.uw, slli.uw           } \\
 \hline
 Zbe
  & {\tt bext, bdep                } & {\tt bextw, bdepw              } \\
@@ -55,7 +54,7 @@ Zbf
  & {\tt bfp                       } & {\tt bfpw                      } \\
  & {\tt pack, packh               } & {\tt packw                     } \\
 \hline
-Zbc
+Zbc (*)
  & {\tt clmul, clmulh, clmulr     } & {\tt                           } \\
 \hline
 Zbm
@@ -75,6 +74,9 @@ Zbt
 \hline
 B
  & \multicolumn{2}{l}{All of the above except Zbr and Zbt} \\
+\hline
+Notes:\\
+\multicolumn{3}{l}{- * means the extensions are expected to be unchanged in the official version.} \\
 \end{tabular}
 \caption{{\tt Zb*} extensions instruction listings}
 \end{center}
@@ -152,14 +154,14 @@ float libraries, null suppression in data compression.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Count Bits Set (\texttt{pcnt})}
+\subsection{Count Bits Set (\texttt{cpop})}
 
 \begin{rvb}
   RV32, RV64:
-    pcnt rd, rs
+    cpop rd, rs
 
   RV64 only:
-    pcntw rd, rs
+    cpopw rd, rs
 \end{rvb}
 
 This instruction counts the number of 1 bits in a register. This operations is known as
@@ -360,31 +362,31 @@ form.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Single-bit instructions (\texttt{sbset, sbclr, sbinv, sbext})}
+\subsection{Single-bit instructions (\texttt{bset, bclr, binv, bext})}
 
 \begin{rvb}
   RV32, RV64:
-    sbset  rd, rs1, rs2
-    sbclr  rd, rs1, rs2
-    sbinv  rd, rs1, rs2
-    sbext  rd, rs1, rs2
-    sbseti rd, rs1, imm
-    sbclri rd, rs1, imm
-    sbinvi rd, rs1, imm
-    sbexti rd, rs1, imm
+    bset  rd, rs1, rs2
+    bclr  rd, rs1, rs2
+    binv  rd, rs1, rs2
+    bext  rd, rs1, rs2
+    bseti rd, rs1, imm
+    bclri rd, rs1, imm
+    binvi rd, rs1, imm
+    bexti rd, rs1, imm
 
   RV64:
-    sbsetw  rd, rs1, rs2
-    sbclrw  rd, rs1, rs2
-    sbinvw  rd, rs1, rs2
-    sbextw  rd, rs1, rs2
-    sbsetiw rd, rs1, imm
-    sbclriw rd, rs1, imm
-    sbinviw rd, rs1, imm
+    bsetw  rd, rs1, rs2
+    bclrw  rd, rs1, rs2
+    binvw  rd, rs1, rs2
+    bextw  rd, rs1, rs2
+    bsetiw rd, rs1, imm
+    bclriw rd, rs1, imm
+    binviw rd, rs1, imm
 \end{rvb}
 
-We define 4 single-bit instructions \texttt{sbset} (set), \texttt{sbclr} (clear),
-\texttt{sbinv} (invert), and \texttt{sbext} (extract), and their immediate-variants,
+We define 4 single-bit instructions \texttt{bset} (set), \texttt{bclr} (clear),
+\texttt{binv} (invert), and \texttt{bext} (extract), and their immediate-variants,
 with the following semantics:
 
 \input{bextcref-sbx}
@@ -1636,30 +1638,30 @@ On RV128 there is no {\tt fsri} instruction. But there is {\tt fsriw} and {\tt f
     sh3add rd, rs1, rs2
 
   RV64 only:
-    sh1addu.w rd, rs1, rs2
-    sh2addu.w rd, rs1, rs2
-    sh3addu.w rd, rs1, rs2
+    sh1add.uw rd, rs1, rs2
+    sh2add.uw rd, rs1, rs2
+    sh3add.uw rd, rs1, rs2
 \end{rvb}
 
 These instructions shift {\tt rs1} left by 1, 2, or 3 bits, then add the result
-to {\tt rs2}. The {\tt sh?addu.w} instructions are identical to {\tt sh?add}, except
+to {\tt rs2}. The {\tt sh?add.uw} instructions are identical to {\tt sh?add}, except
 that bits XLEN-1:32 of the {\tt rs1} argument are cleared before the shift.
 
 \input{bextcref-shadd}
 
-An opcode for {\tt sh4add}/{\tt sh4addu.w} for RV128 and/or RVQ is reserved.
+An opcode for {\tt sh4add}/{\tt sh4add.uw} for RV128 and/or RVQ is reserved.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Add/shift with prefix zero-extend ({\tt addu.w}, {\tt slliu.w})}
+\section{Add/shift with prefix zero-extend ({\tt add.uw}, {\tt slli.uw})}
 
 \begin{rvb}
   RV64:
-    addu.w rd, rs1, rs2
-    slliu.w rd, rs1, imm
+    add.uw rd, rs1, rs2
+    slli.uw rd, rs1, imm
 \end{rvb}
 
-{\tt slliu.w} and {\tt addu.w} are identical to {\tt slli} and {\tt add}, respectively,
+{\tt slli.uw} and {\tt add.uw} are identical to {\tt slli} and {\tt add}, respectively,
 except that bits XLEN-1:32 of the {\tt rs1} argument are cleared before the shift or add.
 
 \input{bextcref-slliuw}
@@ -1683,7 +1685,7 @@ All shift instructions use {\tt funct3=001} for left shifts and {\tt funct3=101}
 for right shifts. Just like in the RISC-V integer base ISA, the shift-immediate
 instructions have a 5 bit immediate on RV32, and a 6 bit immediate on RV64, and we
 reserve encoding space for a 7 bit immediate for RV128.  The same sizes apply
-to {\tt sbseti}, {\tt sbclri}, {\tt sbinvi}, and {\tt sbexti}.
+to {\tt bseti}, {\tt bclri}, {\tt binvi}, and {\tt bexti}.
 
 The immediate for {\tt shfli}/{\tt unshufli} is one bit smaller than the immediate
 for shift instructions, that is 4 bits on RV32, 5 bits on RV64, and we reserve 6
@@ -1697,7 +1699,7 @@ shift operations {\tt op[26]=0}.
 bit, that is necessary to perform a 128 bit funnel shift on RV64, can be
 emulated by swapping rs1 and rs3.
 
-There is no {\tt shfliw} instruction. The {\tt slliu.w} instruction occupies
+There is no {\tt shfliw} instruction. The {\tt slli.uw} instruction occupies
 the encoding slot that would be occupied by {\tt shfliw}.
 
 On RV128 {\tt op[26]} contains the MSB of the immediate for the shift instructions.
@@ -1732,7 +1734,7 @@ The single-bit instructions are also encoded within the shift opcodes, with
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-         | SBCLR  SBSET  SBINV | SBEXT   GORC   GREV
+         |  BCLR   BSET   BINV |  BEXT   GORC   GREV
   op[30] |     1      0      1 |     1      0      1
   op[29] |     0      1      1 |     0      1      1
   op[27] |     1      1      1 |     1      1      1
@@ -1740,11 +1742,11 @@ The single-bit instructions are also encoded within the shift opcodes, with
 \end{verbatim}
 \end{minipage}
 
-There is no {\tt sbextiw} instruction as it can be emulated trivially using
-{\tt sbexti}. However, there is {\tt sbsetiw}, {\tt sbclriw}, and {\tt sbinviw}
+There is no {\tt bextiw} instruction as it can be emulated trivially using
+{\tt bexti}. However, there is {\tt bsetiw}, {\tt bclriw}, and {\tt binviw}
 as changing bit 31 would change the sign extend. There are non-immediate *W
-instructions of all single-bit instructions, including {\tt sbextw}, because
-the number of used bits in rs2 is different in {\tt sbext} and {\tt sbextw}.
+instructions of all single-bit instructions, including {\tt bextw}, because
+the number of used bits in rs2 is different in {\tt bext} and {\tt bextw}.
 
 GORC and GREV are encoded in the two remaining slots in the single-bit
 instruction encoding space.
@@ -1771,7 +1773,7 @@ operations.
 
 {\tt pack} occupies {\tt funct3=100} in {\tt funct7=0000100}.
 
-{\tt addu.w} is encoded like {\tt addw}, except that {\tt op[27]=1}.
+{\tt add.uw} is encoded like {\tt addw}, except that {\tt op[27]=1}.
 
 Finally, RV64 has {\tt *W} instructions for all bitmanip instructions, with the
 following exceptions:
@@ -1828,10 +1830,10 @@ and are marked with a {\tt *}.
 |  0010000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  SH2ADD
 |  0010000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  SH3ADD
 |---------------------------------------------------------------|
-|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBCLR
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBSET
-|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SBINV
-|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  SBEXT
+|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  BCLR
+|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  BSET
+|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  BINV
+|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  BEXT
 |  0010100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  GORC
 |  0110100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  GREV
 |---------------------------------------------------------------|
@@ -1842,10 +1844,10 @@ and are marked with a {\tt *}.
 |  00100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SROI
 |  01100  |     imm     |   rs1   | 101 |    rd   |   0010011   |  RORI
 |---------------------------------------------------------------|
-|  01001  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBCLRI
-|  00101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBSETI
-|  01101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  SBINVI
-|  01001  |     imm     |   rs1   | 101 |    rd   |   0010011   |  SBEXTI
+|  01001  |     imm     |   rs1   | 001 |    rd   |   0010011   |  BCLRI
+|  00101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  BSETI
+|  01101  |     imm     |   rs1   | 001 |    rd   |   0010011   |  BINVI
+|  01001  |     imm     |   rs1   | 101 |    rd   |   0010011   |  BEXTI
 |  00101  |     imm     |   rs1   | 101 |    rd   |   0010011   |  GORCI
 |  01101  |     imm     |   rs1   | 101 |    rd   |   0010011   |  GREVI
 |---------------------------------------------------------------|
@@ -1865,7 +1867,7 @@ and are marked with a {\tt *}.
 |===============================================================|
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0010011   |  CLZ
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0010011   |  CTZ
-|  0110000    |  00010  |   rs1   | 001 |    rd   |   0010011   |  PCNT
+|  0110000    |  00010  |   rs1   | 001 |    rd   |   0010011   |  CPOP
 |  0110000    |  00011  |   rs1   | 001 |    rd   |   0010011   |  BMATFLIP
 |  0110000    |  00100  |   rs1   | 001 |    rd   |   0010011   |  SEXT.B
 |  0110000    |  00101  |   rs1   | 001 |    rd   |   0010011   |  SEXT.H
@@ -1901,8 +1903,8 @@ and are marked with a {\tt *}.
 |  000010   |    imm    |   rs1   | 001 |    rd   |   0010011   |  SHFLI
 |  000010   |    imm    |   rs1   | 101 |    rd   |   0010011   |  UNSHFLI
 |===============================================================|
-|  00001  |     imm     |   rs1   | 001 |    rd   |   0011011   |  SLLIU.W
-|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADDU.W
+|  00001  |     imm     |   rs1   | 001 |    rd   |   0011011   |  SLLI.UW
+|  0000100    |   rs2   |   rs1   | 000 |    rd   |   0111011   |  ADD.UW
 |---------------------------------------------------------------|
 \end{verbatim}
 \end{minipage}
@@ -1917,14 +1919,14 @@ and are marked with a {\tt *}.
 |  0110000    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  ROLW
 |  0110000    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  RORW
 |---------------------------------------------------------------|
-|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  SH1ADDU.W
-|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADDU.W
-|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADDU.W
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  SH1ADD.UW
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADD.UW
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADD.UW
 |---------------------------------------------------------------|
-|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBCLRW
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBSETW
-|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SBINVW
-|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  SBEXTW
+|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BCLRW
+|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BSETW
+|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BINVW
+|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  BEXTW
 |  0010100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GORCW
 |  0110100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GREVW
 |---------------------------------------------------------------|
@@ -1932,9 +1934,9 @@ and are marked with a {\tt *}.
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
 |---------------------------------------------------------------|
-|  0100100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBCLRIW
-|  0010100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBSETIW
-|  0110100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  SBINVIW
+|  0100100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BCLRIW
+|  0010100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BSETIW
+|  0110100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BINVIW
 |  0010100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GORCIW
 |  0110100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GREVIW
 |---------------------------------------------------------------|
@@ -1944,7 +1946,7 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0110000    |  00000  |   rs1   | 001 |    rd   |   0011011   |  CLZW
 |  0110000    |  00001  |   rs1   | 001 |    rd   |   0011011   |  CTZW
-|  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  PCNTW
+|  0110000    |  00010  |   rs1   | 001 |    rd   |   0011011   |  CPOPW
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
@@ -1983,9 +1985,9 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  0010000    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  + SH2ADD
 |  0010000    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  + SH3ADD
 |---------------------------------------------------------------|
-|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  + SH1ADDU.W
-|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + SH2ADDU.W
-|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + SH3ADDU.W
+|  0010000    |   rs2   |   rs1   | 010 |    rd   |   0111011   |  + SH1ADD.UW
+|  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  + SH2ADD.UW
+|  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  + SH3ADD.UW
 |---------------------------------------------------------------|
 |  0000101    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  - MAX
 |  0000101    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  - MINU
@@ -2023,8 +2025,8 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -00-0-1  |   MULH^(2)|   DIVU (2)|    MUL    |   MULHSU^ |   MULHU^  |    DIV    |    REM    |    REMU   |
 |  -10-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADDU.W (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
-|  -10-1-0  |   SBCLR   |   SBEXT   |           |           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
+|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADD.UW (1)|           |   BMATOR^ |    PACK   |    BEXT   |   PACKH^  |
+|  -10-1-0  |    BCLR   |    BEXT   |           |           |  BMATXOR^ |   PACKU   |    BDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -00-1-1  |  CLMUL^(2)|   MINU^(2)|           |   CLMULR^ |   CLMULH^ |    MIN^   |    MAX^   |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|           |           |           |           |           |           |
@@ -2035,8 +2037,8 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -01-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |  -11-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -01-1-0  |   SBSET   |    GORC   |  XPERM.W  |  XPERM.N  |           |  XPERM.B  |  XPERM.H  |           |
-|  -11-1-0  |   SBINV   |    GREV   |           |           |           |           |           |           |
+|  -01-1-0  |    BSET   |    GORC   |  XPERM.W  |  XPERM.N  |           |  XPERM.B  |  XPERM.H  |           |
+|  -11-1-0  |    BINV   |    GREV   |           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -01-1-1  |        (2)|        (2)|           |           |           |           |           |           |
 |  -11-1-1  |        (2)|        (2)|           |           |           |           |           |           |
@@ -2048,7 +2050,7 @@ Notes:
 (1) These instructions only exist in OP-32.
 (2) No "shift-immediate" encoding for opcodes with bit 25 set.
 (3) All unary instructions use the code space for the non-existing ROLI instruction.
-(4) SLLIU.W is encoded in the code space for the non-existing SHFLIW instruction.
+(4) SLLI.UW is encoded in the code space for the non-existing SHFLIW instruction.
 ^ Instructions marked with ^ have no *W equivalent in OP-32
 \end{verbnobox}
 \end{minipage}
@@ -2340,7 +2342,7 @@ Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} 
 \hline
 {\tt clz      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt ctz      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt pcnt     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt cpop     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
 {\tt pack     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt min      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
@@ -2348,10 +2350,10 @@ Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} 
 {\tt max      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt maxu     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt sbset    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sbclr    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sbinv    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt sbext    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bset     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bclr     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt binv     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bext     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
 {\tt sll      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt srl      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
