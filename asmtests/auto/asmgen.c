@@ -776,25 +776,9 @@ void do_clmulhw(int test) {
     PROLOG_RRR(clmulhw, test);
     EPILOG(clmulhw, test);
 }
-void do_addiwu(int test) {
-    PROLOG_RRI(addwu, addiwu, test);
-    EPILOG(addiwu, test);
-}
-void do_addwu(int test) {
-    PROLOG_RRR(addwu, test);
-    EPILOG(addwu, test);
-}
-void do_subwu(int test) {
-    PROLOG_RRR(subwu, test);
-    EPILOG(subwu, test);
-}
 void do_adduw(int test) {
     PROLOG_RRR(adduw, test);
     EPILOG(adduw, test);
-}
-void do_subuw(int test) {
-    PROLOG_RRR(subuw, test);
-    EPILOG(subuw, test);
 }
 void do_bfp(int test) {
     PROLOG_RRR(bfp, test);
@@ -949,13 +933,9 @@ int main(int argc, char **argv) {
         do_unshfli(++test);
 
 #if (XLEN==64)
-        do_addiwu(++test);
         // slliuw
 
-        do_addwu(++test);
-        do_subwu(++test);
         do_adduw(++test);
-        do_subuw(++test);
 
         do_slow(++test);
         do_srow(++test);
