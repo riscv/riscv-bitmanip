@@ -43,7 +43,7 @@ To enable the new it manip extension/instructions, enable the B bit in the MISA 
 
 And in the log you will see it enabled, for example:
 
-    Info (Bit Manipulation) extB Version(0.93 Draft) 
+    Info (Bit Manipulation) extB Version(0.94 Draft) 
 
 This simulation is instruction accurate, is provided as a pre-compiled binary, and the source of the new instructions in the model can be found in the riscvOVPsim downloads. If you want to make changes to the instructions, please contact the working group chair or [Imperas](mailto:info@imperas.com).
 

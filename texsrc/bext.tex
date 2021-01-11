@@ -35,10 +35,10 @@ Zbp
  & {\tt xperm.n, xperm.b, xperm.h } & {\tt xperm.w                   } \\
 \hline
 Zbs
- & {\tt bset, bseti               } & {\tt bsetw, bsetiw             } \\
- & {\tt bclr, bclri               } & {\tt bclrw, bclriw             } \\
- & {\tt binv, binvi               } & {\tt binvw, binviw             } \\
- & {\tt bext, bexti               } & {\tt bextw                     } \\
+ & {\tt bset, bseti               } & {\tt                           } \\
+ & {\tt bclr, bclri               } & {\tt                           } \\
+ & {\tt binv, binvi               } & {\tt                           } \\
+ & {\tt bext, bexti               } & {\tt                           } \\
 \hline
 Zba (*)
  & {\tt sh1add                    } & {\tt sh1add.uw                 } \\
@@ -47,7 +47,7 @@ Zba (*)
  & {\tt                           } & {\tt add.uw, slli.uw           } \\
 \hline
 Zbe
- & {\tt bext, bdep                } & {\tt bextw, bdepw              } \\
+ & {\tt bcompress, bdecompress    } & {\tt bcompressw, bdecompressw  } \\
  & {\tt pack, packh               } & {\tt packw                     } \\
 \hline
 Zbf
@@ -374,15 +374,6 @@ form.
     bclri rd, rs1, imm
     binvi rd, rs1, imm
     bexti rd, rs1, imm
-
-  RV64:
-    bsetw  rd, rs1, rs2
-    bclrw  rd, rs1, rs2
-    binvw  rd, rs1, rs2
-    bextw  rd, rs1, rs2
-    bsetiw rd, rs1, imm
-    bclriw rd, rs1, imm
-    binviw rd, rs1, imm
 \end{rvb}
 
 We define 4 single-bit instructions \texttt{bset} (set), \texttt{bclr} (clear),
@@ -960,7 +951,7 @@ permutation network without ``flip'' stages.
 \end{figure}
 
 The \texttt{zip} instruction with the upper half of its input cleared performs
-the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdep} with a
+the commonly needed ``fan-out'' operation. (Equivalent to {\tt bdecompress} with a
 0x55555555 mask.) The \texttt{zip} instruction applied twice fans out the bits
 in the lower quarter of the input word by a spacing of 4 bits.
 
@@ -995,7 +986,7 @@ MSB nibbles in the output set to zero:
   orc.n a0, a0
   li a1, 0x87654321
   and a1, a0, a1
-  bext a0, a1, a0
+  bcompress a0, a1, a0
 \end{verbatim}
 \end{minipage}
 
@@ -1259,61 +1250,61 @@ fuse-able sequences.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Bit Extract/Deposit (\texttt{bext,\ bdep})}
+\section{Bit Compress/Decompress (\texttt{bcompress,\ bdecompress})}
 
 \begin{rvb}
   RV32, RV64:
-    bext rd, rs1, rs2
-    bdep rd, rs1, rs2
+    bcompress rd, rs1, rs2
+    bdecompress rd, rs1, rs2
 
   RV64 only:
-    bextw rd, rs1, rs2
-    bdepw rd, rs1, rs2
+    bcompressw rd, rs1, rs2
+    bdecompressw rd, rs1, rs2
 \end{rvb}
 
 This instructions implement the generic bit extract and bit deposit functions.
 This operation is also referred to as bit gather/scatter, bit pack/unpack,
 parallel extract/deposit, compress/expand, or right\_compress/right\_expand.
 
-\texttt{bext} collects LSB justified bits to rd from rs1 using extract mask in rs2.
+\texttt{bcompress} collects LSB justified bits to rd from rs1 using extract mask in rs2.
 
-\texttt{bdep} writes LSB justified bits from rs1 to rd using deposit mask in rs2.
+\texttt{bdecompress} writes LSB justified bits from rs1 to rd using deposit mask in rs2.
 
 \input{bextcref-bext}
 
 Implementations may choose to use smaller multi-cycle implementations of
-\texttt{bext} and \texttt{bdep}, or even emulate the instructions in software.
+\texttt{bcompress} and \texttt{bdecompress}, or even emulate the instructions in software.
 
-Even though multi-cycle \texttt{bext} and \texttt{bdep} often are not fast
+Even though multi-cycle \texttt{bcompress} and \texttt{bdecompress} often are not fast
 enough to outperform algorithms that use sequences of shifts and bit masks,
 dedicated instructions for those operations can still be of great advantage in
 cases where the mask argument is not constant.
 
 For example, the following code efficiently calculates the index of the tenth
-set bit in {\tt a0} using \texttt{bdep}:
+set bit in {\tt a0} using \texttt{bdecompress}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
   li a1, 0x00000200
-  bdep a0, a1, a0
+  bdecompress a0, a1, a0
   ctz a0, a0
 \end{verbatim}
 \end{minipage}
 
 For cases with a constant mask an optimizing compiler would decide when to use
-\texttt{bext} or \texttt{bdep} based on the optimization profile for the
+\texttt{bcompress} or \texttt{bdecompress} based on the optimization profile for the
 concrete processor it is optimizing for. This is similar to the decision
 whether to use MUL or DIV with a constant, or to perform the same operation
 using a longer sequence of much simpler operations.
 
-The \texttt{bext} and \texttt{bdep} instructions are equivalent to the x86 BMI2
+The \texttt{bcompress} and \texttt{bdecompress} instructions are equivalent to the x86 BMI2
 instructions PEXT and PDEP. But there is much older prior art. For example, the
 soviet BESM-6 mainframe computer, designed and built in the 1960s, had APX/AUX
 instructions with almost the same semantics.~\cite{BESM6} (The BESM-6 APX/AUX
 instructions packed/unpacked at the MSB end instead of the LSB end. Otherwise
 it is the same instruction.)
 
-Efficient hardware implementations of \texttt{bext} and \texttt{bdep} are described
+Efficient hardware implementations of \texttt{bcompress} and \texttt{bdecompress} are described
 in~\cite{Hilewitz06} and demonstrated in~\cite{Wolf17B}.
 
 % \subsection{Justification}
@@ -1742,12 +1733,6 @@ The single-bit instructions are also encoded within the shift opcodes, with
 \end{verbatim}
 \end{minipage}
 
-There is no {\tt bextiw} instruction as it can be emulated trivially using
-{\tt bexti}. However, there is {\tt bsetiw}, {\tt bclriw}, and {\tt binviw}
-as changing bit 31 would change the sign extend. There are non-immediate *W
-instructions of all single-bit instructions, including {\tt bextw}, because
-the number of used bits in rs2 is different in {\tt bext} and {\tt bextw}.
-
 GORC and GREV are encoded in the two remaining slots in the single-bit
 instruction encoding space.
 
@@ -1765,7 +1750,7 @@ The encoding of {\tt min[u]}/{\tt max[u]} uses {\tt funct3=100..111}. The
 
 The remaining instructions are encoded within {\tt funct7=0000100}. The
 shift-like {\tt shfl}/{\tt unshfl} instructions uses the same {\tt funct3}
-values as the shift operations. {\tt bdep} and {\tt bext} are encoded in a
+values as the shift operations. {\tt bdecompress} and {\tt bcompress} are encoded in a
 way so that {\tt funct3[2]} selects the ``direction'', similar to shift
 operations.
 
@@ -1923,10 +1908,6 @@ and are marked with a {\tt *}.
 |  0010000    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  SH2ADD.UW
 |  0010000    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  SH3ADD.UW
 |---------------------------------------------------------------|
-|  0100100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BCLRW
-|  0010100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BSETW
-|  0110100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  BINVW
-|  0100100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  BEXTW
 |  0010100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GORCW
 |  0110100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  GREVW
 |---------------------------------------------------------------|
@@ -1934,9 +1915,6 @@ and are marked with a {\tt *}.
 |  0010000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  SROIW
 |  0110000    |   imm   |   rs1   | 101 |    rd   |   0011011   |  RORIW
 |---------------------------------------------------------------|
-|  0100100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BCLRIW
-|  0010100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BSETIW
-|  0110100    |   imm   |   rs1   | 001 |    rd   |   0011011   |  BINVIW
 |  0010100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GORCIW
 |  0110100    |   imm   |   rs1   | 101 |    rd   |   0011011   |  GREVIW
 |---------------------------------------------------------------|
@@ -2370,8 +2348,8 @@ Instruction & {\tt \_rv\_*} & {\tt \_rv32\_*} & {\tt \_rv\_*} & {\tt \_rv32\_*} 
 \hline
 {\tt bfp      } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
-{\tt bext     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
-{\tt bdep     } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bcompress   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
+{\tt bdecompress } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 \hline
 {\tt clmul    } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
 {\tt clmulh   } & \ding{52} & \ding{52} & \ding{52} & \ding{52} & \ding{52} \\
