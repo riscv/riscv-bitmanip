@@ -87,25 +87,25 @@ uint64_t rorw(uint32_t rs1, uint32_t rs2) {
     uint64_t u64 = (int64_t)(int32_t)u32;
     return u64;
 }
-uint64_t sbsetw(uint32_t rs1, uint32_t rs2) {
+uint64_t bsetw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
     uint32_t u32 = rs1 | (uint32_t(1) << shamt);
     uint64_t u64 = (int64_t)(int32_t)u32;
     return u64;
 }
-uint64_t sbclrw(uint32_t rs1, uint32_t rs2) {
+uint64_t bclrw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
     uint32_t u32 = rs1 & ~(uint32_t(1) << shamt);
     uint64_t u64 = (int64_t)(int32_t)u32;
     return u64;
 }
-uint64_t sbinvw(uint32_t rs1, uint32_t rs2){
+uint64_t binvw(uint32_t rs1, uint32_t rs2){
     int shamt = rs2 & (XLEN_W - 1);
     uint32_t u32 = rs1 ^ (uint32_t(1) << shamt);
     uint64_t u64 = (int64_t)(int32_t)u32;
     return u64;
 }
-uint64_t sbextw(uint32_t rs1, uint32_t rs2) {
+uint64_t bextw(uint32_t rs1, uint32_t rs2) {
     int shamt = rs2 & (XLEN_W - 1);
     uint32_t u32 = 1 & (rs1 >> shamt);
     uint64_t u64 = (int64_t)(int32_t)u32;
@@ -148,7 +148,7 @@ uint64_t ctzw(uint32_t rs1) {
             return count;
     return XLEN_W;
 }
-uint64_t pcntw(uint32_t rs1) {
+uint64_t cpopw(uint32_t rs1) {
     int count = 0;
     for (int index = 0; index < XLEN_W; index++)
         count += (rs1 >> index) & 1;
@@ -188,7 +188,7 @@ uint64_t unshflw(uint32_t rs1, uint32_t rs2) {
     uint64_t u64 = (int64_t)(int32_t)u32;
     return u64;
 }
-uint64_t bdepw(uint32_t rs1, uint32_t rs2) {
+uint64_t bdecompressw(uint32_t rs1, uint32_t rs2) {
     uint32_t r = 0;
     for (int i = 0, j = 0; i < XLEN_W; i++) {
         if ((rs2 >> i) & 1) {
@@ -200,7 +200,7 @@ uint64_t bdepw(uint32_t rs1, uint32_t rs2) {
     uint64_t u64 = (int64_t)(int32_t)r;
     return u64;
 }
-uint64_t bextw(uint32_t rs1, uint32_t rs2) {
+uint64_t bcompressw(uint32_t rs1, uint32_t rs2) {
     uint32_t r = 0;
     for (int i = 0, j = 0; i < XLEN_W; i++) {
         if ((rs2 >> i) & 1) {
@@ -453,13 +453,13 @@ void do_ctzw(int test) {
     PROLOG_RR(ctzw, test);
     EPILOG(ctzw, test);
 }
-void do_pcnt(int test) {
-    PROLOG_RR(pcnt, test);
-    EPILOG(pcnt, test);
+void do_cpop(int test) {
+    PROLOG_RR(cpop, test);
+    EPILOG(cpop, test);
 }
-void do_pcntw(int test) {
-    PROLOG_RR(pcntw, test);
-    EPILOG(pcntw, test);
+void do_cpopw(int test) {
+    PROLOG_RR(cpopw, test);
+    EPILOG(cpopw, test);
 }
 void do_sextb(int test) {
     PROLOG_RR(sextb, test);
@@ -529,65 +529,65 @@ void do_rorw(int test) {
     PROLOG_RRR(rorw, test);
     EPILOG(rorw, test);
 }
-void do_sbset(int test) {
-    PROLOG_RRR(sbset, test);
-    EPILOG(sbset, test);
+void do_bset(int test) {
+    PROLOG_RRR(bset, test);
+    EPILOG(bset, test);
 }
-void do_sbsetw(int test) {
-    PROLOG_RRR(sbsetw, test);
-    EPILOG(sbsetw, test);
+void do_bsetw(int test) {
+    PROLOG_RRR(bsetw, test);
+    EPILOG(bsetw, test);
 }
-void do_sbclr(int test) {
-    PROLOG_RRR(sbclr, test);
-    EPILOG(sbclr, test);
+void do_bclr(int test) {
+    PROLOG_RRR(bclr, test);
+    EPILOG(bclr, test);
 }
-void do_sbclrw(int test) {
-    PROLOG_RRR(sbclrw, test);
-    EPILOG(sbclrw, test);
+void do_bclrw(int test) {
+    PROLOG_RRR(bclrw, test);
+    EPILOG(bclrw, test);
 }
-void do_sbinv(int test) {
-    PROLOG_RRR(sbinv, test);
-    EPILOG(sbinv, test);
+void do_binv(int test) {
+    PROLOG_RRR(binv, test);
+    EPILOG(binv, test);
 }
-void do_sbinvw(int test) {
-    PROLOG_RRR(sbinvw, test);
-    EPILOG(sbinvw, test);
+void do_binvw(int test) {
+    PROLOG_RRR(binvw, test);
+    EPILOG(binvw, test);
 }
-void do_sbext(int test) {
-    PROLOG_RRR(sbext, test);
-    EPILOG(sbext, test);
+void do_bext(int test) {
+    PROLOG_RRR(bext, test);
+    EPILOG(bext, test);
 }
-void do_sbextw(int test) {
-    PROLOG_RRR(sbextw, test);
-    EPILOG(sbextw, test);
+void do_bextw(int test) {
+    PROLOG_RRR(bextw, test);
+    EPILOG(bextw, test);
 }
-void do_sbseti(int test) {
-    PROLOG_RRI(sbset, sbseti, test);
-    EPILOG(sbseti, test);
+void do_bseti(int test) {
+    PROLOG_RRI(bset, bseti, test);
+    EPILOG(bseti, test);
 }
-void do_sbsetiw(int test) {
-    PROLOG_RRI(sbsetw, sbsetiw, test);
-    EPILOG(sbsetiw, test);
+void do_bsetiw(int test) {
+    PROLOG_RRI(bsetw, bsetiw, test);
+    EPILOG(bsetiw, test);
 }
-void do_sbclri(int test) {
-    PROLOG_RRI(sbclr, sbclri, test);
-    EPILOG(sbclri, test);
+void do_bclri(int test) {
+    PROLOG_RRI(bclr, bclri, test);
+    EPILOG(bclri, test);
 }
-void do_sbclriw(int test) {
-    PROLOG_RRI(sbclrw, sbclriw, test);
-    EPILOG(sbclriw, test);
+void do_bclriw(int test) {
+    PROLOG_RRI(bclrw, bclriw, test);
+    EPILOG(bclriw, test);
 }
-void do_sbinvi(int test) {
-    PROLOG_RRI(sbinv, sbinvi, test);
-    EPILOG(sbinvi, test);
+void do_binvi(int test) {
+    PROLOG_RRI(binv, binvi, test);
+    EPILOG(binvi, test);
 }
-void do_sbinviw(int test) {
-    PROLOG_RRI(sbinvw, sbinviw, test);
-    EPILOG(sbinviw, test);
+void do_binviw(int test) {
+    PROLOG_RRI(binvw, binviw, test);
+    EPILOG(binviw, test);
 }
-void do_sbexti(int test) {
-    PROLOG_RRI(sbext, sbexti, test);
-    EPILOG(sbexti, test);
+void do_bexti(int test) {
+    PROLOG_RRI(bext, bexti, test);
+    EPILOG(bexti, test);
 }
 void do_rori(int test) {
     PROLOG_RRI(ror, rori, test);
@@ -633,21 +633,21 @@ void do_unshfli(int test) {
     PROLOG_RRI(unshfl, unshfli, test);
     EPILOG(unshfli, test);
 }
-void do_bext(int test) {
-    PROLOG_RRR(bext, test);
-    EPILOG(bext, test);
+void do_bcompress(int test) {
+    PROLOG_RRR(bcompress, test);
+    EPILOG(bcompress, test);
 }
-void do_bextw(int test) {
-    PROLOG_RRR(bextw, test);
-    EPILOG(bextw, test);
+void do_bcompressw(int test) {
+    PROLOG_RRR(bcompressw, test);
+    EPILOG(bcompressw, test);
 }
-void do_bdep(int test) {
-    PROLOG_RRR(bdep, test);
-    EPILOG(bdep, test);
+void do_bdecompress(int test) {
+    PROLOG_RRR(bdecompress, test);
+    EPILOG(bdecompress, test);
 }
-void do_bdepw(int test) {
-    PROLOG_RRR(bdepw, test);
-    EPILOG(bdepw, test);
+void do_bdecompressw(int test) {
+    PROLOG_RRR(bdecompressw, test);
+    EPILOG(bdecompressw, test);
 }
 void do_pack(int test) {
     PROLOG_RRR(pack, test);
@@ -862,10 +862,10 @@ int main(int argc, char **argv) {
         do_rol(++test);
         do_ror(++test);
 
-        do_sbclr(++test);
-        do_sbset(++test);
-        do_sbinv(++test);
-        do_sbext(++test);
+        do_bclr(++test);
+        do_bset(++test);
+        do_binv(++test);
+        do_bext(++test);
         // gorc
         do_grev(++test);
 
@@ -873,10 +873,10 @@ int main(int argc, char **argv) {
         do_sroi(++test);
         do_rori(++test);
 
-        do_sbclri(++test);
-        do_sbseti(++test);
-        do_sbinvi(++test);
-        do_sbexti(++test);
+        do_bclri(++test);
+        do_bseti(++test);
+        do_binvi(++test);
+        do_bexti(++test);
         // gorci
         do_grevi(++test);
 
@@ -888,7 +888,7 @@ int main(int argc, char **argv) {
 
         do_clz(++test);
         do_ctz(++test);
-        do_pcnt(++test);
+        do_cpop(++test);
         do_sextb(++test);
         do_sexth(++test);
 #if (XLEN==64)
@@ -918,8 +918,8 @@ int main(int argc, char **argv) {
 
         do_shfl(++test);
         do_unshfl(++test);
-        do_bdep(++test);
-        do_bext(++test);
+        do_bdecompress(++test);
+        do_bcompress(++test);
         do_pack(++test);
         do_packu(++test);
 #if (XLEN==64)
@@ -943,10 +943,10 @@ int main(int argc, char **argv) {
         do_rorw(++test);
 
 
-        do_sbclrw(++test);
-        do_sbsetw(++test);
-        do_sbinvw(++test);
-        do_sbextw(++test);
+        do_bclrw(++test);
+        do_bsetw(++test);
+        do_binvw(++test);
+        do_bextw(++test);
         // gorcw
         do_grevw(++test);
 
@@ -954,9 +954,9 @@ int main(int argc, char **argv) {
         do_sroiw(++test);
         do_roriw(++test);
 
-        do_sbclriw(++test);
-        do_sbsetiw(++test);
-        do_sbinviw(++test);
+        do_bclriw(++test);
+        do_bsetiw(++test);
+        do_binviw(++test);
         // gorciw
         // greviw
 
@@ -966,7 +966,7 @@ int main(int argc, char **argv) {
 
         do_clzw(++test);
         do_ctzw(++test);
-        do_pcntw(++test);
+        do_cpopw(++test);
 
         do_clmulw(++test);
         do_clmulrw(++test);
@@ -974,8 +974,8 @@ int main(int argc, char **argv) {
 
         do_shflw(++test);
         do_unshflw(++test);
-        do_bdepw(++test);
-        do_bextw(++test);
+        do_bdecompressw(++test);
+        do_bcompressw(++test);
         do_packw(++test);
         do_packuw(++test);
         do_bfpw(++test);

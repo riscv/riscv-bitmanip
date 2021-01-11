@@ -34,7 +34,7 @@ uint_xlen_t ctz(uint_xlen_t rs1)
 // --REF-END--
 
 // --REF-BEGIN-- pcnt
-uint_xlen_t pcnt(uint_xlen_t rs1)
+uint_xlen_t cpop(uint_xlen_t rs1)
 {
 	int count = 0;
 	for (int index = 0; index < XLEN; index++)
@@ -209,7 +209,7 @@ uint_xlen_t xperm_w (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 
 // --REF-END--
 
 // --REF-BEGIN-- bext
-uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bcompress(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t r = 0;
 	for (int i = 0, j = 0; i < XLEN; i++)
@@ -221,7 +221,7 @@ uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
 	return r;
 }
 
-uint_xlen_t bdep(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bdecompress(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t r = 0;
 	for (int i = 0, j = 0; i < XLEN; i++)
@@ -699,7 +699,7 @@ uint64_t bmatxor(uint64_t rs1, uint64_t rs2)
 
 	uint64_t x = 0;
 	for (int i = 0; i < 64; i++) {
-		if (pcnt(u[i / 8] & v[i % 8]) & 1)
+		if (cpop(u[i / 8] & v[i % 8]) & 1)
 			x |= 1LL << i;
 	}
 
@@ -818,25 +818,25 @@ uint_xlen_t slliuw(uint_xlen_t rs1, int imm)
 // --REF-END--
 
 // --REF-BEGIN-- sbx
-uint_xlen_t sbset(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bset(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return rs1 | (uint_xlen_t(1) << shamt);
 }
 
-uint_xlen_t sbclr(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bclr(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return rs1 & ~(uint_xlen_t(1) << shamt);
 }
 
-uint_xlen_t sbinv(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t binv(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return rs1 ^ (uint_xlen_t(1) << shamt);
 }
 
-uint_xlen_t sbext(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bext(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	int shamt = rs2 & (XLEN - 1);
 	return 1 & (rs1 >> shamt);
