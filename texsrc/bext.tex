@@ -269,28 +269,6 @@ example, interleaving the bytes in the lower halves of {\tt rs1} and {\tt rs2}:
 \end{verbatim}
 \end{minipage}
 
-{\tt pack} is most commonly used to zero-extend words $<$XLEN.
-For this purpose we define the following assembler pseudo-ops:
-
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  RV32:
-    zext.b rd, rs   ->    andi  rd, rs, 255
-    zext.h rd, rs   ->    pack  rd, rs, zero
-
-  RV64:
-    zext.b rd, rs   ->    andi  rd, rs, 255
-    zext.h rd, rs   ->    packw rd, rs, zero
-    zext.w rd, rs   ->    pack  rd, rs, zero
-
-  RV128:.
-    zext.b rd, rs   ->    andi  rd, rs, 255
-    zext.h rd, rs   ->    packw rd, rs, zero
-    zext.w rd, rs   ->    packd rd, rs, zero
-    zext.d rd, rs   ->    pack  rd, rs, zero
-\end{verbatim}
-\end{minipage}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
@@ -350,7 +328,7 @@ half-words and for zero- and sign-extending words:
   RV64:
     zext.b rd, rs   ->   andi rd, rs, 255
     zext.h rd, rs   ->   packw rd, rs, zero
-    zext.w rd, rs   ->   pack rd, rs, zero
+    zext.w rd, rs   ->   add.uw rd, rs, zero
     sext.w rd, rs   ->   addiw rd, rs, 0
 \end{verbatim}
 \end{minipage}
@@ -2072,8 +2050,9 @@ In bitmanipulation code \texttt{not} is a very common operation. But there is
 no compressed encoding for those operation because there is no \texttt{c.xori}
 instruction.
 
-On RV64 (and RV128) {\tt zext.w} and {\tt zext.d} ({\tt pack} and {\tt packw})
-are commonly used to zero-extend unsigned values $<$XLEN.
+On RV64, {\tt zext.w} ({\tt add.uw}) is commonly used to zero-extend unsigned
+words.  For RV128, {\tt zext.d} is expected to be similarly common, and might
+map to a hypothetical {\tt add.ud} instruction.
 
 It presumably would make sense for a future revision of the ``C'' extension to
 include compressed opcodes for those instructions.
