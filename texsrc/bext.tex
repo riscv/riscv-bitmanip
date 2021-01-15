@@ -94,10 +94,12 @@ added value for the individual instructions.
 
 For the purpose of tool-chain development ``B'' is currently everything.
 
-For extensions that only implement certain pseudo-instructions (such as ``Zbb''
-implements {\tt rev8} and {\tt rev}, which are pseudo-instructions for {\tt grevi rd, rs1, -8}
-and {\tt grevi rd, rs1, -1} respectively, the same binary encoding is used for those
-instructions as are used on a core with full support for the {\tt grev[i]} instruction.
+For extensions that only implement certain pseudo-instructions (e.g., ``Zbb''
+provides {\tt rev8}, {\tt orc.b}, and {\tt zext.h}, which are
+pseudoinstructions for {\tt grevi}, {\tt gorci}, and {\tt pack} (RV32) or {\tt
+packw} (RV64), respectively), the same binary encoding is used for those
+instructions as are used on a core with full support for the {\tt grev[i]}
+instruction.
 
 Like in the base ISA, we add {\tt *W} instruction variants on RV64 with the
 semantic of the matching RV32 instruction. Those instructions ignore the upper
