@@ -3,10 +3,10 @@
 
 In the proposals provided in this chapter, the C code examples are for
 illustration purposes only. They are not optimal implementations, but are
-intended to specify the desired functionality.
+intended to clearly specify the desired functionality.
 % See Section~\ref{fastc} for fast C code for use in emulators.
 
-The final standard will likely define a range of Z-extensions for different bit
+The final standard will define a range of Z-extensions for different bit
 manipulation instructions, with the ``B'' extension itself being a mix of
 instructions from those Z-extensions. It is unclear as of yet what this will
 look like exactly, but it will probably look something like table~\ref{zbexts}.
@@ -22,7 +22,7 @@ Zbb (*)
  & {\tt sext.b, sext.h, zext.h    } & {\tt                           } \\
  & {\tt andn, orn, xnor           } & {\tt                           } \\
  & {\tt rol, ror, rori            } & {\tt rolw, rorw, roriw         } \\
- & {\tt rev8, orc.b               } & {\tt                           } \\
+ & {\tt rev8(RV32), orc.b         } & {\tt rev8                      } \\
 \hline
 Zbp
  & {\tt andn, orn, xnor           } & {\tt                           } \\
@@ -76,7 +76,7 @@ B
  & \multicolumn{2}{l}{All of the above except Zbr and Zbt} \\
 \hline
 Notes:\\
-\multicolumn{3}{l}{- * means the extensions are expected to be unchanged in the official version.} \\
+\multicolumn{3}{l}{- * means the sub-extensions (including the constituent instruction mnemonics, opcodes and function) have been approved and are frozen. } \\
 \end{tabular}
 \caption{{\tt Zb*} extensions instruction listings}
 \end{center}
@@ -362,39 +362,7 @@ with the following semantics:
 
 \input{bextcref-sbx}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
-
-\begin{rvb}
-  RV32, RV64:
-    slo  rd, rs1, rs2
-    sro  rd, rs1, rs2
-    sloi rd, rs1, imm
-    sroi rd, rs1, imm
-
-  RV64 only:
-    slow  rd, rs1, rs2
-    srow  rd, rs1, rs2
-    sloiw rd, rs1, imm
-    sroiw rd, rs1, imm
-\end{rvb}
-
-These instructions are similar to shift-logical operations from the base
-spec, except instead of shifting in zeros, they shift in ones.
-
-\input{bextcref-sxo}
-
-ISAs with flag registers often have a "Shift in Carry" or "Rotate through Carry" instruction.
-Arguably a "Shift Ones" is an equivalent on an ISA like RISC-V that avoids such flag registers.
-
-The main application for the Shift Ones instruction is mask generation.
-
-When implementing this circuit, the only change in the ALU over a
-standard logical shift is that the value shifted in is not zero, but is
-a 1-bit register value that has been forwarded from the high bit of the
-instruction decode. This creates the desired behavior on both logical
-zero-shifts and logical ones-shifts.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -2388,3 +2356,56 @@ Usage example:
 Defining {\tt RVINTRIN\_EMULATE} before including {\tt <rvintrin.h>} will
 define plain C functions that emulate the behavior of the RISC-V instructions.
 This is useful for testing software on non-RISC-V platforms.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Previously considered instructions}
+
+The following instructions had been previously considered but have not been included in any
+of BitManip subextensions. The reasons for exclusion are included with each group of
+instructions so that they can be revisited should sufficient evidence arise to show that
+they are useful and efficient as well as overcome any specific objections.
+
+\subsection{Shift Ones (Left/Right) (\texttt{slo,\ sloi,\ sro,\ sroi})}
+
+\begin{commentary}
+\begin{center}
+	Reason for exclusion:...
+\end{center}
+The Shift Ones instructions were excluded due to a lack of support in languages for such
+instructions. Furthermore, there was insufficient evidence to show that the inclusion of 
+these instructions would help performance or reduce power.
+In general, the function of these instructions can be emulated by a three instruction
+sequence of invert => shift => invert. 
+\end{commentary}
+
+\begin{rvb}
+	RV32, RV64:
+	slo  rd, rs1, rs2
+	sro  rd, rs1, rs2
+	sloi rd, rs1, imm
+	sroi rd, rs1, imm
+	
+	RV64 only:
+	slow  rd, rs1, rs2
+	srow  rd, rs1, rs2
+	sloiw rd, rs1, imm
+	sroiw rd, rs1, imm
+\end{rvb}
+
+These instructions are similar to shift-logical operations from the base
+spec, except instead of shifting in zeros, they shift in ones.
+
+\input{bextcref-sxo}
+
+ISAs with flag registers often have a "Shift in Carry" or "Rotate through Carry" instruction.
+Arguably a "Shift Ones" is an equivalent on an ISA like RISC-V that avoids such flag registers.
+
+The main application for the Shift Ones instruction is mask generation.
+
+\begin{commentary}
+	It is intended that the shift ones instructions differ from their "shift zero"
+	counterparts by a single bit in the instruction encoding, with that bit being a "0" for the
+	standard instructions and a "1" for these shift-in-one instructions. In such a scheme, the
+	logic for both versions of the instructions can be the same with the shifted-in value being
+	this one different encoding bit. 
+\end{commentary}
