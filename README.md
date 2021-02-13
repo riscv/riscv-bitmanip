@@ -54,6 +54,10 @@ In order to produce the Specification pdf run the following command
 
     $ make document
 
+The following command installs the prerequisites for building the specification PDF on Ubuntu:
+
+    $ sudo apt install clang texlive-latex-base texlive-latex-extra texlive-luatex make
+
 ## Issues or more information
 Please add an issue to this repository or email the normal bitmanip working group alias.
 
