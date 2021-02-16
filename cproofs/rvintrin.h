@@ -1045,8 +1045,8 @@ RVINTRIN_GORC_PSEUDO_OP64(63, orc)
 #define RVINTRIN_SHFL_PSEUDO_OP32(_arg, _name) \
 	static inline long    _rv_     ## _name(long    rs1) { return _rv_shfl    (rs1, _arg); } \
 	static inline long    _rv_un   ## _name(long    rs1) { return _rv_unshfl  (rs1, _arg); } \
-	static inline int32_t _rv32_un ## _name(int32_t rs1) { return _rv32_shfl  (rs1, _arg); } \
-	static inline int32_t _rv32_   ## _name(int32_t rs1) { return _rv32_unshfl(rs1, _arg); }
+	static inline int32_t _rv32_   ## _name(int32_t rs1) { return _rv32_shfl  (rs1, _arg); } \
+	static inline int32_t _rv32_un ## _name(int32_t rs1) { return _rv32_unshfl(rs1, _arg); }
 
 #define RVINTRIN_SHFL_PSEUDO_OP64(_arg, _name)
 
