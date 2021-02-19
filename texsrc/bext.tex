@@ -34,7 +34,7 @@ Zbp
  & {\tt unshfl, unshfli           } & {\tt unshflw                   } \\
  & {\tt xperm.n, xperm.b, xperm.h } & {\tt xperm.w                   } \\
 \hline
-Zbs
+Zbs (*)
  & {\tt bset, bseti               } & {\tt                           } \\
  & {\tt bclr, bclri               } & {\tt                           } \\
  & {\tt binv, binvi               } & {\tt                           } \\
@@ -76,7 +76,7 @@ B
  & \multicolumn{2}{l}{All of the above except Zbr and Zbt} \\
 \hline
 Notes:\\
-\multicolumn{3}{l}{- * means the sub-extensions (including the constituent instruction mnemonics, opcodes and function) have been approved and are frozen. } \\
+\multicolumn{3}{l}{- * means the instructions in these sub-extensions have been approved and are frozen. } \\
 \end{tabular}
 \caption{{\tt Zb*} extensions instruction listings}
 \end{center}
@@ -115,6 +115,10 @@ the {\tt *W} instruction would when the 64-bit instruction is fed sign-extended
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Count Leading/Trailing Zeros (\texttt{clz, ctz})}
+% We need a way to show what is frozen and what is not
+% Eventually, frozen extensions will be moved to forked out documents (or sections), but we need something for right now.
+\framebox{Frozen}
+% first lame attempt at frozen demarcation
 
 \begin{rvb}
   RV32, RV64:
@@ -140,6 +144,7 @@ output is 0.
 The expression {\tt XLEN-1-clz(x)} evaluates to the index of the most significant
 set bit, also known as integer base-2 logarithm, or -1 if {\tt x} is zero.
 
+\begin{commentary}
 These instructions are commonly used for scanning bitmaps for set bits, for
 example in {\tt malloc()}, in binary GCD, or in priority queues such as the
 {\tt sched\_find\_first\_bit()} function used in the Linux kernel real-time
@@ -147,7 +152,7 @@ scheduler.
 
 Another common applications include normalization in fixed-point code and soft
 float libraries, null suppression in data compression.
-
+\end{commentary}
 % \subsection{References}
 %
 % https://en.wikipedia.org/wiki/Find\_first\_set\#CLZ
@@ -2408,4 +2413,9 @@ The main application for the Shift Ones instruction is mask generation.
 	standard instructions and a "1" for these shift-in-one instructions. In such a scheme, the
 	logic for both versions of the instructions can be the same with the shifted-in value being
 	this one different encoding bit. 
+\end{commentary}
+
+\subsection{addiwu (\texttt{addiwu})}
+\begin{commentary}
+This is a placeholder for info on this instruction. We need to figure out how to document variations that were removed when the main instruction remained.
 \end{commentary}
