@@ -1,29 +1,42 @@
+riscvOVPsim / riscvOVPsimPlus
+===
+Complete, Fully Functional, Configurable RISC-V Simulators
+===
+
+riscvOVPsim has been split into two separate executable simulators; riscvOVPsim and riscvOVPsimPlus
+
+
 riscvOVPsim
-===
-A Complete, Fully Functional, Configurable RISC-V Simulator
-===
+---
+riscvOVPsim supports the RISC-V Foundation's public User and Privilege specifications, including all standard and ratified extensions i.e. I E M A F D C S U N.
 
-riscvOVPsim has moved to its own GitHub repository.
+riscvOVPsim has moved to its own GitHub repository. It can now be found here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests)
 
-It can now be found here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests)
+riscvOVPsimPlus
+---
+riscvOVPsimPlus extends the functionality of riscvOVPsim and provides many more features including full configurable instruction trace, GDB/Eclipse debug, and memory configuration options. Additionally in the model are: CLIC, Debug Module/Mode, multi-hart, H-hypervisor simulation, and also 'near-ratified' ISA extensions: V-vector, B-bitmanip, K-crypto(scalar).
 
-For the enhanced version, please download from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscvOVPsimPlus).
+riscvOVPsimPlus can be downloaded from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscvOVPsimPlus).
 
+
+Introduction
+---
 The simulators implement the full and complete functionality of the RISC-V Foundation's public User and Privilege specifications.  
 
 The simulator is command line configurable to enable/disable all current optional and processor specific options. 
 
 The simulator is developed, licensed and maintained by [Imperas Software](http://www.imperas.com/riscv) and it is fully compliant to the OVP open standard APIs. 
 
-As a member of the RISC-V Foundation community of software and hardware innovators collaboratively driving RISC-V adoption, Imperas has developed the riscvOVPsim simulator to assist RISC-V adopters to become compliant to the RISC-V specifications. The latest RISC-V compliance test suite and framework can be downloaded from https://www.github.com/riscv/riscv-compliance. 
+As a member of the RISC-V Foundation community of software and hardware innovators collaboratively driving RISC-V adoption, Imperas has developed the riscvOVPsim simulators to assist RISC-V adopters to become compliant to the RISC-V specifications. The latest RISC-V compliance test suite and framework can be downloaded from https://www.github.com/riscv/riscv-compliance. 
 
-riscvOVPsim includes an industrial quality model and simulator of RISC-V processors for use for compliance and test development. It has been developed for personal, academic, or commercial use, and the model is provided as open source under the Apache 2.0 license. The simulator is provided under the  Open Virtual Platforms (OVP) Fixed Platform Kits license that enables download and usage. riscvOVPsim and Imperas RISC-V support is actively maintained and enhanced. To ensure you make use of the current version of riscvOVPsim versions do expire. Please download the latest version.
+riscvOVPsim and riscvOVPsimPlus include an industrial quality model and simulator of RISC-V processors for use for compliance and test development. It has been developed for personal, academic, or commercial use, and the model is provided as open source under the Apache 2.0 license. The simulator is provided under the  Open Virtual Platforms (OVP) Fixed Platform Kits license that enables download and usage. riscvOVPsim and Imperas RISC-V support is actively maintained and enhanced. To ensure you make use of the current version of riscvOVPsim versions do expire. Please download the latest version.
 
 ![](riscvOVPsim.jpg)  
 
-Extending riscvOVPsim and building your own models and platforms
+
+Extending and building your own models and platforms
 ---
-riscvOVPsim is a fixed function simulation of one configurable processor model in a fixed platform. 
+riscvOVPsim and riscvOVPsimPlus are fixed function simulation of one configurable processor model in a fixed platform. 
 Full extendable platform simulations of reference designs booting FreeRTOS, Linux, SMP Linux etc. 
 are available as open source and are available from [www.IMPERAS.com](http://www.imperas.com), 
 [www.OVPworld.org](http://www.OVPworld.org).  
