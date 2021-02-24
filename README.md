@@ -24,22 +24,25 @@ The [cproofs](cproofs) directory contains the reference C models and a few relat
 
 ----
 
-# Imperas riscvOVPsim Reference Simulation
-**riscvOVPsim** was created by Imperas in 2018 to assist in the development of compliance tests and to provide a free, high quality, configurable reference simulator of the RISC-V specifications.
+# Imperas riscvOVPsimPlus Free Reference Simulation
+
+**riscvOVPsimPlus** is an extension to **riscvOVPsim** created by Imperas in 2018 to assist in the development of compliance tests and to provide a free, high quality, configurable reference simulator of the RISC-V specifications.
 
 It is developed by Imperas and is kept up to date as the Bit Manip extensions changes and moves to standardization.
 
 It was originally provided in this repository as a convenience. It has now evolved and has been enhanced and moved to its own repository.
 
-There are now two flavors: _riscvOVPsim_ from [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) which is useful for running compliance tests and generating the required signatures, and _riscvOVPsimPlus_ from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscv-ovpsim-plus) which is used for test development and verification.
+There are now two flavors:  _riscvOVPsim_  from [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) which supports standard and ratified extensions and is useful for running compliance tests and generating the required signatures, and  _riscvOVPsimPlus_  from [ovpworld.org/riscv-ovpsim-plus](https://www.ovpworld.org/riscv-ovpsim-plus) which supports additional features and all extension, including those not yet ratified, is used for test development and verification.
 
 Please contact info@ovpworld.org or info@imperas.com for more information.
 
-For details on riscvOVPsim look here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) and here: [riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf](https://github.com/riscv-ovpsim/imperas-riscv-tests/blob/main/riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf).
+For details on riscvOVPsim look here: [github.com/riscv-ovpsim](https://github.com/riscv-ovpsim/imperas-riscv-tests) and here: [riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf](https://github.com/riscv-ovpsim/imperas-riscv-tests/blob/master/riscv-ovpsim/doc/riscvOVPsim_User_Guide.pdf).
 
-To enable the new it manip extension/instructions, enable the B bit in the MISA register
+For details on riscvOVPsimPlus look here: [riscv-ovpsim/doc/riscvOVPsimPlus_User_Guide.pdf](https://github.com/riscv-ovpsim/imperas-riscv-tests/blob/master/riscv-ovpsim-plus/doc/riscvOVPsimPlus_User_Guide.pdf).
 
-    riscvOVPsim.exe --override riscvOVPsim/cpu/add_Extensions=B
+To enable the bit manip extension/instructions, enable the B bit in the MISA register
+
+    riscvOVPsimPlus.exe --override riscvOVPsim/cpu/add_Extensions=B
 
 And in the log you will see it enabled, for example:
 

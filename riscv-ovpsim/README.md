@@ -36,7 +36,7 @@ riscvOVPsim and riscvOVPsimPlus include an industrial quality model and simulato
 
 Extending and building your own models and platforms
 ---
-riscvOVPsim and riscvOVPsimPlus are fixed function simulation of one configurable processor model in a fixed platform. 
+riscvOVPsim and riscvOVPsimPlus are free to use and provide fixed function simulation of one configurable processor model in a fixed platform. 
 Full extendable platform simulations of reference designs booting FreeRTOS, Linux, SMP Linux etc. 
 are available as open source and are available from [www.IMPERAS.com](http://www.imperas.com), 
 [www.OVPworld.org](http://www.OVPworld.org).  
