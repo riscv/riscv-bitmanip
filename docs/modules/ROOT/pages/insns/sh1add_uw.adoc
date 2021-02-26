@@ -1,0 +1,42 @@
+== Word-sized index into a halfword (16-bit) array
+
+Mnemonic::
+sh1add.uw _rd_, _rIndex_, _rBase_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x2, attr: ['SH1ADD.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10 },
+]}
+....
+
+Description::
+Indexes into a halfword (16-bit) array using a word-sized index: it
+shifts the zero-extended word-sized index _rs1_ by 1 (multiplying with
+the size of a halfword-sized element) and adding the base _rs2_,
+placing the result into _rd_.
+
+Operation::
+[source,sail]
+--
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0];
+
+X(rd) = base + (index << 1);
+--
+
+Constrained unpredictable behaviour and reserved encodings::
+ * If _rIndex_ or _rBase_ are the zero-register (register 0), the
+   result is constrained unpredicatable: it may cause the register
+   _rd_ to be overwritten with the result of another operation encoded
+   in the same opcode space or may cause an illegal instruction
+   exception (if no other instruction is encoded into this opcode
+   space).
+ * Encodings where _rIndex_ or _rBase_ are 0 (i.e. a total of 63
+   code-points) are reserved for future use.

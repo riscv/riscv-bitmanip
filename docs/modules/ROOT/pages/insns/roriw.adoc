@@ -1,0 +1,28 @@
+== Rotate Right (Bitwise) Immediate, word-sized
+
+Mnemonic::
+roriw _rd_, _rs1_, _shamt_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORI/RORIW']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x30, attr: ['RORI/RORIW'] },
+]}
+....
+
+Description:: Perform a bitwise rotate-right of the least-significant
+word of _rs1_ by the rotation-amount specified by the immediate
+_shamt_, sign-extending the result.
+
+Operation::
+[source,sail]
+--
+let result = (X(rs1) >> shamt[4..0]) | (X(rs2) << (xlen - shamt[4..0]));
+X(rd) = EXTS(result);
+--

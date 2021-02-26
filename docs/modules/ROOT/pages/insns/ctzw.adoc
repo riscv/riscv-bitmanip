@@ -1,0 +1,53 @@
+== Count trailing zero-bits, word-sized
+
+Mnemonic::
+ctzw _rd_, _rs_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1 },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x1, attr: ['CTZ/CTZW'] },
+    { bits:  7, name: 0x30 },
+]}
+....
+
+Description::
+Counts the trailing zero-bits in the lowest 32-bits of a register.
+It returns the number of consecutive zero-bits (i.e. clear bits) in
+the lowest 32-bits of a register from the least-significant bit
+(i.e. "trailing bits") of the operand register _rs_ and places the
+result in _rd_. +
+Returns XLEN, if none of the lower 32-bits are set.
+
+WARNING: The original document requires XLEN to be returned, but this
+will return 64 on RV64. The operational description below implements
+it using XLEN, but this may not be the intended behaviour.
+
+WARNING: If the description would be changed to 'if none of the lower
+32bits are set, a value >= 32 will be returned', we could reuse `ctz`
+unmodified.
+
+Operation::
+[source,sail]
+--
+val LowestSetBit32 : forall ('N : Int), 'N >= 0. bits('N) -> int
+
+function LowestSetBit32 x = {
+  foreach (i from 0 to 31 by 1 in dec)
+    if [x[i]] == 0b1 then return(i) else ();
+  return xlen;
+}
+
+let rs = X(rs);
+X[rd] = LowestSetBit32(rs);
+--
+
+NOTE: With `XLEN` being returned, if the lower 32-bits are clear, we
+can emulate using *zext.w rD,rS* followed by *ctz rD,rD* in a
+two-instruction sequence.
+

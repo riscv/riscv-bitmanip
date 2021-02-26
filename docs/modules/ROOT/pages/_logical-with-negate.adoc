@@ -1,0 +1,47 @@
+== Logical-with-negate
+
+The logical-with-negate functions are arithmetic R-type
+operations.
+
+All operations read the _rs1_ and _rs2_ registers as source operands,
+invert the _rs2_-operand, perform the underlying logical bitwise
+operation, and write the result into register rd.
+
+The _funct3_ fields select the type of operation and the _funct7_
+field indicating that the operand _rs2_ is bitwise-inverted.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|andn _rd_, _rs1_, _rs2_
+|xref:insns/andn.adoc[AND with bitwise-inverted operand _rs2_]
+
+|&#10003;
+|&#10003;
+|orn _rd_, _rs1_, _rs2_
+|xref:insns/orn.adoc[OR with bitwise-inverted operand _rs2_]
+
+|&#10003;
+|&#10003;
+|xnor _rd_, _rs1_, _rs2_
+|xref:insns/xnor.adoc[XOR with bitwise-inverted operand _rs2_]
+|===
+
+NOTE: Similarily to AND, OR and XOR, the logical-with-negate
+instructions ANDN, ORN and XORN preserve thhe sign-extension property.
+No separate word-size instructions are needed for RV64B.
+
+****
+The specification of the logical-with-negate instructions inverts
+_rs2_ in anticipation of a possible reuse of an inverter used for the
+negation of _rs2_ for the implementation of the subtract instruction.
+
+The encoding of _funct7_ (0b0100000) mirrors the encoding used for
+the subtract instruction.
+****

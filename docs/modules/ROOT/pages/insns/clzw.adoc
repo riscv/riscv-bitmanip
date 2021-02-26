@@ -1,0 +1,38 @@
+== Count leading zero-bits, word-sized
+
+Mnemonic::
+clzw _rd_, _rs_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1 },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x0, attr: ['CLZW'] },
+    { bits:  7, name: 0x30 },
+]}
+....
+
+Description::
+Counts the leading zero-bits in the lower 32 bits of a register.
+
+Operation::
+[source,sail]
+--
+val HighestSetBit32 : forall ('N : Int), 'N >= 0. bits('N) -> int
+
+function HighestSetBit32 x = {
+  foreach (i from 31 to 0 by 1 in dec)
+    if [x[i]] == 0b1 then return(i) else ();
+  return -1;
+}
+
+let rs = X(rs);
+X[rd] = 31 - HighestSetBit(rs);
+--
+
+NOTE: *clzw* can be emulated using *zext.w rD,rS* and *clzw rD,rD* in
+a two-instruction sequence.

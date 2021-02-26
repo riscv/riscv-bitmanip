@@ -1,0 +1,37 @@
+== Integer minimum/maximum
+
+The integer minimum/maximum instructions are arithmetic R-type
+instructions that assigns the smaller/larger of two operand registers
+to a destination register without a control-transfer operation.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|max _rd_, _rs1_, _rs2_
+|xref:insns/max.adoc[Maximum of signed integers]
+
+|&#10003;
+|&#10003;
+|minu _rd_, _rs1_, _rs2_
+|xref:insns/maxu.adoc[Maximum of unsigned integers]
+
+|&#10003;
+|&#10003;
+|min _rd_, _rs1_, _rs2_
+|xref:insns/min.adoc[Minimum of signed integers]
+
+|&#10003;
+|&#10003;
+|minu _rd_, _rs1_, _rs2_
+|xref:insns/minu.adoc[Minimum of unsigned integers]
+|===
+
+NOTE: Calculating the absolute value of a signed integer can be
+performed using the following sequence: *neg rD,rS* followed by *max
+rD,rS,rD*.

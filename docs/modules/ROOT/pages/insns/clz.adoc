@@ -1,0 +1,35 @@
+== Count leading zero-bits
+
+Mnemonic::
+clz _rd_, _rs_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1 },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x0, attr: ['CLZ'] },
+    { bits:  7, name: 0x30 },
+]}
+....
+
+Description:: 
+Counts the leading zero-bits in a register. It returns the number of consecutive zero-bits (i.e. clear bits) from the most-significant bit (i.e. "leading bits") of the operand register _rs_ and places the result in _rd_.
+
+Operation::
+[source,sail]
+--
+val HighestSetBit : forall ('N : Int), 'N >= 0. bits('N) -> int
+
+function HighestSetBit x = {
+  foreach (i from (xlen - 1) to 0 by 1 in dec)
+    if [x[i]] == 0b1 then return(i) else ();
+  return -1;
+}
+
+let rs = X(rs);
+X[rd] = (xlen - 1) - HighestSetBit(rs);
+--

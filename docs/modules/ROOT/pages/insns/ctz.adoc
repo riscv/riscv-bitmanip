@@ -1,0 +1,39 @@
+== Count trailing zero-bits
+
+Mnemonic::
+ctz _rd_, _rs_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1 },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x1, attr: ['CTZ/CTZW'] },
+    { bits:  7, name: 0x30 },
+]}
+....
+
+Description:: 
+Counts the trailing zero-bits in a register. +
+It returns the number of consecutive zero-bits (i.e. clear bits) in
+the from the least-significant bit (i.e. "trailing bits") of the
+operand register _rs_ and places the result in _rd_. +
+Returns XLEN, if no bits are set.
+
+Operation::
+[source,sail]
+--
+val LowestSetBit : forall ('N : Int), 'N >= 0. bits('N) -> int
+
+function LowestSetBit x = {
+  foreach (i from 0 to (xlen - 1) by 1 in dec)
+    if [x[i]] == 0b1 then return(i) else ();
+  return xlen;
+}
+
+let rs = X(rs);
+X[rd] = LowestSetBit(rs);
+--

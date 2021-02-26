@@ -1,0 +1,36 @@
+== AND with inverted operand
+
+Mnemonic::
+andn _rd_, _rs1_, _rs2_
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x7, attr: ['AND/ANDN']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x20, attr: ['ANDN: invert rs2'] },
+]}
+....
+Description:: 
+Combine the contents of GPR _rs1_ and the bitwise-inverse of GPR _rs2_ in a bitwise logical AND operation and place the result into GPR _rd_.
+Operation::
+[source,sail]
+--
+union clause ast = RTYPE : (regidx, regidx, regidx, rop)
+
+mapping clause encdec = RTYPE(rs2, rs1, rd, RISCV_ANDN)
+  <-> 0b0100000 @ rs2 @ rs1 @ 0b111 @ rd @ 0b0110011
+
+function clause execute (ITYPE (rs2, rs1, rd, RISCV_ANDN)) = {
+  X(rd) = X(rs1) & ~X(rs2);
+  RETIRE_SUCCESS
+}
+--
+Operation::
+[source,sail]
+--
+X(rd) = X(rs1) & ~X(rs2);
+--

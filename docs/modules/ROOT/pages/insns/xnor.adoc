@@ -1,0 +1,24 @@
+== XOR with inverted register
+
+Mnemonic::
+xnor _rd_, _rs1_, _rs2_
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['XOR/XNOR']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x20, attr: ['XNOR: invert rs2'] },
+]}
+....
+Description:: 
+Combine the contents of GPR _rs1_ and the bitwise-inverse of GPR _rs2_ in a bitwise logical EXCLUSIVE OR operation and place the result into GPR _rd_.
+Operation::
+[source,sail]
+--
+X(rd) = X(rs1) ^ ~X(rs2);
+--
+

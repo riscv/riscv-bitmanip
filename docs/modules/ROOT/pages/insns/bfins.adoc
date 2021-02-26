@@ -1,0 +1,31 @@
+== Bitfield insert
+
+Mnemonic::
+bfins _rd_, _rs_, _#msb_, _#lsb_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x2, attr: ['BFINS'] },
+    { bits:  5, name: 'rs' },
+    { bits:  6, name: 'lsb' },
+    { bits:  6, name: 'msb' },
+]}
+....
+
+Description:: 
+BLA
+
+Operation::
+TODO
+
+Constrained unpredictable behaviour and reserved encodings::
+ * If _lsb_ is greater than _msb_, the result is constrained unpredicatable (it may encode another operation): it may cause the register _rD_ to be overwritten with the result of another operation encoded in the same opcode space or may cause an illegal instruction exception (if no other instruction is encoded into this opcode space).
+ * Encodings where _lsb_ being greater than _msb_ are reserved for future use.
+
+Pseudoinstructions::
+bfclr _rD_, _#msb_, _#lsb_ will clear bits [_msb_:_lsb_].
+

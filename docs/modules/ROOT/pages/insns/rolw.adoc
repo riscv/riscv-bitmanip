@@ -1,0 +1,30 @@
+== Rotate Left (Bitwise), word-sized
+
+Mnemonic::
+rolw _rd_, _rs1_, _rs2_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['ROL/ROLW']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x30, attr: ['ROL/ROLW'] },
+]}
+....
+
+Description:: Perform a bitwise rotate-left of the least-signficant
+word of _rs1_ by the rotation-amount specified by the
+least-significant bits of _rs2_, sign-extending the result to XLEN.
+
+Operation::
+[source,sail]
+--
+let shamt = X(rs2)[4..0];
+let result = (X(rs1) << shamt) | (X(rs2) >> (32 - shamt));
+
+X(rd) = EXTS(result);
+--

@@ -1,0 +1,39 @@
+== Maximum 
+
+Mnemonic::
+max _rd_, _rs1_, _rs2_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x6, attr: ['MAX']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x05, attr: ['MAX/MAXU'] },
+]}
+....
+
+Description::
+Places the larger of two signed integers (_rs1_, _rs2_) in _rD_.
+
+Operation::
+[source,sail]
+--
+let rs1_val = X(rs1);
+let rs2_val = X(rs2);
+
+let result = if   rs1_val <_s rs2_val
+    	     then rs2_val
+	     else rs1_val;
+
+X(rd) = result;
+--
+
+NOTE: The sequence `neg rD, rS; max rD, rS, rD` calculates the
+absolute value of signed integers.  We recommend to schedule these as
+a fusion pair (i.e. avoid scheduling other instructions between these
+instructions) to allow macro-fusion to recognize these as calculating
+the absolute of rS and placing it in rD.

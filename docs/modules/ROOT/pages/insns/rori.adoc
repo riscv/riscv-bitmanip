@@ -1,0 +1,32 @@
+== Rotate Right (Bitwise) Immediate
+
+Mnemonic::
+rori _rd_, _rs1_, _shamt_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORI']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x30, attr: ['RORI'] },
+]}
+....
+
+Description:: 
+Perform a bitwise rotate-right of _rs1_ by the rotation-amount
+specified by the immediate _shamt_.
+
+Operation::
+[source,sail]
+--
+let shamt = if   xlen == 32
+    	    then shamt[4..0]
+	    else shamt[5..0];
+let result = (X(rs1) >> shamt) | (X(rs2) << (xlen - shamt));
+
+X(rd) = result;
+--

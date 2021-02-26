@@ -1,0 +1,79 @@
+= Address-generation
+
+== Shift-left with prefix zero-extend
+
+`slli.uw` and `add.uw` perform similar operations to `slli` and `add`,
+with the difference that their first operand (_rs1_) is zero-extended
+at word-size.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|
+|&#10003;
+|slli.uw _rd_, _rs1_, _imm_
+|xref:insns/slli_uw.adoc[Shift-left with prefix zero-extend]
+|===
+
+== Address-generation instructions
+
+The address-generation instructions index into an array of basic types
+(halfword, word, doubleword) using both word-sized and
+doubleword-sized indices: a shifted index is added to a base address.
+
+With word-sized indices on systems with XLEN larger than 32 bits, a
+prefix zero-extension on the word-sized index is performed prior to
+shifting the index.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|
+|&#10003;
+|add.uw _rd_, _rIndex_, _rBase_
+|xref:insns/add_uw.adoc[Word-sized index into a byte array]
+
+|&#10003;
+|&#10003;
+|sh1add _rd_, _rIndex_, _rBase_
+|xref:insns/sh1add.adoc[Index into a halfword (16-bit) array]
+
+|
+|&#10003;
+|sh1add.uw _rd_, _rIndex_, _rBase_
+|xref:insns/sh1add_uw.adoc[Word-sized index into a halfword (16-bit) array]
+
+|&#10003;
+|&#10003;
+|sh2add _rd_, _rIndex_, _rBase_
+|xref:insns/sh2add.adoc[Index into a word (32-bit) array]
+
+|
+|&#10003;
+|sh2add.uw _rd_, _rIndex_, _rBase_
+|xref:insns/sh2add_uw.adoc[Word-sized index into a word (32-bit) array]
+
+|&#10003;
+|&#10003;
+|sh3add _rd_, _rIndex_, _rBase_
+|xref:insns/sh3add.adoc[Index into a doubleword (64-bit) array]
+
+|
+|&#10003;
+|sh3add.uw _rd_, _rIndex_, _rBase_
+|xref:insns/sh3add_uw.adoc[Word-sized index into a doubleword (64-bit) array]
+
+|===
+
+ALERT: The `shXadd` functions with either `zero` either for the index
+or a base register shadows instructions from the base instruction set
+or this extension (a base of zero is equivalent to a `slli` or
+`slli.uw`; an index of zero is equivalent to an `addi rD,rBase,0`).

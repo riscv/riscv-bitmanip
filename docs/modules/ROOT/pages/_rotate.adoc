@@ -1,0 +1,54 @@
+== Bitwise rotation
+
+These instructions are similar to shift-logical operations from the
+base spec, except they shift in the values from the opposite side of
+the register, in order. This is also called ‘circular shift’.
+
+Rotate instructions replace a common four-instruction idiom (neg;
+sll/srl; srl/sll; or) requiring one scratch register, with a single
+instruction encoding.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|rol _rd_, _rs1_, _rs2_
+|xref:insns/rol.adoc[Rotate-left]
+
+|
+|&#10003;
+|rolw _rd_, _rs1_, _rs2_
+|xref:insns/rolw.adoc[Rotate-left, word-sized]
+
+|&#10003;
+|&#10003;
+|ror _rd_, _rs1_, _rs2_
+|xref:insns/ror.adoc[Rotate-right]
+
+|&#10003;
+|&#10003;
+|rori _rd_, _rs1_, _shamt_
+|xref:insns/rori.adoc[Rotate-right immediate]
+
+|
+|&#10003;
+|roriw _rd_, _rs1_, _shamt_
+|xref:insns/roriw.adoc[Rotate-right immediate, word-sized]
+
+|
+|&#10003;
+|rorw _rd_, _rs1_, _rs2_
+|xref:insns/rorw.adoc[Rotate-right, word-sized]
+|===
+
+WARNING: `rol`/`ror` use up additional encoding space to encode the
+rotation direction, which can be controlled from the register _rs2_:
+the specification requires an implementation to ignore the
+higher-order bits of _rs2_ and truncate _rs2_ to the range of 0..(xlen
+- 1). Given this truncation, the direction can be changed by negating
+the _rs2_: e.g. -2, truncated to 5 bits is 30.
