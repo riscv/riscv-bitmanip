@@ -1,0 +1,26 @@
+site:
+  title: Documentation
+  url: https://localhost
+#  start_page: adoc-test::index.adoc 
+
+asciidoc:
+  extensions:
+    - asciidoctor-kroki
+
+content:
+  sources:
+  - url: https://ptomsich:chok0898@gitlab.com/ptomsich/adoc-test.git
+    branches: [v0.94, master]
+    start-path: docs
+
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  supplemental_files: './supplemental-ui'
+
+output:
+  destinations:
+  - provider: fs
+    path: build/site
+    
