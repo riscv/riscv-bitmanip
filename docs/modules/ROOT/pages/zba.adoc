@@ -1,10 +1,8 @@
-= Address-generation
+= Zba sub-extension
 
-== Shift-left with prefix zero-extend
+Frozen:: The Zba sub-extension is frozen
 
-`slli.uw` and `add.uw` perform similar operations to `slli` and `add`,
-with the difference that their first operand (_rs1_) is zero-extended
-at word-size.
+
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -16,63 +14,66 @@ at word-size.
 |
 |&#10003;
 |slli.uw _rd_, _rs1_, _imm_
-|xref:insns/slli_uw.adoc[Shift-left with prefix zero-extend]
+|xref:insns/slli_uw.adoc[Shift unsigned word left by immediate]
+
+|
+|&#10003;
+|add.uw _rd_, _rs1_, _rs2_
+|xref:insns/add_uw.adoc[add unsigned word]
+
+|&#10003;
+|&#10003;
+|sh1add _rd_, _rs1_, _rs2_
+|xref:insns/sh1add.adoc[Shift left by 1 and add]
+
+|
+|&#10003;
+|sh1add.uw _rd_, _rs1_, _rs2_
+|xref:insns/sh1add_uw.adoc[Shift unsigned word left by 1 and add]
+
+|&#10003;
+|&#10003;
+|sh2add _rd_, _rs1_, _rs2_
+|xref:insns/sh2add.adoc[Shift left by 2 and add]
+
+|
+|&#10003;
+|sh2add.uw _rd_, _rs1_, _rs2_
+|xref:insns/sh2add_uw.adoc[Shift unsigned word left by 2 and add]
+
+|&#10003;
+|&#10003;
+|sh3add _rd_, _rs2_, _rs2_
+|xref:insns/sh3add.adoc[Shift left by 3 and add]
+
+|
+|&#10003;
+|sh3add.uw _rd_, _rs1_, _rs2_
+|xref:insns/sh3add_uw.adoc[Shift unsigned word left by 3 and add]
+
 |===
 
-== Address-generation instructions
+Architecture Comment::
+We limited the shift and add instructions to a left shift of 1, 2, or 3
+because these are commonly found in real-world code and bacause they
+can be implemented with a minimal amount of additional hardware beyond
+that of the simple adder. Our goal was to avoid lengthing the critical
+path in implementations.
 
-The address-generation instructions index into an array of basic types
-(halfword, word, doubleword) using both word-sized and
-doubleword-sized indices: a shifted index is added to a base address.
+Software Hint::
+The Zba instructins can be used to accelerate the generations of address
+into arrays of basic types (halfword, word, doubleword) using both word-sized
+and XLEN-sized indices: a shifted index is added to a base address.
+
+Indexing into larger arrays using unsigned word pointers can be efficiently
+performed using the slli.uw instruction
 
 With word-sized indices on systems with XLEN larger than 32 bits, a
 prefix zero-extension on the word-sized index is performed prior to
 shifting the index.
 
-[%header,cols="^1,^1,4,8"]
-|===
-|RV32
-|RV64
-|Mnemonic
-|Instruction
-
-|
-|&#10003;
-|add.uw _rd_, _rIndex_, _rBase_
-|xref:insns/add_uw.adoc[Word-sized index into a byte array]
-
-|&#10003;
-|&#10003;
-|sh1add _rd_, _rIndex_, _rBase_
-|xref:insns/sh1add.adoc[Index into a halfword (16-bit) array]
-
-|
-|&#10003;
-|sh1add.uw _rd_, _rIndex_, _rBase_
-|xref:insns/sh1add_uw.adoc[Word-sized index into a halfword (16-bit) array]
-
-|&#10003;
-|&#10003;
-|sh2add _rd_, _rIndex_, _rBase_
-|xref:insns/sh2add.adoc[Index into a word (32-bit) array]
-
-|
-|&#10003;
-|sh2add.uw _rd_, _rIndex_, _rBase_
-|xref:insns/sh2add_uw.adoc[Word-sized index into a word (32-bit) array]
-
-|&#10003;
-|&#10003;
-|sh3add _rd_, _rIndex_, _rBase_
-|xref:insns/sh3add.adoc[Index into a doubleword (64-bit) array]
-
-|
-|&#10003;
-|sh3add.uw _rd_, _rIndex_, _rBase_
-|xref:insns/sh3add_uw.adoc[Word-sized index into a doubleword (64-bit) array]
-
-|===
-
+Question::
+Do we want to do anything about this - or just allow the duplication?
 ALERT: The `shXadd` functions with either `zero` either for the index
 or a base register shadows instructions from the base instruction set
 or this extension (a base of zero is equivalent to a `slli` or

@@ -11,15 +11,14 @@ Encoding::
     { bits:  5, name: 'rd' },
     { bits:  3, name: 0x1, attr: ['SLLI.UW'] },
     { bits:  5, name: 'rs1' },
-    { bits:  6, name: 'shamt' },
-    { bits:  6, name: 0x02 },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x04 },
 ]}
 ....
 
 Description::
-Shifts the zero-extended least-significant 32-bits of its operand
-_rs1_ by the immediate shift-amount _shamt_ and places the result into
-_rd_.
+Left shifts the zero-extended least-significant 32-bits of _rs1_ by
+the immediate shift-amount _shamt_ and places the result into _rd_.
 
 Operation::
 [source,sail]
@@ -28,6 +27,16 @@ X(rd) = if   xlen == 32
         then EXTZ(X(rs)[31..0]) << shamt[4..0]
 	else EXTZ(X(rs)[31..0]) << shamt;
 --
+
+Non-normative::
+`slli.uw` and `add.uw` perform similar operations to `slli` and `add`,
+with the difference that their first operand (_rs1_) is zero-extended
+at word-size.
+
+Question::
+*The shift amount on this was changed to 5 bits as anything larger than
+this would always result in zero. Any issues with this?
+*Is there any value to making zero-shift or shift-zero reserved?
 
 Constrained unpredictable behaviour and reserved encodings::
  * If _shamt_ is 0 or _rs1_ is the zero-register, the behaviour is

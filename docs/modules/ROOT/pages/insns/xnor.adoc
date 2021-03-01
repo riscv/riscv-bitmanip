@@ -1,4 +1,4 @@
-== XOR with inverted register
+== Exclusive NOR
 
 Mnemonic::
 xnor _rd_, _rs1_, _rs2_
@@ -15,10 +15,16 @@ Encoding::
 ]}
 ....
 Description:: 
-Combine the contents of GPR _rs1_ and the bitwise-inverse of GPR _rs2_ in a bitwise logical EXCLUSIVE OR operation and place the result into GPR _rd_.
+Perform the bit-wise exlusive-NOR operation on _rs1_ and _rs2_.
+
 Operation::
 [source,sail]
 --
-X(rd) = X(rs1) ^ ~X(rs2);
+X(rd) = ~(X(rs1) ^ X(rs2));
 --
+Implementation Hint::
+The XNOR can be implemented by inverting one of the inputs to the base-required XOR instruction.
+This inverter could be shared with the inverter used for the andn and orn instructions.
+In some implementations, the inverter on _rs2_ used for subtraction can be shared with these
+inverted logical functions.
 
