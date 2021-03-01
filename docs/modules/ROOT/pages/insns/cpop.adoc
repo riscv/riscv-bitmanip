@@ -1,4 +1,4 @@
-== Count set bits
+== Count population
 :page-partial:
 
 Mnemonic::
@@ -16,7 +16,7 @@ Encoding::
 ]}
 ....
 Description:: 
-Stores the number of set bits in _rs_ into _rd_.
+Counts the number of 1's (i.e., set bits) in _rs_.
 Operation::
 [source,sail]
 --
@@ -28,3 +28,12 @@ foreach (i from 0 to (xlen - 1) in inc)
 
 X[rd] = bitcount
 --
+Comment::
+This operations is known as population count, popcount, sideways sum,
+bit summation, or Hamming weight.
+
+Comment::
+The GCC builtin function `__builtin_popcount (unsigned int x)`
+is implemented by cpop on RV32 and by cpopw on RV64; the GCC builtin
+function `__builtin_popcountl (unsigned long x)` for LP64 is
+implemented by cpop on RV64.

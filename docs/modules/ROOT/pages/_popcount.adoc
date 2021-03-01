@@ -2,8 +2,7 @@
 
 This instruction counts the number of set bits (1-bits) in a register.
 
-This operations is known as population count, popcount, sideways sum,
-bit summation, or Hamming weight.
+
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -23,7 +22,4 @@ bit summation, or Hamming weight.
 |xref:insns/cpopw.adoc[Count set-bits, word-size]
 |===
 
-NOTE: The GCC builtin function `__builtin_popcount (unsigned int x)`
-is implemented by cpop on RV32 and by cpopw on RV64; the GCC builtin
-function `__builtin_popcountl (unsigned long x)` for LP64 is
-implemented by cpop on RV64.
+

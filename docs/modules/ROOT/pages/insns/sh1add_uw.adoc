@@ -1,4 +1,4 @@
-== Word-sized index into a halfword (16-bit) array
+== Add unsigned word shifted left by 1
 
 Mnemonic::
 sh1add.uw _rd_, _rIndex_, _rBase_

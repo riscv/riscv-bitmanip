@@ -1,4 +1,4 @@
-== Word-sized index into a byte (8-bit) array
+== Add unsigned word
 
 Mnemonic::
 add.uw _rd_, _rIndex_, _rBase_
@@ -17,28 +17,30 @@ Encoding::
 ....
 
 Description::
-Indexes into a byte (8-bit) array using a word-sized index by
-zero-extended the word-sized index _rs1_ and adding the base _rs2_,
-placing the result into _rd_.
+Zero extends the least significant word of _rs1_ and adds it to _rs2_
+placing the sum into _rd_.
 
 Operation::
 [source,sail]
 --
-let base = X(rs2);
-let index = EXTZ(X(rs1)[31..0];
 
-X(rd) = base + index;
+X(rd) = X(rs2) + EXTZ(X(rs1)[31..0];
 --
 
-Constrained unpredictable behaviour and reserved encodings::
- * If _rIndex_ is the zero-register (register 0), the result is
-   constrained unpredicatable: it may cause the register _rd_ to be
-   overwritten with the result of another operation encoded in the
-   same opcode space or may cause an illegal instruction exception (if
-   no other instruction is encoded into this opcode space).
- * Encodings where _rIndex_ is 0 (i.e. a total of 32
-   code-points) are reserved for future use.
+Question::
+ * Do we want to reserve various forms that are NOP e.g.,
+   _rs1_ = _rs2_ = X0 or Move where only one input is X0?  
+   We don't do this with other instructions.
 
 Pseudo-instructions::
 zext.w _rd_, _rs_ is an alias for add.uw _rd_, _rs_, zero
+
+Question::
+* NB - zext.w could be an alias for pack _rs_, zero
+which do we want to use?
+
+Code Hints:
+The add.uw can be used to generate addresses to index into an
+array of bytes where _rs1_ is the index and _rs2_ is the base
+of the array. 
 
