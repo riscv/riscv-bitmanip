@@ -1,3 +1,63 @@
-= Zbs: single-bit instructions
+= Zbs: Single-bit instructions
 
-bla
+[NOTE,caption=Frozen]
+====
+The Zbs sub-extension is frozen.
+====
+
+The single-bit instructions provide a mechanism to perform basic
+bit-manipulation on a single bit:
+
+* setting a bit (*bset*),
+* clearing a bit (*bclr*),
+* inverting (toggling) a bit (*binv*),
+* extracting a bit (*bext*).
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|bclr _rd_, _rs1_, _rs2_
+|xref:insns/bclr.adoc[Clear bit]
+
+|&#10003;
+|&#10003;
+|bclri _rd_, _rs1_, _imm_
+|xref:insns/bclri.adoc[Clear bit, immediate]
+
+|&#10003;
+|&#10003;
+|bext _rd_, _rs1_, _rs2_
+|xref:insns/bext.adoc[Extract bit]
+
+|&#10003;
+|&#10003;
+|bexti _rd_, _rs1_, _imm_
+|xref:insns/bext.adoc[Extract bit, immediate]
+
+|&#10003;
+|&#10003;
+|binv _rd_, _rs1_, _rs2_
+|xref:insns/binv.adoc[Invert (toggle) bit]
+
+|&#10003;
+|&#10003;
+|binvi _rd_, _rs1_, _imm_
+|xref:insns/binvi.adoc[Invert (toggle) bit, immediate]
+
+|&#10003;
+|&#10003;
+|bset _rd_, _rs1_, _rs2_
+|xref:insns/bset.adoc[Set bit]
+
+|&#10003;
+|&#10003;
+|bseti _rd_, _rs1_, _imm_
+|xref:insns/bseti.adoc[Set bit, immediate]
+
+|===
