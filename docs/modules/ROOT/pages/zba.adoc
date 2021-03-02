@@ -1,8 +1,9 @@
 = Zba sub-extension
 
-Frozen:: The Zba sub-extension is frozen
-
-
+[NOTE,caption=Frozen]
+====
+The Zba sub-extension is frozen.
+====
 
 [%header,cols="^1,^1,4,8"]
 |===
