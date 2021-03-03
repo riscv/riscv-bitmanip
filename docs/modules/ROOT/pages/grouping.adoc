@@ -1,0 +1,400 @@
+= Grouping into subextensions
+
+The bit-manipulation instructions are grouped into a range of
+Z-extensions:
+
+* xref:zba.adoc[Zba]
+* xref:zbb.adoc[Zbb: basic bit-manipulation]
+* xref:zbc.adoc[Zbc: carry-less multiplication]
+* xref:zbs.adoc[Zbs: single-bit instructions]
+
+[%header,cols="^1,^1,4,8,^1,^1,^1,^1"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+|Zba
+|Zbb
+|Zbc
+|Zbs
+
+|
+|&#10003;
+|add.uw _rd_, _rs1_, _rs2_
+|xref:insns/add_uw.adoc[add unsigned word]
+|&#10003;
+|
+|
+|
+
+|&#10003;
+|&#10003;
+|andn _rd_, _rs1_, _rs2_
+|xref:insns/andn.adoc[AND with bitwise-inverted operand _rs2_]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|bclr _rd_, _rs1_, _rs2_
+|xref:insns/bclr.adoc[Clear bit]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|bclri _rd_, _rs1_, _imm_
+|xref:insns/bclri.adoc[Clear bit, immediate]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|bext _rd_, _rs1_, _rs2_
+|xref:insns/bext.adoc[Extract bit]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|bexti _rd_, _rs1_, _imm_
+|xref:insns/bext.adoc[Extract bit, immediate]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|binv _rd_, _rs1_, _rs2_
+|xref:insns/binv.adoc[Invert (toggle) bit]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|binvi _rd_, _rs1_, _imm_
+|xref:insns/binvi.adoc[Invert (toggle) bit, immediate]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|bset _rd_, _rs1_, _rs2_
+|xref:insns/bset.adoc[Set bit]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|bseti _rd_, _rs1_, _imm_
+|xref:insns/bseti.adoc[Set bit, immediate]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|clz _rd_, _rs_
+|xref:insns/clz.adoc[Count leading zero-bits]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|clzw _rd_, _rs_
+|xref:insns/clzw.adoc[Count leading zero-bits, word-size]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|ctz _rd_, _rs_
+|xref:insns/ctz.adoc[Count trailing zero-bits]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|ctzw _rd_, _rs_
+|xref:insns/ctzw.adoc[Count trailing zero-bits, word-size]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|cpop _rd_, _rs_
+|xref:insns/cpop.adoc[Count set-bits]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|cpopw _rd_, _rs_
+|xref:insns/cpopw.adoc[Count set-bits, word-size]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|max _rd_, _rs1_, _rs2_
+|xref:insns/max.adoc[Maximum of signed integers]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|minu _rd_, _rs1_, _rs2_
+|xref:insns/maxu.adoc[Maximum of unsigned integers]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|min _rd_, _rs1_, _rs2_
+|xref:insns/min.adoc[Minimum of signed integers]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|minu _rd_, _rs1_, _rs2_
+|xref:insns/minu.adoc[Minimum of unsigned integers]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|rev8 _rd_, _rs_
+|xref:insns/rev8.adoc[Byte-reverse]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|rol _rd_, _rs1_, _rs2_
+|xref:insns/rol.adoc[Rotate-left]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|rolw _rd_, _rs1_, _rs2_
+|xref:insns/rolw.adoc[Rotate-left, word-sized]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|ror _rd_, _rs1_, _rs2_
+|xref:insns/ror.adoc[Rotate-right]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|rori _rd_, _rs1_, _shamt_
+|xref:insns/rori.adoc[Rotate-right immediate]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|roriw _rd_, _rs1_, _shamt_
+|xref:insns/roriw.adoc[Rotate-right immediate, word-sized]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|rorw _rd_, _rs1_, _rs2_
+|xref:insns/rorw.adoc[Rotate-right, word-sized]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|orn _rd_, _rs1_, _rs2_
+|xref:insns/orn.adoc[OR with bitwise-inverted operand _rs2_]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|sext.b _rd_, _rs_
+|xref:insns/sext_b.adoc[Sign-extend an 8-bit quantity]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|sext.h _rd_, _rs_
+|xref:insns/sext_h.adoc[Sign-extend a 16-bit quantity]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|sext.w _rd_, _rs_
+|addiw _rd_, _rs_, 0 (pseudo-instruction)
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|sh1add _rd_, _rs1_, _rs2_
+|xref:insns/sh1add.adoc[Shift left by 1 and add]
+|&#10003;
+|
+|
+|
+
+|
+|&#10003;
+|sh1add.uw _rd_, _rs1_, _rs2_
+|xref:insns/sh1add_uw.adoc[Shift unsigned word left by 1 and add]
+|&#10003;
+|
+|
+|
+
+|&#10003;
+|&#10003;
+|sh2add _rd_, _rs1_, _rs2_
+|xref:insns/sh2add.adoc[Shift left by 2 and add]
+|&#10003;
+|
+|
+|
+
+|
+|&#10003;
+|sh2add.uw _rd_, _rs1_, _rs2_
+|xref:insns/sh2add_uw.adoc[Shift unsigned word left by 2 and add]
+|&#10003;
+|
+|
+|
+
+|&#10003;
+|&#10003;
+|sh3add _rd_, _rs2_, _rs2_
+|xref:insns/sh3add.adoc[Shift left by 3 and add]
+|&#10003;
+|
+|
+|
+
+|
+|&#10003;
+|sh3add.uw _rd_, _rs1_, _rs2_
+|xref:insns/sh3add_uw.adoc[Shift unsigned word left by 3 and add]
+|&#10003;
+|
+|
+|
+
+|
+|&#10003;
+|slli.uw _rd_, _rs1_, _imm_
+|xref:insns/slli_uw.adoc[Shift unsigned word left by immediate]
+|&#10003;
+|
+|
+|
+
+|&#10003;
+|&#10003;
+|xnor _rd_, _rs1_, _rs2_
+|xref:insns/xnor.adoc[XOR with bitwise-inverted operand _rs2_]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|zext.b _rd_, _rs_
+|andi _rd_, _rs_, 255 (pseudo-instruction)
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|zext.h _rd_, _rs_
+|xref:insns/zext_h.adoc[Zero-extend a 16-bit quantity]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|zext.w _rd_, _rs_
+|xref:insns/zext_w.adoc[Zero-extend a 32-bit quantity]
+|
+|&#10003;
+|
+|
+
+|===
