@@ -111,6 +111,33 @@ Z-extensions:
 
 |&#10003;
 |&#10003;
+|clmul _rd_, _rs1_, _rs2_
+|xref:insns/clmul.adoc[Carry-less multiply (least-significant half)]
+|
+|
+|&#10003;
+|
+
+|&#10003;
+|&#10003;
+|clmulh _rd_, _rs1_, _rs2_
+|xref:insns/clmulh.adoc[Carry-less multiply (most-significant half)]
+|
+|
+|&#10003;
+|
+
+|&#10003;
+|&#10003;
+|clmulr _rd_, _rs1_, _rs2_
+|xref:insns/clmulr.adoc[Carry-less multiply, reversed]
+|
+|
+|&#10003;
+|
+
+|&#10003;
+|&#10003;
 |clz _rd_, _rs_
 |xref:insns/clz.adoc[Count leading zero-bits]
 |
