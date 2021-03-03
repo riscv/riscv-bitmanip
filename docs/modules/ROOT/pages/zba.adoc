@@ -14,11 +14,6 @@ The Zba sub-extension is frozen.
 
 |
 |&#10003;
-|slli.uw _rd_, _rs1_, _imm_
-|xref:insns/slli_uw.adoc[Shift unsigned word left by immediate]
-
-|
-|&#10003;
 |add.uw _rd_, _rs1_, _rs2_
 |xref:insns/add_uw.adoc[add unsigned word]
 
@@ -51,6 +46,11 @@ The Zba sub-extension is frozen.
 |&#10003;
 |sh3add.uw _rd_, _rs1_, _rs2_
 |xref:insns/sh3add_uw.adoc[Shift unsigned word left by 3 and add]
+
+|
+|&#10003;
+|slli.uw _rd_, _rs1_, _imm_
+|xref:insns/slli_uw.adoc[Shift unsigned word left by immediate]
 
 |===
 
