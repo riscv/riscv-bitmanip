@@ -19,6 +19,6 @@ include::_rotate.adoc[]
 
 include::_or_combine.adoc[]
 
-
+include::_byteswap.adoc[]
 
 
