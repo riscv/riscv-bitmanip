@@ -857,26 +857,26 @@ int main(int argc, char **argv) {
         do_orn(++test);
         do_xnor(++test);
 
-        do_slo(++test);
-        do_sro(++test);
+//        do_slo(++test);
+//        do_sro(++test);
         do_rol(++test);
         do_ror(++test);
 
-        do_bclr(++test);
-        do_bset(++test);
-        do_binv(++test);
-        do_bext(++test);
+        //do_bclr(++test);
+        //do_bset(++test);
+        //do_binv(++test);
+        //do_bext(++test);
         // gorc
         do_grev(++test);
 
-        do_sloi(++test);
-        do_sroi(++test);
+//        do_sloi(++test);
+//        do_sroi(++test);
         do_rori(++test);
 
-        do_bclri(++test);
-        do_bseti(++test);
-        do_binvi(++test);
-        do_bexti(++test);
+        //do_bclri(++test);
+        //do_bseti(++test);
+        //do_binvi(++test);
+//        do_bexti(++test);
         // gorci
         do_grevi(++test);
 
@@ -888,7 +888,7 @@ int main(int argc, char **argv) {
 
         do_clz(++test);
         do_ctz(++test);
-        do_cpop(++test);
+//        do_cpop(++test);
         do_sextb(++test);
         do_sexth(++test);
 #if (XLEN==64)
@@ -918,8 +918,8 @@ int main(int argc, char **argv) {
 
         do_shfl(++test);
         do_unshfl(++test);
-        do_bdecompress(++test);
-        do_bcompress(++test);
+        //do_bdecompress(++test);
+        //do_bcompress(++test);
         do_pack(++test);
         do_packu(++test);
 #if (XLEN==64)
@@ -935,28 +935,28 @@ int main(int argc, char **argv) {
 #if (XLEN==64)
         // slliuw
 
-        do_adduw(++test);
+//        do_adduw(++test);
 
-        do_slow(++test);
-        do_srow(++test);
+//        do_slow(++test);
+//        do_srow(++test);
         do_rolw(++test);
         do_rorw(++test);
 
 
-        do_bclrw(++test);
-        do_bsetw(++test);
-        do_binvw(++test);
-        do_bextw(++test);
+        //do_bclrw(++test);
+        //do_bsetw(++test);
+        //do_binvw(++test);
+        //do_bextw(++test);
         // gorcw
         do_grevw(++test);
 
-        do_sloiw(++test);
-        do_sroiw(++test);
+//        do_sloiw(++test);
+//        do_sroiw(++test);
         do_roriw(++test);
 
-        do_bclriw(++test);
-        do_bsetiw(++test);
-        do_binviw(++test);
+        //do_bclriw(++test);
+        //do_bsetiw(++test);
+        //do_binviw(++test);
         // gorciw
         // greviw
 
@@ -966,16 +966,16 @@ int main(int argc, char **argv) {
 
         do_clzw(++test);
         do_ctzw(++test);
-        do_cpopw(++test);
+//        do_cpopw(++test);
 
-        do_clmulw(++test);
-        do_clmulrw(++test);
-        do_clmulhw(++test);
+//        do_clmulw(++test);
+//        do_clmulrw(++test);
+//        do_clmulhw(++test);
 
         do_shflw(++test);
         do_unshflw(++test);
-        do_bdecompressw(++test);
-        do_bcompressw(++test);
+        //do_bdecompressw(++test);
+        //do_bcompressw(++test);
         do_packw(++test);
         do_packuw(++test);
         do_bfpw(++test);

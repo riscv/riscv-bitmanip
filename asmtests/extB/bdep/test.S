@@ -25,7 +25,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-.include "extB.S.include"
+#include "extB.S.include"
 
 # use s0(r8)  - s1(r9)
 # use s2(r18) - s11(r27)
