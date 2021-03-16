@@ -1,9 +1,5 @@
 == Count leading/training zero-bits
 
-This instruction count the leading (consecutive from the
-most-significant bit) and trailing (consecutive from the
-least-significant bit) zero-bits in its operand register.
-
 [%header,cols="^1,^1,4,8"]
 |===
 |RV32
@@ -14,21 +10,21 @@ least-significant bit) zero-bits in its operand register.
 |&#10003;
 |&#10003;
 |clz _rd_, _rs_
-|xref:insns/clz.adoc[Count leading zero-bits]
+|xref:insns/clz.adoc[Count leading zeros]
 
 |
 |&#10003;
 |clzw _rd_, _rs_
-|xref:insns/clzw.adoc[Count leading zero-bits, word-size]
+|xref:insns/clzw.adoc[Count leading zeros in word]
 
 |&#10003;
 |&#10003;
 |ctz _rd_, _rs_
-|xref:insns/ctz.adoc[Count trailing zero-bits]
+|xref:insns/ctz.adoc[Count trailing zeros]
 
 |
 |&#10003;
 |ctzw _rd_, _rs_
-|xref:insns/ctzw.adoc[Count trailing zero-bits, word-size]
+|xref:insns/ctzw.adoc[Count trailing zeros in word]
 |===
 

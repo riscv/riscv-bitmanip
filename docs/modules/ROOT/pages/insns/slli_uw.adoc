@@ -1,4 +1,4 @@
-== Shift-left with prefix zero-extend
+== Shift-left word (unsigned) by immediate
 
 Mnemonic::
 slli.uw _rd_, _rs1_, _shamt_
@@ -11,40 +11,34 @@ Encoding::
     { bits:  5, name: 'rd' },
     { bits:  3, name: 0x1, attr: ['SLLI.UW'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'shamt' },
-    { bits:  7, name: 0x04 },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x02, attr: ['SLLI.UW'] },
 ]}
 ....
+//    { bits:  5, name: 'shamt' },
+//    { bits:  7, name: 0x04, attr: ['SLLI.UW'] },
 
 Description::
-Left shifts the zero-extended least-significant 32-bits of _rs1_ by
-the immediate shift-amount _shamt_ and places the result into _rd_.
+This instruction takes the least significant word of _rs1_, zero extends it, and shifts it left by the immediate.
 
 Operation::
 [source,sail]
 --
-X(rd) = if   xlen == 32
-        then EXTZ(X(rs)[31..0]) << shamt[4..0]
-	else EXTZ(X(rs)[31..0]) << shamt;
+// X(rd) = if   xlen == 32
+//        then EXTZ(X(rs)[31..0]) << shamt[4..0]
+//	else EXTZ(X(rs)[31..0]) << shamt;
+//
+//  X(rd) = if   xlen == 32
+//        then EXTZ(X(rs)[31..0]) << shamt[4..0]
+X(rd)[XLEN-1..0] = EXTZ(X(rs)[31..0]) << shamt;
 --
 
-Non-normative::
-`slli.uw` and `add.uw` perform similar operations to `slli` and `add`,
-with the difference that their first operand (_rs1_) is zero-extended
-at word-size.
+// Note: slli.uw is not defined for XLEN=32, so the sail code does not need to mask the shift amount.
 
-Question::
-*The shift amount on this was changed to 5 bits as anything larger than
-this would always result in zero. Any issues with this?
-*Is there any value to making zero-shift or shift-zero reserved?
-
-Constrained unpredictable behaviour and reserved encodings::
- * If _shamt_ is 0 or _rs1_ is the zero-register, the behaviour is
-   constrained unpredicatable: it may cause the register _rd_ to be
-   overwritten with the result of another operation encoded in the
-   same opcode space or may cause an illegal instruction exception (if
-   no other instruction is encoded into this opcode space).
- * All encodings where _rs1_ or _shamt_ are 0 are reserved for future
-   use.
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+This instruction is the same as *slli* with *zext.w* performed on _rs1_ before shifting.
+===============================================================
 
 

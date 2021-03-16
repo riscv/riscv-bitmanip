@@ -4,6 +4,8 @@
 Mnemonic::
 rev8 _rd_, _rs_
 
+IMPORTANT: There are two different rev8 instructions - one for RV32 and one for RV64. I will defined seperate instruction in the near future. KAD
+
 Encoding::
 [wavedrom]
 ....
