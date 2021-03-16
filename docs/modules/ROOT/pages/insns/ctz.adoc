@@ -1,4 +1,4 @@
-== Count trailing zero-bits
+== Count trailing zeros
 
 Mnemonic::
 ctz _rd_, _rs_
@@ -9,19 +9,15 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x13, attr: ['OP-IMM'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x1 },
+    { bits:  3, name: 0x1, attr: ['CTZ/CTZW'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 0x1, attr: ['CTZ/CTZW'] },
-    { bits:  7, name: 0x30 },
+    { bits:  7, name: 0x30, attr: ['CTZ/CTZW'] },
 ]}
 ....
 
 Description:: 
-Counts the trailing zero-bits in a register. +
-It returns the number of consecutive zero-bits (i.e. clear bits) in
-the from the least-significant bit (i.e. "trailing bits") of the
-operand register _rs_ and places the result in _rd_. +
-Returns XLEN, if no bits are set.
+This instruction counts the number of 0's before the first 1, starting at the least signifcant bit (i.e., 0 ) and progressing to the most significant bit (i.e., XLEN-1. Accordingly, if the input is 0, the output is XLEN, and if the least signifcant bit of the input is a 1, the output is 0.
 
 Operation::
 [source,sail]

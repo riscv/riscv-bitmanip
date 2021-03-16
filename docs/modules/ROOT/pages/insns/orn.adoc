@@ -1,4 +1,4 @@
-== OR with inverted register
+== OR with inverted operand
 
 Mnemonic::
 orn _rd_, _rs1_, _rs2_
@@ -8,14 +8,15 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x6, attr: ['OR/ORN']},
+    { bits:  3, name: 0x6, attr: ['ORN']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x20, attr: ['ORN: invert rs2'] },
+    { bits:  7, name: 0x20, attr: ['ORN'] },
 ]}
 ....
 Description:: 
-Combine the contents of GPR _rs1_ and the bitwise-inverse of GPR _rs2_ in a bitwise logical OR operation and place the result into GPR _rd_.
+This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise-inversion of _rs2_.
+
 Operation::
 [source,sail]
 --

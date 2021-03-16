@@ -5,6 +5,8 @@
 The Zba sub-extension is frozen.
 ====
 
+The following instructions comprize the Zba sub-extension:
+
 [%header,cols="^1,^1,4,8"]
 |===
 |RV32
@@ -15,7 +17,11 @@ The Zba sub-extension is frozen.
 |
 |&#10003;
 |add.uw _rd_, _rs1_, _rs2_
-|xref:insns/add_uw.adoc[add unsigned word]
+|xref:insns/add_uw.adoc[add unsigned-word]
+|&#10003;
+|
+|
+|
 
 |&#10003;
 |&#10003;
@@ -54,28 +60,28 @@ The Zba sub-extension is frozen.
 
 |===
 
-Architecture Comment::
+.Software Hint
+[NOTE, caption="SW" ]
+===============================================================
+The Zba instructins can be used to accelerate the generation of
+addresses that index into arrays of basic types (halfword, word,
+doubleword) using both unsigned word-sized and XLEN-sized indices: a
+shifted index is added to a base address.
+
+While the shift and add instructions are limited to a maximum left shift of
+3, the slli instruction (from the base ISA) can be used to perform similar
+shifts for indexing into arrays of wider elements. The slli.uw -- added in
+this sub extension -- can be used when the index is to be interpreted as an
+unsigned word.
+===============================================================
+
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
 We limited the shift and add instructions to a left shift of 1, 2, or 3
 because these are commonly found in real-world code and bacause they
 can be implemented with a minimal amount of additional hardware beyond
 that of the simple adder. Our goal was to avoid lengthing the critical
 path in implementations.
+===============================================================
 
-Software Hint::
-The Zba instructins can be used to accelerate the generations of address
-into arrays of basic types (halfword, word, doubleword) using both word-sized
-and XLEN-sized indices: a shifted index is added to a base address.
-
-Indexing into larger arrays using unsigned word pointers can be efficiently
-performed using the slli.uw instruction
-
-With word-sized indices on systems with XLEN larger than 32 bits, a
-prefix zero-extension on the word-sized index is performed prior to
-shifting the index.
-
-Question::
-Do we want to do anything about this - or just allow the duplication?
-ALERT: The `shXadd` functions with either `zero` either for the index
-or a base register shadows instructions from the base instruction set
-or this extension (a base of zero is equivalent to a `slli` or
-`slli.uw`; an index of zero is equivalent to an `addi rD,rBase,0`).

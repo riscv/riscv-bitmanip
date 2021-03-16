@@ -1,7 +1,7 @@
 == Add unsigned word
 
 Mnemonic::
-add.uw _rd_, _rIndex_, _rBase_
+add.uw _rd_, _r1_, _r2_
 
 Encoding::
 [wavedrom]
@@ -12,35 +12,35 @@ Encoding::
     { bits:  3, name: 0x0, attr: ['ADD.UW'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x04 },
+    { bits:  7, name: 0x04, attr: ['ADD.UW'] },
 ]}
 ....
+// Note: In the context of OP-32, ADD.UW requires 10 other opcode bits. Therefore, I added attr to both the 3 bit field and the most significant 7-bit field (KAD)
 
 Description::
-Zero extends the least significant word of _rs1_ and adds it to _rs2_
-placing the sum into _rd_.
+This instruction performs an XLEN-wide addition between _rs2_ and the Zero-extended least significant word of _rs1_.
 
 Operation::
 [source,sail]
 --
 
-X(rd) = X(rs2) + EXTZ(X(rs1)[31..0];
+X(rd)[XLEN-1..0] = EXTZ(X(rs1)[31..0]) + X(rs2)[XLEN-1..0];
 --
 
-Question::
- * Do we want to reserve various forms that are NOP e.g.,
-   _rs1_ = _rs2_ = X0 or Move where only one input is X0?  
-   We don't do this with other instructions.
+.Software Hint
+[NOTE, caption="SW" ]
+===============================================================
+Zero-extending a word can be achieved with add.uw _rd_, _r1_, zero
 
-Pseudo-instructions::
-zext.w _rd_, _rs_ is an alias for add.uw _rd_, _rs_, zero
+The add.uw instruction can be used to generate addresses to index into an array of bytes where _rs1_ is the unsigned-word index and _rs2_ is the base of the array.
+===============================================================
 
-Question::
-* NB - zext.w could be an alias for pack _rs_, zero
-which do we want to use?
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+We chose not to use add.uw _rd_, _r1_, zero as the pseudo instruction for zext.w as zext.w logicaly fits in Zbb but add.uw resides in Zba.
+If Zbb is subsequently extended to include _pack_, we can use pack _rd_,_rs_,zero for zext.w
+===============================================================
+ 
 
-Code Hints:
-The add.uw can be used to generate addresses to index into an
-array of bytes where _rs1_ is the index and _rs2_ is the base
-of the array. 
 

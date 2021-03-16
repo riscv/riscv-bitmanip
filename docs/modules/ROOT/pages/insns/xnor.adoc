@@ -8,23 +8,19 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x4, attr: ['XOR/XNOR']},
+    { bits:  3, name: 0x4, attr: ['XNOR']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x20, attr: ['XNOR: invert rs2'] },
+    { bits:  7, name: 0x20, attr: ['XNOR'] },
 ]}
 ....
 Description:: 
-Perform the bit-wise exlusive-NOR operation on _rs1_ and _rs2_.
+This instruction performs the bit-wise exlusive-NOR operation on _rs1_ and _rs2_.
 
 Operation::
 [source,sail]
 --
 X(rd) = ~(X(rs1) ^ X(rs2));
 --
-Implementation Hint::
-The XNOR can be implemented by inverting one of the inputs to the base-required XOR instruction.
-This inverter could be shared with the inverter used for the andn and orn instructions.
-In some implementations, the inverter on _rs2_ used for subtraction can be shared with these
-inverted logical functions.
+
 

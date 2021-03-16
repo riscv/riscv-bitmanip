@@ -1,7 +1,7 @@
-== Index into a halfword (16-bit) array
+== Shift left by 1 and add
 
 Mnemonic::
-sh1add _rd_, _rIndex_, _rBase_
+sh1add _rd_, _rs1_, _rs2_
 
 Encoding::
 [wavedrom]
@@ -12,30 +12,21 @@ Encoding::
     { bits:  3, name: 0x2, attr: ['SH1ADD'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x10 },
+    { bits:  7, name: 0x10, attr: ['SH1ADD'] },
 ]}
 ....
 
 Description::
-Indexes into a halfword (16-bit) array by shifting the index _rs1_ by
-1 (multiplying with the size of a halfword-sized element) and adding
-the base _rs2_, placing the result into _rd_.
+This instruction shifts _rs1_ to the left by 1 place and adds it to _rs2_.
 
 Operation::
 [source,sail]
 --
-let base = X(rs2);
-let index = X(rs1);
+// let base = X(rs2);
+// let index = X(rs1);
 
-X(rd) = base + (index << 1);
+X(rd) = X(rs2) + (X(rs1) << 1);
 --
 
-Constrained unpredictable behaviour and reserved encodings::
- * If _rIndex_ or _rBase_ are the zero-register (register 0), the
-   result is constrained unpredicatable: it may cause the register
-   _rd_ to be overwritten with the result of another operation encoded
-   in the same opcode space or may cause an illegal instruction
-   exception (if no other instruction is encoded into this opcode
-   space).
- * Encodings where _rIndex_ or _rBase_ are 0 (i.e. a total of 63
-   code-points) are reserved for future use.
+// We have decided that this and all other instructions will not have reserved encodings for "useless encodings
+// We could follow suit of the base ISA and create HINTs if there is some recognized value for doing so

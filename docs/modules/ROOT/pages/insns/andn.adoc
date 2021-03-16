@@ -21,15 +21,15 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x7, attr: ['AND/ANDN']},
+    { bits:  3, name: 0x7, attr: ['ANDN']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x20, attr: ['ANDN: invert rs2'] },
+    { bits:  7, name: 0x20, attr: ['ANDN'] },
 ]}
 ....
 
 Description:: 
-Combine the contents of GPR _rs1_ and the bitwise-inverse of GPR _rs2_ in a bitwise logical AND operation and place the result into GPR _rd_.
+This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise-inversion of _rs2_.
 
 Operation::
 [source,sail]

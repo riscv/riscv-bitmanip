@@ -1,12 +1,34 @@
-= Grouping into subextensions
+= Subextensions grouped for public review and ratification
 
-The bit-manipulation instructions are grouped into a range of
-Z-extensions:
+The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction. While the instructions are intended to have general use, some instructions are more useful in some domains than others. In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into subextensions, each of which has it's own Z-extension mnemonic.
 
-* xref:zba.adoc[Zba]
-* xref:zbb.adoc[Zbb: basic bit-manipulation]
+Each sub-extension includes a group of several instructions that are used for a common purpose and that can often share the same logic. Some instructions are available in only one subextension while others are available in several. The instruction have menmonics and instruction encodings that are independent of the subextensiuons in which they appear. Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
+
+As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function. For example, XOR _rd_, _r1_, zero is nothing more than a move. Since reserving such encodings for other uses adds a lot of complexity to designs and the verification thereof -- with relatively little gain in opcode space -- we contine to let these be valid encodings. For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudo instructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md. 
+
+The bit-manip extension is defined for RV32 and RV64. Most of the instructions are expected to be forward compatible with RV128. While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128. 
+
+IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document superseeds what is in the draft specification.
+
+== Word Instructions
+The bit-manip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign extended to XLEN.
+
+Bitmanip instructions with the suffix _.uw_ treat one operand as an unsigned 32-bit value but otherwise perform the operation as if it were an XLEN instruction.
+
+Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN result that is sign-extended or zero-extended, based on specific instruction.
+
+== Instruction Group
+The first group of sub-extensions to be release for Public Review are:
+
+* xref:zba.adoc[Zba: shift left and add]
+* xref:zbb.adoc[Zbb: base bit manipulation]
 * xref:zbc.adoc[Zbc: carry-less multiplication]
 * xref:zbs.adoc[Zbs: single-bit instructions]
+
+
+Below is a list of all of the instructions (and pseudo
+instructions) that are included in these subextesions
+along with their specific mapping:
 
 [%header,cols="^1,^1,4,8,^1,^1,^1,^1"]
 |===
@@ -22,7 +44,7 @@ Z-extensions:
 |
 |&#10003;
 |add.uw _rd_, _rs1_, _rs2_
-|xref:insns/add_uw.adoc[add unsigned word]
+|xref:insns/add_uw.adoc[add unsigned-word]
 |&#10003;
 |
 |
@@ -31,83 +53,11 @@ Z-extensions:
 |&#10003;
 |&#10003;
 |andn _rd_, _rs1_, _rs2_
-|xref:insns/andn.adoc[AND with bitwise-inverted operand _rs2_]
+|xref:insns/andn.adoc[AND with one input inverted]
 |
 |&#10003;
-|
 |
 
-|&#10003;
-|&#10003;
-|bclr _rd_, _rs1_, _rs2_
-|xref:insns/bclr.adoc[Clear bit]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|bclri _rd_, _rs1_, _imm_
-|xref:insns/bclri.adoc[Clear bit, immediate]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|bext _rd_, _rs1_, _rs2_
-|xref:insns/bext.adoc[Extract bit]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|bexti _rd_, _rs1_, _imm_
-|xref:insns/bext.adoc[Extract bit, immediate]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|binv _rd_, _rs1_, _rs2_
-|xref:insns/binv.adoc[Invert (toggle) bit]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|binvi _rd_, _rs1_, _imm_
-|xref:insns/binvi.adoc[Invert (toggle) bit, immediate]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|bset _rd_, _rs1_, _rs2_
-|xref:insns/bset.adoc[Set bit]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|bseti _rd_, _rs1_, _imm_
-|xref:insns/bseti.adoc[Set bit, immediate]
-|
-|
-|
-|&#10003;
 
 |&#10003;
 |&#10003;
@@ -139,7 +89,7 @@ Z-extensions:
 |&#10003;
 |&#10003;
 |clz _rd_, _rs_
-|xref:insns/clz.adoc[Count leading zero-bits]
+|xref:insns/clz.adoc[Count leading zeros]
 |
 |&#10003;
 |
@@ -148,25 +98,7 @@ Z-extensions:
 |
 |&#10003;
 |clzw _rd_, _rs_
-|xref:insns/clzw.adoc[Count leading zero-bits, word-size]
-|
-|&#10003;
-|
-|
-
-|&#10003;
-|&#10003;
-|ctz _rd_, _rs_
-|xref:insns/ctz.adoc[Count trailing zero-bits]
-|
-|&#10003;
-|
-|
-
-|
-|&#10003;
-|ctzw _rd_, _rs_
-|xref:insns/ctzw.adoc[Count trailing zero-bits, word-size]
+|xref:insns/clzw.adoc[Count leading zeros  (word)]
 |
 |&#10003;
 |
@@ -175,7 +107,7 @@ Z-extensions:
 |&#10003;
 |&#10003;
 |cpop _rd_, _rs_
-|xref:insns/cpop.adoc[Count set-bits]
+|xref:insns/cpop.adoc[Count population]
 |
 |&#10003;
 |
@@ -184,7 +116,25 @@ Z-extensions:
 |
 |&#10003;
 |cpopw _rd_, _rs_
-|xref:insns/cpopw.adoc[Count set-bits, word-size]
+|xref:insns/cpopw.adoc[Count population (word)]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|ctz _rd_, _rs_
+|xref:insns/ctz.adoc[Count trailing zeros]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|ctzw _rd_, _rs_
+|xref:insns/ctzw.adoc[Count trailing zero (word)]
 |
 |&#10003;
 |
@@ -201,7 +151,7 @@ Z-extensions:
 
 |&#10003;
 |&#10003;
-|minu _rd_, _rs1_, _rs2_
+|maxu _rd_, _rs1_, _rs2_
 |xref:insns/maxu.adoc[Maximum of unsigned integers]
 |
 |&#10003;
@@ -228,62 +178,8 @@ Z-extensions:
 
 |&#10003;
 |&#10003;
-|rev8 _rd_, _rs_
-|xref:insns/rev8.adoc[Byte-reverse]
-|
-|&#10003;
-|
-|
-
-|&#10003;
-|&#10003;
-|rol _rd_, _rs1_, _rs2_
-|xref:insns/rol.adoc[Rotate-left]
-|
-|&#10003;
-|
-|
-
-|
-|&#10003;
-|rolw _rd_, _rs1_, _rs2_
-|xref:insns/rolw.adoc[Rotate-left, word-sized]
-|
-|&#10003;
-|
-|
-
-|&#10003;
-|&#10003;
-|ror _rd_, _rs1_, _rs2_
-|xref:insns/ror.adoc[Rotate-right]
-|
-|&#10003;
-|
-|
-
-|&#10003;
-|&#10003;
-|rori _rd_, _rs1_, _shamt_
-|xref:insns/rori.adoc[Rotate-right immediate]
-|
-|&#10003;
-|
-|
-
-|
-|&#10003;
-|roriw _rd_, _rs1_, _shamt_
-|xref:insns/roriw.adoc[Rotate-right immediate, word-sized]
-|
-|&#10003;
-|
-|
-
-|
-|&#10003;
-|rorw _rd_, _rs1_, _rs2_
-|xref:insns/rorw.adoc[Rotate-right, word-sized]
+|orcb _rd_, _rs1_, _rs2_ (NOTE: We need a better mnemonic - this is same as gorci imm=7 )
+|xref:insns/orcb.adoc[bit reverse in each byte]
 |
 |&#10003;
 |
@@ -292,7 +188,7 @@ Z-extensions:
 |&#10003;
 |&#10003;
 |orn _rd_, _rs1_, _rs2_
-|xref:insns/orn.adoc[OR with bitwise-inverted operand _rs2_]
+|xref:insns/orn.adoc[OR with one input inverted]
 |
 |&#10003;
 |
@@ -300,8 +196,218 @@ Z-extensions:
 
 |&#10003;
 |&#10003;
+|rev8w _rd_, _rs_ NOTE: We need seperate mnemonic for 1) 32-bit RV32 and 2) RV64 W and R4 bit
+|xref:insns/rev8w.adoc[Byte reverse RV32]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|rev8_64 _rd_, _rs_
+|xref:insns/rev8_64.adoc[Byte reverse RV64]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|rol _rd_, _rs1_, _rs2_
+|xref:insns/rol.adoc[Rotate left]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|rolw _rd_, _rs1_, _rs2_
+|xref:insns/rolw.adoc[Rotate left (word)]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|ror _rd_, _rs1_, _rs2_
+|xref:insns/ror.adoc[Rotate right]
+|
+|&#10003;
+|
+|
+
+|&#10003;
+|&#10003;
+|rori _rd_, _rs1_, _shamt_
+|xref:insns/rori.adoc[Rotate right by immediate]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|roriw _rd_, _rs1_, _shamt_
+|xref:insns/roriw.adoc[Rotate right by immediate (word)]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|rorw _rd_, _rs1_, _rs2_
+|xref:insns/rorw.adoc[Rotate-right (word)]
+|
+|&#10003;
+|
+|
+
+|
+|&#10003;
+|&#10003;
+|sbclr _rd_, _rs1_, _rs2_
+|xref:insns/sbclr.adoc[Single-bit clear]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbclri _rd_, _rs1_, _imm_
+|xref:insns/sbclri.adoc[Single-bit clear, immediate-index]
+|
+|
+|
+|&#10003;
+
+|
+|&#10003;
+|&#10003;
+|sbclriw _rd_, _rs1_, _rs2_
+|xref:insns/sbclrw.adoc[Single-bit clear]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbclrw _rd_, _rs1_, _imm_
+|xref:insns/sbclriw.adoc[Single-bit clear, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbext _rd_, _rs1_, _rs2_
+|xref:insns/sbext.adoc[Single-Bit Extract]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbexti _rd_, _rs1_, _imm_
+|xref:insns/sbexti.adoc[Single-Bit Extract, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbextw _rd_, _rs1_, _imm_
+|xref:insns/sbextw.adoc[Single-Bit Extract, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbinv _rd_, _rs1_, _rs2_
+|xref:insns/sbinv.adoc[Single-Bit Invert]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbinvi _rd_, _rs1_, _imm_
+|xref:insns/sbinvi.adoc[Single-Bit Invert, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbinviw _rd_, _rs1_, _imm_
+|xref:insns/sbinviw.adoc[Single-Bit Invert (word), immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbinvw _rd_, _rs1_, _imm_
+|xref:insns/sbinvw.adoc[Single-Bit Invert (word)]
+|
+|
+|
+|&#10003;
+
+
+|&#10003;
+|&#10003;
+|sbset _rd_, _rs1_, _rs2_
+|xref:insns/sbset.adoc[Single-Bit Set]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbseti _rd_, _rs1_, _imm_
+|xref:insns/sbseti.adoc[Single-Bit Set, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbsetiw _rd_, _rs1_, _rs2_
+|xref:insns/sbsetiw.adoc[Single-Bit Set]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|sbsetw _rd_, _rs1_, _imm_
+|xref:insns/sbsetw.adoc[Single-Bit Set, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
 |sext.b _rd_, _rs_
-|xref:insns/sext_b.adoc[Sign-extend an 8-bit quantity]
+|xref:insns/sext_b.adoc[Sign-extend byte]
 |
 |&#10003;
 |
@@ -310,20 +416,14 @@ Z-extensions:
 |&#10003;
 |&#10003;
 |sext.h _rd_, _rs_
-|xref:insns/sext_h.adoc[Sign-extend a 16-bit quantity]
+|xref:insns/sext_h.adoc[Sign-extend halfword]
 |
 |&#10003;
 |
 |
 
-|
-|&#10003;
-|sext.w _rd_, _rs_
-|addiw _rd_, _rs_, 0 (pseudo-instruction)
-|
-|&#10003;
-|
-|
+// sext.w is a pseudo instruction defined in the base ISA as ADDIW with Imm=0
+// There is no need to include it here.
 
 |&#10003;
 |&#10003;
@@ -391,7 +491,7 @@ Z-extensions:
 |&#10003;
 |&#10003;
 |xnor _rd_, _rs1_, _rs2_
-|xref:insns/xnor.adoc[XOR with bitwise-inverted operand _rs2_]
+|xref:insns/xnor.adoc[XNOR]
 |
 |&#10003;
 |
@@ -415,13 +515,14 @@ Z-extensions:
 |
 |
 
-|
-|&#10003;
-|zext.w _rd_, _rs_
-|xref:insns/zext_w.adoc[Zero-extend a 32-bit quantity]
-|
-|&#10003;
-|
-|
+// zext.w RV64 will be defined later as pack _rd_,_rs_, zero (assuming pack goes into Zbb)
+// |
+// |&#10003;
+// |zext.w _rd_, _rs_ pseudo instruction
+// |add.uw _rd_, _rs_,X0
+// |
+// |&#10003;
+// |
+// |
 
 |===
