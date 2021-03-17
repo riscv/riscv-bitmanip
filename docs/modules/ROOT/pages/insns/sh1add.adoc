@@ -28,5 +28,5 @@ Operation::
 X(rd) = X(rs2) + (X(rs1) << 1);
 --
 
-// We have decided that this and all other instructions will not have reserved encodings for "useless encodings
+// We have decided that this and all other instructions will not have reserved encodings for "useless encodings"
 // We could follow suit of the base ISA and create HINTs if there is some recognized value for doing so

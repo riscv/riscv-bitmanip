@@ -1,4 +1,4 @@
-== Word-sized index into a doubleword (64-bit) array
+== Shift unsigned word left by 3 and add
 
 Mnemonic::
 sh3add.uw _rd_, _rIndex_, _rBase_
@@ -12,15 +12,12 @@ Encoding::
     { bits:  3, name: 0x2, attr: ['SH3ADD.UW'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x10 },
+    { bits:  7, name: 0x10, attr: ['SH3ADD.UW'] },
 ]}
 ....
 
 Description::
-Indexes into a doubleword (64-bit) array using a word-sized index: it
-shifts the zero-extended word-sized index _rs1_ by 3 (multiplying with
-the size of a doubleword-sized element) and adding the base _rs2_,
-placing the result into _rd_.
+This instruction takes the least significant word of _rs1_, zero extends it, shifts it left by 3 places, and then adds it to _rs2_.
 
 Operation::
 [source,sail]
@@ -31,12 +28,3 @@ let index = EXTZ(X(rs1)[31..0];
 X(rd) = base + (index << 3);
 --
 
-Constrained unpredictable behaviour and reserved encodings::
- * If _rIndex_ or _rBase_ are the zero-register (register 0), the
-   result is constrained unpredicatable: it may cause the register
-   _rd_ to be overwritten with the result of another operation encoded
-   in the same opcode space or may cause an illegal instruction
-   exception (if no other instruction is encoded into this opcode
-   space).
- * Encodings where _rIndex_ or _rBase_ are 0 (i.e. a total of 63
-   code-points) are reserved for future use.

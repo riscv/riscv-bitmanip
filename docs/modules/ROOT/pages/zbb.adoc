@@ -2,7 +2,7 @@
 
 [NOTE,caption=Frozen]
 ====
-The Zba sub-extension is frozen.
+The Zbb sub-extension is frozen.
 ====
 
 include::_logical-with-negate.adoc[]

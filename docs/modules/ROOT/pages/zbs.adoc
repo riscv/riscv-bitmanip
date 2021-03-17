@@ -5,13 +5,8 @@
 The Zbs sub-extension is frozen.
 ====
 
-The single-bit instructions provide a mechanism to perform basic
-bit-manipulation on a single bit:
-
-* setting a bit (*bset*),
-* clearing a bit (*bclr*),
-* inverting (toggling) a bit (*binv*),
-* extracting a bit (*bext*).
+The single-bit instructions provide a mechanism to set, clear, invert, or extract
+a single bit in a register. The bit is specified by its index.
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -43,12 +38,12 @@ bit-manipulation on a single bit:
 |&#10003;
 |&#10003;
 |binv _rd_, _rs1_, _rs2_
-|xref:insns/binv.adoc[Invert (toggle) bit]
+|xref:insns/binv.adoc[Invert bit]
 
 |&#10003;
 |&#10003;
 |binvi _rd_, _rs1_, _imm_
-|xref:insns/binvi.adoc[Invert (toggle) bit, immediate]
+|xref:insns/binvi.adoc[Invert bit, immediate]
 
 |&#10003;
 |&#10003;

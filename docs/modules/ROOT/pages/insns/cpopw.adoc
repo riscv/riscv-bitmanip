@@ -1,4 +1,4 @@
-== Count set bits, word-sized
+== Count set bits in word
 
 Mnemonic::
 cpopw _rd_, _rs_
