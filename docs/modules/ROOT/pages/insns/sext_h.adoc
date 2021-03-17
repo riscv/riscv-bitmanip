@@ -17,7 +17,7 @@ Encoding::
 ....
 
 Description::
-Sign-extend the least-significant 16 bits of _rs_ to XLEN and place in _rd_.
+This instruction sign-extends the least-significant halfword in _rs_ to XLEN by copying the most significant bit in the halfword (i.e., bit 15) to all of the more significant bits.
 
 Operation::
 [source,sail]

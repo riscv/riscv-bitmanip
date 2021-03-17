@@ -1,8 +1,7 @@
 == Integer minimum/maximum
 
 The integer minimum/maximum instructions are arithmetic R-type
-instructions that assigns the smaller/larger of two operand registers
-to a destination register without a control-transfer operation.
+instructions that returns the smaller/larger of two operands.
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -32,6 +31,3 @@ to a destination register without a control-transfer operation.
 |xref:insns/minu.adoc[Minimum of unsigned integers]
 |===
 
-NOTE: Calculating the absolute value of a signed integer can be
-performed using the following sequence: *neg rD,rS* followed by *max
-rD,rS,rD*.

@@ -9,14 +9,15 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x13, attr: ['OP-IMM'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x1, attr: ['SLLI'] },
-    { bits:  5, name: 'rs' },
-    { bits:  5, name: 0x2 },
-    { bits:  7, name: 0x30 },
+    { bits:  3, name: 0x1, attr: ['CPOP'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x2, attr: ['CPOP'] },
+    { bits:  7, name: 0x30, attr: ['CPOP'] },
 ]}
 ....
 Description:: 
-Counts the number of 1's (i.e., set bits) in _rs_.
+This instructions counts the number of 1's (i.e., set bits) in the source register.
+
 Operation::
 [source,sail]
 --
@@ -28,12 +29,15 @@ foreach (i from 0 to (xlen - 1) in inc)
 
 X[rd] = bitcount
 --
-Comment::
+
+.Software Hint
+[NOTE, caption="SH" ]
+===============================================================
 This operations is known as population count, popcount, sideways sum,
 bit summation, or Hamming weight.
 
-Comment::
 The GCC builtin function `__builtin_popcount (unsigned int x)`
 is implemented by cpop on RV32 and by cpopw on RV64; the GCC builtin
 function `__builtin_popcountl (unsigned long x)` for LP64 is
 implemented by cpop on RV64.
+===============================================================

@@ -9,15 +9,15 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x7, attr: ['MINU']},
+    { bits:  3, name: 0x5, attr: ['MINU']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x05, attr: ['MIN/MINU'] },
+    { bits:  7, name: 0x05, attr: ['MINU'] },
 ]}
 ....
 
 Description::
-Places the smaller of two unsigned integers (_rs1_, _rs2_) in _rD_.
+This instruction returns the smaller of two unsigned integers.
 
 Operation::
 [source,sail]

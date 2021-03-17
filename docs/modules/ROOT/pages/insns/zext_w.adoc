@@ -17,7 +17,7 @@ Encoding::
 ....
 
 Description::
-Zero-extend the least-significant 32 bits of _rs_ to XLEN and place in _rd_.
+This instruction zero-extends the least-significant word of the source to XLEN by inserting 0's into all of the bits more significant than 31.
 
 Operation::
 [source,sail]
