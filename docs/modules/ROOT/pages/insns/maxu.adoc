@@ -17,7 +17,7 @@ Encoding::
 ....
 
 Description::
-Places the larger of two unsigned integers (_rs1_, _rs2_) in _rD_.
+This instruction returns the larger of two unsigned integers.
 
 Operation::
 [source,sail]

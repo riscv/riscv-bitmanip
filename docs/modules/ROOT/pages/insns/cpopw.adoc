@@ -8,14 +8,15 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x1 },
+    { bits:  3, name: 0x1, attr: ['CPOPW'] },
     { bits:  5, name: 'rs' },
-    { bits:  5, name: 0x2 },
-    { bits:  7, name: 0x30 },
+    { bits:  5, name: 0x2, attr: ['CPOPW'] },
+    { bits:  7, name: 0x30, attr: ['CPOPW'] },
 ]}
 ....
 Description:: 
-Stores the number of set bits in the lower-32bits of _rs_ into _rd_.
+This instructions counts the number of 1's (i.e., set bits) in the least-significant word of the source register.
+
 Operation::
 [source,sail]
 --
@@ -28,5 +29,3 @@ foreach (i from 0 to 31 in inc)
 X[rd] = bitcount
 --
 
-NOTE: *cpopw* can be emulated using *zext.w rD,rS* and *cpop rD,rD* in
-a two-instruction sequence.

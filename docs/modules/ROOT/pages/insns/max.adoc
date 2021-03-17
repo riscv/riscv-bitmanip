@@ -17,7 +17,7 @@ Encoding::
 ....
 
 Description::
-Places the larger of two signed integers (_rs1_, _rs2_) in _rD_.
+This instruction returns the larger of two signed integers.
 
 Operation::
 [source,sail]
@@ -32,8 +32,12 @@ let result = if   rs1_val <_s rs2_val
 X(rd) = result;
 --
 
-NOTE: The sequence `neg rD, rS; max rD, rS, rD` calculates the
-absolute value of signed integers.  We recommend to schedule these as
-a fusion pair (i.e. avoid scheduling other instructions between these
-instructions) to allow macro-fusion to recognize these as calculating
-the absolute of rS and placing it in rD.
+.Software Hint
+[NOTE, caption="SW" ]
+===============================================================
+Calculating the absolute value of a signed integer can be
+performed using the following sequence: *neg rD,rS* followed by
+ *max rD,rS,rD*. When using this common sequence, it is suggested that they
+are schededuled with no intervening instructions so that implementations
+that are so optimized can fuse them together.
+===============================================================

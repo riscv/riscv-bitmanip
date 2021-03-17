@@ -1,4 +1,4 @@
-== Rotate Right (Bitwise) Immediate
+== Rotate Right Immediate
 
 Mnemonic::
 rori _rd_, _rs1_, _shamt_
@@ -17,8 +17,7 @@ Encoding::
 ....
 
 Description:: 
-Perform a bitwise rotate-right of _rs1_ by the rotation-amount
-specified by the immediate _shamt_.
+This instruction performs a rotate-right of _rs1_ by the amount in the least-significant log2[xlen] bits of _shamt_.
 
 Operation::
 [source,sail]

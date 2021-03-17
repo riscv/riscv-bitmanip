@@ -12,12 +12,12 @@ Encoding::
     { bits:  3, name: 0x4, attr: ['MIN']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x05, attr: ['MIN/MINU'] },
+    { bits:  7, name: 0x05, attr: ['MIN'] },
 ]}
 ....
 
 Description::
-Places the smaller of two signed integers (_rs1_, _rs2_) in _rD_.
+This instruction returns the smaller of two signed integers.
 
 Operation::
 [source,sail]

@@ -30,7 +30,7 @@ Encoding (RV64)::
 ....
 
 Description::
-Zero-extend the least-significant 16 bits of _rs_ to XLEN and place in _rd_.
+This instruction zero-extends the least-significant halfword of the source to XLEN by inserting 0's into all of the bits more significant than 15.
 
 Operation::
 [source,sail]

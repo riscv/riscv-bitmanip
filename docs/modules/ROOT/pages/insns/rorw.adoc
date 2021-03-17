@@ -1,4 +1,4 @@
-== Rotate Right (Bitwise), word-sized
+== Rotate Word Right
 
 Mnemonic::
 rorw _rd_, _rs1_, _rs2_
@@ -9,16 +9,16 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP-32'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x5, attr: ['ROR/RORW']},
+    { bits:  3, name: 0x5, attr: ['RORW']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x30, attr: ['ROR/RORW'] },
+    { bits:  7, name: 0x30, attr: ['RORW'] },
 ]}
 ....
 
-Description:: Perform a bitwise rotate-right of the least-signficant
-word of _rs1_ by the rotation-amount specified by the
-least-significant bits of _rs2_, sign-extending the result to XLEN.
+Description:: 
+This instruction performs a rotate-right on the least significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
+The resultant word is sign extended by copying bit 31 to all of the more significant bits.
 
 Operation::
 [source,sail]
