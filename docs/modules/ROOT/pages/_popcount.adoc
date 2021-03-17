@@ -1,6 +1,6 @@
-== Count set bits (population count)
+== Count population
 
-This instruction counts the number of set bits (1-bits) in a register.
+These instructions count the number of set bits (1-bits). This is also commonly refered to as population count.
 
 
 
@@ -19,7 +19,7 @@ This instruction counts the number of set bits (1-bits) in a register.
 |
 |&#10003;
 |cpopw _rd_, _rs_
-|xref:insns/cpopw.adoc[Count set-bits, word-size]
+|xref:insns/cpopw.adoc[Count set-bits in word ]
 |===
 
 

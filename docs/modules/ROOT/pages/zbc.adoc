@@ -1,8 +1,8 @@
-= Zbb: carry-less multiplication
+= Zbc: carry-less multiplication
 
 [NOTE,caption=Frozen]
 ====
-The Zbs sub-extension is frozen.
+The Zbc sub-extension is frozen.
 ====
 
 Carry-less multiplication is the multiplication in the polynomial ring

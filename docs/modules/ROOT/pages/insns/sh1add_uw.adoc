@@ -1,4 +1,4 @@
-== Shift word (unsigned) left by 1 and add
+== Shift unsigned word left by 1 and add
 
 Mnemonic::
 sh1add.uw _rd_, _rIndex_, _rBase_
@@ -22,11 +22,7 @@ This instruction takes the least significant word of _rs1_, zero extends it, shi
 Operation::
 [source,sail]
 --
-// let base = X(rs2);
-// let index = EXTZ(X(rs1)[31..0];
-//
-// X(rd) = base + (index << 1);
-X(rd) = EXTZ(X(rs1)[31..0]) + rs1[XLEN-1..0]
+X(rd) = EXTZ(X(rs1)[31..0]) + (X(rs2) << 2);
 --
 
 
