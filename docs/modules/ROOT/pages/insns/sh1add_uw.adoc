@@ -17,8 +17,7 @@ Encoding::
 ....
 
 Description::
-This instruction takes the least significant word of _rs1_, zero extends it, shifts it left by 1 place, and then adds it to _rs2_.
-
+This instruction performs an XLEN-wide addition of two addends. The first addened is _rs2_. The second addened is the unsigned value formed by extracting the least significant word of _rs1_ and shifting it left by 1 place.
 Operation::
 [source,sail]
 --
