@@ -51,7 +51,6 @@ The rotate instructions were included to replace a common four-instruction
  sequence (neg; sll/srl; srl/sll; or) requiring one scratch register, with a single
 instruction encoding.
 
-By providing both rotate left and rotate right instructions, code
  is saved from having to negate the rotate amount to get a single-direction
  rotate instruction to rotate in the oposite direction
 

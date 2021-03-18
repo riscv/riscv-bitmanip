@@ -8,14 +8,14 @@ As with many instructions in the ISA, it is possible to write software that uses
 
 The bit-manip extension is defined for RV32 and RV64. Most of the instructions are expected to be forward compatible with RV128. While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128. 
 
-IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document superseeds what is in the draft specification.
+IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document superseeds what is in the draft specification. That said, the full draft specification contains more context and may be used as a reference.
 
 == Word Instructions
 The bit-manip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign extended to XLEN.
 
-Bitmanip instructions with the suffix _.uw_ treat one operand as an unsigned 32-bit value but otherwise perform the operation as if it were an XLEN instruction.
+Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least signifcant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
 
-Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN result that is sign-extended or zero-extended, based on specific instruction.
+Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
 
 == Instruction Group
 The first group of sub-extensions to be release for Public Review are:
@@ -53,16 +53,17 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |andn _rd_, _rs1_, _rs2_
-|xref:insns/andn.adoc[AND with one input inverted]
+|xref:insns/andn.adoc[AND, single input inverted]
 |
 |&#10003;
+|
 |
 
 
 |&#10003;
 |&#10003;
 |clmul _rd_, _rs1_, _rs2_
-|xref:insns/clmul.adoc[Carry-less multiply (least-significant half)]
+|xref:insns/clmul.adoc[Carry-less multiply]
 |
 |
 |&#10003;
@@ -71,7 +72,7 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |clmulh _rd_, _rs1_, _rs2_
-|xref:insns/clmulh.adoc[Carry-less multiply (most-significant half)]
+|xref:insns/clmulh.adoc[Carry-less multiply high]
 |
 |
 |&#10003;
@@ -98,12 +99,11 @@ along with their specific mapping:
 |
 |&#10003;
 |clzw _rd_, _rs_
-|xref:insns/clzw.adoc[Count leading zeros  (word)]
+|xref:insns/clzw.adoc[Count leading zeros in word]
 |
 |&#10003;
 |
 |
-
 |&#10003;
 |&#10003;
 |cpop _rd_, _rs_
@@ -116,7 +116,7 @@ along with their specific mapping:
 |
 |&#10003;
 |cpopw _rd_, _rs_
-|xref:insns/cpopw.adoc[Count population (word)]
+|xref:insns/cpopw.adoc[Count population in word]
 |
 |&#10003;
 |
@@ -134,7 +134,7 @@ along with their specific mapping:
 |
 |&#10003;
 |ctzw _rd_, _rs_
-|xref:insns/ctzw.adoc[Count trailing zero (word)]
+|xref:insns/ctzw.adoc[Count trailing zeros in word]
 |
 |&#10003;
 |
@@ -143,7 +143,7 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |max _rd_, _rs1_, _rs2_
-|xref:insns/max.adoc[Maximum of signed integers]
+|xref:insns/max.adoc[Maximum]
 |
 |&#10003;
 |
@@ -152,7 +152,7 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |maxu _rd_, _rs1_, _rs2_
-|xref:insns/maxu.adoc[Maximum of unsigned integers]
+|xref:insns/maxu.adoc[Maximum, unsigned]
 |
 |&#10003;
 |
@@ -161,7 +161,7 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |min _rd_, _rs1_, _rs2_
-|xref:insns/min.adoc[Minimum of signed integers]
+|xref:insns/min.adoc[Minimum]
 |
 |&#10003;
 |
@@ -170,7 +170,7 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |minu _rd_, _rs1_, _rs2_
-|xref:insns/minu.adoc[Minimum of unsigned integers]
+|xref:insns/minu.adoc[Minimum, unsigned]
 |
 |&#10003;
 |
@@ -188,7 +188,7 @@ along with their specific mapping:
 |&#10003;
 |&#10003;
 |orn _rd_, _rs1_, _rs2_
-|xref:insns/orn.adoc[OR with one input inverted]
+|xref:insns/orn.adoc[OR, single input inverted]
 |
 |&#10003;
 |
@@ -224,7 +224,7 @@ along with their specific mapping:
 |
 |&#10003;
 |rolw _rd_, _rs1_, _rs2_
-|xref:insns/rolw.adoc[Rotate left (word)]
+|xref:insns/rolw.adoc[Rotate word left]
 |
 |&#10003;
 |
@@ -251,7 +251,7 @@ along with their specific mapping:
 |
 |&#10003;
 |roriw _rd_, _rs1_, _shamt_
-|xref:insns/roriw.adoc[Rotate right by immediate (word)]
+|xref:insns/roriw.adoc[Rotate word right by immediate]
 |
 |&#10003;
 |
@@ -260,36 +260,16 @@ along with their specific mapping:
 |
 |&#10003;
 |rorw _rd_, _rs1_, _rs2_
-|xref:insns/rorw.adoc[Rotate-right (word)]
+|xref:insns/rorw.adoc[Rotate word right]
 |
 |&#10003;
 |
 |
 
-|
 |&#10003;
 |&#10003;
-|sbclr _rd_, _rs1_, _rs2_
-|xref:insns/sbclr.adoc[Single-bit clear]
-|
-|
-|
-|&#10003;
-
-|&#10003;
-|&#10003;
-|sbclri _rd_, _rs1_, _imm_
-|xref:insns/sbclri.adoc[Single-bit clear, immediate-index]
-|
-|
-|
-|&#10003;
-
-|
-|&#10003;
-|&#10003;
-|sbclriw _rd_, _rs1_, _rs2_
-|xref:insns/sbclrw.adoc[Single-bit clear]
+|bclr _rd_, _rs1_, _rs2_
+|xref:insns/bclr.adoc[Single-bit clear]
 |
 |
 |
@@ -297,8 +277,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbclrw _rd_, _rs1_, _imm_
-|xref:insns/sbclriw.adoc[Single-bit clear, immediate-index]
+|bclri _rd_, _rs1_, _imm_
+|xref:insns/bclri.adoc[Single-bit clear, immediate-index]
 |
 |
 |
@@ -306,8 +286,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbext _rd_, _rs1_, _rs2_
-|xref:insns/sbext.adoc[Single-Bit Extract]
+|bclriw _rd_, _rs1_, _rs2_
+|xref:insns/bclrw.adoc[Single-bit clear, word ]
 |
 |
 |
@@ -315,8 +295,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbexti _rd_, _rs1_, _imm_
-|xref:insns/sbexti.adoc[Single-Bit Extract, immediate-index]
+|bclrw _rd_, _rs1_, _imm_
+|xref:insns/bclriw.adoc[Single-bit clear, word, immediate-index]
 |
 |
 |
@@ -324,8 +304,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbextw _rd_, _rs1_, _imm_
-|xref:insns/sbextw.adoc[Single-Bit Extract, immediate-index]
+|bext _rd_, _rs1_, _rs2_
+|xref:insns/bext.adoc[Single-Bit Extract]
 |
 |
 |
@@ -333,8 +313,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbinv _rd_, _rs1_, _rs2_
-|xref:insns/sbinv.adoc[Single-Bit Invert]
+|bexti _rd_, _rs1_, _imm_
+|xref:insns/bexti.adoc[Single-Bit Extract, immediate-index]
 |
 |
 |
@@ -342,8 +322,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbinvi _rd_, _rs1_, _imm_
-|xref:insns/sbinvi.adoc[Single-Bit Invert, immediate-index]
+|bextw _rd_, _rs1_, _imm_
+|xref:insns/bextw.adoc[Single-Bit Extract, word, immediate-index]
 |
 |
 |
@@ -351,8 +331,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbinviw _rd_, _rs1_, _imm_
-|xref:insns/sbinviw.adoc[Single-Bit Invert (word), immediate-index]
+|binv _rd_, _rs1_, _rs2_
+|xref:insns/binv.adoc[Single-Bit Invert]
 |
 |
 |
@@ -360,8 +340,26 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbinvw _rd_, _rs1_, _imm_
-|xref:insns/sbinvw.adoc[Single-Bit Invert (word)]
+|binvi _rd_, _rs1_, _imm_
+|xref:insns/binvi.adoc[Single-Bit Invert, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|binviw _rd_, _rs1_, _imm_
+|xref:insns/binviw.adoc[Single-Bit Invert, word, immediate-index]
+|
+|
+|
+|&#10003;
+
+|&#10003;
+|&#10003;
+|binvw _rd_, _rs1_, _imm_
+|xref:insns/binvw.adoc[Single-Bit Invert, word]
 |
 |
 |
@@ -370,8 +368,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbset _rd_, _rs1_, _rs2_
-|xref:insns/sbset.adoc[Single-Bit Set]
+|bset _rd_, _rs1_, _rs2_
+|xref:insns/bset.adoc[Single-Bit Set]
 |
 |
 |
@@ -379,8 +377,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbseti _rd_, _rs1_, _imm_
-|xref:insns/sbseti.adoc[Single-Bit Set, immediate-index]
+|bseti _rd_, _rs1_, _imm_
+|xref:insns/bseti.adoc[Single-Bit Set, immediate-index]
 |
 |
 |
@@ -388,8 +386,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbsetiw _rd_, _rs1_, _rs2_
-|xref:insns/sbsetiw.adoc[Single-Bit Set]
+|bsetiw _rd_, _rs1_, _rs2_
+|xref:insns/bsetiw.adoc[Single-Bit Set, word, immediate-index]
 |
 |
 |
@@ -397,8 +395,8 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sbsetw _rd_, _rs1_, _imm_
-|xref:insns/sbsetw.adoc[Single-Bit Set, immediate-index]
+|bsetw _rd_, _rs1_, _imm_
+|xref:insns/bsetw.adoc[Single-Bit Set, word, immediate-index]
 |
 |
 |

@@ -5,7 +5,7 @@
 The Zba sub-extension is frozen.
 ====
 
-The following instructions comprize the Zba sub-extension:
+The following instructions comprise the Zba sub-extension:
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -14,14 +14,10 @@ The following instructions comprize the Zba sub-extension:
 |Mnemonic
 |Instruction
 
-|
+|&#10003;
 |&#10003;
 |add.uw _rd_, _rs1_, _rs2_
 |xref:insns/add_uw.adoc[add unsigned-word]
-|&#10003;
-|
-|
-|
 
 |&#10003;
 |&#10003;

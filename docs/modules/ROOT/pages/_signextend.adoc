@@ -44,7 +44,7 @@ significant 8 bits, 16bits or 32 bits of the source register.
 .Software Hint
 [NOTE, caption="SW" ]
 ===============================================================
-NOTE: These instructions replace the generalised idioms `slli
+These instructions replace the generalised idioms `slli
 rD,rS,(XLEN-<size>) + srli` (for zero-extension) or `slli + srai` (for
 sign-extension) for the sign-extension of 8 bit and 16-bit quantities,
 and for the zero-extension off 16 bit and 32 bit quantities.
