@@ -130,28 +130,34 @@ the {\tt *W} instruction would when the 64-bit instruction is fed sign-extended
     ctzw rd, rs
 \end{rvb}
 
-The {\tt clz} operation counts the number of 0 bits at the MSB end of the
+The {\tt clz} instruction counts the number of 0 bits at the MSB end of the
 argument.  That is, the number of 0 bits before the first 1 bit counting from
 the most significant bit. If the input is 0, the output is XLEN. If the input
 is -1, the output is 0.
 
-The {\tt ctz} operation counts the number of 0 bits at the LSB end of the
+The {\tt ctz} instruction counts the number of 0 bits at the LSB end of the
 argument. If the input is 0, the output is XLEN. If the input is -1, the
 output is 0.
 
+The {\tt clzw} and {\tt ctzw} instructions behave identically to their full-width
+counterparts with the exception that they only operate on the lower 32 bits of the
+source. Accordingly, their XLEN-wide outputs range from 0 to 32, inclusive.   
+
 \input{bextcref-clz-ctz}
+
+\begin{commentary}
+Coding Use:
 
 The expression {\tt XLEN-1-clz(x)} evaluates to the index of the most significant
 set bit, also known as integer base-2 logarithm, or -1 if {\tt x} is zero.
 
-\begin{commentary}
-These instructions are commonly used for scanning bitmaps for set bits, for
-example in {\tt malloc()}, in binary GCD, or in priority queues such as the
-{\tt sched\_find\_first\_bit()} function used in the Linux kernel real-time
-scheduler.
+These instructions are commonly used for scanning bitmaps for set bits. For
+example, they can be used in {\tt malloc()}, in binary GCD, or in priority queues
+such as the {\tt sched\_find\_first\_bit()} function used in the Linux kernel
+real-time scheduler.
 
-Another common applications include normalization in fixed-point code and soft
-float libraries, null suppression in data compression.
+Other common applications include normalization in fixed-point code and soft
+float libraries, and null suppression in data compression.
 \end{commentary}
 % \subsection{References}
 %
@@ -161,7 +167,8 @@ float libraries, null suppression in data compression.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Count Bits Set (\texttt{cpop})}
+\subsection{Count Population (\texttt{cpop})}
+\framebox{Frozen}
 
 \begin{rvb}
   RV32, RV64:
@@ -171,14 +178,21 @@ float libraries, null suppression in data compression.
     cpopw rd, rs
 \end{rvb}
 
-This instruction counts the number of 1 bits in a register. This operations is known as
-population count, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
+The {\tt cpop} instruction counts the population of bits set in a register (i.e., it counts the number of 1's).
 
+The cpopw instruction is identical to its full-width counterpart with the difference that it
+only operates on the least significant 32 bits of the input.
+
+\begin{Commentary}
+This operations is known as count bits set, popcount, sideways sum, bit summation, or Hamming weight.~\cite{HammingWeight,Warren12}
+\end{Commentary}
+	
 \input{bextcref-pcnt}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Logic-with-negate (\texttt{andn}, \texttt{orn}, \texttt{xnor})}
+\framebox{Frozen}
 
 \begin{rvb}
   RV32, RV64:
@@ -187,17 +201,18 @@ population count, popcount, sideways sum, bit summation, or Hamming weight.~\cit
     xnor rd, rs1, rs2
 \end{rvb}
 
-This instructions implement AND, OR, and XOR with the 2nd arument inverted.
+These instructions implement AND, OR, and XOR with the 2nd argument (rs2) inverted.
 
 \input{bextcref-andn}
+\begin{Commentary}
+Implementation hint: This can use the existing inverter on rs2 in the ALU that's already
+required to implement subtract.
 
-This can use the existing inverter on rs2 in the ALU that's already there to
-implement subtract.
-
-Among other things, those instructions allow implementing the ``trailing bit
+Coding Use:
+Among other things, these instructions allow implementing the ``trailing bit
 manipulation'' code patterns in two instructions each. For example, {\tt (x -
 1) \& \textasciitilde{}x} produces a mask from trailing zero bits in {\tt x}.
-
+\end{commentary}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Pack two words in one register (\texttt{pack, packu, packh})}
@@ -214,23 +229,27 @@ manipulation'' code patterns in two instructions each. For example, {\tt (x -
 \end{rvb}
 
 The {\tt pack} instruction packs the XLEN/2-bit lower halves of rs1 and rs2 into
-rd, with rs1 in the lower half and rs2 in the upper half.
+rd, placing rs1 in the lower half and rs2 in the upper half.
 
 \input{bextcref-pack}
 
-The {\tt packu} instruction packs the upper halves of rs1 and rs2 into rd.
+The {\tt packu} instruction packs the XLEN/2-bit upper halves of rs1 and rs2 into
+rd, placing rs1 in the lower half and rs2 in the upper half.
 
 \input{bextcref-packu}
 
-And the {\tt packh} instruction packs the LSB bytes of rs1 and rs2 into the 16 LSB bits
-of rd, zero extending the rest of rd.
+The {\tt packh} instruction packs the least significant bytes of rs1 and rs2 into the 16
+least significant bits of rd, placing rs1 in the lower half and rs2 in the upper half, and
+zero extending the rest of rd.
 
 \input{bextcref-packh}
 
+\begin{Commentary}
 Applications include XLEN/2-bit funnel shifts, zero-extend XLEN/2 bit values, duplicate the lower
 XLEN/2 bits (e.g. for mask creation), loading unsigned 32 constants on RV64, and packing
 C structs that fit in a register and are therefore passed in a register according to the RISC-V
 calling convention.
+\end{Commentary}
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
@@ -279,6 +298,7 @@ example, interleaving the bytes in the lower halves of {\tt rs1} and {\tt rs2}:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Min/max instructions (\texttt{min, max, minu, maxu})}
+\framebox{Frozen}
 
 \begin{rvb}
   RV32, RV64:
@@ -312,6 +332,7 @@ literals are commonly encoded~\cite{BiereComm}. With \texttt{max} (or
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Sign-extend instructions (\texttt{sext.b, sext.h})}
+\framebox{Frozen}
 
 \begin{rvb}
   RV32, RV64:
@@ -319,32 +340,50 @@ literals are commonly encoded~\cite{BiereComm}. With \texttt{max} (or
     sext.h rd, rs
 \end{rvb}
 
-For sign-extending a byte or half-word we define two unary instructions:
+The {\tt sext.b} instruction copies the least signficant byte of the source to the least
+signficant byte of the destination, while filling all of the more significant bits of the
+destination with a copy of the most significant bit of the source.
+The {\tt sext.h} instruction copies the least signficant byte of the source to the least
+signficant byte of the destination, while filling all of the more significant bits of the
+destination with a copy of the most significant bit of the source.
 
 \input{bextcref-sext}
 
-Additionally, we define pseudo-instructions for zero extending bytes or
-half-words and for zero- and sign-extending words:
+\subsection{Zero-extend instructions (\texttt{zext.h})}
+\framebox{Frozen}
 
-\begin{minipage}{\linewidth}
-\begin{verbatim}
-  RV32:
-    zext.b rd, rs   ->   andi rd, rs, 255
-    zext.h rd, rs   ->   pack rd, rs, zero
+\begin{rvb}
+	RV32, RV64:
+	zext.h rd, rs
+\end{rvb}
 
-  RV64:
-    zext.b rd, rs   ->   andi rd, rs, 255
-    zext.h rd, rs   ->   packw rd, rs, zero
-    zext.w rd, rs   ->   add.uw rd, rs, zero
-    sext.w rd, rs   ->   addiw rd, rs, 0
-\end{verbatim}
-\end{minipage}
+\begin{Commentary}
+NB: zext.h is a subset of the pack instruction and uses it's encoding
+In implementations that include {\tt pack}, {\tt zext.h} is a pseudo instruction
+
+% Additionally, we define pseudo-instructions for zero extending bytes or
+% half-words and for zero- and sign-extending words:
+
+%\begin{minipage}{\linewidth}
+%\begin{verbatim}
+%  RV32:
+%    zext.b rd, rs   ->   andi rd, rs, 255
+%    zext.h rd, rs   ->   pack rd, rs, zero
+%
+%  RV64:
+%    zext.b rd, rs   ->   andi rd, rs, 255
+%    zext.h rd, rs   ->   packw rd, rs, zero
+%    zext.w rd, rs   ->   add.uw rd, rs, zero
+%    sext.w rd, rs   ->   addiw rd, rs, 0
+%\end{verbatim}
+%\end{minipage}
+Coding Use:
 
 Sign extending 8-bit and 16-bit values is needed when calling a function that
 accepts an 8-bit or 16-bit signed argument, because the RISC-V calling
 conventions dictates that such an argument must be passed in sign-extended
 form.
-
+\end{commentary}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Single-bit instructions (\texttt{bset, bclr, binv, bext})}
