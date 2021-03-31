@@ -188,7 +188,7 @@ uint64_t unshflw(uint32_t rs1, uint32_t rs2) {
     uint64_t u64 = (int64_t)(int32_t)u32;
     return u64;
 }
-uint64_t bdecompressw(uint32_t rs1, uint32_t rs2) {
+uint64_t bmdepw(uint32_t rs1, uint32_t rs2) {
     uint32_t r = 0;
     for (int i = 0, j = 0; i < XLEN_W; i++) {
         if ((rs2 >> i) & 1) {
@@ -200,7 +200,7 @@ uint64_t bdecompressw(uint32_t rs1, uint32_t rs2) {
     uint64_t u64 = (int64_t)(int32_t)r;
     return u64;
 }
-uint64_t bcompressw(uint32_t rs1, uint32_t rs2) {
+uint64_t bmextw(uint32_t rs1, uint32_t rs2) {
     uint32_t r = 0;
     for (int i = 0, j = 0; i < XLEN_W; i++) {
         if ((rs2 >> i) & 1) {
@@ -633,21 +633,21 @@ void do_unshfli(int test) {
     PROLOG_RRI(unshfl, unshfli, test);
     EPILOG(unshfli, test);
 }
-void do_bcompress(int test) {
-    PROLOG_RRR(bcompress, test);
-    EPILOG(bcompress, test);
+void do_bmext(int test) {
+    PROLOG_RRR(bmext, test);
+    EPILOG(bmext, test);
 }
-void do_bcompressw(int test) {
-    PROLOG_RRR(bcompressw, test);
-    EPILOG(bcompressw, test);
+void do_bmextw(int test) {
+    PROLOG_RRR(bmextw, test);
+    EPILOG(bmextw, test);
 }
-void do_bdecompress(int test) {
-    PROLOG_RRR(bdecompress, test);
-    EPILOG(bdecompress, test);
+void do_bmdep(int test) {
+    PROLOG_RRR(bmdep, test);
+    EPILOG(bmdep, test);
 }
-void do_bdecompressw(int test) {
-    PROLOG_RRR(bdecompressw, test);
-    EPILOG(bdecompressw, test);
+void do_bmdepw(int test) {
+    PROLOG_RRR(bmdepw, test);
+    EPILOG(bmdepw, test);
 }
 void do_pack(int test) {
     PROLOG_RRR(pack, test);
@@ -918,8 +918,8 @@ int main(int argc, char **argv) {
 
         do_shfl(++test);
         do_unshfl(++test);
-        do_bdecompress(++test);
-        do_bcompress(++test);
+        do_bmdep(++test);
+        do_bmext(++test);
         do_pack(++test);
         do_packu(++test);
 #if (XLEN==64)
@@ -974,8 +974,8 @@ int main(int argc, char **argv) {
 
         do_shflw(++test);
         do_unshflw(++test);
-        do_bdecompressw(++test);
-        do_bcompressw(++test);
+        do_bmdepw(++test);
+        do_bmextw(++test);
         do_packw(++test);
         do_packuw(++test);
         do_bfpw(++test);

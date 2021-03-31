@@ -209,7 +209,7 @@ uint_xlen_t xperm_w (uint_xlen_t rs1, uint_xlen_t rs2) { return xperm(rs1, rs2, 
 // --REF-END--
 
 // --REF-BEGIN-- bext
-uint_xlen_t bcompress(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bmext(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t r = 0;
 	for (int i = 0, j = 0; i < XLEN; i++)
@@ -221,7 +221,7 @@ uint_xlen_t bcompress(uint_xlen_t rs1, uint_xlen_t rs2)
 	return r;
 }
 
-uint_xlen_t bdecompress(uint_xlen_t rs1, uint_xlen_t rs2)
+uint_xlen_t bmdep(uint_xlen_t rs1, uint_xlen_t rs2)
 {
 	uint_xlen_t r = 0;
 	for (int i = 0, j = 0; i < XLEN; i++)
