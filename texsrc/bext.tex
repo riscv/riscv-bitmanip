@@ -1863,8 +1863,8 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0110011   |  SHFL
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0110011   |  UNSHFL
-|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BDECOMPRESS
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BCOMPRESS
+|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BMDEP
+|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0110011   |  BMEXT
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACK
 |  0100100    |   rs2   |   rs1   | 100 |    rd   |   0110011   |  PACKU
 |  0000100    |   rs2   |   rs1   | 011 |    rd   |   0110011   |  BMATOR
@@ -1915,8 +1915,8 @@ and are marked with a {\tt *}.
 |---------------------------------------------------------------|
 |  0000100    |   rs2   |   rs1   | 001 |    rd   |   0111011   |  SHFLW
 |  0000100    |   rs2   |   rs1   | 101 |    rd   |   0111011   |  UNSHFLW
-|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BDECOMPRESSW
-|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BCOMPRESSW
+|  0100100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BMDEPW
+|  0000100    |   rs2   |   rs1   | 110 |    rd   |   0111011   |  BMEXTW
 |  0000100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKW
 |  0100100    |   rs2   |   rs1   | 100 |    rd   |   0111011   |  PACKUW
 |  0100100    |   rs2   |   rs1   | 111 |    rd   |   0111011   |  BFPW
@@ -1990,8 +1990,8 @@ Encoding changes in v0.93 of the RISC-V Bitmanip Spec ({\tt +} for addition,
 |  -00-0-1  |   MULH^(2)|   DIVU (2)|    MUL    |   MULHSU^ |   MULHU^  |    DIV    |    REM    |    REMU   |
 |  -10-0-1  |        (2)|        (2)|           |           |           |           |           |           |
 |-----------|-----------------------------------------------------------------------------------------------|
-|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADD.UW (1)|           |   BMATOR^ |    PACK   |BDECOMPRESS|   PACKH^  |
-|  -10-1-0  |    BCLR   |    BEXT   |           |           |  BMATXOR^ |   PACKU   | BCOMPRESS |    BFP    |
+|  -00-1-0  |   SHFL (4)|   UNSHFL  | ADD.UW (1)|           |   BMATOR^ |    PACK   |   BMEXT   |   PACKH^  |
+|  -10-1-0  |    BCLR   |    BEXT   |           |           |  BMATXOR^ |   PACKU   |   BMDEP   |    BFP    |
 |-----------|-----------------------------------------------------------------------------------------------|
 |  -00-1-1  |  CLMUL^(2)|   MINU^(2)|           |   CLMULR^ |   CLMULH^ |    MIN^   |    MAX^   |    MAXU^  |
 |  -10-1-1  |        (2)|        (2)|           |           |           |           |           |           |
