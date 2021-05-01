@@ -32,6 +32,8 @@ Zbp
  & {\tt gorc, gorci               } & {\tt gorcw, gorciw             } \\
  & {\tt shfl, shfli               } & {\tt shflw                     } \\
  & {\tt unshfl, unshfli           } & {\tt unshflw                   } \\
+\hline
+Zbx
  & {\tt xperm.n, xperm.b, xperm.h } & {\tt xperm.w                   } \\
 \hline
 Zbs (*)
@@ -1030,20 +1032,23 @@ The \texttt{xperm.[nbhw]} instructions can be implemented with an $XLEN/4$-lane
 nibble-wide crossbar switch.
 
 The \texttt{xperm.n} instruction can be used to implement an arbitrary 64-bit
-bit permutation in 15 instructions, using 8 control words and 3 constant masks~\cite{Wolf20A}:
+bit permutation in 15 instructions, using 8 control words and 4 constants~\cite{Wolf20A}:
 
 \begin{minipage}{\linewidth}
 \begin{verbatim}
-  uint64_t perm64_bitmanip_cmix(perm64t &p, uint64_t v)
+  uint64_t perm64_bitmanip_xperm(perm64t &p, uint64_t v)
   {
-      uint64_t v0 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[0]) & p.mask[0], 3);   //  3 insns
-      uint64_t v1 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[1]) & p.mask[1], 3);   //  6 insns
-      uint64_t v2 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[2]) & p.mask[2], 3);   //  9 insns
-      uint64_t v3 = _rv64_gorc(_rv64_xperm_n(v, p.ctrl[3]) & p.mask[3], 3);   // 12 insns
+      uint64_t v0 = _rv64_xperm_n(v, p.ctrl[0]) & p.mask[0];  // +2 instructions = 2
+      uint64_t v1 = _rv64_xperm_n(v, p.ctrl[1]) & p.mask[1];  // +2 instructions = 4
+      uint64_t v2 = _rv64_xperm_n(v, p.ctrl[2]) & p.mask[2];  // +2 instructions = 6
+      uint64_t v3 = _rv64_xperm_n(v, p.ctrl[3]) & p.mask[3];  // +2 instructions = 8
 
-      v0 = _rv_cmix(0x1111111111111111LL, v0, v1);                            // 13 insns
-      v2 = _rv_cmix(0x4444444444444444LL, v2, v3);                            // 14 insns
-      return _rv_cmix(0x3333333333333333LL, v0, v2);                          // 15 insns
+      v0 = _rv64_xperm_n(0x1111111111111110LL, v0);  // +1 instruction =  9
+      v1 = _rv64_xperm_n(0x2222222222222220LL, v1);  // +1 instruction = 10
+      v2 = _rv64_xperm_n(0x4444444444444440LL, v2);  // +1 instruction = 11
+      v3 = _rv64_xperm_n(0x8888888888888880LL, v3);  // +1 instruction = 12
+
+      return v0 | v1 | v2 | v3;  // +3 instructions = 15
   }
 \end{verbatim}
 \end{minipage}
