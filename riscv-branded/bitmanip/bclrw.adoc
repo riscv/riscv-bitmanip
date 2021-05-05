@@ -1,0 +1,26 @@
+== Single-bit Clear word
+
+Mnemonic::
+bclrw _rd_, _rs1_,_rs2_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BCLRW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x24, attr: ['BCLRW'] },
+]}
+....
+
+Description::
+This instruction takes the least significant word of _rs1_, clears the bit at the specified index, and then sign extends the word to XLEN. The index is read from the least significant 5 bits of _rs2_.
+
+Operation::
+[source,sail]
+let index = X(rs2[4..0]);
+X(rd) = EXTS(X(rs1[31:0]) & ~(1 << index))
+--

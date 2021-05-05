@@ -1,0 +1,57 @@
+== Bitwise rotation
+
+These instructions are similar to shift-logical operations from the
+base spec, except they shift in the values from the opposite side of
+the register, in order. This is also called ‘circular shift’.
+
+
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|rol _rd_, _rs1_, _rs2_
+|xref:insns/rol.adoc[Rotate left]
+
+|
+|&#10003;
+|rolw _rd_, _rs1_, _rs2_
+|xref:insns/rolw.adoc[Rotate word left]
+
+|&#10003;
+|&#10003;
+|ror _rd_, _rs1_, _rs2_
+|xref:insns/ror.adoc[Rotate right]
+
+|&#10003;
+|&#10003;
+|rori _rd_, _rs1_, _shamt_
+|xref:insns/rori.adoc[Rotate right by immediate]
+
+|
+|&#10003;
+|roriw _rd_, _rs1_, _shamt_
+|xref:insns/roriw.adoc[Rotate word right by immediate]
+
+|
+|&#10003;
+|rorw _rd_, _rs1_, _rs2_
+|xref:insns/rorw.adoc[Rotate word right]
+|===
+
+.Architecture Explanation
+[NOTE, caption="AE" ]
+===============================================================
+The rotate instructions were included to replace a common four-instruction
+ sequence (neg; sll/srl; srl/sll; or) requiring one scratch register, with a single
+instruction encoding.
+
+ is saved from having to negate the rotate amount to get a single-direction
+ rotate instruction to rotate in the oposite direction
+
+===============================================================
