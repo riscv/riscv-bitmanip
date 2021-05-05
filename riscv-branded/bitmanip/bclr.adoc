@@ -1,0 +1,26 @@
+== Single-bit Clear
+
+Mnemonic::
+bclr _rd_, _rs1_,_rs2_
+
+Encoding::
+[wavedrom]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BCLR'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x24, attr: ['BCLR'] },
+]}
+....
+
+Description::
+This instruction returns _rs1_ with a single bit cleared at the specified index. The index is read from the lower log2[XLEN] bits of _rs2_.
+
+Operation::
+[source,sail]
+let index = X(rs2) & (XLEN - 1);
+X(rd) = X(rs1) & ~(1 << index)
+--
