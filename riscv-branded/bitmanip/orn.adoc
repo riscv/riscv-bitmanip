@@ -3,7 +3,7 @@
 Mnemonic::
 orn _rd_, _rs1_, _rs2_
 Encoding::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },

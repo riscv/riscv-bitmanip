@@ -4,7 +4,7 @@ Mnemonic::
 bfins _rd_, _rs_, _#msb_, _#lsb_
 
 Encoding::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },

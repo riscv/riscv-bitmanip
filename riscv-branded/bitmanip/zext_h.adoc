@@ -4,7 +4,7 @@ Mnemonic::
 zext.h _rd_, _rs_
 
 Encoding (RV32)::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
@@ -17,7 +17,7 @@ Encoding (RV32)::
 ....
 
 Encoding (RV64)::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP-32'] },

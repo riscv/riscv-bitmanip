@@ -4,7 +4,7 @@ Mnemonic::
 rorw _rd_, _rs1_, _rs2_
 
 Encoding::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP-32'] },
