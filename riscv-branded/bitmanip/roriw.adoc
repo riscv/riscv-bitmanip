@@ -4,7 +4,7 @@ Mnemonic::
 roriw _rd_, _rs1_, _shamt_
 
 Encoding::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },

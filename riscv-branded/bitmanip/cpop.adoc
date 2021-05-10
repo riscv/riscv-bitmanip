@@ -4,7 +4,7 @@
 Mnemonic::
 cpop _rd_, _rs_
 Encoding::
-[wavedrom]
+[wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x13, attr: ['OP-IMM'] },
