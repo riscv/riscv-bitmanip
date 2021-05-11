@@ -1,0 +1,88 @@
+=== Single-bit instructions
+
+These instructions read a register and use an index specified by an immediate or a second register to operate on a single bit. anmodify or return a bit based on the index that is provided by a register or an immediate value. 
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|bclr _rd_, _rs1_, _rs2_
+|xref:insns/bclr.adoc[Single-bit clear]
+
+|&#10003;
+|&#10003;
+|bclri _rd_, _rs1_, _imm_
+|xref:insns/bclri.adoc[Single-bit clear with immediate-index]
+
+|&#10003;
+|&#10003;
+|bclriw _rd_, _rs1_, _rs2_
+|xref:insns/bclrw.adoc[Single-bit clear word ]
+
+|&#10003;
+|&#10003;
+|bclrw _rd_, _rs1_, _imm_
+|xref:insns/bclriw.adoc[Single-bit clear word with immediate-index]
+
+|&#10003;
+|&#10003;
+|bext _rd_, _rs1_, _rs2_
+|xref:insns/bext.adoc[Single-Bit Extract]
+
+
+|&#10003;
+|&#10003;
+|bexti _rd_, _rs1_, _imm_
+|xref:insns/bexti.adoc[Single-Bit Extract with immediate-index]
+
+|&#10003;
+|&#10003;
+|bextw _rd_, _rs1_, _imm_
+|xref:insns/bextw.adoc[Single-Bit Extract word with immediate-index]
+
+|&#10003;
+|&#10003;
+|binv _rd_, _rs1_, _rs2_
+|xref:insns/binv.adoc[Single-Bit Invert]
+
+|&#10003;
+|&#10003;
+|binvi _rd_, _rs1_, _imm_
+|xref:insns/binvi.adoc[Single-Bit Invert with immediate-index]
+
+|&#10003;
+|&#10003;
+|binviw _rd_, _rs1_, _imm_
+|xref:insns/binviw.adoc[Single-Bit Invert word with immediate-index]
+
+|&#10003;
+|&#10003;
+|binvw _rd_, _rs1_, _imm_
+|xref:insns/binvw.adoc[Single-Bit Invert word]
+
+
+|&#10003;
+|&#10003;
+|bset _rd_, _rs1_, _rs2_
+|xref:insns/bset.adoc[Single-Bit Set]
+
+|&#10003;
+|&#10003;
+|bseti _rd_, _rs1_, _imm_
+|xref:insns/bseti.adoc[Single-Bit Set with immediate-index]
+
+|&#10003;
+|&#10003;
+|bsetiw _rd_, _rs1_, _rs2_
+|xref:insns/bsetiw.adoc[Single-Bit Set word with immediate-index]
+
+|&#10003;
+|&#10003;
+|bsetw _rd_, _rs1_, _imm_
+|xref:insns/bsetw.adoc[Single-Bit Set word with immediate-index]
+

@@ -1,0 +1,25 @@
+[#zbb,reftext=Basic bit-manipulation]
+== Zbb: Basic bit-manipulation
+
+[NOTE,caption=Frozen]
+====
+The Zbb sub-extension is frozen.
+====
+
+include::_logical-with-negate.adoc[]
+
+include::_count_bits.adoc[]
+
+include::_popcount.adoc[]
+
+include::_max_min.adoc[]
+
+include::_signextend.adoc[]
+
+include::_rotate.adoc[]
+
+include::_or_combine.adoc[]
+
+include::_byteswap.adoc[]
+
+

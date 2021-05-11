@@ -1,0 +1,43 @@
+== Zbc: carry-less multiplication
+
+[NOTE,caption=Frozen]
+====
+The Zbc sub-extension is frozen.
+====
+
+Carry-less multiplication is the multiplication in the polynomial ring
+over GF(2).
+
+*clmul* produces the lower half of the carry-less product and *clmulh*
+produces the upper half of the 2·XLEN carry-less product.
+
+*clmulr* produces bits 2·XLEN−2:XLEN-1 of the 2·XLEN carry-less
+product.  That means *clmulh* is equivalent to *clmulr* followed by a
+1-bit right shift. (The MSB of a clmulh result is always zero.)
+
+Another equivalent definition of clmulr is clmulr(a,b) :=
+rev(clmul(rev(a), rev(b))). (The “r” in clmulr means reversed.)
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|clmul _rd_, _rs1_, _rs2_
+|xref:insns/clmul.adoc[Carry-less multiply (least-significant half)]
+
+|&#10003;
+|&#10003;
+|clmulh _rd_, _rs1_, _rs2_
+|xref:insns/clmulh.adoc[Carry-less multiply (most-significant half)]
+
+|&#10003;
+|&#10003;
+|clmulr _rd_, _rs1_, _rs2_
+|xref:insns/clmulr.adoc[Carry-less multiply, reversed]
+
+|===

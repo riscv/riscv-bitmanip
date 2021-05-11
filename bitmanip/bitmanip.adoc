@@ -1,0 +1,143 @@
+[[bitmanip]]
+= RISC-V International Bit Manipulation Extension additions
+:description: A proposal for additions to the existing bit manipulation extension
+:company: RISC-V
+:revdate: 04/2021
+:revnumber: 0.01
+:revremark: Pre-release version
+:url-riscv: http://riscv.org
+:doctype: book
+//:doctype: report
+:preface-title: Licensing and Acknowledgements
+:colophon:
+:appendix-caption: Appendix
+:imagesdir: images
+:title-logo-image: image:risc-v_logo.png[pdfwidth=3.25in,align=center]
+//:page-background-image: image:draft.svg[opacity=20%]
+//:title-page-background-image: none
+:back-cover-image: image:circuit.png[opacity=25%]
+// Settings:
+:experimental:
+:reproducible:
+// needs to be changed
+:WaveDromEditorApp: ~/wavedrom-cli/cli/wavedrom-cli.js
+:imagesoutdir: images
+:icons: font
+:lang: en
+:listing-caption: Listing
+:sectnums:
+:toc: left
+:toclevels: 4
+:source-highlighter: pygments
+ifdef::backend-pdf[]
+:source-highlighter: coderay
+endif::[]
+:data-uri:
+:hide-uri-scheme:
+:stem:
+:footnote:
+:xrefstyle: short
+
+
+This document is released under the https://creativecommons.org/licenses/by/4.0/Creative Commons Attribution 4.0 International License[].
+This describes BitManip instructions being submitted for public review.
+
+Contributors to this specification (in alphabetical order) include: +
+Jacob Bachmeyer,
+Allen Baum,
+Ari Ben,
+Alex Bradbury,
+Steven Braeger,
+Rogier Brussee,
+Michael Clark,
+Ken Dockser,
+Paul Donahue,
+Dennis Ferguson,
+Fabian Giesen,
+John Hauser,
+Robert Henry,
+Bruce Hoult,
+Po-wei Huang,
+Ben Marshall,
+Rex McCrary,
+Lee Moore,
+Jiří Moravec,
+Samuel Neves,
+Markus Oberhumer,
+Christopher Olson,
+Nils Pipenbrinck,
+Joseph Rahmeh,
+Xue Saw,
+Tommy Thorn,
+Philipp Tomsich,
+Avishai Tvila,
+Andrew Waterman,
+Thomas Wicki, and
+Claire Wolf.
+
+We express our gratitude to everyone that contributed to, reviewed or
+improved this specification through their comments and questions.
+
+include::colophon.adoc[]
+//include::overview.adoc[]
+//following introduces the zba sub-extension.
+include::zba.adoc[]
+//following introduces the zbb sub-extension.
+include::zbb.adoc[]
+//folliwing introduces the zbc sub-extension.
+include::zbc.adoc[]
+//following introduces the zbs sub-extension.
+include::zbs.adoc[]
+//include::_byteswap.adoc[]
+//include::_count_bits.adoc[]
+//include::_logical-with-negate.adoc[]
+//include::_max_min.adoc[]
+//include::_or_combine.adoc[]
+//include::_popcount.adoc[]
+//include::_rotate.adoc[]
+//include::_signextend.adoc[]
+//include::_single_bit.adoc[]
+
+== Instructions (in alphabetical order)
+include::insns/add_uw.adoc[]
+include::insns/andn.adoc[]
+include::insns/bclr.adoc[]
+include::insns/bclri.adoc[]
+include::insns/clz.adoc[]
+include::insns/clzw.adoc[]
+include::insns/cpop.adoc[]
+include::insns/cpopw.adoc[]
+include::insns/ctz.adoc[]
+include::insns/ctzw.adoc[]
+include::insns/max.adoc[]
+include::insns/maxu.adoc[]
+include::insns/min.adoc[]
+include::insns/minu.adoc[]
+include::insns/orn.adoc[]
+include::insns/rev8.adoc[]
+include::insns/rol.adoc[]
+include::insns/rolw.adoc[]
+include::insns/ror.adoc[]
+include::insns/rori.adoc[]
+include::insns/roriw.adoc[]
+include::insns/rorw.adoc[]
+include::insns/sext_b.adoc[]
+include::insns/sext_h.adoc[]
+include::insns/sh1add.adoc[]
+include::insns/sh1add_uw.adoc[]
+include::insns/sh2add.adoc[]
+include::insns/sh2add_uw.adoc[]
+include::insns/sh3add.adoc[]
+include::insns/sh3add_uw.adoc[]
+include::insns/slli_uw.adoc[]
+include::insns/xnor.adoc[]
+include::insns/zext_h.adoc[]
+//include::bext.adoc[]
+//include::bexti.adoc[]
+//include::binv.adoc[]
+//include::binvi.adoc[]
+//include::bset.adoc[]
+//include::bseti.adoc[]
+//include::clmul.adoc[]
+//include::clmulh.adoc[]
+//include::clmulr.adoc[]
