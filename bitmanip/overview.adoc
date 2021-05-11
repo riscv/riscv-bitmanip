@@ -521,14 +521,13 @@ along with their specific mapping:
 |
 |
 
-// zext.w RV64 will be defined later as pack _rd_,_rs_, zero (assuming pack goes into Zbb)
-// |
-// |&#88;
-// |zext.w _rd_, _rs_
-// |add.uw _rd_, _rs_,X0 (pseudo instruction)
-// |
-// |&#88;
-// |
-// |
+|
+|&#88;
+|zext.w _rd_, _rs_
+|add.uw _rd_, _rs_,X0 (pseudo instruction)
+|
+|&#88;
+|
+|
 
 |====
