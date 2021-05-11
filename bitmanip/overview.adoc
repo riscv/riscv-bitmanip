@@ -198,15 +198,6 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|rev8w _rd_, _rs_ NOTE: We need seperate mnemonic for 1) 32-bit RV32 and 2) RV64 W and R4 bit
-|xref:insns/rev8w.adoc[Byte reverse RV32]
-|
-|&#88;
-|
-|
-
-|&#88;
-|&#88;
 |rev8_64 _rd_, _rs_
 |<<#insns-rev8>>
 |

@@ -17,8 +17,6 @@ Included in::
 |Frozen
 |===
 
-IMPORTANT: There are two different rev8 instructions - one for RV32 and one for RV64. I will defined seperate instruction in the near future. KAD
-
 Encoding::
 [wavedrom, , svg]
 ....
@@ -50,8 +48,6 @@ X[rd] = output
 --
 
 Comment::
-
 The byte-reverse operation is only available for the full register
 width.  To emulate word-sized and halfword-sized byte-reversal,
-perform a `rev8` followed by a `srli`/`srai` (depending on signedness
-of the original operand).
+perform a `rev8 rd,rs` followed by a `srai rd,rd`.
