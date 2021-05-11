@@ -40,8 +40,8 @@ let output : xlenbits = 0;
 let j = xlen;
 
 foreach (i from 0 to xlen by 8) {
-   output[i..(i + 7)] := input[(j - 7)..j];
-   j := j - 8;
+   output[i..(i + 7)] = input[(j - 7)..j];
+   j = j - 8;
 }
 
 X[rd] = output

@@ -25,11 +25,10 @@ _Instruction Group_
 
 The first group of sub-extensions to be release for Public Review are:
 
-* xref:zba.adoc[Zba: shift left and add]
-* xref:zbb.adoc[Zbb: base bit manipulation]
-* xref:zbc.adoc[Zbc: carry-less multiplication]
-* xref:zbs.adoc[Zbs: single-bit instructions]
-
+* <<#zba>>
+* <<#zbb>>
+* <<#zbc>>
+* <<#zbs>>
 
 Below is a list of all of the instructions (and pseudo
 instructions) that are included in these subextesions

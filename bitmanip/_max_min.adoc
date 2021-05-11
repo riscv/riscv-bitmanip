@@ -1,4 +1,4 @@
-=== Integer minimum/maximum
+==== Integer minimum/maximum
 
 The integer minimum/maximum instructions are arithmetic R-type
 instructions that returns the smaller/larger of two operands.

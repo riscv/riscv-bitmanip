@@ -1,4 +1,4 @@
-=== Byte-reverse
+==== Byte-reverse
 
 This instruction reverses the byte-ordering in a register.
 

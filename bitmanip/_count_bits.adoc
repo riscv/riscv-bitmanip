@@ -1,4 +1,4 @@
-=== Count leading/training zero-bits
+==== Count leading/training zero-bits
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -10,21 +10,21 @@
 |&#10003;
 |&#10003;
 |clz _rd_, _rs_
-|<<insn-clz>>
+|<<#insns-clz>>
 
 |
 |&#10003;
 |clzw _rd_, _rs_
-|<<insn-clzw>>
+|<<#insns-clzw>>
 
 |&#10003;
 |&#10003;
 |ctz _rd_, _rs_
-|<<insn-ctz>>
+|<<#insns-ctz>>
 
 |
 |&#10003;
 |ctzw _rd_, _rs_
-|<<insns-ctzw>>
+|<<#insns-ctzw>>
 |===
 

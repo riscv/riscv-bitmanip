@@ -1,4 +1,6 @@
 [[overview]]
+= The B-Extension
+
 == Subextensions grouped for public review and ratification
 
 The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction. While the instructions are intended to have general use, some instructions are more useful in some domains than others. In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into subextensions, each of which has its own Z-extension mnemonic.
@@ -19,14 +21,14 @@ Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned
 
 Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
 
-== Instruction Group
+== Instruction Grouping into sub-exteions
 
 The first group of sub-extensions to be release for Public Review are:
 
-* xref:zba.adoc[Zba: shift left and add]
-* <<overview-zbb>>
-* xref:zbc.adoc[Zbc: carry-less multiplication]
-* xref:zbs.adoc[Zbs: single-bit instructions]
+* <<#zba>>
+* <<#zbb>>
+* <<#zbc>>
+* <<#zbs>>
 
 Below is a list of all of the instructions (and pseudo
 instructions) that are included in these subextesions
@@ -65,7 +67,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |clmul _rd_, _rs1_, _rs2_
-|xref:insns/clmul.adoc[Carry-less multiply]
+|<<#insns-clmul>>
 |
 |
 |&#88;
@@ -74,7 +76,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |clmulh _rd_, _rs1_, _rs2_
-|xref:insns/clmulh.adoc[Carry-less multiply high]
+|<<#insns-clmulh>>
 |
 |
 |&#88;
@@ -83,7 +85,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |clmulr _rd_, _rs1_, _rs2_
-|xref:insns/clmulr.adoc[Carry-less multiply, reversed]
+|<<#insns-clmulr>>
 |
 |
 |&#88;
@@ -145,7 +147,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |max _rd_, _rs1_, _rs2_
-|<<#insn-max>>
+|<<#insns-max>>
 |
 |&#88;
 |
@@ -208,7 +210,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |rol _rd_, _rs1_, _rs2_
-|<<#insn-rol>>
+|<<#insns-rol>>
 |
 |&#88;
 |
@@ -217,7 +219,7 @@ along with their specific mapping:
 |
 |&#88;
 |rolw _rd_, _rs1_, _rs2_
-|<<#insn-rolw>>
+|<<#insns-rolw>>
 |
 |&#88;
 |
@@ -226,7 +228,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |ror _rd_, _rs1_, _rs2_
-|<<#insn-ror>>
+|<<#insns-ror>>
 |
 |&#88;
 |
@@ -235,7 +237,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |rori _rd_, _rs1_, _shamt_
-|<<#insn-rori>>
+|<<#insns-rori>>
 |
 |&#88;
 |
@@ -244,7 +246,7 @@ along with their specific mapping:
 |
 |&#88;
 |roriw _rd_, _rs1_, _shamt_
-|<<#insn-roriw>>
+|<<#insns-roriw>>
 |
 |&#88;
 |
@@ -253,7 +255,7 @@ along with their specific mapping:
 |
 |&#88;
 |rorw _rd_, _rs1_, _rs2_
-|<<#insn-rorw>>
+|<<#insns-rorw>>
 |
 |&#88;
 |
@@ -343,7 +345,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |sext.h _rd_, _rs_
-|<<#insn-sext_h>>
+|<<#insns-sext_h>>
 |
 |&#88;
 |
@@ -442,7 +444,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |zext.h _rd_, _rs_
-|<<#insn-zext_h>>
+|<<#insns-zext_h>>
 |
 |&#88;
 |
@@ -451,8 +453,8 @@ along with their specific mapping:
 |
 |&#88;
 |zext.w _rd_, _rs_
-|add.uw _rd_, _rs_,X0 (pseudo instruction)
-|
+|<<#insns-zext_w>>
+|&#88;
 |&#88;
 |
 |

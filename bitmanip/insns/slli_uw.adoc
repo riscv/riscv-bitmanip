@@ -28,8 +28,6 @@ Encoding::
     { bits:  6, name: 0x02, attr: ['SLLI.UW'] },
 ]}
 ....
-//    { bits:  5, name: 'shamt' },
-//    { bits:  7, name: 0x04, attr: ['SLLI.UW'] },
 
 Description::
 This instruction takes the least significant word of _rs1_, zero extends it, and shifts it left by the immediate.
@@ -43,7 +41,7 @@ Operation::
 //
 //  X(rd) = if   xlen == 32
 //        then EXTZ(X(rs)[31..0]) << shamt[4..0]
-X(rd)[XLEN-1..0] = EXTZ(X(rs)[31..0]) << shamt;
+X(rd) = (EXTZ(X(rs)[31..0]) << shamt);
 --
 
 // Note: slli.uw is not defined for XLEN=32, so the sail code does not need to mask the shift amount.

@@ -25,7 +25,7 @@ Encoding::
     { bits:  3, name: 0x7, attr: ['MAXU']},
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'rs2' },
-    { bits:  7, name: 0x05, attr: ['MAX/MAXU'] },
+    { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
 ]}
 ....
 

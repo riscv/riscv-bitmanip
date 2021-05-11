@@ -1,5 +1,5 @@
 [#zba,reftext=Address generation instructions]
-== Zba sub-extension
+=== Zba sub-extension
 
 [NOTE,caption=Frozen]
 ====

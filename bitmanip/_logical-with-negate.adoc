@@ -1,4 +1,4 @@
-=== Logical with negate
+==== Logical with negate
 
 [%header,cols="^1,^1,4,8"]
 |===
