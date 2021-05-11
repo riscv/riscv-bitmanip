@@ -1,0 +1,58 @@
+[#insns-add_uw,reftext=Add unsigned word]
+=== Add unsigned word
+
+Mnemonic::
+add.uw _rd_, _r1_, _r2_
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (<<#zba>>)
+|0.93
+|Frozen
+|===
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x0, attr: ['ADD.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x04, attr: ['ADD.UW'] },
+]}
+....
+// Note: In the context of OP-32, ADD.UW requires 10 other opcode bits. Therefore, I added attr to both the 3 bit field and the most significant 7-bit field (KAD)
+
+Description::
+This instruction performs an XLEN-wide addition between _rs2_ and the Zero-extended least significant word of _rs1_.
+
+Operation::
+[source,sail]
+--
+X(rd)[(XLEN-1)..0] = EXTZ(X(rs1)[31..0]) + X(rs2)[(XLEN-1)..0];
+--
+
+.Software Hint
+[NOTE, caption="SW" ]
+===============================================================
+Zero-extending a word can be achieved with add.uw _rd_, _r1_, zero
+
+The add.uw instruction can be used to generate addresses to index into an array of bytes where _rs1_ is the unsigned-word index and _rs2_ is the base of the array.
+===============================================================
+
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+We chose not to use add.uw _rd_, _r1_, zero as the pseudo instruction for zext.w as zext.w logicaly fits in Zbb but add.uw resides in Zba.
+If Zbb is subsequently extended to include _pack_, we can use pack _rd_,_rs_,zero for zext.w
+===============================================================
+ 
+
+

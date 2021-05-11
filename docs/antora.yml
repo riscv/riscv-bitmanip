@@ -1,6 +1,0 @@
-name: adoc-test
-title: RISC-V B-extension
-version: v0.94-draft
-#start_page: ROOT::index.adoc
-nav:
-- modules/ROOT/nav.adoc

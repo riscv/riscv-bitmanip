@@ -1,0 +1,52 @@
+[#insns-zext_h,reftext="Zero-extend halfword (16-bit)"
+=== Zero-extend halfword (16-bit)
+
+Mnemonic::
+zext.h _rd_, _rs_
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['ZEXT.H/PACK']},
+    { bits:  5, name: 'rs' },
+    { bits:  5, name: 0x00 },
+    { bits:  7, name: 0x04 },
+]}
+....
+
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['ZEXT.H/PACKW']},
+    { bits:  5, name: 'rs' },
+    { bits:  5, name: 0x00 },
+    { bits:  7, name: 0x04 },
+]}
+....
+
+Description::
+This instruction zero-extends the least-significant halfword of the source to XLEN by inserting 0's into all of the bits more significant than 15.
+
+Operation::
+[source,sail]
+--
+X(rd) = EXTZ(X(rs)[15..0]);
+--

@@ -1,0 +1,59 @@
+[#zbs,reftext="Single-bit instructions"]
+== Zbs: Single-bit instructions
+
+[NOTE,caption=Frozen]
+====
+The Zbs sub-extension is frozen.
+====
+
+The single-bit instructions provide a mechanism to set, clear, invert, or extract
+a single bit in a register. The bit is specified by its index.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#88;
+|&#88;
+|bclr _rd_, _rs1_, _rs2_
+|<<#insns-bclr>>
+
+|&#88;
+|&#88;
+|bclri _rd_, _rs1_, _imm_
+|<<#insns-bclri>>
+
+|&#88;
+|&#88;
+|bext _rd_, _rs1_, _rs2_
+|xref:bext.adoc[Extract bit]
+
+|&#88;
+|&#88;
+|bexti _rd_, _rs1_, _imm_
+|xref:bext.adoc[Extract bit, immediate]
+
+|&#88;
+|&#88;
+|binv _rd_, _rs1_, _rs2_
+|xref:binv.adoc[Invert bit]
+
+|&#88;
+|&#88;
+|binvi _rd_, _rs1_, _imm_
+|xref:binvi.adoc[Invert bit, immediate]
+
+|&#88;
+|&#88;
+|bset _rd_, _rs1_, _rs2_
+|xref:bset.adoc[Set bit]
+
+|&#88;
+|&#88;
+|bseti _rd_, _rs1_, _imm_
+|xref:bseti.adoc[Set bit, immediate]
+
+|===
