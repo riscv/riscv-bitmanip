@@ -6,3 +6,4 @@ diag-*
 \#*\#
 build/
 .asciidoctor
+bitmanip-*.pdf
