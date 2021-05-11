@@ -1,4 +1,4 @@
-[#insns-zext_h,reftext="Zero-extend halfword (16-bit)"
+[#insns-zext_h,reftext="Zero-extend halfword (16-bit)"]
 === Zero-extend halfword (16-bit)
 
 Mnemonic::
