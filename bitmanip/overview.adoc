@@ -288,24 +288,6 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|bclriw _rd_, _rs1_, _rs2_
-|xref:insns/bclrw.adoc[Single-bit clear, word ]
-|
-|
-|
-|&#88;
-
-|&#88;
-|&#88;
-|bclrw _rd_, _rs1_, _imm_
-|xref:insns/bclriw.adoc[Single-bit clear, word, immediate-index]
-|
-|
-|
-|&#88;
-
-|&#88;
-|&#88;
 |bext _rd_, _rs1_, _rs2_
 |xref:insns/bext.adoc[Single-Bit Extract]
 |
@@ -317,15 +299,6 @@ along with their specific mapping:
 |&#88;
 |bexti _rd_, _rs1_, _imm_
 |xref:insns/bexti.adoc[Single-Bit Extract, immediate-index]
-|
-|
-|
-|&#88;
-
-|&#88;
-|&#88;
-|bextw _rd_, _rs1_, _imm_
-|xref:insns/bextw.adoc[Single-Bit Extract, word, immediate-index]
 |
 |
 |
@@ -351,25 +324,6 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|binviw _rd_, _rs1_, _imm_
-|xref:insns/binviw.adoc[Single-Bit Invert, word, immediate-index]
-|
-|
-|
-|&#88;
-
-|&#88;
-|&#88;
-|binvw _rd_, _rs1_, _imm_
-|xref:insns/binvw.adoc[Single-Bit Invert, word]
-|
-|
-|
-|&#88;
-
-
-|&#88;
-|&#88;
 |bset _rd_, _rs1_, _rs2_
 |xref:insns/bset.adoc[Single-Bit Set]
 |
@@ -381,24 +335,6 @@ along with their specific mapping:
 |&#88;
 |bseti _rd_, _rs1_, _imm_
 |xref:insns/bseti.adoc[Single-Bit Set, immediate-index]
-|
-|
-|
-|&#88;
-
-|&#88;
-|&#88;
-|bsetiw _rd_, _rs1_, _rs2_
-|xref:insns/bsetiw.adoc[Single-Bit Set, word, immediate-index]
-|
-|
-|
-|&#88;
-
-|&#88;
-|&#88;
-|bsetw _rd_, _rs1_, _imm_
-|xref:insns/bsetw.adoc[Single-Bit Set, word, immediate-index]
 |
 |
 |
