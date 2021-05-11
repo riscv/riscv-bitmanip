@@ -1,4 +1,4 @@
-[#insns-xorn,reftext="Exclusive NOR"]
+[#insns-xnor,reftext="Exclusive NOR"]
 === Exclusive NOR
 
 Mnemonic::

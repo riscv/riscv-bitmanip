@@ -1,4 +1,4 @@
-[#insns-sext_b,reftext="Sign-extend byte (8-bit)"
+[#insns-sext_b,reftext="Sign-extend byte (8-bit)"]
 === Sign-extend byte (8-bit)
 
 Mnemonic::

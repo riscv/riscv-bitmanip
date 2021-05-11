@@ -1,4 +1,4 @@
-=== Bitwise rotation
+==== Bitwise rotation
 
 These instructions are similar to shift-logical operations from the
 base spec, except they shift in the values from the opposite side of

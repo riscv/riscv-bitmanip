@@ -1,4 +1,4 @@
-=== Sign- and zero-extension
+==== Sign- and zero-extension
 
 These instructions perform the sign-extension or zero-extension of the least
 significant 8 bits, 16bits or 32 bits of the source register.
@@ -13,12 +13,12 @@ significant 8 bits, 16bits or 32 bits of the source register.
 |&#10003;
 |&#10003;
 |sext.b _rd_, _rs_
-|<<#insn-sext_b>>
+|<<#insns-sext_b>>
 
 |&#10003;
 |&#10003;
 |sext.h _rd_, _rs_
-|<<#insn-sext_h>>
+|<<#insns-sext_h>>
 
 |
 |&#10003;
@@ -33,12 +33,12 @@ significant 8 bits, 16bits or 32 bits of the source register.
 |&#10003;
 |&#10003;
 |zext.h _rd_, _rs_
-|xref:insns/zext_h.adoc[Zero-extend a 16-bit quantity]
+|<<#insns-zext_h>>
 
 |
 |&#10003;
 |zext.w _rd_, _rs_
-|xref:insns/zext_w.adoc[Zero-extend a 32-bit quantity]
+|<<#insns-zext_w>>
 |===
 
 .Software Hint

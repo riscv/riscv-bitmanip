@@ -1,5 +1,5 @@
 [#zbs,reftext="Single-bit instructions"]
-== Zbs: Single-bit instructions
+=== Zbs: Single-bit instructions
 
 [NOTE,caption=Frozen]
 ====
