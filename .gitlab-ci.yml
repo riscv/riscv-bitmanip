@@ -1,0 +1,28 @@
+image: "ruby:2.7.2"
+
+cache:
+  paths:
+    - node_modules
+
+
+before_script:
+  - gem install asciidoctor
+  - gem install asciidoctor-pdf
+  - gem install asciidoctor-diagram
+  - gem install asciidoctor-bibtex
+  - gem install coderay
+  - gem install rouge
+  - gem install pygments.rb
+  - apt-get update
+  - apt-get install -y sudo nodejs npm 
+  - npm i npm@latest -g
+  - npm install wavedrom-cli
+  - PATH="$PATH:node_modules/.bin/"
+
+job:
+  script:
+    - make
+  artifacts:
+    paths:
+      - "*.pdf"
+
