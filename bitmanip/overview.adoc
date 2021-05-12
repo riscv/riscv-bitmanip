@@ -1,6 +1,4 @@
-[[overview]]
-= The B-Extension
-
+[preface]
 == Subextensions grouped for public review and ratification
 
 The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction.
@@ -24,6 +22,7 @@ While the shift-immediate instructions are defined to have at most a 6-bit immed
 IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document supercedes what is in the draft specification.
 That said, the full draft specification contains more context and may be used as a reference.
 
+[preface]
 == Word Instructions
 
 The bit-manip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign extended to XLEN.
@@ -32,7 +31,7 @@ Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned
 
 Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
 
-== Instruction Grouping into sub-exteions
+== Subextensions
 
 The first group of sub-extensions to be release for Public Review are:
 

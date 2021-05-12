@@ -37,8 +37,11 @@ endif::[]
 :footnote:
 :xrefstyle: short
 
+[colophon]
+== Colophon
 
-This document is released under the https://creativecommons.org/licenses/by/4.0/Creative Commons Attribution 4.0 International License[].
+This document is released under the https://creativecommons.org/licenses/by/4.0/[Creative Commons Attribution 4.0 International License].
+
 This describes BitManip instructions being submitted for public review.
 
 Contributors to this specification (in alphabetical order) include: +
@@ -181,7 +184,8 @@ include::insns/xnor.adoc[]
 <<<
 include::insns/zext_h.adoc[]
 
-== Software guide
+[appendix]
+== Software optimisation guide
 
 === strcpy
 
