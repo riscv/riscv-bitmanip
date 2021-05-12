@@ -432,13 +432,4 @@ along with their specific mapping:
 |
 |
 
-|
-|&#88;
-|zext.w _rd_, _rs_
-|<<#insns-zext_w>>
-|&#88;
-|&#88;
-|
-|
-
 |====
