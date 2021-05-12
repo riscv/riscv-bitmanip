@@ -2,8 +2,7 @@ image: "ruby:2.7.2"
 
 cache:
   paths:
-    - vendor/ruby
-    - .npm/
+    - node_modules
 
 
 before_script:
@@ -15,8 +14,10 @@ before_script:
   - gem install rouge
   - gem install pygments.rb
   - apt-get update
-  - apt-get install -y nodejs npm 
+  - apt-get install -y sudo nodejs npm 
+  - npm i npm@latest -g
   - npm install wavedrom-cli
+  - PATH="$PATH:node_modules/.bin/"
 
 job:
   script:
