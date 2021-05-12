@@ -24,11 +24,6 @@ significant 8 bits, 16bits or 32 bits of the source register.
 |&#10003;
 |zext.h _rd_, _rs_
 |<<#insns-zext_h>>
-
-|
-|&#10003;
-|zext.w _rd_, _rs_
-|<<#insns-zext_w>>
 |===
 
 .Software Hint

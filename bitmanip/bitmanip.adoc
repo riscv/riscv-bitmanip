@@ -175,8 +175,6 @@ include::insns/slli_uw.adoc[]
 include::insns/xnor.adoc[]
 <<<
 include::insns/zext_h.adoc[]
-<<<
-include::insns/zext_w.adoc[]
 
 == Software guide
 
