@@ -3,15 +3,26 @@
 
 == Subextensions grouped for public review and ratification
 
-The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction. While the instructions are intended to have general use, some instructions are more useful in some domains than others. In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into subextensions, each of which has its own Z-extension mnemonic.
+The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction.
+While the instructions are intended to have general use, some instructions are more useful in some domains than others.
+In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into subextensions, each of which has its own Z-extension mnemonic.
 
-Each sub-extension includes a group of several instructions that are used for a common purpose and that can often share the same logic. Some instructions are available in only one subextension while others are available in several. The instruction have menmonics and instruction encodings that are independent of the subextensiuons in which they appear. Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
+Each sub-extension includes a group of several instructions that are used for a common purpose and that can often share the same logic.
+Some instructions are available in only one subextension while others are available in several.
+The instruction have mnemonics and instruction encodings that are independent of the subextensiuons in which they appear.
+Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
 
-As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function. For example, XOR _rd_, _r1_, zero is nothing more than a move. Since reserving such encodings for other uses adds a lot of complexity to designs and the verification thereof--with relatively little gain in opcode space--we contine to let these be valid encodings. For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudo instructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
+As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function.
+For example, XOR _rd_, _r1_, zero is nothing more than a move.
+Since reserving such encodings for other uses adds a lot of complexity to designs and the verification thereof--with relatively little gain in opcode space--we contine to let these be valid encodings.
+For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudo instructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
 
-The bit-manip extension is defined for RV32 and RV64. Most of the instructions are expected to be forward compatible with RV128. While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
+The bit-manip extension is defined for RV32 and RV64.
+Most of the instructions are expected to be forward compatible with RV128.
+While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
 
-IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document supercedes what is in the draft specification. That said, the full draft specification contains more context and may be used as a reference.
+IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document supercedes what is in the draft specification.
+That said, the full draft specification contains more context and may be used as a reference.
 
 == Word Instructions
 
