@@ -20,16 +20,6 @@ significant 8 bits, 16bits or 32 bits of the source register.
 |sext.h _rd_, _rs_
 |<<#insns-sext_h>>
 
-|
-|&#10003;
-|sext.w _rd_, _rs_
-|addiw _rd_, _rs_, 0 (pseudo-instruction)
-
-|&#10003;
-|&#10003;
-|zext.b _rd_, _rs_
-|andi _rd_, _rs_, 255 (pseudo-instruction)
-
 |&#10003;
 |&#10003;
 |zext.h _rd_, _rs_
