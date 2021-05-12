@@ -352,15 +352,6 @@ along with their specific mapping:
 |
 
 |&#88;
-|
-|sext.w _rd_, _rs_
-|addiw _rd_, _rs_, 0 (pseudo-instruction)
-|
-|&#88;
-|
-|
-
-|&#88;
 |&#88;
 |sh1add _rd_, _rs1_, _rs2_
 |<<#insns-sh1add>>
@@ -427,15 +418,6 @@ along with their specific mapping:
 |&#88;
 |xnor _rd_, _rs1_, _rs2_
 |<<#insns-xnor>>
-|
-|&#88;
-|
-|
-
-|&#88;
-|&#88;
-|zext.b _rd_, _rs_
-|andi _rd_, _rs_, 255 (pseudo-instruction)
 |
 |&#88;
 |
