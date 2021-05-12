@@ -97,12 +97,6 @@ include::zbs.adoc[]
 //include::_single_bit.adoc[]
 
 == Instructions (in alphabetical order)
-//include::bext.adoc[]
-//include::bexti.adoc[]
-//include::binv.adoc[]
-//include::binvi.adoc[]
-//include::bset.adoc[]
-//include::bseti.adoc[]
 include::insns/add_uw.adoc[]
 <<<
 include::insns/andn.adoc[]
@@ -110,6 +104,18 @@ include::insns/andn.adoc[]
 include::insns/bclr.adoc[]
 <<<
 include::insns/bclri.adoc[]
+<<<
+include::insns/bext.adoc[]
+<<<
+include::insns/bexti.adoc[]
+<<<
+include::insns/binv.adoc[]
+<<<
+include::insns/binvi.adoc[]
+<<<
+include::insns/bset.adoc[]
+<<<
+include::insns/bseti.adoc[]
 <<<
 include::insns/clmul.adoc[]
 <<<
