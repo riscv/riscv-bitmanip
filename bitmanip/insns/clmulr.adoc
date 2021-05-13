@@ -1,20 +1,11 @@
-[#insns-clmulr,reftext="Carry-less multiply, reversed"]
-=== Carry-less multiply, reversed
+[#insns-clmulr,reftext="Carry-less multiply (reversed)"]
+=== clmulr
+
+Synopsis::
+Carry-less multiply (reversed)
 
 Mnemonic::
 clmulr _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbc (<<#zbc>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -48,3 +39,16 @@ foreach (i from 0 to (xlen - 1) by 1) {
 
 X[rd] = output
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbc (<<#zbc>>)
+|0.93
+|Frozen
+|===
+

@@ -1,20 +1,11 @@
 [#insns-andn,reftext="AND with inverted operand"]
-=== AND with inverted operand
+=== andn
+
+Synopsis::
+AND with inverted operand
 
 Mnemonic::
 andn _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -51,3 +42,16 @@ Operation::
 --
 X(rd) = X(rs1) & ~X(rs2);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+

@@ -1,20 +1,11 @@
-[#insns-ctzw,reftext="Count trailing zeros in word"]
-=== Count trailing zeros in word
+[#insns-ctzw,reftext="Count trailing zero-bits in word"]
+=== ctzw
+
+Synopsis::
+Count trailing zero-bits in word
 
 Mnemonic::
 ctzw _rd_, _rs_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|xref:zbb.adoc[Zbb]
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -46,4 +37,16 @@ function LowestSetBit32 x = {
 let rs = X(rs);
 X[rd] = LowestSetBit32(rs);
 --
+
+Included in::
+[%header,cols="2,2,4"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|xref:zbb.adoc[Zbb]
+|0.93
+|Frozen
+|===
 

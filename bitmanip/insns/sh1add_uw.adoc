@@ -1,20 +1,11 @@
 [#insns-sh1add_uw,reftext=Shift unsigned word left by 1 and add]
-=== Shift unsigned word left by 1 and add
+=== sh1add.uw
+
+Synopsis::
+Shift unsigned word left by 1 and add
 
 Mnemonic::
 sh1add.uw _rd_, _rIndex_, _rBase_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zba (<<#zba>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -30,11 +21,24 @@ Encoding::
 ....
 
 Description::
-This instruction performs an XLEN-wide addition of two addends. The first addened is _rs2_. The second addened is the unsigned value formed by extracting the least significant word of _rs1_ and shifting it left by 1 place.
+This instruction performs an XLEN-wide addition of two addends.
+The first addened is _rs2_. The second addened is the unsigned value formed by extracting the least significant word of _rs1_ and shifting it left by 1 place.
+
 Operation::
 [source,sail]
 --
 X(rd) = EXTZ(X(rs1)[31..0]) + (X(rs2) << 2);
 --
 
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (<<#zba>>)
+|0.93
+|Frozen
+|===
 

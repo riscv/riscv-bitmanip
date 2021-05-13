@@ -1,20 +1,12 @@
-[#insns-bext,reftext="Extract bit"]
-=== Extract bit
+[#insns-bext,reftext="Single-Bit Extract (Register)"]
+=== bext
+
+Synopsis::
+Single-Bit Extract (Register)
+// Should we describe this as a Set-if-bit-is-set?
 
 Mnemonic::
 bext _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbs (<<#zbs>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -39,3 +31,16 @@ Operation::
 let index = X(rs2) & (XLEN - 1);
 X(rd) = (X(rs1) >> index) & 1;
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (<<#zbs>>)
+|0.93
+|Frozen
+|===
+

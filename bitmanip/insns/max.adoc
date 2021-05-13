@@ -1,20 +1,11 @@
 [#insns-max,reftext="Maximum"]
-=== Maximum 
+===
+
+Synopsis::
+Maximum 
 
 Mnemonic::
 max _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -54,3 +45,16 @@ rD,rS,rD*. When using this common sequence, it is suggested that they
 are schededuled with no intervening instructions so that
 implementations that are so optimized can fuse them together.
 ===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+

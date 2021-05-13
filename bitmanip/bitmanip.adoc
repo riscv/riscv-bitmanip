@@ -44,6 +44,9 @@ This document is released under the https://creativecommons.org/licenses/by/4.0/
 
 This describes BitManip instructions being submitted for public review.
 
+[acknowledgments]
+== Acknowledgments
+
 Contributors to this specification (in alphabetical order) include: +
 Jacob Bachmeyer,
 Allen Baum,

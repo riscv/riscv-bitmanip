@@ -1,20 +1,11 @@
 [#insns-orn,reftext="OR with inverted operand"]
-=== OR with inverted operand
+=== orn
+
+Synopsis::
+OR with inverted operand
 
 Mnemonic::
 orn _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -37,4 +28,16 @@ Operation::
 --
 X(rd) = X(rs1) | ~X(rs2);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
 

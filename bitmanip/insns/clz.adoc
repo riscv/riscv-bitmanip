@@ -1,20 +1,11 @@
-[#insns-clz,reftext="Count leading zeros"]
-=== Count leading zeros
+[#insns-clz,reftext="Count leading zero-bits"]
+=== clz
+
+Synopsis::
+Count leading zero-bits
 
 Mnemonic::
 clz _rd_, _rs_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|xref:zbb.adoc[Zbb]
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -46,3 +37,16 @@ function HighestSetBit x = {
 let rs = X(rs);
 X[rd] = (xlen - 1) - HighestSetBit(rs);
 --
+
+Included in::
+[%header,cols="2,2,4"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|xref:zbb.adoc[Zbb]
+|0.93
+|Frozen
+|===
+

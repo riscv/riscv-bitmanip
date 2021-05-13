@@ -1,20 +1,11 @@
 [#insns-sh3add_uw,reftext=Shift unsigned word left by 3 and add]
-=== Shift unsigned word left by 3 and add
+=== sh3add.uw
+
+Synopsis::
+Shift unsigned word left by 3 and add
 
 Mnemonic::
 sh3add.uw _rd_, _rIndex_, _rBase_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zba (<<#zba>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -41,3 +32,14 @@ let index = EXTZ(X(rs1)[31..0];
 X(rd) = base + (index << 3);
 --
 
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (<<#zba>>)
+|0.93
+|Frozen
+|===

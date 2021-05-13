@@ -1,20 +1,11 @@
-[#insns-ctz,reftext="Count trailing zeros"]
-=== Count trailing zeros
+[#insns-ctz,reftext="Count trailing zero-bits"]
+=== ctz
+
+Synopsis::
+Count trailing zeros
 
 Mnemonic::
 ctz _rd_, _rs_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|xref:zbb.adoc[Zbb]
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -46,3 +37,16 @@ function LowestSetBit x = {
 let rs = X(rs);
 X[rd] = LowestSetBit(rs);
 --
+
+Included in::
+[%header,cols="2,2,4"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|xref:zbb.adoc[Zbb]
+|0.93
+|Frozen
+|===
+

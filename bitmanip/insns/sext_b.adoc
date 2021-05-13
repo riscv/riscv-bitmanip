@@ -1,20 +1,11 @@
 [#insns-sext_b,reftext="Sign-extend byte (8-bit)"]
-=== Sign-extend byte (8-bit)
+=== sext.b
+
+Synopsis::
+Sign-extend byte (8-bit)
 
 Mnemonic::
 sext.b _rd_, _rs_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -37,3 +28,16 @@ Operation::
 --
 X(rd) = EXTS(X(rs)[7..0]);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+

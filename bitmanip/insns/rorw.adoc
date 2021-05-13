@@ -1,20 +1,11 @@
-[#insns-rorw,reftext="Rotate-right (bitwise) word by register value"]
-=== Rotate Word Right
+[#insns-rorw,reftext="Rotate-right Wordsized (Register)"]
+=== rolw
+
+Synopsis::
+Rotate-Right Wordsized (Register)
 
 Mnemonic::
 rorw _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -41,3 +32,16 @@ let result = (X(rs1) >> shamt) | (X(rs2) << (32 - shamt));
 
 X(rd) = EXTS(result);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+
