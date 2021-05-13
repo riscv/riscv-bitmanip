@@ -1,20 +1,11 @@
-[#insns-slli_uw,reftext="Shift-left unsigned word by immediate"]
-=== Shift-left unsigned word by immediate
+[#insns-slli_uw,reftext="Shift-left unsigned word (Immediate)"]
+=== slli.uw
+
+Synopsis::
+Shift-left unsigned word (Immediate)
 
 Mnemonic::
 slli.uw _rd_, _rs1_, _shamt_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zba (<<#zba>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -35,16 +26,21 @@ This instruction takes the least significant word of _rs1_, zero extends it, and
 Operation::
 [source,sail]
 --
-// X(rd) = if   xlen == 32
-//        then EXTZ(X(rs)[31..0]) << shamt[4..0]
-//	else EXTZ(X(rs)[31..0]) << shamt;
-//
-//  X(rd) = if   xlen == 32
-//        then EXTZ(X(rs)[31..0]) << shamt[4..0]
 X(rd) = (EXTZ(X(rs)[31..0]) << shamt);
 --
 
-// Note: slli.uw is not defined for XLEN=32, so the sail code does not need to mask the shift amount.
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (<<#zba>>)
+|0.93
+|Frozen
+|===
+
 
 .Architecture Explanation
 [NOTE, caption="A" ]

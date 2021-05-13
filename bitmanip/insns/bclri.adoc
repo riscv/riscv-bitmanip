@@ -1,20 +1,11 @@
-[#insns-bclri,reftext="Clear bit, immediate"]
-=== Clear bit, immediate
+[#insns-bclri,reftext="Single-Bit Clear (Immediate)"]
+=== bclri
+
+Synopsis::
+Single-Bit Clear (Immediate)
 
 Mnemonic::
 bclri _rd_, _rs1_, _shamt_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbs (<<#zbs>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -39,3 +30,16 @@ Operation::
 let index = shamt & (XLEN - 1);
 X(rd) = X(rs1) & ~(1 << index)
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (<<#zbs>>)
+|0.93
+|Frozen
+|===
+

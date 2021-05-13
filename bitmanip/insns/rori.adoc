@@ -1,20 +1,11 @@
-[#insns-rori,reftext="Rotate-right by immediate"]
-=== Rotate Right Immediate
+[#insns-rori,reftext="Rotate-right (Immediate)"]
+=== rori
+
+Synopsis::
+Rotate-Right (Immediate)
 
 Mnemonic::
 rori _rd_, _rs1_, _shamt_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -42,3 +33,16 @@ let result = (X(rs1) >> shamt) | (X(rs2) << (xlen - shamt));
 
 X(rd) = result;
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+

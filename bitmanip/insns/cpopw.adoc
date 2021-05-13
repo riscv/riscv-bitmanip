@@ -1,20 +1,11 @@
 [#insns-cpopw,reftext="Count set-bits in word"]
-=== Count set-bits in word
+=== cpopw
+
+Synopsis::
+Count set-bits in word
 
 Mnemonic::
 cpopw _rd_, _rs_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -42,4 +33,17 @@ foreach (i from 0 to 31 in inc)
 
 X[rd] = bitcount
 --
+
+Included in::
+[%header,cols="2,2,4"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+
 

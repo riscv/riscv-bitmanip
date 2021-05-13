@@ -1,21 +1,11 @@
 [#insns-rev8,reftext="Byte-reverse register"]
-=== Byte-reverse
-:page-partial:
+=== rev8
+
+Synopsis::
+Byte-reverse register
 
 Mnemonic::
 rev8 _rd_, _rs_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -51,3 +41,16 @@ Comment::
 The byte-reverse operation is only available for the full register
 width.  To emulate word-sized and halfword-sized byte-reversal,
 perform a `rev8 rd,rs` followed by a `srai rd,rd`.
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+

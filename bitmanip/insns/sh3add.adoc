@@ -1,20 +1,11 @@
 [#insns-sh3add,reftext=Shift left by 3 and add]
-=== Shift left by 3 and add
+=== sh3add
+
+Synopsis::
+Shift left by 3 and add
 
 Mnemonic::
 sh1add _rd_, _rIndex_, _rBase_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zba (<<#zba>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -35,6 +26,17 @@ This instruction shifts _rs1_ to the left by 3 places and adds it to _rs2_.
 Operation::
 [source,sail]
 --
-
 X(rd) = X(rs2) + (X(rs1) << 3);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (<<#zba>>)
+|0.93
+|Frozen
+|===

@@ -1,20 +1,11 @@
 [#insns-sh2add,reftext=Shift left by 2 and add]
-=== Shift left by 2 and add
+=== sh2add
+
+Synopsis::
+Shift left by 2 and add
 
 Mnemonic::
 sh2add _rd_, _rIndex_, _rBase_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zba (<<#zba>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -37,4 +28,16 @@ Operation::
 --
 X(rd) = X(rs2) + (X(rs1) << 2);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (<<#zba>>)
+|0.93
+|Frozen
+|===
 

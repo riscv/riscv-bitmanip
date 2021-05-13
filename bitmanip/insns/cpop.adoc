@@ -1,21 +1,11 @@
 [#insns-cpop,reftext="Count set-bits"]
-=== Count set-bits
-:page-partial:
+=== cpop
+
+Synopsis::
+Count set-bits
 
 Mnemonic::
 cpop _rd_, _rs_
-
-Included in::
-[%header,cols="2,2,4"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -55,3 +45,15 @@ is implemented by cpop on RV32 and by cpopw on RV64; the GCC builtin
 function `__builtin_popcountl (unsigned long x)` for LP64 is
 implemented by cpop on RV64.
 ===============================================================
+
+Included in::
+[%header,cols="2,2,4"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>)
+|0.93
+|Frozen
+|===

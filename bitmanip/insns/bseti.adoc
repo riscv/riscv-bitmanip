@@ -1,20 +1,11 @@
-[#insns-bseti,reftext="Set bit, immediate"]
-=== Set bit, immediate
+[#insns-bseti,reftext="Single-Bit Set (Immediate)"]
+=== bseti
+
+Synopsis::
+Single-Bit Set (Immediate)
 
 Mnemonic::
 bseti _rd_, _rs1_,_shamt_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbs (<<#zbs>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -31,7 +22,7 @@ Encoding::
 
 Description::
 This instruction returns _rs1_ with a single bit set at the index specified in _shamt_.
-The index is read from the lower log2[XLEN] bits of _shamt_.
+The index is read from the lower log2(XLEN) bits of _shamt_.
 
 Operation::
 [source,sail]
@@ -39,3 +30,16 @@ Operation::
 let index = shamt & (XLEN - 1);
 X(rd) = X(rs1) | (1 << index)
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (<<#zbs>>)
+|0.93
+|Frozen
+|===
+

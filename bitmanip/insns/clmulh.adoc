@@ -1,20 +1,11 @@
-[#insns-clmulh,reftext="Carry-less multiply, high-part"]
-=== Carry-less multiply, high-part
+[#insns-clmulh,reftext="Carry-less multiply (high-part)"]
+=== clmulh
+
+Synopsis::
+Carry-less multiply (high-part)
 
 Mnemonic::
 clmulh _rd_, _rs1_, _rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbc (<<#zbc>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -47,3 +38,16 @@ foreach (i from 1 to xlen by 1) {
 
 X[rd] = output
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbc (<<#zbc>>)
+|0.93
+|Frozen
+|===
+

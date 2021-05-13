@@ -1,20 +1,11 @@
-[#insns-roriw,reftext="Rotate-right by immediate, word-sized"]
-=== Rotate Word Right by Immediate
+[#insns-roriw,reftext="Rotate-right Wordsized (Immediate)"]
+=== roriw
+
+Synopsis::
+Rotate-Right Word by Immediate
 
 Mnemonic::
 roriw _rd_, _rs1_, _shamt_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbb (<<#zbb>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -43,3 +34,16 @@ Operation::
 let result = (X(rs1) >> shamt[4..0]) | (X(rs2) << (xlen - shamt[4..0]));
 X(rd) = EXTS(result);
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+|===
+

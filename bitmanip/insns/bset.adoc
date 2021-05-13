@@ -1,20 +1,11 @@
-[#insns-bset,reftext="Set bit"]
-=== Set bit
+[#insns-bset,reftext="Single-Bit Set (Register)"]
+=== bset
+
+Synopsis::
+Single-Bit Set (Register)
 
 Mnemonic::
 bset _rd_, _rs1_,_rs2_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbs (<<#zbs>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -39,3 +30,15 @@ Operation::
 let index = X(rs2) & (XLEN - 1);
 X(rd) = X(rs1) | (1 << index)
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (<<#zbs>>)
+|0.93
+|Frozen
+|===

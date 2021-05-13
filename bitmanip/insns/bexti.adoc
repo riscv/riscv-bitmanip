@@ -1,20 +1,11 @@
-[#insns-bexti,reftext="Extract bit, immediate"]
-=== Extract bit, immediate
+[#insns-bexti,reftext="Single-Bit Extract (Immediate)"]
+=== bexti
+
+Synopsis::
+Single-Bit Extract (Immediate)
 
 Mnemonic::
 bexti _rd_, _rs1_, _shamt_
-
-Included in::
-[%header,cols="4,2,2"]
-|===
-|Extension
-|Minimum version
-|Lifecycle state
-
-|Zbs (<<#zbs>>)
-|0.93
-|Frozen
-|===
 
 Encoding::
 [wavedrom, , svg]
@@ -39,3 +30,16 @@ Operation::
 let index = shamt & (XLEN - 1);
 X(rd) = (X(rs1) >> index) & 1;
 --
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (<<#zbs>>)
+|0.93
+|Frozen
+|===
+
