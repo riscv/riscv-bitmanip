@@ -40,13 +40,13 @@ X[rd] = 31 - HighestSetBit(rs);
 --
 
 Included in::
-[%header,cols="2,2,4"]
+[%header,cols="4,2,2"]
 |===
 |Extension
 |Minimum version
 |Lifecycle state
 
-|xref:zbb.adoc[Zbb]
+|Zbb (<<#zbb>>)
 |0.93
 |Frozen
 |===
