@@ -1,5 +1,5 @@
 [#insns-sh2add_uw,reftext=Shift unsigned word left by 2 and add]
-=== ssh2add.uw
+=== sh2add.uw
 
 Synopsis::
 Shift unsigned word left by 2 and add
