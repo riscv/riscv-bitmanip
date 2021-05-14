@@ -1,4 +1,6 @@
-image: "ruby:2.7.2"
+image: registry.gitlab.com/gitlab-org/release-cli:latest
+
+
 
 cache:
   paths:
@@ -6,6 +8,8 @@ cache:
 
 
 before_script:
+  - apk update
+  - apk add nodejs build-base npm ruby make ruby-dev git asciidoctor curl
   - gem install asciidoctor
   - gem install asciidoctor-pdf
   - gem install asciidoctor-diagram
@@ -13,8 +17,7 @@ before_script:
   - gem install coderay
   - gem install rouge
   - gem install pygments.rb
-  - apt-get update
-  - apt-get install -y sudo nodejs npm 
+  - gem install json
   - npm i npm@latest -g
   - npm install wavedrom-cli
   - PATH="$PATH:node_modules/.bin/"
@@ -26,3 +29,13 @@ job:
     paths:
       - "*.pdf"
 
+release_job:
+  rules:
+    - if: $CI_COMMIT_TAG
+    
+  script:
+    - make
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file *.pdf "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/${CI_COMMIT_TAG}/bitmanip-${CI_COMMIT_TAG}.pdf"'
+    - |
+      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
+         --assets-link "{\"name\":\"pdf\",\"url\":\"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/${CI_COMMIT_TAG}/bitmanip-${CI_COMMIT_TAG}.pdf\"}"
