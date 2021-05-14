@@ -30,7 +30,10 @@ This instruction performs an XLEN-wide addition between _rs2_ and the Zero-exten
 Operation::
 [source,sail]
 --
-X(rd)[(XLEN-1)..0] = EXTZ(X(rs1)[31..0]) + X(rs2)[(XLEN-1)..0];
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0]);
+
+X(rd) = base + index;
 --
 
 Included in::
