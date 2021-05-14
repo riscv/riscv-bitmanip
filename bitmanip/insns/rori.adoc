@@ -7,7 +7,7 @@ Rotate-Right (Immediate)
 Mnemonic::
 rori _rd_, _rs1_, _shamt_
 
-Encoding::
+Encoding (RV32)::
 [wavedrom, , svg]
 ....
 {reg:[
@@ -17,6 +17,19 @@ Encoding::
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'shamt' },
     { bits:  7, name: 0x30, attr: ['RORI'] },
+]}
+....
+
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORI']},
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x28, attr: ['RORI'] },
 ]}
 ....
 
