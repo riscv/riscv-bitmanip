@@ -1,0 +1,14 @@
+==== OR Combine
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|orc.b _rd_, _rs_
+|<<#insns-orc_b>>
+|===
