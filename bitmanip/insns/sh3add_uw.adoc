@@ -27,7 +27,7 @@ Operation::
 [source,sail]
 --
 let base = X(rs2);
-let index = EXTZ(X(rs1)[31..0];
+let index = EXTZ(X(rs1)[31..0]);
 
 X(rd) = base + (index << 3);
 --

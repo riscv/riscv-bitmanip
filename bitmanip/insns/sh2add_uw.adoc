@@ -28,7 +28,10 @@ The second addened is the unsigned value formed by extracting the least signific
 Operation::
 [source,sail]
 --
-X(rd) = EXTZ(X(rs1)[31..0] + (X(rs2) << 2);
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0]);
+
+X(rd) = base + (index << 2);
 --
 
 Included in::
