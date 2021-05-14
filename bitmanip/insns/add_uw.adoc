@@ -5,7 +5,11 @@ Synopsis::
 Add unsigned word
 
 Mnemonic::
-add.uw _rd_, _r1_, _r2_
+add.uw _rd_, _rs1_, _rs2_
+
+
+Pseudoinstructions::
+zext.w _rd_, _rs1_ &#8594; add.uw _rd_, _rs1_, zero
 
 Encoding::
 [wavedrom, , svg]
@@ -41,17 +45,3 @@ Included in::
 |Frozen
 |===
 
-.Software Hint
-[NOTE, caption="SW" ]
-===============================================================
-Zero-extending a word can be achieved with add.uw _rd_, _r1_, zero
-
-The add.uw instruction can be used to generate addresses to index into an array of bytes where _rs1_ is the unsigned-word index and _rs2_ is the base of the array.
-===============================================================
-
-.Architecture Explanation
-[NOTE, caption="A" ]
-===============================================================
-We chose not to use add.uw _rd_, _r1_, zero as the pseudo instruction for zext.w as zext.w logicaly fits in Zbb but add.uw resides in Zba.
-If Zbb is subsequently extended to include _pack_, we can use pack _rd_,_rs_,zero for zext.w
-===============================================================
