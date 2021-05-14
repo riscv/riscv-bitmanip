@@ -5,7 +5,7 @@ Synopsis::
 Shift left by 3 and add
 
 Mnemonic::
-sh1add _rd_, _rIndex_, _rBase_
+sh3add _rd_, _rIndex_, _rBase_
 
 Encoding::
 [wavedrom, , svg]
