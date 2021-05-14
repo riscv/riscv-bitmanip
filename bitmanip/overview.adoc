@@ -192,8 +192,8 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|orcb _rd_, _rs1_, _rs2_ (NOTE: We need a better mnemonic - this is same as gorci imm=7 )
-|xref:insns/orcb.adoc[bit reverse in each byte]
+|orc.b _rd_, _rs1_, _rs2_
+|<<#insn-orc_b>>
 |
 |&#88;
 |

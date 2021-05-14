@@ -149,6 +149,8 @@ include::insns/min.adoc[]
 <<<
 include::insns/minu.adoc[]
 <<<
+include::insns/orc_b.adoc[]
+<<<
 include::insns/orn.adoc[]
 <<<
 include::insns/rev8.adoc[]
