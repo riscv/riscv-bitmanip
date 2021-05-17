@@ -1,5 +1,5 @@
 [#insns-min,reftext="Minimum"]
-===
+=== min
 
 Synopsis::
 Minimum
