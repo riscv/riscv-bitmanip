@@ -42,7 +42,7 @@ X(rd) = result;
 Calculating the absolute value of a signed integer can be performed
 using the following sequence: *neg rD,rS* followed by *max
 rD,rS,rD*. When using this common sequence, it is suggested that they
-are schededuled with no intervening instructions so that
+are scheduled with no intervening instructions so that
 implementations that are so optimized can fuse them together.
 ===============================================================
 

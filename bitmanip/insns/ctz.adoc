@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction counts the number of 0's before the first 1, starting at the least signifcant bit (i.e., 0 ) and progressing to the most significant bit (i.e., XLEN-1. Accordingly, if the input is 0, the output is XLEN, and if the least signifcant bit of the input is a 1, the output is 0.
+This instruction counts the number of 0's before the first 1, starting at the least-significant bit (i.e., 0) and progressing to the most-significant bit (i.e., XLEN-1. Accordingly, if the input is 0, the output is XLEN, and if the least-significant bit of the input is a 1, the output is 0.
 
 Operation::
 [source,sail]
