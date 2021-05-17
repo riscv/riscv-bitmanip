@@ -35,7 +35,7 @@ Encoding (RV64)::
 
 Description::
 This instruction returns _rs1_ with a single bit inverted at the index specified in _shamt_.
-The index is read from the lower log2[XLEN] bits of _shamt_.
+The index is read from the lower log2(XLEN) bits of _shamt_.
 
 Operation::
 [source,sail]

@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction performs a rotate-left of _rs1_ by the amount in least-significant log2[xlen] bits of _rs2_.
+This instruction performs a rotate-left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
 [source,sail]

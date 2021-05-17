@@ -1,4 +1,4 @@
-[#insns-roriw,reftext="Rotate-right Wordsized (Immediate)"]
+[#insns-roriw,reftext="Rotate-right Word (Immediate)"]
 === roriw
 
 Synopsis::
@@ -21,11 +21,11 @@ Encoding::
 ....
 
 Description:: 
-This instruction performs a rotate-right on the least significant word
-of _rs1_ by the amount in the least-significant log2(xlen) bits of
+This instruction performs a rotate-right on the least-significant word
+of _rs1_ by the amount in the least-significant log2(XLEN) bits of
 _shamt_.
-The resulting word value is sign extended by copying bit 31 to all of
-the more significant bits.
+The resulting word value is sign-extended by copying bit 31 to all of
+the more-significant bits.
 
 
 Operation::

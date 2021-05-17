@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction performs the bit-wise exlusive-NOR operation on _rs1_ and _rs2_.
+This instruction performs the bit-wise exclusive-NOR operation on _rs1_ and _rs2_.
 
 Operation::
 [source,sail]
