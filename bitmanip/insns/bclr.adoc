@@ -1,4 +1,4 @@
-#insns-bclr,reftext="Single-Bit Clear (Register)"]
+[#insns-bclr,reftext="Single-Bit Clear (Register)"]
 === bclr
 
 Synopsis::
