@@ -7,7 +7,19 @@ Byte-reverse register
 Mnemonic::
 rev8 _rd_, _rs_
 
-Encoding::
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5 },
+    { bits:  5, name: 'rs' },
+    { bits: 12, name: 0x698 }
+]}
+....
+
+Encoding (RV64)::
 [wavedrom, , svg]
 ....
 {reg:[
