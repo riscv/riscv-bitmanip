@@ -21,8 +21,8 @@ Encoding::
 ....
 
 Description::
-This instruction performs a rotate-left on the least significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
-The resulting word value is sign extended by copying bit 31 to all of the more significant bits. 
+This instruction performs a rotate-left on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
+The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits. 
 
 Operation::
 [source,sail]

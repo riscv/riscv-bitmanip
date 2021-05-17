@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description::
-This instruction takes the least significant word of _rs1_, zero extends it, and shifts it left by the immediate.
+This instruction takes the least-significant word of _rs1_, zero-extends it, and shifts it left by the immediate.
 
 Operation::
 [source,sail]

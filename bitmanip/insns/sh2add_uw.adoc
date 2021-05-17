@@ -22,8 +22,8 @@ Encoding::
 
 Description::
 This instruction performs an XLEN-wide addition of two addends.
-The first addened is _rs2_.
-The second addened is the unsigned value formed by extracting the least significant word of _rs1_ and shifting it left by 2 places.
+The first addend is _rs2_.
+The second addend is the unsigned value formed by extracting the least-significant word of _rs1_ and shifting it left by 2 places.
 
 Operation::
 [source,sail]
