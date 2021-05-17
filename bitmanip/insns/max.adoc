@@ -1,5 +1,5 @@
 [#insns-max,reftext="Maximum"]
-===
+=== max
 
 Synopsis::
 Maximum 
