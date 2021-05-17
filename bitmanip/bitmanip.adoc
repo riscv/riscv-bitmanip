@@ -1,5 +1,5 @@
 [[bitmanip]]
-= RISC-V International Bit-Manipulation ISA-extensions
+= RISC-V Bit-Manipulation ISA-extensions
 :description: Bit-Manipulation ISA-extensions
 :company: RISC-V
 // Pull in variable with revision info
