@@ -32,8 +32,8 @@ let j = xlen;
 
 foreach (i from 0 to xlen by 8) {
    output[(i + 7)..i] = if   input[(j - 7)..j] == 0
-                        then 0b11111111
-                        else 0b00000000;
+                        then 0b00000000
+                        else 0b11111111;
 }
 
 X[rd] = output;
