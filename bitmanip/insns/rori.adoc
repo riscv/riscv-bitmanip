@@ -34,7 +34,7 @@ Encoding (RV64)::
 ....
 
 Description:: 
-This instruction performs a rotate-right of _rs1_ by the amount in the least-significant log2[xlen] bits of _shamt_.
+This instruction performs a rotate-right of _rs1_ by the amount in the least-significant log2(XLEN) bits of _shamt_.
 
 Operation::
 [source,sail]
