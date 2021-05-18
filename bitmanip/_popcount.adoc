@@ -1,0 +1,24 @@
+==== Count population
+
+These instructions count the number of set bits (1-bits). This is also
+commonly referred to as population count.
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|cpop _rd_, _rs_
+|<<#insns-cpop>>
+
+|
+|&#10003;
+|cpopw _rd_, _rs_
+|<<#insns-cpopw>>
+|===
+
+

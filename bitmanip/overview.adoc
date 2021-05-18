@@ -1,0 +1,445 @@
+[preface]
+== Subextensions grouped for public review and ratification
+
+The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction.
+While the instructions are intended to have general use, some instructions are more useful in some domains than others.
+In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into subextensions, each of which has its own Z-extension mnemonic.
+
+Each sub-extension includes a group of several instructions that are used for a common purpose and that can often share the same logic.
+Some instructions are available in only one subextension while others are available in several.
+The instruction have mnemonics and instruction encodings that are independent of the subextensiuons in which they appear.
+Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
+
+As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function.
+For example, XOR _rd_, _r1_, zero is nothing more than a move.
+Since reserving such encodings for other uses adds a lot of complexity to designs and the verification thereof--with relatively little gain in opcode space--we contine to let these be valid encodings.
+For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudo instructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
+
+The bit-manip extension is defined for RV32 and RV64.
+Most of the instructions are expected to be forward compatible with RV128.
+While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
+
+IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document supercedes what is in the draft specification.
+That said, the full draft specification contains more context and may be used as a reference.
+
+[preface]
+== Word Instructions
+
+The bit-manip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign extended to XLEN.
+
+Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least signifcant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
+
+Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
+
+== Subextensions
+
+The first group of sub-extensions to be release for Public Review are:
+
+* <<#zba>>
+* <<#zbb>>
+* <<#zbc>>
+* <<#zbs>>
+
+Below is a list of all of the instructions (and pseudo
+instructions) that are included in these subextesions
+along with their specific mapping:
+
+[%header,cols="^1,^1,4,8,^1,^1,^1,^1"]
+|====
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+|Zba
+|Zbb
+|Zbc
+|Zbs
+
+|
+|&#88;
+|add.uw _rd_, _rs1_, _rs2_
+|<<#insns-add_uw>>
+|&#88;
+|
+|
+|
+
+|
+|&#88;
+|andn _rd_, _rs1_, _rs2_
+|<<#insns-andn>>
+|
+|&#88;
+|
+|
+
+
+|&#88;
+|&#88;
+|clmul _rd_, _rs1_, _rs2_
+|<<#insns-clmul>>
+|
+|
+|&#88;
+|
+
+|&#88;
+|&#88;
+|clmulh _rd_, _rs1_, _rs2_
+|<<#insns-clmulh>>
+|
+|
+|&#88;
+|
+
+|&#88;
+|&#88;
+|clmulr _rd_, _rs1_, _rs2_
+|<<#insns-clmulr>>
+|
+|
+|&#88;
+|
+
+|&#88;
+|&#88;
+|clz _rd_, _rs_
+|<<#insns-clz>>
+|
+|&#88;
+|
+|
+
+|
+|&#88;
+|clzw _rd_, _rs_
+|<<#insns-clwz>>
+|
+|&#88;
+|
+|
+|&#88;
+|&#88;
+|cpop _rd_, _rs_
+|<<#insns-cpop>>
+|
+|&#88;
+|
+|
+
+|
+|&#88;
+|cpopw _rd_, _rs_
+|<<#insns-cpopw>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|ctz _rd_, _rs_
+|<<#insns-ctz>>
+|
+|&#88;
+|
+|
+
+|
+|&#88;
+|ctzw _rd_, _rs_
+|<<#insns-ctz>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|max _rd_, _rs1_, _rs2_
+|<<#insns-max>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|maxu _rd_, _rs1_, _rs2_
+|<<#insns-maxu>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|min _rd_, _rs1_, _rs2_
+|<<#insns-min>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|minu _rd_, _rs1_, _rs2_
+|<<#insns-minu>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|orc.b _rd_, _rs1_, _rs2_
+|<<#insn-orc_b>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|orn _rd_, _rs1_, _rs2_
+|<<#insns-orn>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|rev8_64 _rd_, _rs_
+|<<#insns-rev8>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|rol _rd_, _rs1_, _rs2_
+|<<#insns-rol>>
+|
+|&#88;
+|
+|
+
+|
+|&#88;
+|rolw _rd_, _rs1_, _rs2_
+|<<#insns-rolw>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|ror _rd_, _rs1_, _rs2_
+|<<#insns-ror>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|rori _rd_, _rs1_, _shamt_
+|<<#insns-rori>>
+|
+|&#88;
+|
+|
+
+|
+|&#88;
+|roriw _rd_, _rs1_, _shamt_
+|<<#insns-roriw>>
+|
+|&#88;
+|
+|
+
+|
+|&#88;
+|rorw _rd_, _rs1_, _rs2_
+|<<#insns-rorw>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|bclr _rd_, _rs1_, _rs2_
+|<<#insns-bclr>>
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|bclri _rd_, _rs1_, _imm_
+|<<#insns-bclri>>
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|bext _rd_, _rs1_, _rs2_
+|xref:insns/bext.adoc[Single-Bit Extract]
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|bexti _rd_, _rs1_, _imm_
+|xref:insns/bexti.adoc[Single-Bit Extract, immediate-index]
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|binv _rd_, _rs1_, _rs2_
+|xref:insns/binv.adoc[Single-Bit Invert]
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|binvi _rd_, _rs1_, _imm_
+|xref:insns/binvi.adoc[Single-Bit Invert, immediate-index]
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|bset _rd_, _rs1_, _rs2_
+|xref:insns/bset.adoc[Single-Bit Set]
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|bseti _rd_, _rs1_, _imm_
+|xref:insns/bseti.adoc[Single-Bit Set, immediate-index]
+|
+|
+|
+|&#88;
+
+|&#88;
+|&#88;
+|sext.b _rd_, _rs_
+|<<#insns-sext_b>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|sext.h _rd_, _rs_
+|<<#insns-sext_h>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|sh1add _rd_, _rs1_, _rs2_
+|<<#insns-sh1add>>
+|&#88;
+|
+|
+|
+
+|
+|&#88;
+|sh1add.uw _rd_, _rs1_, _rs2_
+|<<#insns-sh1add_uw>>
+|&#88;
+|
+|
+|
+
+|&#88;
+|&#88;
+|sh2add _rd_, _rs1_, _rs2_
+|<<#insns-sh2add>>
+|&#88;
+|
+|
+|
+
+|
+|&#88;
+|sh2add.uw _rd_, _rs1_, _rs2_
+|<<#insns-sh2add_uw>>
+|&#88;
+|
+|
+|
+
+|&#88;
+|&#88;
+|sh3add _rd_, _rs2_, _rs2_
+|<<#insns-sh3add>>
+|&#88;
+|
+|
+|
+
+|
+|&#88;
+|sh3add.uw _rd_, _rs1_, _rs2_
+|<<#insns-sh3add_uw>>
+|&#88;
+|
+|
+|
+
+|
+|&#88;
+|slli.uw _rd_, _rs1_, _imm_
+|<<#insns-slli_uw>>
+|&#88;
+|
+|
+|
+
+|&#88;
+|&#88;
+|xnor _rd_, _rs1_, _rs2_
+|<<#insns-xnor>>
+|
+|&#88;
+|
+|
+
+|&#88;
+|&#88;
+|zext.h _rd_, _rs_
+|<<#insns-zext_h>>
+|
+|&#88;
+|
+|
+
+|====

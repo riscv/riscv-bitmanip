@@ -1,0 +1,18 @@
+==== Byte-reverse
+
+This instruction reverses the byte-ordering in a register.
+
+[%header,cols="^1,^1,4,8"]
+|====
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#;
+|&#10003;
+|rev8 _rd_, _rs_
+|<<#insns-rev8>>
+
+|====
+

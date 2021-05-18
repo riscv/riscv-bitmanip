@@ -1,0 +1,30 @@
+==== Count leading/training zero-bits
+
+[%header,cols="^1,^1,4,8"]
+|===
+|RV32
+|RV64
+|Mnemonic
+|Instruction
+
+|&#10003;
+|&#10003;
+|clz _rd_, _rs_
+|<<#insns-clz>>
+
+|
+|&#10003;
+|clzw _rd_, _rs_
+|<<#insns-clzw>>
+
+|&#10003;
+|&#10003;
+|ctz _rd_, _rs_
+|<<#insns-ctz>>
+
+|
+|&#10003;
+|ctzw _rd_, _rs_
+|<<#insns-ctzw>>
+|===
+
