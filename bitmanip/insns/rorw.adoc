@@ -1,8 +1,8 @@
-[#insns-rorw,reftext="Rotate-right Word (Register)"]
+[#insns-rorw,reftext="Rotate right Word (Register)"]
 === rorw
 
 Synopsis::
-Rotate-Right Word (Register)
+Rotate Right Word (Register)
 
 Mnemonic::
 rorw _rd_, _rs1_, _rs2_
@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction performs a rotate-right on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
+This instruction performs a rotate right on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
 The resultant word is sign-extended by copying bit 31 to all of the more-significant bits.
 
 Operation::

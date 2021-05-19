@@ -1,8 +1,8 @@
-[#insns-rol,reftext="Rotate-left (Register)"]
+[#insns-rol,reftext="Rotate left (Register)"]
 === rol
 
 Synopsis::
-Rotate-Left (Register)
+Rotate Left (Register)
 
 Mnemonic::
 rol _rd_, _rs1_, _rs2_
@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction performs a rotate-left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
+This instruction performs a rotate left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
 [source,sail]

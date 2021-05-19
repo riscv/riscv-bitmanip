@@ -1,8 +1,8 @@
-[#insns-ror,reftext="Rotate-right (Register)"]
+[#insns-ror,reftext="Rotate right (Register)"]
 === ror
 
 Synopsis::
-Rotate-Right
+Rotate Right
 
 Mnemonic::
 ror _rd_, _rs1_, _rs2_
@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description::
-This instruction performs a rotate-right of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
+This instruction performs a rotate right of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
 [source,sail]
