@@ -1,5 +1,5 @@
 [#zbc,reftext="Carry-less multiplication"]
-=== Zbc: carry-less multiplication
+=== Zbc: Carry-less multiplication
 
 [NOTE,caption=Frozen]
 ====
