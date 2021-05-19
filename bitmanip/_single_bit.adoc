@@ -1,6 +1,6 @@
 ==== Single-bit instructions
 
-These instructions read a register and use an index specified by an immediate or a second register to operate on a single bit. anmodify or return a bit based on the index that is provided by a register or an immediate value. 
+These instructions read a register and use an index specified by an immediate or a second register to operate on a single bit and modify or return a bit based on the index that is provided by a register or an immediate value. 
 
 [%header,cols="^1,^1,4,8"]
 |===

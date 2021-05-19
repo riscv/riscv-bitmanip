@@ -3,21 +3,21 @@
 
 Extensions are grouped for public review and ratification
 
-The bitmanipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduation, performance improvement, and energy reduction. While the instructions are intended to have general use, some instructions are more useful in some domains than others. In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into smaller extensions, each of which has its own Z-extension mnemonic.
+The bit manipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction. While the instructions are intended to have general use, some instructions are more useful in some domains than others. In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, we broke the bitmanip extension into smaller extensions, each of which has its own Z-extension mnemonic.
 
-Each extension includes a group of several instructions that are used for a common purpose and that can often share the same logic. Some instructions are available in only one extension while others are available in several. The instructions have menmonics and encodings that are independent of the extensiuons in which they appear. Thus, when implementing extensions with overlapping instructions, there is no redundancy is logic or encoding.
+Each extension includes a group of several instructions that are used for a common purpose and that can often share the same logic. Some instructions are available in only one extension while others are available in several. The instructions have mnemonics and encodings that are independent of the extensions in which they appear. Thus, when implementing extensions with overlapping instructions, there is no redundancy is logic or encoding.
 
-As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function. For example, XOR _rd_, _r1_, zero is nothing more than a move. Since reserving such encodings for other uses adds complexity to designs and the verification thereof--with relatively little gain in opcode space--we contine to let these be valid encodings. For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudoinstructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
+As with many instructions in the ISA, it is possible to write software that uses instructions with certain combinations of source or destination registers that result in a NOP or trial function. For example, XOR _rd_, _r1_, zero is nothing more than a move. Since reserving such encodings for other uses adds complexity to designs and the verification thereof--with relatively little gain in opcode space--we continue to let these be valid encodings. For the simplicity of coding and code debugging, we encourage coders to use the standard-specified encodings and pseudoinstructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
 
-The bit-manip extension is defined for RV32 and RV64. Most of the instructions are expected to be forward compatible with RV128. While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
+The bitmanip extension is defined for RV32 and RV64. Most of the instructions are expected to be forward compatible with RV128. While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
 
-IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document supercedes what is in the draft specification. That said, the full draft specification contains more context and may be used as a reference.
+IMPORTANT: While this document only contains a subset of the instructions from the full draft specification (https://github.com/riscv/riscv-bitmanip), this document supersedes what is in the draft specification. That said, the full draft specification contains more context and may be used as a reference.
 
 _Word Instructions_
 
-The bit-manip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign extended to XLEN.
+The bitmanip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign extended to XLEN.
 
-Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least signifcant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
+Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least significant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
 
 Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
 
@@ -30,7 +30,7 @@ The first group of extensions to be release for Public Review are:
 * <<#zbc>>
 * <<#zbs>>
 
-Below is a list of all of the instructions (and pseudoinstructions) that are included in these extesions
+Below is a list of all of the instructions (and pseudoinstructions) that are included in these extensions
 along with their specific mapping:
 
 [%header,cols="^1,^1,4,8,^1,^1,^1,^1"]
@@ -181,7 +181,7 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|orcb _rd_, _rs1_, _rs2_ (NOTE: We need a better mnemonic - this is same as gorci imm=7 )
+|orc.b _rd_, _rs1_, _rs2_ (NOTE: We need a better mnemonic - this is same as gorci imm=7 )
 |xref:insns/orcb.adoc[bit reverse in each byte]
 |
 |&#88;
@@ -199,7 +199,7 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|rev8w _rd_, _rs_ NOTE: We need seperate mnemonic for 1) 32-bit RV32 and 2) RV64 W and R4 bit
+|rev8w _rd_, _rs_ NOTE: We need separate mnemonic for 1) 32-bit RV32 and 2) RV64 W and R4 bit
 |xref:insns/rev8w.adoc[Byte reverse RV32]
 |
 |&#88;

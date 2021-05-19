@@ -60,7 +60,7 @@ The following instructions comprise the Zba extension:
 .Software Hint
 [NOTE, caption="SW" ]
 ===============================================================
-The Zba instructins can be used to accelerate the generation of
+The Zba instructions can be used to accelerate the generation of
 addresses that index into arrays of basic types (halfword, word,
 doubleword) using both unsigned word-sized and XLEN-sized indices: a
 shifted index is added to a base address.
@@ -76,9 +76,9 @@ unsigned word.
 [NOTE, caption="A" ]
 ===============================================================
 We limited the shift and add instructions to a left shift of 1, 2, or 3
-because these are commonly found in real-world code and bacause they
+because these are commonly found in real-world code and because they
 can be implemented with a minimal amount of additional hardware beyond
-that of the simple adder. Our goal was to avoid lengthing the critical
+that of the simple adder. Our goal was to avoid lengthening the critical
 path in implementations.
 ===============================================================
 
