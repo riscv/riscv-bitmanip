@@ -36,6 +36,6 @@ product.  That means *clmulh* is equivalent to *clmulr* followed by a
 |&#10003;
 |&#10003;
 |clmulr _rd_, _rs1_, _rs2_
-|<<#insn-clmulr>>
+|<<#insns-clmulr>>
 
 |===
