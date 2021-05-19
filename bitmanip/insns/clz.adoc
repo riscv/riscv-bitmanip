@@ -1,8 +1,8 @@
-[#insns-clz,reftext="Count leading zero-bits"]
+[#insns-clz,reftext="Count leading zero bits"]
 === clz
 
 Synopsis::
-Count leading zero-bits
+Count leading zero bits
 
 Mnemonic::
 clz _rd_, _rs_

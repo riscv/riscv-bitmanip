@@ -1,4 +1,4 @@
-[#insns-ctz,reftext="Count trailing zero-bits"]
+[#insns-ctz,reftext="Count trailing zero bits"]
 === ctz
 
 Synopsis::

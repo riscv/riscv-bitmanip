@@ -1,8 +1,8 @@
-[#insns-clzw,reftext="Count leading zero-bits in word"]
+[#insns-clzw,reftext="Count leading zero bits in word"]
 === clzw
 
 Synopsis::
-Count leading zero-bits in word
+Count leading zero bits in word
 
 Mnemonic::
 clzw _rd_, _rs_

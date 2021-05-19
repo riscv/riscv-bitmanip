@@ -1,8 +1,8 @@
-[#insns-ctzw,reftext="Count trailing zero-bits in word"]
+[#insns-ctzw,reftext="Count trailing zero bits in word"]
 === ctzw
 
 Synopsis::
-Count trailing zero-bits in word
+Count trailing zero bits in word
 
 Mnemonic::
 ctzw _rd_, _rs_
