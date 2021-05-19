@@ -1,8 +1,8 @@
-[#insns-cpop,reftext="Count set-bits"]
+[#insns-cpop,reftext="Count set bits"]
 === cpop
 
 Synopsis::
-Count set-bits
+Count set bits
 
 Mnemonic::
 cpop _rd_, _rs_

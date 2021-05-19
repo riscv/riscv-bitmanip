@@ -1,8 +1,8 @@
-[#insns-cpopw,reftext="Count set-bits in word"]
+[#insns-cpopw,reftext="Count set bits in word"]
 === cpopw
 
 Synopsis::
-Count set-bits in word
+Count set bits in word
 
 Mnemonic::
 cpopw _rd_, _rs_
