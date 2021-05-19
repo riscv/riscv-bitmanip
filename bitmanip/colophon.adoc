@@ -281,7 +281,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bclri _rd_, _rs1_, _imm_
-|xref:insns/bclri.adoc[Single-bit clear, immediate-index]
+|xref:insns/bclri.adoc[Single-bit clear (Immediate)]
 |
 |
 |
@@ -299,7 +299,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bclrw _rd_, _rs1_, _imm_
-|xref:insns/bclriw.adoc[Single-bit clear, word, immediate-index]
+|xref:insns/bclriw.adoc[Single-bit clear, word (Immediate)]
 |
 |
 |
@@ -317,7 +317,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bexti _rd_, _rs1_, _imm_
-|xref:insns/bexti.adoc[Single-Bit Extract, immediate-index]
+|xref:insns/bexti.adoc[Single-Bit Extract (Immediate)]
 |
 |
 |
@@ -326,7 +326,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bextw _rd_, _rs1_, _imm_
-|xref:insns/bextw.adoc[Single-Bit Extract, word, immediate-index]
+|xref:insns/bextw.adoc[Single-Bit Extract, word (Immediate)]
 |
 |
 |
@@ -344,7 +344,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |binvi _rd_, _rs1_, _imm_
-|xref:insns/binvi.adoc[Single-Bit Invert, immediate-index]
+|xref:insns/binvi.adoc[Single-Bit Invert (Immediate)]
 |
 |
 |
@@ -353,7 +353,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |binviw _rd_, _rs1_, _imm_
-|xref:insns/binviw.adoc[Single-Bit Invert, word, immediate-index]
+|xref:insns/binviw.adoc[Single-Bit Invert, word (Immediate)]
 |
 |
 |
@@ -381,7 +381,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bseti _rd_, _rs1_, _imm_
-|xref:insns/bseti.adoc[Single-Bit Set, immediate-index]
+|xref:insns/bseti.adoc[Single-Bit Set (Immediate)]
 |
 |
 |
@@ -390,7 +390,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bsetiw _rd_, _rs1_, _rs2_
-|xref:insns/bsetiw.adoc[Single-Bit Set, word, immediate-index]
+|xref:insns/bsetiw.adoc[Single-Bit Set, word (Immediate)]
 |
 |
 |
@@ -399,7 +399,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bsetw _rd_, _rs1_, _imm_
-|xref:insns/bsetw.adoc[Single-Bit Set, word, immediate-index]
+|xref:insns/bsetw.adoc[Single-Bit Set, word (Immediate)]
 |
 |
 |

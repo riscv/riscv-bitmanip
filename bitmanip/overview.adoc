@@ -300,7 +300,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bexti _rd_, _rs1_, _imm_
-|xref:insns/bexti.adoc[Single-Bit Extract, immediate-index]
+|xref:insns/bexti.adoc[Single-Bit Extract (Immediate)]
 |
 |
 |
@@ -318,7 +318,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |binvi _rd_, _rs1_, _imm_
-|xref:insns/binvi.adoc[Single-Bit Invert, immediate-index]
+|xref:insns/binvi.adoc[Single-Bit Invert (Immediate)]
 |
 |
 |
@@ -336,7 +336,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bseti _rd_, _rs1_, _imm_
-|xref:insns/bseti.adoc[Single-Bit Set, immediate-index]
+|xref:insns/bseti.adoc[Single-Bit Set (Immediate)]
 |
 |
 |
