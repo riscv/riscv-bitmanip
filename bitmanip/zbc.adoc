@@ -16,9 +16,6 @@ produces the upper half of the 2·XLEN carry-less product.
 product.  That means *clmulh* is equivalent to *clmulr* followed by a
 1-bit right shift. (The MSB of a clmulh result is always zero.)
 
-Another equivalent definition of clmulr is clmulr(a,b) :=
-rev(clmul(rev(a), rev(b))). (The “r” in clmulr means reversed.)
-
 [%header,cols="^1,^1,4,8"]
 |===
 |RV32
