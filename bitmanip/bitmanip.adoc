@@ -42,7 +42,7 @@ endif::[]
 
 This document is released under the https://creativecommons.org/licenses/by/4.0/[Creative Commons Attribution 4.0 International License].
 
-This describes BitManip instructions being submitted for public review.
+This describes BitManip Zba, Zbb, Zbc and Zbs instructions being submitted for public review.
 
 [acknowledgments]
 == Acknowledgments
@@ -188,10 +188,3 @@ include::insns/slli_uw.adoc[]
 include::insns/xnor.adoc[]
 <<<
 include::insns/zext_h.adoc[]
-
-[appendix]
-== Software optimisation guide
-
-=== strcpy
-
-=== strcmp
