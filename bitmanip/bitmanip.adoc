@@ -84,13 +84,13 @@ We express our gratitude to everyone that contributed to, reviewed or
 improved this specification through their comments and questions.
 
 include::overview.adoc[]
-//following introduces the zba sub-extension.
+//following introduces the zba extension.
 include::zba.adoc[]
-//following introduces the zbb sub-extension.
+//following introduces the zbb extension.
 include::zbb.adoc[]
-//folliwing introduces the zbc sub-extension.
+//folliwing introduces the zbc extension.
 include::zbc.adoc[]
-//following introduces the zbs sub-extension.
+//following introduces the zbs extension.
 include::zbs.adoc[]
 //include::_byteswap.adoc[]
 //include::_count_bits.adoc[]

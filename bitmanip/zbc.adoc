@@ -3,7 +3,7 @@
 
 [NOTE,caption=Frozen]
 ====
-The Zbc sub-extension is frozen.
+The Zbc extension is frozen.
 ====
 
 Carry-less multiplication is the multiplication in the polynomial ring

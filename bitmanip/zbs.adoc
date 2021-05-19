@@ -3,7 +3,7 @@
 
 [NOTE,caption=Frozen]
 ====
-The Zbs sub-extension is frozen.
+The Zbs extension is frozen.
 ====
 
 The single-bit instructions provide a mechanism to set, clear, invert, or extract

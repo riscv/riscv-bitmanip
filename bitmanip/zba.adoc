@@ -1,12 +1,12 @@
 [#zba,reftext=Address generation instructions]
-=== Zba sub-extension
+=== Zba extension
 
 [NOTE,caption=Frozen]
 ====
-The Zba sub-extension is frozen.
+The Zba extension is frozen.
 ====
 
-The following instructions comprise the Zba sub-extension:
+The following instructions comprise the Zba extension:
 
 [%header,cols="^1,^1,4,8"]
 |===
