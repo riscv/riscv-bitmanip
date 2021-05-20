@@ -3,7 +3,7 @@
 
 [NOTE,caption=Frozen]
 ====
-The Zba extension is frozen.
+The Zba Bitmanip extension is frozen.
 ====
 
 The Zba instructions can be used to accelerate the generation of addresses that index into arrays of basic types (halfword, word, doubleword) using both unsigned word-sized and XLEN-sized indices: a shifted index is added to a base address.

@@ -1,16 +1,20 @@
 [preface]
-== Extensions grouped for public review and ratification
+=== Bit-manipulation a, b, c and s extensions grouped for public review and ratification
 
-The bit manipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction.
+The bit-manipulation (bitmanip) extension collection is comprised of several component extensions to the base RISC-V architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction.
 While the instructions are intended to have general use, some instructions are more useful in some domains than others.
-In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, the bitmanip extension is subdivided into smaller extensions, each of which has its own Z-extension mnemonic.
+Since the architecture requires extensions to be implemented as a whole, we decided that it would be better to create several smaller bitmanip extensions rather than one large extension. Each of these smaller extensions is grouped by common function and use case, and each of which has its own Zb*-extension mnemonic.
 
-Each extension includes a group of several instructions that are used for a common purpose and that can often share the same logic.
-Some instructions are available in only one extension while others are available in several.
-The instructions have mnemonics and encodings that are independent of the extensions in which they appear.
-Thus, when implementing extensions with overlapping instructions, there is no redundancy in logic or encoding.
+Each bitmanip extension includes a group of several bitmanip instructions that have simular purposes and that can often share the same logic. Some instructions are available in only one extension while others are available in several.
+The instructions have mnemonics and instruction encodings that are independent of the extensions in which they appear.
+Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
 
-The bitmanip extension is defined for RV32 and RV64.
+As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function.
+For example, XOR _rd_, _r1_, zero is nothing more than a move.
+Since reserving such encodings for other uses adds a lot of complexity to designs and the verification thereof--with relatively little gain in opcode space--we contine to let these be valid encodings.
+For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudo instructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
+
+The bitmanip extensions is defined for RV32 and RV64.
 Most of the instructions are expected to be forward compatible with RV128.
 While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
 
@@ -30,7 +34,11 @@ The semantics of each instruction in <<#insns>> is expressed in a SAIL-like synt
 
 == Extensions
 
+<<<<<<< HEAD
 The of extensions released for Public Review are:
+=======
+The first group of nitmanip extensions to be release for Public Review are:
+>>>>>>> 95b5a31 (Ongoing cleanup, clarification and grammatical corrections.)
 
 * <<#zba>>
 * <<#zbb>>
