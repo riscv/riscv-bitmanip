@@ -54,3 +54,12 @@ Included in::
 |Frozen
 |===
 
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+The RV32 and RV64 encodings for *zext.h* differ because because the
+former is a special case of the *pack* instruction,
+whereas the latter is a special case of a different instruction, *packw*.
+(Neither *pack* nor *packw* is part of Zbb.
+See the full bitmanip specification for further details.)
+===============================================================

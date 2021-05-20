@@ -66,3 +66,11 @@ Included in::
 |Frozen
 |===
 
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+The RV32 and RV64 encodings for *rev8* differ because they are
+different special cases of the more general *grevi* instruction.
+(The *grevi* instruction is not part of Zbb.
+See the full bitmanip specification for further details.)
+===============================================================
