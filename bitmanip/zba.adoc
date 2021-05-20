@@ -1,9 +1,9 @@
 [#zba,reftext=Address generation instructions]
-=== Zba sub-extension
+=== Zba extension
 
 [NOTE,caption=Frozen]
 ====
-The Zba sub-extension is frozen.
+The Zba Bitmanip extension is frozen.
 ====
 
 The following instructions comprise the Zba sub-extension:

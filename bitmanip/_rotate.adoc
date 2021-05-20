@@ -1,8 +1,8 @@
-==== Bitwise rotation
+=== Bitwise rotation
 
-These instructions are similar to shift-logical operations from the
-base spec, except they shift in the values from the opposite side of
-the register, in order. This is also called ‘circular shift’.
+Bitwise rotation instructions are similar to the shift-logical operations from the base spec. However, where the shift-logical 
+instructions shift in zeros, the rotate instructions shift in the bits that were shifted out of the other side of the value.
+Such operations are also refered to as ‘circular shifts’.
 
 
 
@@ -48,10 +48,5 @@ the register, in order. This is also called ‘circular shift’.
 [NOTE, caption="AE" ]
 ===============================================================
 The rotate instructions were included to replace a common
-four-instruction sequence (neg; sll/srl; srl/sll; or) requiring one
-scratch register, with a single instruction encoding.
-
- is saved from having to negate the rotate amount to get a single-direction
- rotate instruction to rotate in the oposite direction
-
+four-instruction sequence to acheive the same effect (neg; sll/srl; srl/sll; or)
 ===============================================================
