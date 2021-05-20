@@ -35,7 +35,7 @@ Encoding (RV64)::
 
 Description:: 
 This instruction performs a rotate right of _rs1_ by the amount in the least-significant log2(XLEN) bits of _shamt_.
-For RV32, the encodings corresponding to shamt[5]=1 is reserved.
+For RV32, the encodings corresponding to shamt[5]=1 are reserved.
 
 Operation::
 [source,sail]
