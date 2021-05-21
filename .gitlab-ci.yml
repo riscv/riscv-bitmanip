@@ -1,15 +1,12 @@
 image: registry.gitlab.com/gitlab-org/release-cli:latest
 
-
-
 cache:
   paths:
     - node_modules
 
-
 before_script:
   - apk update
-  - apk add nodejs build-base npm ruby make ruby-dev git asciidoctor curl
+  - apk add nodejs build-base npm ruby make ruby-dev git asciidoctor curl ghostscript
   - gem install asciidoctor
   - gem install asciidoctor-pdf
   - gem install asciidoctor-diagram
@@ -18,6 +15,7 @@ before_script:
   - gem install rouge
   - gem install pygments.rb
   - gem install json
+  - gem install rghost
   - npm i npm@latest -g
   - npm install wavedrom-cli
   - PATH="$PATH:node_modules/.bin/"

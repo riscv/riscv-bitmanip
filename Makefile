@@ -8,10 +8,12 @@ bitmanip-$(VERSION).pdf: bitmanip/bitmanip.adoc \
 	asciidoctor-pdf -r asciidoctor-diagram \
 			-D . \
 			-a toc \
+			-a compress \
 			-a pdf-style=resources/themes/risc-v_spec-pdf.yml \
 			-a pdf-fontsdir=resources/fonts \
 			-o $@ \
 			$<
+	asciidoctor-pdf-optimize --quality printer $@
 
 DATE=$(shell date  +%Y.%m.%d)
 VERSION=$(shell git describe --tag --always --dirty)
