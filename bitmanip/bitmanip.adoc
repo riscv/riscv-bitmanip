@@ -192,6 +192,5 @@ include::insns/zext_h.adoc[]
 [appendix]
 == Software optimisation guide
 
-=== strcpy
-
-=== strcmp
+include::software-guide/strlen.adoc[]
+include::software-guide/strcmp.adoc[]
