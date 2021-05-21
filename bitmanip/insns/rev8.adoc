@@ -32,7 +32,7 @@ Encoding (RV64)::
 ....
 
 Description:: 
-Byte-reverses operand _rs_ and puts the result in register _rd_.
+This instruction reverses the order of the bytes in a register.
 
 Operation::
 [source,sail]
@@ -49,10 +49,23 @@ foreach (i from 0 to xlen by 8) {
 X[rd] = output
 --
 
-Comment::
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+It is important to note that this mnemonic refers to different instruction encodings in RV32 and RV64.
+We decided that it was more important to tie the mnemonic to the function rather than the encoding.
+This might be confusing to some coders as this differs from our common practice 
+of having the same mnemonic refer to the same encoding across RV32 and RV64. However, in the end we
+think that it will be more intuitive.
+===============================================================
+
+.Software Hint
+[NOTE, caption="SH" ]
+===============================================================
 The byte-reverse operation is only available for the full register
 width.  To emulate word-sized and halfword-sized byte-reversal,
 perform a `rev8 rd,rs` followed by a `srai rd,rd`.
+===============================================================
 
 Included in::
 [%header,cols="4,2,2"]
