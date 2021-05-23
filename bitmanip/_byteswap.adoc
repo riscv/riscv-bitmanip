@@ -9,7 +9,7 @@ This instruction reverses the byte-ordering in a register.
 |Mnemonic
 |Instruction
 
-|&#;
+|&#10003;
 |&#10003;
 |rev8 _rd_, _rs_
 |<<#insns-rev8>>
