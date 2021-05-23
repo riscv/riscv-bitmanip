@@ -63,7 +63,7 @@ along with their specific mapping:
 |
 |
 
-|
+|&#88;
 |&#88;
 |andn _rd_, _rs1_, _rs2_
 |<<#insns-andn>>
