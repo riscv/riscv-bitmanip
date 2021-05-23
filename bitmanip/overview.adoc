@@ -43,7 +43,7 @@ The first group of extensions to be release for Public Review are:
 Below is a list of all of the instructions (and pseudoinstructions) that are included in these extensions
 along with their specific mapping:
 
-[%header,cols="^1,^1,4,8,^1,^1,^1,^1"]
+[%header,cols="^3,^3,10,16,^2,^2,^2,^2"]
 |====
 |RV32
 |RV64
