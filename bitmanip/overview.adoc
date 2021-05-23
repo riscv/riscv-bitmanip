@@ -144,7 +144,7 @@ along with their specific mapping:
 |
 |&#88;
 |ctzw _rd_, _rs_
-|<<#insns-ctz>>
+|<<#insns-ctzw>>
 |
 |&#88;
 |
