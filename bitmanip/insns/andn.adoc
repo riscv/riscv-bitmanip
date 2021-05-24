@@ -26,20 +26,6 @@ This instruction performs the bitwise logical AND operation between _rs1_ and th
 Operation::
 [source,sail]
 --
-union clause ast = RTYPE : (regidx, regidx, regidx, rop)
-
-mapping clause encdec = RTYPE(rs2, rs1, rd, RISCV_ANDN)
-  <-> 0b0100000 @ rs2 @ rs1 @ 0b111 @ rd @ 0b0110011
-
-function clause execute (ITYPE (rs2, rs1, rd, RISCV_ANDN)) = {
-  X(rd) = X(rs1) & ~X(rs2);
-  RETIRE_SUCCESS
-}
---
-
-Operation::
-[source,sail]
---
 X(rd) = X(rs1) & ~X(rs2);
 --
 
