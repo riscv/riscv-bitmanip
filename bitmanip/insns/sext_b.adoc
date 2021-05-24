@@ -1,8 +1,8 @@
-[#insns-sext_b,reftext="Sign-extend byte (8-bit)"]
+[#insns-sext_b,reftext="Sign-extend byte"]
 === sext.b
 
 Synopsis::
-Sign-extend byte (8-bit)
+Sign-extend byte
 
 Mnemonic::
 sext.b _rd_, _rs_

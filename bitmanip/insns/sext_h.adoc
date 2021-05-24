@@ -1,8 +1,8 @@
-[#insns-sext_h,reftext="Sign-extend halfword (16-bit)"]
+[#insns-sext_h,reftext="Sign-extend halfword"]
 === sext.h
 
 Synopsis::
-Sign-extend halfword (16-bit)
+Sign-extend halfword
 
 Mnemonic::
 sext.h _rd_, _rs_

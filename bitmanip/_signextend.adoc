@@ -1,7 +1,8 @@
 ==== Sign- and zero-extension
 
-These instructions perform the sign-extension or zero-extension of the least
-significant 8 bits, 16bits or 32 bits of the source register.
+These instructions perform the sign-extension or zero-extension of the least significant 8 bits, 16 bits or 32 bits of the source register.
+
+These instructions replace the generalized idioms `slli rD,rS,(XLEN-<size>) + srli` (for zero-extension) or `slli + srai` (for sign-extension) for the sign-extension of 8-bit and 16-bit quantities, and for the zero-extension of 16-bit and 32-bit quantities.
 
 [%header,cols="^1,^1,4,8"]
 |===
@@ -26,16 +27,3 @@ significant 8 bits, 16bits or 32 bits of the source register.
 |<<#insns-zext_h>>
 |===
 
-.Software Hint
-[NOTE, caption="SW" ]
-===============================================================
-These instructions replace the generalized idioms `slli
-rD,rS,(XLEN-<size>) + srli` (for zero-extension) or `slli + srai` (for
-sign-extension) for the sign-extension of 8 bit and 16-bit quantities,
-and for the zero-extension off 16 bit and 32 bit quantities.
-
-The idiomatic forms for sign- and zero-extension on RISC-V use a
-shift-left followed by either a shift-right-logical or a
-shift-right-arithmetic; these can be used to extend values at any
-bit-boundary required.
-===============================================================

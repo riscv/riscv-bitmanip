@@ -102,6 +102,7 @@ include::zbs.adoc[]
 //Include::_signextend.adoc[]
 //include::_single_bit.adoc[]
 
+[#insns,reftext="Instructions (in alphabetical order)"]
 == Instructions (in alphabetical order)
 include::insns/add_uw.adoc[]
 <<<
