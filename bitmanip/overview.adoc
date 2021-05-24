@@ -37,7 +37,7 @@ The semantics of each instruction in <<#insns>> is expressed in a SAIL-like synt
 <<<<<<< HEAD
 The of extensions released for Public Review are:
 =======
-The first group of nitmanip extensions to be release for Public Review are:
+The first group of bitmanip extensions to be release for Public Review are:
 >>>>>>> 95b5a31 (Ongoing cleanup, clarification and grammatical corrections.)
 
 * <<#zba>>
