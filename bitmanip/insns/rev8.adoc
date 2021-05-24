@@ -54,7 +54,7 @@ X[rd] = output
 ===============================================================
 It is important to note that this mnemonic refers to different instruction encodings in RV32 and RV64.
 We decided that it was more important to tie the mnemonic to the function rather than the encoding.
-This might be confusing to some coders as this differs from our common practice 
+This might be confusing to some as this differs from our common practice 
 of having the same mnemonic refer to the same encoding across RV32 and RV64. However, in the end we
 think that it will be more intuitive.
 ===============================================================
