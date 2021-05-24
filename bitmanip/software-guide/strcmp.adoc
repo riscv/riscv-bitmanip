@@ -15,25 +15,24 @@ strcmp:
 
   # Main loop for aligned strings
 .Lloop:
-  REG_L a2, (a0)
-  REG_L a3, (a1)
+  REG_L a2, 0(a0)
+  REG_L a3, 0(a1)
   orc.b t0, a2
   bne   t0, t2, .Lfoundnull
   addi  a0, a0, SZREG
   addi  a1, a1, SZREG
   beq   a2, a3, .Lloop
-
+  
   # Words don't match, and no null byte in first word.
   # Get bytes in big-endian order and compare.
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   rev8  a2, a2
   rev8  a3, a3
 #endif
-  bgeu  a2, a3, 1f
-  li    a0, -1
-  ret
-1:
-  li    a0, 1
+  # Synthesize (a2 >= a3) ? 1 : -1 in a branchless sequence.
+  sltu a0, a2, a3
+  neg  a0, a0
+  ori  a0, a0, 1
   ret
 
 .Lfoundnull:
