@@ -288,7 +288,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bext _rd_, _rs1_, _rs2_
-|xref:insns/bext.adoc[Single-Bit Extract]
+|<<#insns-bext>>
 |
 |
 |
@@ -297,7 +297,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bexti _rd_, _rs1_, _imm_
-|xref:insns/bexti.adoc[Single-Bit Extract (Immediate)]
+|<<#insns-bexti>>
 |
 |
 |
@@ -306,7 +306,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |binv _rd_, _rs1_, _rs2_
-|xref:insns/binv.adoc[Single-Bit Invert]
+|<<#insns-binv>>
 |
 |
 |
@@ -315,7 +315,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |binvi _rd_, _rs1_, _imm_
-|xref:insns/binvi.adoc[Single-Bit Invert (Immediate)]
+|<<#insns-binvi>>
 |
 |
 |
@@ -324,7 +324,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bset _rd_, _rs1_, _rs2_
-|xref:insns/bset.adoc[Single-Bit Set]
+|<<#insns-bset>>
 |
 |
 |
@@ -333,7 +333,7 @@ along with their specific mapping:
 |&#88;
 |&#88;
 |bseti _rd_, _rs1_, _imm_
-|xref:insns/bseti.adoc[Single-Bit Set (Immediate)]
+|<<#insns-bseti>>
 |
 |
 |
