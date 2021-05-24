@@ -29,31 +29,31 @@ a single bit in a register. The bit is specified by its index.
 |&#88;
 |&#88;
 |bext _rd_, _rs1_, _rs2_
-|xref:bext.adoc[Extract bit]
+|<<#insns-bext>>
 
 |&#88;
 |&#88;
 |bexti _rd_, _rs1_, _imm_
-|xref:bext.adoc[Extract bit, immediate]
+|<<#insns-bexti>
 
 |&#88;
 |&#88;
 |binv _rd_, _rs1_, _rs2_
-|xref:binv.adoc[Invert bit]
+|<<#insns-binv>>
 
 |&#88;
 |&#88;
 |binvi _rd_, _rs1_, _imm_
-|xref:binvi.adoc[Invert bit, immediate]
+|<<#insns-binvi>>
 
 |&#88;
 |&#88;
 |bset _rd_, _rs1_, _rs2_
-|xref:bset.adoc[Set bit]
+|<<#insns-bset>>
 
 |&#88;
 |&#88;
 |bseti _rd_, _rs1_, _imm_
-|xref:bseti.adoc[Set bit, immediate]
+|<<#insns-bseti>>
 
 |===
