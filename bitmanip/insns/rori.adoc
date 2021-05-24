@@ -29,7 +29,7 @@ Encoding (RV64)::
     { bits:  3, name: 0x5, attr: ['RORI']},
     { bits:  5, name: 'rs1' },
     { bits:  6, name: 'shamt' },
-    { bits:  6, name: 0x28, attr: ['RORI'] },
+    { bits:  6, name: 0x18, attr: ['RORI'] },
 ]}
 ....
 

@@ -5,7 +5,7 @@ Synopsis::
 Shift unsigned word left by 2 and add
 
 Mnemonic::
-sh2add.uw _rd_, _rIndex_, _rBase_
+sh2add.uw _rd_, _rs1_, _rs2_
 
 Encoding::
 [wavedrom, , svg]
