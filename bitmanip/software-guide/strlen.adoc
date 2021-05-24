@@ -1,6 +1,6 @@
 === strlen
 
-The *orc.b* instruction allows for the efficient detecting of *NUL* bytes in a XLEN-sized chunk of data:
+The *orc.b* instruction allows for the efficient detecting of *NUL* bytes in an XLEN-sized chunk of data:
 
  * the result of *orc.b* on a chunk that does not contain any *NUL* bytes will be all-zeros, and
  * after a bitwise-negation of the result of *orc.b*, the first *NUL* byte can be detected by *ctz*/*clz* (depending on the endianness of data).

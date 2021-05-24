@@ -1,8 +1,8 @@
-[#insns-orc_b,reftext="Bitwise OR-Combine, byte-granule"]
+[#insns-orc_b,reftext="Bitwise OR-Combine, byte granule"]
 === orc.b
 
 Synopsis::
-Bitwise OR-Combine, byte-granule
+Bitwise OR-Combine, byte granule
 
 Mnemonic::
 orc.b _rd_, _rs_

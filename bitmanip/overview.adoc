@@ -3,7 +3,7 @@
 
 The bit manipulation instructions are extensions to the base architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction.
 While the instructions are intended to have general use, some instructions are more useful in some domains than others.
-In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, the bitmanip extension is subdividedd into smaller extensions, each of which has its own Z-extension mnemonic.
+In order to avoid a situation where a platform needs to require the implementation of all bitmanip instructions when only some are needed, the bitmanip extension is subdivided into smaller extensions, each of which has its own Z-extension mnemonic.
 
 Each extension includes a group of several instructions that are used for a common purpose and that can often share the same logic.
 Some instructions are available in only one extension while others are available in several.
@@ -17,14 +17,14 @@ While the shift-immediate instructions are defined to have at most a 6-bit immed
 [preface]
 == Word Instructions
 
-The bitmanip extension follows the convention in RV64 that _w_ suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign-extended to XLEN.
+The bitmanip extension follows the convention in RV64 that _w_-suffixed instructions (without a dot before the _w_) ignore the upper 32 bits of their inputs, operate on the least-significant 32-bits as signed values and produce a 32-bit signed result that is sign-extended to XLEN.
 
 Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least significant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
 
-Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce a XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
+Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce an XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
 
 [preface]
-== Pseudo-code for instruction semantics
+== Pseudocode for instruction semantics
 
 The semantics of each instruction in <<#insns>> is expressed in a SAIL-like syntax.
 
