@@ -42,6 +42,12 @@ Operation::
 X(rd) = EXTZ(X(rs)[15..0]);
 --
 
+.Note
+[NOTE, caption="A" ]
+===============================================================
+The *zext.h* mnemonic corresponds to different instruction encodings in RV32 and RV64.
+===============================================================
+
 Included in::
 [%header,cols="4,2,2"]
 |===
