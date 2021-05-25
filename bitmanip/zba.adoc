@@ -6,7 +6,7 @@
 The Zba Bitmanip extension is frozen.
 ====
 
-The following instructions comprise the Zba sub-extension:
+The following instructions comprise the Zba Bitmanip extension:
 
 [%header,cols="^1,^1,4,8"]
 |===
