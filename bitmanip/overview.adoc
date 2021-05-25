@@ -9,11 +9,6 @@ Each bitmanip extension includes a group of several bitmanip instructions that h
 The instructions have mnemonics and instruction encodings that are independent of the extensions in which they appear.
 Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
 
-As with many instructions in the ISA, it is possible to write software that uses instructions with certian combinations of source or destination registers that result in a NOP or trial function.
-For example, XOR _rd_, _r1_, zero is nothing more than a move.
-Since reserving such encodings for other uses adds a lot of complexity to designs and the verification thereof--with relatively little gain in opcode space--we contine to let these be valid encodings.
-For the simplicity of coding and code debugging, we encourage coders to use the standard-specifed encodings and pseudo instructions as detailed in https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md.
-
 The bitmanip extensions is defined for RV32 and RV64.
 Most of the instructions are expected to be forward compatible with RV128.
 While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
@@ -34,11 +29,7 @@ The semantics of each instruction in <<#insns>> is expressed in a SAIL-like synt
 
 == Extensions
 
-<<<<<<< HEAD
-The of extensions released for Public Review are:
-=======
 The first group of bitmanip extensions to be release for Public Review are:
->>>>>>> 95b5a31 (Ongoing cleanup, clarification and grammatical corrections.)
 
 * <<#zba>>
 * <<#zbb>>
