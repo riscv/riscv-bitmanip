@@ -3,13 +3,14 @@
 
 The bit-manipulation (bitmanip) extension collection is comprised of several component extensions to the base RISC-V architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction.
 While the instructions are intended to have general use, some instructions are more useful in some domains than others.
-Since the architecture requires extensions to be implemented as a whole, we decided that it would be better to create several smaller bitmanip extensions rather than one large extension. Each of these smaller extensions is grouped by common function and use case, and each of which has its own Zb*-extension mnemonic.
+Hence, several smaller bitmanip extensions are provided, rather than one large extension.
+Each of these smaller extensions is grouped by common function and use case, and each of which has its own Zb*-extension mnemonic.
 
 Each bitmanip extension includes a group of several bitmanip instructions that have simular purposes and that can often share the same logic. Some instructions are available in only one extension while others are available in several.
 The instructions have mnemonics and instruction encodings that are independent of the extensions in which they appear.
 Thus, when implementing subextensions with overlapping instructions, there is no redundancy is logic or encoding.
 
-The bitmanip extensions is defined for RV32 and RV64.
+The bitmanip extensions are defined for RV32 and RV64.
 Most of the instructions are expected to be forward compatible with RV128.
 While the shift-immediate instructions are defined to have at most a 6-bit immediate field, a 7th bit is available in the encoding space should this be needed for RV128.
 

@@ -42,7 +42,7 @@ endif::[]
 
 This document is released under the https://creativecommons.org/licenses/by/4.0/[Creative Commons Attribution 4.0 International License].
 
-This describes BitManip Zba, Zbb, Zbc and Zbs instructions being submitted for public review.
+It describes the BitManip Zba, Zbb, Zbc and Zbs extensions being submitted for public review.
 
 [acknowledgments]
 == Acknowledgments
