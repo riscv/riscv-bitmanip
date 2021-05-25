@@ -6,7 +6,7 @@ While the instructions are intended to have general use, some instructions are m
 Hence, several smaller bitmanip extensions are provided, rather than one large extension.
 Each of these smaller extensions is grouped by common function and use case, and each of which has its own Zb*-extension mnemonic.
 
-Each bitmanip extension includes a group of several bitmanip instructions that have simular purposes and that can often share the same logic. Some instructions are available in only one extension while others are available in several.
+Each bitmanip extension includes a group of several bitmanip instructions that have similar purposes and that can often share the same logic. Some instructions are available in only one extension while others are available in several.
 The instructions have mnemonics and instruction encodings that are independent of the extensions in which they appear.
 Thus, when implementing extensions with overlapping instructions, there is no redundancy is logic or encoding.
 
