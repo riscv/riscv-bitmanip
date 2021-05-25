@@ -1,5 +1,5 @@
 [preface]
-=== Bit-manipulation a, b, c and s extensions grouped for public review and ratification
+== Bit-manipulation a, b, c and s extensions grouped for public review and ratification
 
 The bit-manipulation (bitmanip) extension collection is comprised of several component extensions to the base RISC-V architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction.
 While the instructions are intended to have general use, some instructions are more useful in some domains than others.
