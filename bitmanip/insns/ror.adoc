@@ -44,5 +44,9 @@ Included in::
 |Zbb (<<#zbb>>)
 |0.93
 |Frozen
+
+|Zbkb (<<#zbkb>>)
+|0.93
+|Frozen
 |===
 

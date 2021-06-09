@@ -1,0 +1,56 @@
+[#insns-pack,reftext="Pack low halves of registers"]
+=== pack
+
+Synopsis::
+Pack the low halves of _rs1_ and _rs2_ into _rd_.
+
+Mnemonic::
+pack _rd_, _rs1_, _rs2_
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    {bits:  7, name: 0x33, attr: ['OP'] },
+    {bits: 5, name: 'rd'},
+    {bits: 3, name: 0x4, attr:['PACK']},
+    {bits: 5, name: 'rs1'},
+    {bits: 5, name: 'rs2'},
+    {bits: 7, name: 0x4, attr:['PACK']},
+]}
+....
+
+Description:: 
+The pack instruction packs the XLEN/2-bit lower halves of _rs1_ and _rs2_ into
+_rd_, with _rs1_ in the lower half and _rs2_ in the upper half.
+
+Operation::
+[source,sail]
+--
+if (sizeof(xlen) == 32) then {
+    let lo_half : bits(16) = X(rs1)[15..0];
+    let hi_half : bits(16) = X(rs2)[15..0];
+    X(rd) = EXTZ(hi_half @ lo_half);
+} else {
+    let lo_half : bits(32) = X(rs1)[31..0];
+    let hi_half : bits(32) = X(rs2)[31..0];
+    X(rd) = EXTZ(hi_half @ lo_half);
+};
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (<<#zbb>>)
+|0.93
+|Frozen
+
+|Zbkb (<<#zbkb>>)
+|0.93
+|Frozen
+|===
+
