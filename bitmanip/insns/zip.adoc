@@ -23,7 +23,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction gathers all of the odd and even bits of a source word into
+This instruction scatters all of the odd and even bits of a source word into
 the high and low halves of a destination word.
 It is the inverse of the <<insns-unzip,unzip>> instruction.
 This instruction is available only on RV32.
@@ -31,22 +31,9 @@ This instruction is available only on RV32.
 Operation::
 [source,sail]
 --
-val shfl_stage : (xlenbits, xlenbits, xlenbits, bits(4)) -> xlenbits
-function shfl_stage (src, mL, mR, N) = {
-    x : xlenbits = src & ~(mL | mR);
-    y : xlenbits = ((src << N) & mL);
-    z : xlenbits = ((src >> N) & mR);
-    x | y | z
-}
-
-function clause execute ( ZIP (rs1,rd)) = {
-    x : xlenbits = X(rs1);
-    x = shfl_stage(x, 0x00ff0000, 0x0000ff00, 0x8);
-    x = shfl_stage(x, 0x0f00f000, 0x000f00f0, 0x4);
-    x = shfl_stage(x, 0x30303030, 0x0c0c0c0c, 0x2);
-    x = shfl_stage(x, 0x44444444, 0x22222222, 0x1);
-    X(rd) = x;
-    RETIRE_SUCCESS
+foreach (i from 0 to xlen/2-1) {
+  X(rd)[2*i] = X(rs1)[i]
+  X(rd)[2*i+1] = X(rs1)[i+xlen/2]
 }
 --
 

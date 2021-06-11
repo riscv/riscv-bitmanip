@@ -32,14 +32,6 @@ foreach (i from 0 to sizeof(xlen) by 8) {
 X(rd) = result;
 --
 
-.Software Hint
-[NOTE, caption="SH" ]
-===============================================================
-The bits-in-byte-reverse operation is only available for the full register
-width.  To emulate word-sized and halfword-sized reversal,
-perform a `rev.b rd,rs` followed by a `srai rd,rd`.
-===============================================================
-
 Included in::
 [%header,cols="4,2,2"]
 |===

@@ -27,15 +27,9 @@ _rd_, with _rs1_ in the lower half and _rs2_ in the upper half.
 Operation::
 [source,sail]
 --
-if (sizeof(xlen) == 32) then {
-    let lo_half : bits(16) = X(rs1)[15..0];
-    let hi_half : bits(16) = X(rs2)[15..0];
-    X(rd) = EXTZ(hi_half @ lo_half);
-} else {
-    let lo_half : bits(32) = X(rs1)[31..0];
-    let hi_half : bits(32) = X(rs2)[31..0];
-    X(rd) = EXTZ(hi_half @ lo_half);
-};
+let lo_half : bits(xlen/2) = X(rs1)[xlen/2-1..0];
+let hi_half : bits(xlen/2) = X(rs2)[xlen/2-1..0];
+X(rd) = EXTZ(hi_half @ lo_half);
 --
 
 Included in::
