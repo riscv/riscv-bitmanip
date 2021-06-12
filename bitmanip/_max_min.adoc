@@ -1,7 +1,7 @@
 ==== Integer minimum/maximum
 
 The integer minimum/maximum instructions are arithmetic R-type
-instructions that returns the smaller/larger of two operands.
+instructions that return the smaller/larger of two operands.
 
 [%header,cols="^1,^1,4,8"]
 |===
