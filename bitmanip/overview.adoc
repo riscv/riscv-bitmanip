@@ -21,7 +21,7 @@ The bitmanip extension follows the convention in RV64 that _w_-suffixed instruct
 
 Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least significant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
 
-Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce an XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
+Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce an XLEN-wide result that is sign-extended or zero-extended, based on the specific instruction.
 
 [preface]
 == Pseudocode for instruction semantics
