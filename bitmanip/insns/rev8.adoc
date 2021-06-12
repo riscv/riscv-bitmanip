@@ -32,7 +32,7 @@ Encoding (RV64)::
 ....
 
 Description:: 
-This instruction reverses the order of the bytes in a register.
+This instruction reverses the order of the bytes in _rs_.
 
 Operation::
 [source,sail]
