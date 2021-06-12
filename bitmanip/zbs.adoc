@@ -16,43 +16,43 @@ a single bit in a register. The bit is specified by its index.
 |Mnemonic
 |Instruction
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |bclr _rd_, _rs1_, _rs2_
 |<<#insns-bclr>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |bclri _rd_, _rs1_, _imm_
 |<<#insns-bclri>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |bext _rd_, _rs1_, _rs2_
 |<<#insns-bext>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |bexti _rd_, _rs1_, _imm_
 |<<#insns-bexti>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |binv _rd_, _rs1_, _rs2_
 |<<#insns-binv>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |binvi _rd_, _rs1_, _imm_
 |<<#insns-binvi>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |bset _rd_, _rs1_, _rs2_
 |<<#insns-bset>>
 
-|&#88;
-|&#88;
+|&#10003;
+|&#10003;
 |bseti _rd_, _rs1_, _imm_
 |<<#insns-bseti>>
 
