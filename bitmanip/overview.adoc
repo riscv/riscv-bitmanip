@@ -30,7 +30,7 @@ The semantics of each instruction in <<#insns>> is expressed in a SAIL-like synt
 
 == Extensions
 
-The first group of bitmanip extensions to be release for Public Review are:
+The first group of bitmanip extensions to be released for Public Review are:
 
 * <<#zba>>
 * <<#zbb>>
