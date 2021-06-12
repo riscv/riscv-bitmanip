@@ -20,7 +20,7 @@ Encoding::
 ....
 
 Description:: 
-Combines the bits within every byte through a reciprocal bitwise logical OR.
+Combines the bits within each byte using bitwise logical OR.
 This sets the bits of each byte in the result _rd_ to all zeros if no bit within the respective byte of _rs_ is set, or to all ones if any bit within the respective byte of _rs_ is set.
 
 Operation::
