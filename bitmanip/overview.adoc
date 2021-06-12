@@ -8,7 +8,7 @@ Each of these smaller extensions is grouped by common function and use case, and
 
 Each bitmanip extension includes a group of several bitmanip instructions that have similar purposes and that can often share the same logic. Some instructions are available in only one extension while others are available in several.
 The instructions have mnemonics and encodings that are independent of the extensions in which they appear.
-Thus, when implementing extensions with overlapping instructions, there is no redundancy is logic or encoding.
+Thus, when implementing extensions with overlapping instructions, there is no redundancy in logic or encoding.
 
 The bitmanip extensions are defined for RV32 and RV64.
 Most of the instructions are expected to be forward compatible with RV128.
