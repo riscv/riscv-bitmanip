@@ -31,8 +31,8 @@ the more-significant bits.
 Operation::
 [source,sail]
 --
-let rs1 = EXTZ(X(rs1)[31..0];
-let result = (rs1 >> shamt[4..0]) | (X(rs1) << (32 - shamt[4..0]));
+let rs1_data = EXTZ(X(rs1)[31..0];
+let result = (rs1_Data >> shamt[4..0]) | (rs1_data << (32 - shamt[4..0]));
 X(rd) = EXTS(result[31..0]);
 --
 
