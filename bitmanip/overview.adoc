@@ -206,7 +206,7 @@ along with their specific mapping:
 
 |&#88;
 |&#88;
-|rev8_rd_, _rs_
+|rev8 _rd_, _rs_
 |<<#insns-rev8>>
 |
 |&#88;
