@@ -4,11 +4,11 @@
 The bit-manipulation (bitmanip) extension collection is comprised of several component extensions to the base RISC-V architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction.
 While the instructions are intended to have general use, some instructions are more useful in some domains than others.
 Hence, several smaller bitmanip extensions are provided, rather than one large extension.
-Each of these smaller extensions is grouped by common function and use case, and each of which has its own Zb*-extension name.
+Each of these smaller extensions is grouped by common function and use case, and each has its own Zb*-extension name.
 
 Each bitmanip extension includes a group of several bitmanip instructions that have similar purposes and that can often share the same logic. Some instructions are available in only one extension while others are available in several.
 The instructions have mnemonics and encodings that are independent of the extensions in which they appear.
-Thus, when implementing extensions with overlapping instructions, there is no redundancy is logic or encoding.
+Thus, when implementing extensions with overlapping instructions, there is no redundancy in logic or encoding.
 
 The bitmanip extensions are defined for RV32 and RV64.
 Most of the instructions are expected to be forward compatible with RV128.
@@ -21,7 +21,7 @@ The bitmanip extension follows the convention in RV64 that _w_-suffixed instruct
 
 Bitmanip instructions with the suffix _.uw_ have one operand that is an unsigned 32-bit value that is extracted from the least significant 32 bits of the specified register.  Other than that, these perform full XLEN operations.
 
-Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce an XLEN-wide result that is sign-extended or zero-extended, based on specific instruction.
+Bitmanip instructions with the suffix _.b_, _.h_ and _.w_ only look at the least significant 8-bits, 16-bits and 32-bits of the input (respectively) and produce an XLEN-wide result that is sign-extended or zero-extended, based on the specific instruction.
 
 [preface]
 == Pseudocode for instruction semantics
@@ -30,7 +30,7 @@ The semantics of each instruction in <<#insns>> is expressed in a SAIL-like synt
 
 == Extensions
 
-The first group of bitmanip extensions to be release for Public Review are:
+The first group of bitmanip extensions to be released for Public Review are:
 
 * <<#zba>>
 * <<#zbb>>
