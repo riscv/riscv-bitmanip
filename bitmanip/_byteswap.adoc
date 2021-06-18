@@ -1,6 +1,6 @@
 ==== Byte-reverse
 
-This instruction reverses the byte-ordering in a register.
+*rev8* reverses the byte-ordering of _rs_.
 
 [%header,cols="^1,^1,4,8"]
 |====

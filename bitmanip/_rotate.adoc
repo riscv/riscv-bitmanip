@@ -1,4 +1,4 @@
-=== Bitwise rotation
+==== Bitwise rotation
 
 Bitwise rotation instructions are similar to the shift-logical operations from the base spec. However, where the shift-logical 
 instructions shift in zeros, the rotate instructions shift in the bits that were shifted out of the other side of the value.

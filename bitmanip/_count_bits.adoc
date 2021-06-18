@@ -1,4 +1,4 @@
-==== Count leading/training zero bits
+==== Count leading/trailing zero bits
 
 [%header,cols="^1,^1,4,8"]
 |===

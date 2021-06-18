@@ -34,7 +34,7 @@ a single bit in a register. The bit is specified by its index.
 |&#88;
 |&#88;
 |bexti _rd_, _rs1_, _imm_
-|<<#insns-bexti>
+|<<#insns-bexti>>
 
 |&#88;
 |&#88;

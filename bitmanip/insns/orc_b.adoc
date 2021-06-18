@@ -20,7 +20,7 @@ Encoding::
 ....
 
 Description:: 
-Combines the bits within every byte through a reciprocal bitwise logical OR.
+Combines the bits within each byte using bitwise logical OR.
 This sets the bits of each byte in the result _rd_ to all zeros if no bit within the respective byte of _rs_ is set, or to all ones if any bit within the respective byte of _rs_ is set.
 
 Operation::
@@ -28,10 +28,9 @@ Operation::
 --
 let input = X(rs);
 let output : xlenbits = 0;
-let j = xlen;
 
-foreach (i from 0 to xlen by 8) {
-   output[(i + 7)..i] = if   input[(i - 7)..i] == 0
+foreach (i from 0 to (xlen - 8) by 8) {
+   output[(i + 7)..i] = if   input[(i + 7)..i] == 0
                         then 0b00000000
                         else 0b11111111;
 }
