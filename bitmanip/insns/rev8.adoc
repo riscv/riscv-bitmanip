@@ -32,16 +32,16 @@ Encoding (RV64)::
 ....
 
 Description:: 
-This instruction reverses the order of the bytes in a register.
+This instruction reverses the order of the bytes in _rs_.
 
 Operation::
 [source,sail]
 --
 let input = X(rs);
 let output : xlenbits = 0;
-let j = xlen;
+let j = xlen - 1;
 
-foreach (i from 0 to xlen by 8) {
+foreach (i from 0 to (xlen - 8) by 8) {
    output[i..(i + 7)] = input[(j - 7)..j];
    j = j - 8;
 }

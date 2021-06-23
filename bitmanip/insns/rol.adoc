@@ -29,7 +29,7 @@ Operation::
 let shamt = if   xlen == 32
     	    then X(rs2)[4..0]
 	    else X(rs2)[5..0];
-let result = (X(rs1) << shamt) | (X(rs2) >> (xlen - shamt));
+let result = (X(rs1) << shamt) | (X(rs1) >> (xlen - shamt));
 
 X(rd) = result;
 --

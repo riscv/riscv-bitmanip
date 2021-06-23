@@ -40,6 +40,15 @@ foreach (i from 0 to (xlen - 1) by 1) {
 X[rd] = output
 --
 
+.Note
+[NOTE, caption="A" ]
+===============================================================
+The *clmulr* instruction is used to accelerate CRC calculations.
+The *r* in the instruction's mnemonic stands for _reversed_, as the
+instruction is equivalent to bit-reversing the inputs, performing
+a *clmul*, then bit-reversing the output.
+===============================================================
+
 Included in::
 [%header,cols="4,2,2"]
 |===
