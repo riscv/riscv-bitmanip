@@ -13,7 +13,7 @@ bitmanip-$(VERSION).pdf: bitmanip/bitmanip.adoc \
 			-a pdf-fontsdir=resources/fonts \
 			-o $@ \
 			$<
-	asciidoctor-pdf-optimize --quality printer $@
+	gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer -sOutputFile=opt-$@ $@ && mv opt-$@ $@
 
 DATE=$(shell date  +%Y.%m.%d)
 VERSION=$(shell git describe --tag --always --dirty)
