@@ -21,7 +21,7 @@ Encoding::
 ....
 
 Description:: 
-This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise inversion of _rs2_.
+This instruction performs the bitwise logical OR operation between _rs1_ and the bitwise inversion of _rs2_.
 
 Operation::
 [source,sail]
