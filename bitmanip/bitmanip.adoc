@@ -92,6 +92,12 @@ include::zbb.adoc[]
 include::zbc.adoc[]
 //following introduces the zbs extension.
 include::zbs.adoc[]
+//following introduces the zkbc extension.
+include::zbkc.adoc[]
+//following introduces the zbkx extension.
+include::zbkx.adoc[]
+//following introduces the zbkb extension.
+include::zbkb.adoc[]
 //include::_byteswap.adoc[]
 //include::_count_bits.adoc[]
 //include::_logical-with-negate.adoc[]
@@ -154,7 +160,15 @@ include::insns/orc_b.adoc[]
 <<<
 include::insns/orn.adoc[]
 <<<
+include::insns/pack.adoc[]
+<<<
+include::insns/packh.adoc[]
+<<<
+include::insns/packw.adoc[]
+<<<
 include::insns/rev8.adoc[]
+<<<
+include::insns/revb.adoc[]
 <<<
 include::insns/rol.adoc[]
 <<<
@@ -186,9 +200,17 @@ include::insns/sh3add_uw.adoc[]
 <<<
 include::insns/slli_uw.adoc[]
 <<<
+include::insns/unzip.adoc[]
+<<<
 include::insns/xnor.adoc[]
 <<<
+include::insns/xpermb.adoc[]
+<<<
+include::insns/xpermn.adoc[]
+<<<
 include::insns/zext_h.adoc[]
+<<<
+include::insns/zip.adoc[]
 
 [appendix]
 == Software optimization guide

@@ -39,5 +39,9 @@ Included in::
 |Zbb (<<#zbb>>)
 |0.93
 |Frozen
+
+|Zbkb (<<#zbkb>>)
+|v0.9.4
+|Frozen
 |===
 
