@@ -52,8 +52,8 @@ Included in::
 |Minimum version
 |Lifecycle state
 
-|Zbkb (<<#zbkb>>)
-|0.93
+|Zbkb (<<#zbkb>>) (RV32)
+|v0.9.4
 |Frozen
 |===
 
