@@ -30,7 +30,7 @@ Operation::
 let rs1 = EXTZ(X(rs1)[31..0])
 let shamt = X(rs2)[4..0];
 let result = (rs1 << shamt) | (rs1 >> (32 - shamt));
-X(rd) = EXTS(result);
+X(rd) = EXTS(result[31..0]);
 --
 
 Included in::
