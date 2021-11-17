@@ -60,7 +60,8 @@ The *rev8* mnemonic corresponds to different instruction encodings in RV32 and R
 ===============================================================
 The byte-reverse operation is only available for the full register
 width.  To emulate word-sized and halfword-sized byte-reversal,
-perform a `rev8 rd,rs` followed by a `srai rd,rd`.
+perform a `rev8 rd,rs` followed by a `srai rd,rd,K`, where K is
+XLEN-32 and XLEN-16, respectively.
 ===============================================================
 
 Included in::
