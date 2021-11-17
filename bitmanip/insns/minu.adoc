@@ -30,8 +30,8 @@ let rs1_val = X(rs1);
 let rs2_val = X(rs2);
 
 let result = if   rs1_val <_u rs2_val
-    	     then rs1_val
-	     else rs2_val;
+             then rs1_val
+             else rs2_val;
 
 X(rd) = result;
 --
