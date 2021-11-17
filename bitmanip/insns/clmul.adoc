@@ -33,7 +33,7 @@ let output : xlenbits = 0;
 foreach (i from 0 to xlen by 1) {
    output = if   ((rs2_val >> i) & 1)
             then output ^ (rs1_val << i);
-	    else output;
+            else output;
 }
 
 X[rd] = output
