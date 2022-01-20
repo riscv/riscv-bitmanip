@@ -2,7 +2,7 @@
 === xperm.n
 
 Synopsis::
-Nibble-wise lookup of indicies into a vector.
+Nibble-wise lookup of indices into a vector.
 
 Mnemonic::
 xperm.n _rd_, _rs1_, _rs2_
