@@ -395,7 +395,7 @@ along with their specific mapping:
 
 |&#10003;
 |&#10003;
-|sh3add _rd_, _rs2_, _rs2_
+|sh3add _rd_, _rs1_, _rs2_
 |<<#insns-sh3add>>
 |&#10003;
 |
