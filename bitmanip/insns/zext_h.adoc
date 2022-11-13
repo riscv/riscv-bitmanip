@@ -11,7 +11,7 @@ Encoding (RV32)::
 [wavedrom, , svg]
 ....
 {reg:[
-    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
     { bits:  5, name: 'rd' },
     { bits:  3, name: 0x4, attr: ['ZEXT.H']},
     { bits:  5, name: 'rs' },
@@ -24,7 +24,7 @@ Encoding (RV64)::
 [wavedrom, , svg]
 ....
 {reg:[
-    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
     { bits:  5, name: 'rd' },
     { bits:  3, name: 0x4, attr: ['ZEXT.H']},
     { bits:  5, name: 'rs' },
