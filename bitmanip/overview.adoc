@@ -438,4 +438,13 @@ along with their specific mapping:
 |
 |
 
+|
+|&#10003;
+|zext.w _rd_, _rs_
+|<<#insns-add_uw>>
+|&#10003;
+|
+|
+|
+
 |====
