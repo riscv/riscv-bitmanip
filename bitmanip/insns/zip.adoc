@@ -12,8 +12,7 @@ Encoding::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 2, name: 0x3},
-{bits: 5, name: 0x4},
+{bits: 7, name: 0x13, attr: ['OP-IMM']},
 {bits: 5, name: 'rd'},
 {bits: 3, name: 0x1},
 {bits: 5, name: 'rs1'},
