@@ -9,7 +9,7 @@ The Zbkx extension is frozen.
 These instructions implement a "lookup table" for 4 and 8 bit elements
 inside the general purpose registers.
 _rs1_ is used as a vector of N-bit words, and _rs2_ as a vector of N-bit
-indicies into _rs1_.
+indices into _rs1_.
 Elements in _rs1_ are replaced by the indexed element in _rs2_, or zero
 if the index into _rs2_ is out of bounds.
 
